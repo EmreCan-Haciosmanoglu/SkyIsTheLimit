@@ -114,6 +114,18 @@ namespace Can
 
 	}
 
+	glm::vec3 GameApp::RayPlaneIntersection(
+		const glm::vec3& X,
+		const glm::vec3& v,
+		const glm::vec3& C,
+		const glm::vec3& n
+	)
+	{
+		glm::vec3 w = C - X;
+		float k = glm::dot(w,n) / glm::dot(v,n);
+		return X + k * v;
+	}
+
 	bool GameApp::RayTriangleIntersection(
 		const glm::vec3& camPos,
 		const glm::vec3& ray,

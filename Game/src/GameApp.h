@@ -30,6 +30,12 @@ namespace Can
 			const glm::vec3& C,
 			const glm::vec3& normal
 		);
+		static glm::vec3 GameApp::RayPlaneIntersection(
+			const glm::vec3& X,
+			const glm::vec3& v,
+			const glm::vec3& C,
+			const glm::vec3& n
+		);
 
 		Can::Object* UploadObject(
 			const char* objectPath,

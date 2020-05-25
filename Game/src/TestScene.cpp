@@ -6,10 +6,15 @@ namespace Can
 {
 	TestScene::TestScene(GameApp* parent)
 		: m_Parent(parent)
-		, m_MainCameraController(45.0f, 1920.0f / 1080.0f, 0.0001f, 100.0f)
+		, m_MainCameraController(
+			45.0f,
+			1920.0f / 1080.0f,
+			0.0001f,
+			100.0f,
+			{ 1.0f, 0.5f, -1.0f },
+			{ -45, 0, 0 }
+		)
 	{
-		m_MainCameraController.GetCamera().SetPosition({ 1.0f,1.0f,-1.0f });
-		m_MainCameraController.GetCamera().SetRotation({ -45,0,0 });
 	}
 
 	void TestScene::OnUpdate(Can::TimeStep ts)
