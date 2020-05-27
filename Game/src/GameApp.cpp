@@ -293,7 +293,9 @@ namespace Can
 			road->S->SetInt("u_Texture", 0);
 			road->S->SetFloat3("u_LightPos", { 1.0f, 1.0f, -1.0f });
 
-			SetTransform(road, endCoord , { 0.01f, 0.01f, 0.01f }, { 0.0f,glm::radians(glm::degrees(glm::atan(-AB.y / AB.x)) + 90),0.0f });
+			int ed = AB.x <= 0 ? 180 : 0;
+
+			SetTransform(road, { startCoord.x,endCoord.y,startCoord.z }, { 0.01f, 0.01f, 0.01f }, { 0.0f,glm::radians(glm::degrees(glm::atan(-AB.y / AB.x))+90 + ed),0.0f });
 			Can::Renderer3D::AddObject(road);
 			return road;
 		}

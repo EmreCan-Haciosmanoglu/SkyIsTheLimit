@@ -15,6 +15,10 @@ namespace Can
 			{ -45, 0, 0 }
 		)
 	{
+		auto road = new Can::Object();
+		road = m_Parent->UploadObject("assets/objects/road.obj", "assets/shaders/Object.glsl", "assets/objects/road.png");
+		road->isEnabled = false;
+		m_RoadGuidelines.push_back(road);
 	}
 
 	void TestScene::OnUpdate(Can::TimeStep ts)
@@ -23,6 +27,100 @@ namespace Can
 
 		Can::RenderCommand::SetClearColor({ 0.9f, 0.9f, 0.9f, 1.0f });
 		Can::RenderCommand::Clear();
+
+		if (b_Start)
+		{
+			for (size_t i = 0; i < m_RoadGuidelines.size(); i++)
+			{
+				auto& road = m_RoadGuidelines[i];
+				road->isEnabled = true;
+			}
+			auto [mouseX, mouseY] = Can::Input::GetMousePos();
+			Application& app = Application::Get();
+			float w = app.GetWindow().GetWidth();
+			float h = app.GetWindow().GetHeight();
+
+			auto camera = m_MainCameraController.GetCamera();
+			glm::vec3 camPos = camera.GetPosition();
+			glm::vec3 camRot = camera.GetRotation();
+
+			float fovyX = m_MainCameraController.GetFOV();
+			float xoffSet = glm::degrees(glm::atan(glm::tan(glm::radians(fovyX)) * (((w / 2.0f) - mouseX) / (w / 2.0f))));
+			float yoffSet = glm::degrees(glm::atan(((h - 2.0f * mouseY) * glm::sin(glm::radians(xoffSet))) / (w - 2.0f * mouseX)));
+
+			glm::vec2 offsetDegrees = {
+				xoffSet,
+				yoffSet
+			};
+
+			glm::vec3 forward = {
+				-glm::sin(glm::radians(camRot.y)) * glm::cos(glm::radians(camRot.x)),
+				glm::sin(glm::radians(camRot.x)),
+				-glm::cos(glm::radians(camRot.x)) * glm::cos(glm::radians(camRot.y))
+			};
+			glm::vec3 up = {
+				glm::sin(glm::radians(camRot.x)) * glm::sin(glm::radians(camRot.y)),
+				glm::cos(glm::radians(camRot.x)),
+				glm::sin(glm::radians(camRot.x)) * glm::cos(glm::radians(camRot.y))
+			};
+			glm::vec3 right = {
+				-glm::sin(glm::radians(camRot.y - 90.0f)),
+				0,
+				-glm::cos(glm::radians(camRot.y - 90.0f))
+			};
+
+			forward = glm::rotate(forward, glm::radians(offsetDegrees.x), up);
+			right = glm::rotate(right, glm::radians(offsetDegrees.x), up);
+			forward = glm::rotate(forward, glm::radians(offsetDegrees.y), right);
+
+
+
+			glm::vec3 I = m_Parent->RayPlaneIntersection(camPos, forward, { 0,0,0 }, { 0,1,0 });
+			if (isnan(I.x) == false)
+			{
+				glm::vec3 AB = {
+					I.x - m_StartCoord.x,
+					m_StartCoord.y,
+					I.z - m_StartCoord.z
+				};
+				float mAB = glm::length(AB);
+				float max = 0.0f;
+				float min = 0.0f;
+				Can::Object* first = m_RoadGuidelines.at(0);
+				for (size_t i = 0; i < first->indexCount; i++)
+				{
+					float z = first->Vertices[i * 8 + 2];
+					max = std::max(max, z);
+					min = std::min(min, z);
+				}
+				float l = (max - min);
+				int c = 100 * mAB / l;
+
+
+				if (c > m_RoadGuidelines.size())
+				{
+					for (size_t i = m_RoadGuidelines.size(); i < c; i++)
+					{
+						auto road = new Can::Object();
+						road = m_Parent->UploadObject("assets/objects/road.obj", "assets/shaders/Object.glsl", "assets/objects/road.png");
+						m_RoadGuidelines.push_back(road);
+					}
+				}
+
+				for (size_t i = 0; i < c; i++)
+				{
+					auto& road = m_RoadGuidelines[i];
+					road->isEnabled == true;
+					m_Parent->SetTransform(road, glm::vec3{ m_StartCoord.x + glm::normalize(AB).x * i*(l/100.0f), m_StartCoord.y, m_StartCoord.z + glm::normalize(AB).z * i * (l / 100.0f) }, { 0.01f, 0.01f, 0.01f }, { 0.0f,glm::radians(glm::degrees(glm::atan(-AB.z / AB.x)) + 90),0.0f });
+				}
+				for (size_t i = c; i < m_RoadGuidelines.size(); i++)
+				{
+					auto& road = m_RoadGuidelines[i];
+					road->isEnabled = false;
+				}
+
+			}
+		}
 
 		Can::Renderer3D::BeginScene(m_MainCameraController.GetCamera());
 
@@ -127,6 +225,11 @@ namespace Can
 								m_EndCoord.z - m_StartCoord.z
 							};
 							mAB = glm::length(AB);
+							for (size_t i = 0; i < m_RoadGuidelines.size(); i++)
+							{
+								auto& road = m_RoadGuidelines[i];
+								road->isEnabled = false;
+							}
 						}
 						else if (!b_End)
 						{
@@ -174,7 +277,7 @@ namespace Can
 					float mAP = glm::length(AP);
 					float d = mAB * glm::sin(glm::acos(glm::dot(AB, AP) / (mAP * mAB)));
 
-					if (d < 0.1f)
+					if (d < 0.2f)
 					{
 						if (dist2 - 60 >= 0)
 						{

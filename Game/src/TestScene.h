@@ -38,5 +38,6 @@ namespace Can
 		float mAB = 0.0f;
 
 		std::vector<Road> m_Roads;
+		std::vector<Can::Object*> m_RoadGuidelines;
 	};
 }
