@@ -122,7 +122,7 @@ namespace Can
 	)
 	{
 		glm::vec3 w = C - X;
-		float k = glm::dot(w,n) / glm::dot(v,n);
+		float k = glm::dot(w, n) / glm::dot(v, n);
 		return X + k * v;
 	}
 
@@ -218,6 +218,9 @@ namespace Can
 	Can::Object* GameApp::GenerateStraightRoad(const char* objectPath, const std::string& shaderPath, const std::string& texturePath, const glm::vec3& startCoord, const glm::vec3& endCoord)
 	{
 		Can::Object* road = new Can::Object();
+		Can::Object* road_end = UploadObject("assets/objects/road_end.obj", "assets/shaders/Object.glsl", "assets/objects/road.png");
+		Can::Object* road_start = UploadObject("assets/objects/road_start.obj", "assets/shaders/Object.glsl", "assets/objects/road.png");
+
 		std::vector< glm::vec3 > vertices;
 		std::vector< glm::vec2 > uvs;
 		std::vector< glm::vec3 > normals;
@@ -242,10 +245,10 @@ namespace Can
 				min = std::min(min, z);
 			}
 			float l = (max - min);
-			int c = 100 * mAB / l;
+			int c = 100 * mAB / l + 1;
 
-			road->indexCount = vSize * c;
-			int size = vSize * c * (3 + 2 + 3);
+			road->indexCount = vSize * c + 2 * road_end->indexCount;
+			int size = road->indexCount * (3 + 2 + 3);
 			float* m_Vertices = new float[size];
 
 			for (int j = 0; j < c; j++)
@@ -264,6 +267,32 @@ namespace Can
 					m_Vertices[offset + index + 7] = normals[i].z;
 				}
 			}
+			int offset = vSize * c * 8;
+			for (size_t i = 0; i < road_end->indexCount; i++)
+			{
+				int index = i * 8;
+				m_Vertices[offset + index + 0] = road_end->Vertices[index + 0];
+				m_Vertices[offset + index + 1] = road_end->Vertices[index + 1];
+				m_Vertices[offset + index + 2] = road_end->Vertices[index + 2] + (c - 0.5f) * l;
+				m_Vertices[offset + index + 3] = road_end->Vertices[index + 3];
+				m_Vertices[offset + index + 4] = road_end->Vertices[index + 4];
+				m_Vertices[offset + index + 5] = road_end->Vertices[index + 5];
+				m_Vertices[offset + index + 6] = road_end->Vertices[index + 6];
+				m_Vertices[offset + index + 7] = road_end->Vertices[index + 7];
+			}
+			offset = vSize * c * 8 + road_end->indexCount * 8;
+			for (size_t i = 0; i < road_start->indexCount; i++)
+			{
+				int index = i * 8;
+				m_Vertices[offset + index + 0] = road_start->Vertices[index + 0];
+				m_Vertices[offset + index + 1] = road_start->Vertices[index + 1];
+				m_Vertices[offset + index + 2] = road_start->Vertices[index + 2] + (0 - 0.5f) * l;
+				m_Vertices[offset + index + 3] = road_start->Vertices[index + 3];
+				m_Vertices[offset + index + 4] = road_start->Vertices[index + 4];
+				m_Vertices[offset + index + 5] = road_start->Vertices[index + 5];
+				m_Vertices[offset + index + 6] = road_start->Vertices[index + 6];
+				m_Vertices[offset + index + 7] = road_start->Vertices[index + 7];
+			}
 
 			road->Vertices = m_Vertices;
 			road->VB = Can::VertexBuffer::Create(m_Vertices, sizeof(float) * size, true);
@@ -275,15 +304,15 @@ namespace Can
 
 			road->VA->AddVertexBuffer(road->VB);
 
-			uint32_t* m_Indices = new uint32_t[vSize * c];
+			uint32_t* m_Indices = new uint32_t[road->indexCount];
 
-			for (int i = 0; i < vSize * c; i++)
+			for (int i = 0; i < road->indexCount; i++)
 			{
 				m_Indices[i] = i;
 			}
 
 			road->Indices = m_Indices;
-			road->IB = Can::IndexBuffer::Create(m_Indices, vSize * c);
+			road->IB = Can::IndexBuffer::Create(m_Indices, road->indexCount);
 			road->VA->SetIndexBuffer(road->IB);
 
 			road->T = Can::Texture2D::Create(texturePath);
@@ -295,8 +324,14 @@ namespace Can
 
 			int ed = AB.x <= 0 ? 180 : 0;
 
-			SetTransform(road, { startCoord.x,endCoord.y,startCoord.z }, { 0.01f, 0.01f, 0.01f }, { 0.0f,glm::radians(glm::degrees(glm::atan(-AB.y / AB.x))+90 + ed),0.0f });
+			SetTransform(road, { startCoord.x,endCoord.y,startCoord.z }, { 0.01f, 0.01f, 0.01f }, { 0.0f,glm::radians(glm::degrees(glm::atan(-AB.y / AB.x)) + 90 + ed),0.0f });
 			Can::Renderer3D::AddObject(road);
+
+			Can::Renderer3D::DeleteObject(road_end);
+			Can::Renderer3D::DeleteObject(road_start);
+			delete road_end;
+			delete road_start;
+
 			return road;
 		}
 		return nullptr;

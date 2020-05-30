@@ -15,6 +15,11 @@ namespace Can
 			{ -45, 0, 0 }
 		)
 	{
+		m_RoadGuidelinesStart = m_Parent->UploadObject("assets/objects/road_start.obj", "assets/shaders/Object.glsl", "assets/objects/road.png");
+		m_RoadGuidelinesEnd = m_Parent->UploadObject("assets/objects/road_end.obj", "assets/shaders/Object.glsl", "assets/objects/road.png");
+		m_RoadGuidelinesStart->isEnabled = false;
+		m_RoadGuidelinesEnd->isEnabled = false;
+
 		auto road = new Can::Object();
 		road = m_Parent->UploadObject("assets/objects/road.obj", "assets/shaders/Object.glsl", "assets/objects/road.png");
 		road->isEnabled = false;
@@ -94,7 +99,7 @@ namespace Can
 					min = std::min(min, z);
 				}
 				float l = (max - min);
-				int c = 100 * mAB / l;
+				int c = 100 * mAB / l + 1;
 
 
 				if (c > m_RoadGuidelines.size())
@@ -111,13 +116,16 @@ namespace Can
 				{
 					auto& road = m_RoadGuidelines[i];
 					road->isEnabled == true;
-					m_Parent->SetTransform(road, glm::vec3{ m_StartCoord.x + glm::normalize(AB).x * i*(l/100.0f), m_StartCoord.y, m_StartCoord.z + glm::normalize(AB).z * i * (l / 100.0f) }, { 0.01f, 0.01f, 0.01f }, { 0.0f,glm::radians(glm::degrees(glm::atan(-AB.z / AB.x)) + 90),0.0f });
+					m_Parent->SetTransform(road, glm::vec3{ m_StartCoord.x + glm::normalize(AB).x * i * (l / 100.0f), m_StartCoord.y, m_StartCoord.z + glm::normalize(AB).z * i * (l / 100.0f) }, { 0.01f, 0.01f, 0.01f }, { 0.0f,glm::radians(glm::degrees(glm::atan(-AB.z / AB.x)) + 90),0.0f });
 				}
 				for (size_t i = c; i < m_RoadGuidelines.size(); i++)
 				{
 					auto& road = m_RoadGuidelines[i];
 					road->isEnabled = false;
 				}
+				int ed = AB.x > 0 ? 180 : 0;
+				m_Parent->SetTransform(m_RoadGuidelinesStart, glm::vec3{ m_StartCoord.x + glm::normalize(AB).x * (c - 0.5f) * (l / 100.0f), m_StartCoord.y, m_StartCoord.z + glm::normalize(AB).z * (c - 0.5f) * (l / 100.0f) }, { 0.01f, 0.01f, 0.01f }, { 0.0f,glm::radians(glm::degrees(glm::atan(-AB.z / AB.x)) + 90 + ed),0.0f });
+				m_Parent->SetTransform(m_RoadGuidelinesEnd, glm::vec3{ m_StartCoord.x + glm::normalize(AB).x * (-0.5f) * (l / 100.0f), m_StartCoord.y, m_StartCoord.z + glm::normalize(AB).z * (-0.5f) * (l / 100.0f) }, { 0.01f, 0.01f, 0.01f }, { 0.0f,glm::radians(glm::degrees(glm::atan(-AB.z / AB.x)) + 90 + ed),0.0f });
 
 			}
 		}
@@ -230,6 +238,8 @@ namespace Can
 								auto& road = m_RoadGuidelines[i];
 								road->isEnabled = false;
 							}
+							m_RoadGuidelinesStart->isEnabled = false;
+							m_RoadGuidelinesEnd->isEnabled = false;
 						}
 						else if (!b_End)
 						{
@@ -240,6 +250,8 @@ namespace Can
 								A[1],
 								(A[2] + B[2] + C[2]) / 3.0f
 							};
+							m_RoadGuidelinesStart->isEnabled = true;
+							m_RoadGuidelinesEnd->isEnabled = true;
 						}
 
 						int vertexCount = terrain->indexCount * (3 + 4 + 3);

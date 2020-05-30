@@ -39,5 +39,7 @@ namespace Can
 
 		std::vector<Road> m_Roads;
 		std::vector<Can::Object*> m_RoadGuidelines;
+		Can::Object* m_RoadGuidelinesStart = nullptr;
+		Can::Object* m_RoadGuidelinesEnd = nullptr;
 	};
 }
