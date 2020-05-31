@@ -83,6 +83,24 @@ namespace Can
 			glm::vec3 I = m_Parent->RayPlaneIntersection(camPos, forward, { 0,0,0 }, { 0,1,0 });
 			if (isnan(I.x) == false)
 			{
+				for (size_t i = 0; i < m_Roads.size(); i++)
+				{
+					Road r = m_Roads[i];
+
+					glm::vec3 A = r.endPoints[0] - r.endPoints[1];
+					float a = glm::length(A);
+					glm::vec3 B = { I.x - r.endPoints[1].x, r.endPoints[1].y, I.z - r.endPoints[1].z };
+					float b = glm::length(B);
+					float d = b * glm::sin(glm::acos(glm::dot(A, B) / (a * b)));
+
+					if (d < 0.1f)
+					{
+						float c = b * glm::cos(glm::acos(glm::dot(A, B) / (a * b)));
+						I = r.endPoints[1] + glm::normalize(A) * c;
+						break;
+					}
+				}
+
 				glm::vec3 AB = {
 					I.x - m_StartCoord.x,
 					m_StartCoord.y,
@@ -99,8 +117,7 @@ namespace Can
 					min = std::min(min, z);
 				}
 				float l = (max - min);
-				int c = 100 * mAB / l + 1;
-
+				float c = 100.0f * mAB / l + 1;
 
 				if (c > m_RoadGuidelines.size())
 				{
@@ -111,12 +128,13 @@ namespace Can
 						m_RoadGuidelines.push_back(road);
 					}
 				}
-
+				float Scale = (c / (int)c);
+				float xzRot = glm::radians(glm::degrees(glm::atan(-AB.z / AB.x)) + 90);
 				for (size_t i = 0; i < c; i++)
 				{
 					auto& road = m_RoadGuidelines[i];
 					road->isEnabled == true;
-					m_Parent->SetTransform(road, glm::vec3{ m_StartCoord.x + glm::normalize(AB).x * i * (l / 100.0f), m_StartCoord.y, m_StartCoord.z + glm::normalize(AB).z * i * (l / 100.0f) }, { 0.01f, 0.01f, 0.01f }, { 0.0f,glm::radians(glm::degrees(glm::atan(-AB.z / AB.x)) + 90),0.0f });
+					m_Parent->SetTransform(road, glm::vec3{ m_StartCoord.x + glm::normalize(AB).x * i * (l / 100.0f), m_StartCoord.y, m_StartCoord.z + glm::normalize(AB).z * i * (l / 100.0f) }, { 0.01f, 0.01f, 0.01f }, { 0.0f, xzRot,0.0f });
 				}
 				for (size_t i = c; i < m_RoadGuidelines.size(); i++)
 				{
@@ -240,6 +258,24 @@ namespace Can
 							}
 							m_RoadGuidelinesStart->isEnabled = false;
 							m_RoadGuidelinesEnd->isEnabled = false;
+
+							for (size_t i = 0; i < m_Roads.size(); i++)
+							{
+								Road r = m_Roads[i];
+
+								glm::vec3 A = r.endPoints[0] - r.endPoints[1];
+								float a = glm::length(A);
+								glm::vec3 B = { m_EndCoord.x - r.endPoints[1].x, r.endPoints[1].y, m_EndCoord.z - r.endPoints[1].z };
+								float b = glm::length(B);
+								float d = b * glm::sin(glm::acos(glm::dot(A, B) / (a * b)));
+
+								if (d < 0.1f)
+								{
+									float c = b * glm::cos(glm::acos(glm::dot(A, B) / (a * b)));
+									m_EndCoord = r.endPoints[1] + glm::normalize(A) * c;
+									break;
+								}
+							}
 						}
 						else if (!b_End)
 						{

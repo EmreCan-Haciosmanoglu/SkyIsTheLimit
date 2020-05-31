@@ -245,9 +245,10 @@ namespace Can
 				min = std::min(min, z);
 			}
 			float l = (max - min);
-			int c = 100 * mAB / l + 1;
+			float c = 100 * mAB / l + 1;
+			float scaleN = c / (int)c;
 
-			road->indexCount = vSize * c + 2 * road_end->indexCount;
+			road->indexCount = vSize * (int)c + 2 * road_end->indexCount;
 			int size = road->indexCount * (3 + 2 + 3);
 			float* m_Vertices = new float[size];
 
@@ -259,7 +260,7 @@ namespace Can
 					int index = i * 8;
 					m_Vertices[offset + index + 0] = vertices[i].x;
 					m_Vertices[offset + index + 1] = vertices[i].y;
-					m_Vertices[offset + index + 2] = vertices[i].z + l * j;
+					m_Vertices[offset + index + 2] = (vertices[i].z + l * j) * scaleN;
 					m_Vertices[offset + index + 3] = uvs[i].x;
 					m_Vertices[offset + index + 4] = uvs[i].y;
 					m_Vertices[offset + index + 5] = normals[i].x;
@@ -267,26 +268,26 @@ namespace Can
 					m_Vertices[offset + index + 7] = normals[i].z;
 				}
 			}
-			int offset = vSize * c * 8;
+			int offset = vSize * (int)c * 8;
 			for (size_t i = 0; i < road_end->indexCount; i++)
 			{
 				int index = i * 8;
 				m_Vertices[offset + index + 0] = road_end->Vertices[index + 0];
 				m_Vertices[offset + index + 1] = road_end->Vertices[index + 1];
-				m_Vertices[offset + index + 2] = road_end->Vertices[index + 2] + (c - 0.5f) * l;
+				m_Vertices[offset + index + 2] = (road_end->Vertices[index + 2] + (c - 0.5f) * l)* scaleN;
 				m_Vertices[offset + index + 3] = road_end->Vertices[index + 3];
 				m_Vertices[offset + index + 4] = road_end->Vertices[index + 4];
 				m_Vertices[offset + index + 5] = road_end->Vertices[index + 5];
 				m_Vertices[offset + index + 6] = road_end->Vertices[index + 6];
 				m_Vertices[offset + index + 7] = road_end->Vertices[index + 7];
 			}
-			offset = vSize * c * 8 + road_end->indexCount * 8;
+			offset = vSize * (int)c * 8 + road_end->indexCount * 8;
 			for (size_t i = 0; i < road_start->indexCount; i++)
 			{
 				int index = i * 8;
 				m_Vertices[offset + index + 0] = road_start->Vertices[index + 0];
 				m_Vertices[offset + index + 1] = road_start->Vertices[index + 1];
-				m_Vertices[offset + index + 2] = road_start->Vertices[index + 2] + (0 - 0.5f) * l;
+				m_Vertices[offset + index + 2] = (road_start->Vertices[index + 2] + (0 - 0.5f) * l)* scaleN;
 				m_Vertices[offset + index + 3] = road_start->Vertices[index + 3];
 				m_Vertices[offset + index + 4] = road_start->Vertices[index + 4];
 				m_Vertices[offset + index + 5] = road_start->Vertices[index + 5];
