@@ -25,8 +25,10 @@ namespace Can
 	private:
 		GameApp* m_Parent;
 		Can::Camera::Controller::Perspective m_MainCameraController;
+
 		bool b_Start = false;
 		bool b_End = false;
+		bool b_Snap = false;
 
 		glm::vec2 m_Start = { -1, -1 };
 		glm::vec2 m_End = { -1, -1 };
@@ -41,5 +43,8 @@ namespace Can
 		std::vector<Can::Object*> m_RoadGuidelines;
 		Can::Object* m_RoadGuidelinesStart = nullptr;
 		Can::Object* m_RoadGuidelinesEnd = nullptr;
+		Can::Object* m_RoadGuidelineTJunction = nullptr;
+		Can::Object* m_RoadGuidelineTJunctionStart = nullptr;
+		Can::Object* m_RoadGuidelineTJunctionEnd = nullptr;
 	};
 }

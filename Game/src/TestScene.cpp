@@ -17,11 +17,16 @@ namespace Can
 	{
 		m_RoadGuidelinesStart = m_Parent->UploadObject("assets/objects/road_start.obj", "assets/shaders/Object.glsl", "assets/objects/road.png");
 		m_RoadGuidelinesEnd = m_Parent->UploadObject("assets/objects/road_end.obj", "assets/shaders/Object.glsl", "assets/objects/road.png");
+		m_RoadGuidelineTJunction = m_Parent->UploadObject("assets/objects/road_t_junction.obj", "assets/shaders/Object.glsl", "assets/objects/road_t_junction.png");
+		m_RoadGuidelineTJunctionStart = m_Parent->UploadObject("assets/objects/road_start.obj", "assets/shaders/Object.glsl", "assets/objects/road.png");
+		m_RoadGuidelineTJunctionEnd = m_Parent->UploadObject("assets/objects/road_end.obj", "assets/shaders/Object.glsl", "assets/objects/road.png");
 		m_RoadGuidelinesStart->isEnabled = false;
 		m_RoadGuidelinesEnd->isEnabled = false;
+		m_RoadGuidelineTJunction->isEnabled = false;
+		m_RoadGuidelineTJunctionStart->isEnabled = false;
+		m_RoadGuidelineTJunctionEnd->isEnabled = false;
 
-		auto road = new Can::Object();
-		road = m_Parent->UploadObject("assets/objects/road.obj", "assets/shaders/Object.glsl", "assets/objects/road.png");
+		auto road = m_Parent->UploadObject("assets/objects/road.obj", "assets/shaders/Object.glsl", "assets/objects/road.png");
 		road->isEnabled = false;
 		m_RoadGuidelines.push_back(road);
 	}
@@ -33,13 +38,19 @@ namespace Can
 		Can::RenderCommand::SetClearColor({ 0.9f, 0.9f, 0.9f, 1.0f });
 		Can::RenderCommand::Clear();
 
+		/*Delete After TJunc finished or moved to the end of the TJunc building code*/
+		for (size_t i = 0; i < m_Roads.size(); i++)
+		{
+			m_Roads[i].m_RoadObject->isEnabled = true;
+		}
+
 		if (b_Start)
 		{
-			for (size_t i = 0; i < m_RoadGuidelines.size(); i++)
-			{
-				auto& road = m_RoadGuidelines[i];
-				road->isEnabled = true;
-			}
+			auto deleteMeInTheEnd = m_Parent->UploadObject("assets/objects/road.obj", "assets/shaders/Object.glsl", "assets/objects/road.png");
+
+			b_Snap = false;
+			m_RoadGuidelinesStart->isEnabled = true;
+			m_RoadGuidelinesEnd->isEnabled = true;
 			auto [mouseX, mouseY] = Can::Input::GetMousePos();
 			Application& app = Application::Get();
 			float w = app.GetWindow().GetWidth();
@@ -78,7 +89,8 @@ namespace Can
 			right = glm::rotate(right, glm::radians(offsetDegrees.x), up);
 			forward = glm::rotate(forward, glm::radians(offsetDegrees.y), right);
 
-
+			m_RoadGuidelineTJunctionStart->isEnabled = false;
+			m_RoadGuidelineTJunctionEnd->isEnabled = false;
 
 			glm::vec3 I = m_Parent->RayPlaneIntersection(camPos, forward, { 0,0,0 }, { 0,1,0 });
 			if (isnan(I.x) == false)
@@ -86,7 +98,7 @@ namespace Can
 				for (size_t i = 0; i < m_Roads.size(); i++)
 				{
 					Road r = m_Roads[i];
-
+					r.m_RoadObject->isEnabled = true;
 					glm::vec3 A = r.endPoints[0] - r.endPoints[1];
 					float a = glm::length(A);
 					glm::vec3 B = { I.x - r.endPoints[1].x, r.endPoints[1].y, I.z - r.endPoints[1].z };
@@ -97,55 +109,156 @@ namespace Can
 					{
 						float c = b * glm::cos(glm::acos(glm::dot(A, B) / (a * b)));
 						I = r.endPoints[1] + glm::normalize(A) * c;
+						b_Snap = true;
+						glm::vec3 V1 = r.endPoints[0] - r.endPoints[1];
+						glm::vec3 V2 = m_StartCoord - r.endPoints[1];
+						V1.y = 0;
+						V2.y = 0;
+						glm::vec3 VResult = glm::cross(V1, V2);
+						bool s1 = VResult.y < 0.0f;
+						bool s2 = A.x < 0;
+						m_Parent->SetTransform(m_RoadGuidelineTJunction, I, { 0.01f, 0.01f ,0.01f }, { 0, glm::radians(glm::degrees(glm::atan(-A.z / A.x)) + 90 + (s1 ? 180 : 0) + (s2 ? 180 : 0)), 0.0f });
+						r.m_RoadObject->isEnabled = false;
+						float iMax = 0.0f;
+						float iMin = 0.0f;
+						for (size_t j = 0; j < deleteMeInTheEnd->indexCount; j++)
+						{
+							float z = deleteMeInTheEnd->Vertices[j * 8 + 2];
+							iMax = std::max(iMax, z);
+							iMin = std::min(iMin, z);
+						}
+						float iL = (iMax - iMin);
+
+						float tMax = 0.0f;
+						float tMin = 0.0f;
+						for (size_t j = 0; j < m_RoadGuidelineTJunction->indexCount; j++)
+						{
+							float z = m_RoadGuidelineTJunction->Vertices[j * 8 + 2];
+							tMax = std::max(tMax, z);
+							tMin = std::min(tMin, z);
+						}
+						float tL = (tMax - tMin);
+
+						m_RoadGuidelinesStart->isEnabled = false;
+						m_RoadGuidelineTJunctionStart->isEnabled = true;
+						m_RoadGuidelineTJunctionEnd->isEnabled = true;
+						m_Parent->SetTransform(m_RoadGuidelineTJunctionStart, r.endPoints[1], { 0.01f, 0.01f ,0.01f }, { 0, glm::radians(glm::degrees(glm::atan(-A.z / A.x)) + 90 + (s2 ? 180 : 0)), 0.0f });
+						m_Parent->SetTransform(m_RoadGuidelineTJunctionEnd, r.endPoints[0], { 0.01f, 0.01f ,0.01f }, { 0, glm::radians(glm::degrees(glm::atan(-A.z / A.x)) + 90 + (s2 ? 180 : 0)), 0.0f });
+
+						glm::vec3 R0I = I - r.endPoints[0];
+						glm::vec3 R1I = I - r.endPoints[1];
+						glm::vec3 DI = I - m_StartCoord;
+
+						float tOffset = (iL / 2.0f + tL / 2.0f);
+
+						float lR0I = glm::length(R0I) - (tOffset / 100.0f);
+						float lR1I = glm::length(R1I) - (tOffset / 100.0f);
+						float lDI = glm::length(DI) - (tOffset / 100.0f);
+
+						int cR0I = lR0I / (iL / 100.f) + 1;
+						int cR1I = lR1I / (iL / 100.f) + 1;
+						int cDI = lDI / (iL / 100.f) + 1;
+
+						float sR0I = (lR0I / (iL / 100.f) + 1) / cR0I;
+						float sR1I = (lR1I / (iL / 100.f) + 1) / cR1I;
+						float sDI = (lDI / (iL / 100.f) + 1) / cDI;
+
+						int sum = cR0I + cR1I + cDI;
+						if (sum > m_RoadGuidelines.size())
+						{
+							for (size_t j = m_RoadGuidelines.size(); j < sum; j++)
+							{
+								auto road = m_Parent->UploadObject("assets/objects/road.obj", "assets/shaders/Object.glsl", "assets/objects/road.png");
+								m_RoadGuidelines.push_back(road);
+							}
+						}
+
+						for (size_t j = 0; j < cR0I; j++)
+						{
+							auto& roadG = m_RoadGuidelines[j];
+							roadG->isEnabled = true;
+							m_Parent->SetTransform(roadG, glm::vec3{ r.endPoints[0].x + glm::normalize(R0I).x * j * sR0I * (iL / 100.0f), r.endPoints[0].y, r.endPoints[0].z + glm::normalize(R0I).z * j * sR0I * (iL / 100.0f) }, { 0.01f, 0.01f, 0.01f }, { 0.0f, glm::radians(glm::degrees(glm::atan(-R0I.z / R0I.x)) + 90), 0.0f });
+						}
+
+						for (size_t j = 0; j < cR1I; j++)
+						{
+							auto& roadG = m_RoadGuidelines[j + cR0I];
+							roadG->isEnabled = true;
+							m_Parent->SetTransform(roadG, glm::vec3{ r.endPoints[1].x + glm::normalize(R1I).x * j * sR1I * (iL / 100.0f), r.endPoints[1].y, r.endPoints[1].z + glm::normalize(R1I).z * j * sR1I * (iL / 100.0f) }, { 0.01f, 0.01f, 0.01f }, { 0.0f, glm::radians(glm::degrees(glm::atan(-R1I.z / R1I.x)) + 90), 0.0f });
+						}
+
+						for (size_t j = 0; j < cDI; j++)
+						{
+							auto& roadG = m_RoadGuidelines[j + cR1I + cR0I];
+							roadG->isEnabled = true;
+							m_Parent->SetTransform(roadG, glm::vec3{ m_StartCoord.x + glm::normalize(DI).x * j * sDI * (iL / 100.0f), m_StartCoord.y, m_StartCoord.z + glm::normalize(DI).z * j * sDI * (iL / 100.0f) }, { 0.01f, 0.01f, 0.01f }, { 0.0f, glm::radians(glm::degrees(glm::atan(-DI.z / DI.x)) + 90), 0.0f });
+						}
+
+						for (size_t j = sum; j < m_RoadGuidelines.size(); j++)
+						{
+							auto& road = m_RoadGuidelines[j];
+							road->isEnabled = false;
+						}
+						/*
+						Guide road
+						3 end point
+						1 junction
+						*/
 						break;
 					}
 				}
+				m_RoadGuidelineTJunction->isEnabled = b_Snap;
 
-				glm::vec3 AB = {
-					I.x - m_StartCoord.x,
-					m_StartCoord.y,
-					I.z - m_StartCoord.z
-				};
-				float mAB = glm::length(AB);
-				float max = 0.0f;
-				float min = 0.0f;
-				Can::Object* first = m_RoadGuidelines.at(0);
-				for (size_t i = 0; i < first->indexCount; i++)
+				if (!b_Snap)
 				{
-					float z = first->Vertices[i * 8 + 2];
-					max = std::max(max, z);
-					min = std::min(min, z);
-				}
-				float l = (max - min);
-				float c = 100.0f * mAB / l + 1;
+					glm::vec3 AB = {
+						I.x - m_StartCoord.x,
+						m_StartCoord.y,
+						I.z - m_StartCoord.z
+					};
 
-				if (c > m_RoadGuidelines.size())
-				{
-					for (size_t i = m_RoadGuidelines.size(); i < c; i++)
+					float mAB = glm::length(AB);
+					float max = 0.0f;
+					float min = 0.0f;
+					Can::Object* first = m_RoadGuidelines.at(0);
+					for (size_t i = 0; i < first->indexCount; i++)
 					{
-						auto road = new Can::Object();
-						road = m_Parent->UploadObject("assets/objects/road.obj", "assets/shaders/Object.glsl", "assets/objects/road.png");
-						m_RoadGuidelines.push_back(road);
+						float z = first->Vertices[i * 8 + 2];
+						max = std::max(max, z);
+						min = std::min(min, z);
 					}
-				}
-				float Scale = (c / (int)c);
-				float xzRot = glm::radians(glm::degrees(glm::atan(-AB.z / AB.x)) + 90);
-				for (size_t i = 0; i < c; i++)
-				{
-					auto& road = m_RoadGuidelines[i];
-					road->isEnabled == true;
-					m_Parent->SetTransform(road, glm::vec3{ m_StartCoord.x + glm::normalize(AB).x * i * (l / 100.0f), m_StartCoord.y, m_StartCoord.z + glm::normalize(AB).z * i * (l / 100.0f) }, { 0.01f, 0.01f, 0.01f }, { 0.0f, xzRot,0.0f });
-				}
-				for (size_t i = c; i < m_RoadGuidelines.size(); i++)
-				{
-					auto& road = m_RoadGuidelines[i];
-					road->isEnabled = false;
-				}
-				int ed = AB.x > 0 ? 180 : 0;
-				m_Parent->SetTransform(m_RoadGuidelinesStart, glm::vec3{ m_StartCoord.x + glm::normalize(AB).x * (c - 0.5f) * (l / 100.0f), m_StartCoord.y, m_StartCoord.z + glm::normalize(AB).z * (c - 0.5f) * (l / 100.0f) }, { 0.01f, 0.01f, 0.01f }, { 0.0f,glm::radians(glm::degrees(glm::atan(-AB.z / AB.x)) + 90 + ed),0.0f });
-				m_Parent->SetTransform(m_RoadGuidelinesEnd, glm::vec3{ m_StartCoord.x + glm::normalize(AB).x * (-0.5f) * (l / 100.0f), m_StartCoord.y, m_StartCoord.z + glm::normalize(AB).z * (-0.5f) * (l / 100.0f) }, { 0.01f, 0.01f, 0.01f }, { 0.0f,glm::radians(glm::degrees(glm::atan(-AB.z / AB.x)) + 90 + ed),0.0f });
+					float l = (max - min);
+					float c = 100.0f * mAB / l + 1;
 
+					if (c > m_RoadGuidelines.size())
+					{
+						for (size_t i = m_RoadGuidelines.size(); i < c; i++)
+						{
+							auto road = m_Parent->UploadObject("assets/objects/road.obj", "assets/shaders/Object.glsl", "assets/objects/road.png");
+							m_RoadGuidelines.push_back(road);
+						}
+					}
+					float Scale = (c / (int)c);
+					float xzRot = glm::radians(glm::degrees(glm::atan(-AB.z / AB.x)) + 90);
+					for (size_t i = 0; i < c; i++)
+					{
+						auto& road = m_RoadGuidelines[i];
+						road->isEnabled = true;
+						m_Parent->SetTransform(road, glm::vec3{ m_StartCoord.x + glm::normalize(AB).x * i * Scale * (l / 100.0f), m_StartCoord.y, m_StartCoord.z + glm::normalize(AB).z * i * Scale * (l / 100.0f) }, { 0.01f, 0.01f, 0.01f }, { 0.0f, xzRot,0.0f });
+					}
+					for (size_t i = c; i < m_RoadGuidelines.size(); i++)
+					{
+						auto& road = m_RoadGuidelines[i];
+						road->isEnabled = false;
+					}
+					int ed = AB.x > 0 ? 180 : 0;
+					m_Parent->SetTransform(m_RoadGuidelinesStart, glm::vec3{ m_StartCoord.x + glm::normalize(AB).x * (c - 0.5f) * (l / 100.0f), m_StartCoord.y, m_StartCoord.z + glm::normalize(AB).z * (c - 0.5f) * (l / 100.0f) }, { 0.01f, 0.01f, 0.01f }, { 0.0f,glm::radians(glm::degrees(glm::atan(-AB.z / AB.x)) + 90 + ed),0.0f });
+					m_Parent->SetTransform(m_RoadGuidelinesEnd, glm::vec3{ m_StartCoord.x + glm::normalize(AB).x * (-0.5f) * (l / 100.0f), m_StartCoord.y, m_StartCoord.z + glm::normalize(AB).z * (-0.5f) * (l / 100.0f) }, { 0.01f, 0.01f, 0.01f }, { 0.0f,glm::radians(glm::degrees(glm::atan(-AB.z / AB.x)) + 90 + ed),0.0f });
+
+				}
 			}
+			Can::Renderer3D::DeleteObject(deleteMeInTheEnd);
+			delete deleteMeInTheEnd;
 		}
 
 		Can::Renderer3D::BeginScene(m_MainCameraController.GetCamera());
@@ -258,6 +371,9 @@ namespace Can
 							}
 							m_RoadGuidelinesStart->isEnabled = false;
 							m_RoadGuidelinesEnd->isEnabled = false;
+							m_RoadGuidelineTJunction->isEnabled = false;
+							m_RoadGuidelineTJunctionStart->isEnabled = false;
+							m_RoadGuidelineTJunctionEnd->isEnabled = false;
 
 							for (size_t i = 0; i < m_Roads.size(); i++)
 							{
@@ -308,6 +424,10 @@ namespace Can
 
 		if (b_End)
 		{
+			if (b_Snap)
+			{
+				// Function for 3 Roads from 1 Road and 1 Junction position and 1 outside point
+			}
 			bool xC = m_Start.x < m_End.x;
 			int xA = xC ? 1 : -1;
 			bool yC = m_Start.y < m_End.y;

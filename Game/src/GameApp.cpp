@@ -252,7 +252,7 @@ namespace Can
 			int size = road->indexCount * (3 + 2 + 3);
 			float* m_Vertices = new float[size];
 
-			for (int j = 0; j < c; j++)
+			for (int j = 0; j < (int)c; j++)
 			{
 				for (int i = 0; i < vSize; i++)
 				{
@@ -274,7 +274,7 @@ namespace Can
 				int index = i * 8;
 				m_Vertices[offset + index + 0] = road_end->Vertices[index + 0];
 				m_Vertices[offset + index + 1] = road_end->Vertices[index + 1];
-				m_Vertices[offset + index + 2] = (road_end->Vertices[index + 2] + (c - 0.5f) * l)* scaleN;
+				m_Vertices[offset + index + 2] = road_end->Vertices[index + 2] + (((int)c - 0.5f) * l)* scaleN;
 				m_Vertices[offset + index + 3] = road_end->Vertices[index + 3];
 				m_Vertices[offset + index + 4] = road_end->Vertices[index + 4];
 				m_Vertices[offset + index + 5] = road_end->Vertices[index + 5];
@@ -287,7 +287,7 @@ namespace Can
 				int index = i * 8;
 				m_Vertices[offset + index + 0] = road_start->Vertices[index + 0];
 				m_Vertices[offset + index + 1] = road_start->Vertices[index + 1];
-				m_Vertices[offset + index + 2] = (road_start->Vertices[index + 2] + (0 - 0.5f) * l)* scaleN;
+				m_Vertices[offset + index + 2] = road_start->Vertices[index + 2] + ((0 - 0.5f) * l)* scaleN;
 				m_Vertices[offset + index + 3] = road_start->Vertices[index + 3];
 				m_Vertices[offset + index + 4] = road_start->Vertices[index + 4];
 				m_Vertices[offset + index + 5] = road_start->Vertices[index + 5];
