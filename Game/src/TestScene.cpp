@@ -20,8 +20,6 @@ namespace Can
 		m_RoadGuidelineTJunction = m_Parent->UploadObject("assets/objects/road_t_junction.obj", "assets/shaders/Object.glsl", "assets/objects/road_t_junction.png");
 		m_RoadGuidelineTJunctionStart = m_Parent->UploadObject("assets/objects/road_start.obj", "assets/shaders/Object.glsl", "assets/objects/road.png");
 		m_RoadGuidelineTJunctionEnd = m_Parent->UploadObject("assets/objects/road_end.obj", "assets/shaders/Object.glsl", "assets/objects/road.png");
-		m_RoadGuidelinesStart->isEnabled = false;
-		m_RoadGuidelinesEnd->isEnabled = false;
 		m_RoadGuidelineTJunction->isEnabled = false;
 		m_RoadGuidelineTJunctionStart->isEnabled = false;
 		m_RoadGuidelineTJunctionEnd->isEnabled = false;
@@ -43,56 +41,62 @@ namespace Can
 		{
 			m_Roads[i].m_RoadObject->isEnabled = true;
 		}
+		m_RoadGuidelinesStart->isEnabled = true;
+		m_RoadGuidelinesEnd->isEnabled = true;
+		b_Snap = false;
+		auto [mouseX, mouseY] = Can::Input::GetMousePos();
+		Application& app = Application::Get();
+		float w = app.GetWindow().GetWidth();
+		float h = app.GetWindow().GetHeight();
 
-		if (b_Start)
+		auto camera = m_MainCameraController.GetCamera();
+		glm::vec3 camPos = camera.GetPosition();
+		glm::vec3 camRot = camera.GetRotation();
+
+		float fovyX = m_MainCameraController.GetFOV();
+		float xoffSet = glm::degrees(glm::atan(glm::tan(glm::radians(fovyX)) * (((w / 2.0f) - mouseX) / (w / 2.0f))));
+		float yoffSet = glm::degrees(glm::atan(((h - 2.0f * mouseY) * glm::sin(glm::radians(xoffSet))) / (w - 2.0f * mouseX)));
+
+		glm::vec2 offsetDegrees = {
+			xoffSet,
+			yoffSet
+		};
+
+		glm::vec3 forward = {
+			-glm::sin(glm::radians(camRot.y)) * glm::cos(glm::radians(camRot.x)),
+			glm::sin(glm::radians(camRot.x)),
+			-glm::cos(glm::radians(camRot.x)) * glm::cos(glm::radians(camRot.y))
+		};
+		glm::vec3 up = {
+			glm::sin(glm::radians(camRot.x)) * glm::sin(glm::radians(camRot.y)),
+			glm::cos(glm::radians(camRot.x)),
+			glm::sin(glm::radians(camRot.x)) * glm::cos(glm::radians(camRot.y))
+		};
+		glm::vec3 right = {
+			-glm::sin(glm::radians(camRot.y - 90.0f)),
+			0,
+			-glm::cos(glm::radians(camRot.y - 90.0f))
+		};
+
+		forward = glm::rotate(forward, glm::radians(offsetDegrees.x), up);
+		right = glm::rotate(right, glm::radians(offsetDegrees.x), up);
+		forward = glm::rotate(forward, glm::radians(offsetDegrees.y), right);
+
+		glm::vec3 I = m_Parent->RayPlaneIntersection(camPos, forward, { 0,0,0 }, { 0,1,0 });
+		if (!b_Start)
+		{
+			if (isnan(I.x) == false)
+			{
+				m_Parent->SetTransform(m_RoadGuidelinesStart, I + glm::vec3{0.0f, 0.02f, 0.0f}, { 0.01f, 0.01f, 0.01f });
+				m_Parent->SetTransform(m_RoadGuidelinesEnd, I + glm::vec3{ 0.0f, 0.02f, 0.0f }, { 0.01f, 0.01f, 0.01f });
+
+			}
+		}
+		else
 		{
 			auto deleteMeInTheEnd = m_Parent->UploadObject("assets/objects/road.obj", "assets/shaders/Object.glsl", "assets/objects/road.png");
 
-			b_Snap = false;
-			m_RoadGuidelinesStart->isEnabled = true;
-			m_RoadGuidelinesEnd->isEnabled = true;
-			auto [mouseX, mouseY] = Can::Input::GetMousePos();
-			Application& app = Application::Get();
-			float w = app.GetWindow().GetWidth();
-			float h = app.GetWindow().GetHeight();
-
-			auto camera = m_MainCameraController.GetCamera();
-			glm::vec3 camPos = camera.GetPosition();
-			glm::vec3 camRot = camera.GetRotation();
-
-			float fovyX = m_MainCameraController.GetFOV();
-			float xoffSet = glm::degrees(glm::atan(glm::tan(glm::radians(fovyX)) * (((w / 2.0f) - mouseX) / (w / 2.0f))));
-			float yoffSet = glm::degrees(glm::atan(((h - 2.0f * mouseY) * glm::sin(glm::radians(xoffSet))) / (w - 2.0f * mouseX)));
-
-			glm::vec2 offsetDegrees = {
-				xoffSet,
-				yoffSet
-			};
-
-			glm::vec3 forward = {
-				-glm::sin(glm::radians(camRot.y)) * glm::cos(glm::radians(camRot.x)),
-				glm::sin(glm::radians(camRot.x)),
-				-glm::cos(glm::radians(camRot.x)) * glm::cos(glm::radians(camRot.y))
-			};
-			glm::vec3 up = {
-				glm::sin(glm::radians(camRot.x)) * glm::sin(glm::radians(camRot.y)),
-				glm::cos(glm::radians(camRot.x)),
-				glm::sin(glm::radians(camRot.x)) * glm::cos(glm::radians(camRot.y))
-			};
-			glm::vec3 right = {
-				-glm::sin(glm::radians(camRot.y - 90.0f)),
-				0,
-				-glm::cos(glm::radians(camRot.y - 90.0f))
-			};
-
-			forward = glm::rotate(forward, glm::radians(offsetDegrees.x), up);
-			right = glm::rotate(right, glm::radians(offsetDegrees.x), up);
-			forward = glm::rotate(forward, glm::radians(offsetDegrees.y), right);
-
-			m_RoadGuidelineTJunctionStart->isEnabled = false;
-			m_RoadGuidelineTJunctionEnd->isEnabled = false;
-
-			glm::vec3 I = m_Parent->RayPlaneIntersection(camPos, forward, { 0,0,0 }, { 0,1,0 });
+			
 			if (isnan(I.x) == false)
 			{
 				for (size_t i = 0; i < m_Roads.size(); i++)
@@ -151,17 +155,21 @@ namespace Can
 
 						float tOffset = (iL / 2.0f + tL / 2.0f);
 
-						float lR0I = glm::length(R0I) - (tOffset / 100.0f);
-						float lR1I = glm::length(R1I) - (tOffset / 100.0f);
-						float lDI = glm::length(DI) - (tOffset / 100.0f);
+						float lR0I = (glm::length(R0I) - (tOffset / 100.0f)) / (iL / 100.f);
+						float lR1I = (glm::length(R1I) - (tOffset / 100.0f)) / (iL / 100.f);
+						float lDI = (glm::length(DI) - (tOffset / 100.0f)) / (iL / 100.f);
 
-						int cR0I = lR0I / (iL / 100.f) + 1;
-						int cR1I = lR1I / (iL / 100.f) + 1;
-						int cDI = lDI / (iL / 100.f) + 1;
+						lR0I = std::max(lR0I, -1.0f);
+						lR1I = std::max(lR1I, -1.0f);
+						lDI = std::max(lDI, -1.0f);
 
-						float sR0I = (lR0I / (iL / 100.f) + 1) / cR0I;
-						float sR1I = (lR1I / (iL / 100.f) + 1) / cR1I;
-						float sDI = (lDI / (iL / 100.f) + 1) / cDI;
+						int cR0I = lR0I  + 1;
+						int cR1I = lR1I + 1;
+						int cDI = lDI + 1;
+
+						float sR0I = (lR0I + 1) / cR0I;
+						float sR1I = (lR1I + 1) / cR1I;
+						float sDI = (lDI + 1) / cDI;
 
 						int sum = cR0I + cR1I + cDI;
 						if (sum > m_RoadGuidelines.size())
@@ -369,8 +377,6 @@ namespace Can
 								auto& road = m_RoadGuidelines[i];
 								road->isEnabled = false;
 							}
-							m_RoadGuidelinesStart->isEnabled = false;
-							m_RoadGuidelinesEnd->isEnabled = false;
 							m_RoadGuidelineTJunction->isEnabled = false;
 							m_RoadGuidelineTJunctionStart->isEnabled = false;
 							m_RoadGuidelineTJunctionEnd->isEnabled = false;
@@ -402,8 +408,6 @@ namespace Can
 								A[1],
 								(A[2] + B[2] + C[2]) / 3.0f
 							};
-							m_RoadGuidelinesStart->isEnabled = true;
-							m_RoadGuidelinesEnd->isEnabled = true;
 						}
 
 						int vertexCount = terrain->indexCount * (3 + 4 + 3);
