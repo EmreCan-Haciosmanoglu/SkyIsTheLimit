@@ -3,6 +3,8 @@
 #include "../stb/stb_image.h"
 #include "Can/EntryPoint.h"
 
+#include <glm/gtx/vector_angle.hpp> 
+
 Can::Application* Can::CreateApplication()
 {
 	return new GameApp();
@@ -12,11 +14,10 @@ namespace Can
 {
 	GameApp::GameApp()
 		: testScene(new TestScene(this))
-		, m_TestObject(nullptr)
 		, m_Terrain(new Can::Object())
 	{
-		m_TestObject = UploadObject("assets/objects/padlock.obj", "assets/shaders/Object.glsl", "assets/objects/padlock.png");
-		m_Terrain = UploadTerrain("assets/objects/heightmap_smallest.png");
+		//m_Terrain = UploadTerrain("assets/objects/heightmap_smallest.png");
+		m_Terrain = UploadTerrain("assets/objects/flat_land.png");
 		PushLayer(testScene);
 	}
 
@@ -110,7 +111,7 @@ namespace Can
 		object->position = pos;
 		object->scale = scale;
 		object->rotation = rotation;
-		object->transform = glm::translate(glm::mat4(1.0f), object->position) * glm::scale(glm::mat4(1.0f), object->scale) * glm::rotate(glm::mat4(1.0f), object->rotation.y, { 0,1,0 });
+		object->transform = glm::translate(glm::mat4(1.0f), object->position) * glm::rotate(glm::mat4(1.0f), object->rotation.y, { 0,1,0 }) * glm::scale(glm::mat4(1.0f), object->scale);
 
 	}
 
@@ -124,6 +125,36 @@ namespace Can
 		glm::vec3 w = C - X;
 		float k = glm::dot(w, n) / glm::dot(v, n);
 		return X + k * v;
+	}
+
+
+	glm::vec2 GameApp::LineSLineSIntersection(glm::vec2 p0, glm::vec2 p1, glm::vec2 p2, glm::vec2 p3)
+	{
+		float s_numer, t_numer, denom, t;
+		glm::vec2 s10 = p1 - p0;
+		glm::vec2 s32 = p3 - p2;
+
+		denom = s10.x * s32.y - s32.x * s10.y;
+		if (denom == 0)
+			return glm::vec2{ 0,0 }; // Collinear
+		bool denomPositive = denom > 0;
+
+		glm::vec2 s02 = p0 - p2;
+
+		s_numer = s10.x * s02.y - s10.y * s02.x;
+		if ((s_numer < 0) == denomPositive)
+			return glm::vec2{ 0,0 }; // No collision
+
+		t_numer = s32.x * s02.y - s32.y * s02.x;
+		if ((t_numer < 0) == denomPositive)
+			return glm::vec2{ 0,0 }; // No collision
+
+		if (((s_numer > denom) == denomPositive) || ((t_numer > denom) == denomPositive))
+			return glm::vec2{ 0,0 }; // No collision
+		// Collision detected
+		t = t_numer / denom;
+
+		return p0 + (t * s10);
 	}
 
 	bool GameApp::RayTriangleIntersection(
@@ -215,127 +246,688 @@ namespace Can
 		}
 	}
 
-	Can::Object* GameApp::GenerateStraightRoad(const char* objectPath, const std::string& shaderPath, const std::string& texturePath, const glm::vec3& startCoord, const glm::vec3& endCoord)
+	void GameApp::LevelTheTerrain(const glm::vec2& startIndex, const glm::vec2& endIndex, const glm::vec3& startCoord, const glm::vec3& endCoord, Can::Object* terrain, float width)
 	{
-		Can::Object* road = new Can::Object();
-		Can::Object* road_end = UploadObject("assets/objects/road_end.obj", "assets/shaders/Object.glsl", "assets/objects/road.png");
-		Can::Object* road_start = UploadObject("assets/objects/road_start.obj", "assets/shaders/Object.glsl", "assets/objects/road.png");
+		glm::vec2 AB = {
+			endCoord.x - startCoord.x ,
+			endCoord.z - startCoord.z
+		};
+		float mAB = glm::length(AB);
+		glm::vec3 SE = endCoord - startCoord;
 
-		std::vector< glm::vec3 > vertices;
-		std::vector< glm::vec2 > uvs;
-		std::vector< glm::vec3 > normals;
-		bool res = loadOBJ(objectPath, vertices, uvs, normals);
-		if (res)
+		float* data = terrain->Vertices;
+
+		bool xC = startIndex.x < endIndex.x + 1;
+		int xA = xC ? 1 : -1;
+		bool yC = startIndex.y < endIndex.y + 1;
+		int yA = yC ? 1 : -1;
+		size_t yMin = startIndex.y - 2 * yA;
+		size_t yMax = endIndex.y + 2 * yA;
+		size_t xMin = startIndex.x - 2 * xA;
+		size_t xMax = endIndex.x + 2 * xA;
+		for (size_t y = yMin; (y < yMax) == yC; y += yA)
 		{
-			road->VA = Can::VertexArray::Create();
-			int vSize = vertices.size();
-
-			//try to use existing ones
-			glm::vec2 AB = {
-				endCoord.x - startCoord.x,
-				endCoord.z - startCoord.z
-			};
-			float mAB = glm::length(AB);
-			float max = 0.0f;
-			float min = 0.0f;
-			for (size_t i = 0; i < vSize; i++)
+			for (size_t x = xMin; (x < xMax) == xC; x += xA)
 			{
-				float z = vertices[i].z;
-				max = std::max(max, z);
-				min = std::min(min, z);
-			}
-			float l = (max - min);
-			float c = 100 * mAB / l + 1;
-			float scaleN = c / (int)c;
+				if (x < 0 || y < 0 || x >= terrain->w - 1 || y >= terrain->h - 1)
+					continue;
+				int dist1 = (x + (terrain->w - 1) * y) * 60;
+				int dist2 = (x + (terrain->w - 1) * (y - 1)) * 60;
+				glm::vec2 AP = {
+					data[dist1] - startCoord.x,
+					data[dist1 + 2] - startCoord.z
+				};
+				float mAP = glm::length(AP);
+				float angle = glm::acos(glm::dot(AB, AP) / (mAP * mAB));
+				float d = mAB * glm::sin(angle);
 
-			road->indexCount = vSize * (int)c + 2 * road_end->indexCount;
-			int size = road->indexCount * (3 + 2 + 3);
-			float* m_Vertices = new float[size];
-
-			for (int j = 0; j < (int)c; j++)
-			{
-				for (int i = 0; i < vSize; i++)
+				if (d < width)
 				{
-					int offset = j * vSize * 8;
-					int index = i * 8;
-					m_Vertices[offset + index + 0] = vertices[i].x;
-					m_Vertices[offset + index + 1] = vertices[i].y;
-					m_Vertices[offset + index + 2] = (vertices[i].z + l * j) * scaleN;
-					m_Vertices[offset + index + 3] = uvs[i].x;
-					m_Vertices[offset + index + 4] = uvs[i].y;
-					m_Vertices[offset + index + 5] = normals[i].x;
-					m_Vertices[offset + index + 6] = normals[i].y;
-					m_Vertices[offset + index + 7] = normals[i].z;
+					float c = mAB * glm::cos(angle);
+					float yOffset = SE.y * (c * mAB);
+					float yCoord = startCoord.y + yOffset;
+					if (dist2 - 60 >= 0)
+					{
+						data[dist2 - 39] = yCoord;
+						data[dist2 - 19] = yCoord;
+						data[dist2 + 51] = yCoord;
+					}
+					data[dist1 - 49] = yCoord;
+					data[dist1 + 1] = yCoord;
+					data[dist1 + 31] = yCoord;
 				}
 			}
-			int offset = vSize * (int)c * 8;
-			for (size_t i = 0; i < road_end->indexCount; i++)
-			{
-				int index = i * 8;
-				m_Vertices[offset + index + 0] = road_end->Vertices[index + 0];
-				m_Vertices[offset + index + 1] = road_end->Vertices[index + 1];
-				m_Vertices[offset + index + 2] = road_end->Vertices[index + 2] + (((int)c - 0.5f) * l)* scaleN;
-				m_Vertices[offset + index + 3] = road_end->Vertices[index + 3];
-				m_Vertices[offset + index + 4] = road_end->Vertices[index + 4];
-				m_Vertices[offset + index + 5] = road_end->Vertices[index + 5];
-				m_Vertices[offset + index + 6] = road_end->Vertices[index + 6];
-				m_Vertices[offset + index + 7] = road_end->Vertices[index + 7];
-			}
-			offset = vSize * (int)c * 8 + road_end->indexCount * 8;
-			for (size_t i = 0; i < road_start->indexCount; i++)
-			{
-				int index = i * 8;
-				m_Vertices[offset + index + 0] = road_start->Vertices[index + 0];
-				m_Vertices[offset + index + 1] = road_start->Vertices[index + 1];
-				m_Vertices[offset + index + 2] = road_start->Vertices[index + 2] + ((0 - 0.5f) * l)* scaleN;
-				m_Vertices[offset + index + 3] = road_start->Vertices[index + 3];
-				m_Vertices[offset + index + 4] = road_start->Vertices[index + 4];
-				m_Vertices[offset + index + 5] = road_start->Vertices[index + 5];
-				m_Vertices[offset + index + 6] = road_start->Vertices[index + 6];
-				m_Vertices[offset + index + 7] = road_start->Vertices[index + 7];
-			}
-
-			road->Vertices = m_Vertices;
-			road->VB = Can::VertexBuffer::Create(m_Vertices, sizeof(float) * size, true);
-			road->VB->SetLayout({
-			   { Can::ShaderDataType::Float3, "a_Position"},
-			   { Can::ShaderDataType::Float2, "a_UV"},
-			   { Can::ShaderDataType::Float3, "a_Normal"}
-				});
-
-			road->VA->AddVertexBuffer(road->VB);
-
-			uint32_t* m_Indices = new uint32_t[road->indexCount];
-
-			for (int i = 0; i < road->indexCount; i++)
-			{
-				m_Indices[i] = i;
-			}
-
-			road->Indices = m_Indices;
-			road->IB = Can::IndexBuffer::Create(m_Indices, road->indexCount);
-			road->VA->SetIndexBuffer(road->IB);
-
-			road->T = Can::Texture2D::Create(texturePath);
-			road->S = Can::Shader::Create(shaderPath);
-
-			road->S->Bind();
-			road->S->SetInt("u_Texture", 0);
-			road->S->SetFloat3("u_LightPos", { 1.0f, 1.0f, -1.0f });
-
-			int ed = AB.x <= 0 ? 180 : 0;
-
-			SetTransform(road, { startCoord.x,endCoord.y,startCoord.z }, { 0.01f, 0.01f, 0.01f }, { 0.0f,glm::radians(glm::degrees(glm::atan(-AB.y / AB.x)) + 90 + ed),0.0f });
-			Can::Renderer3D::AddObject(road);
-
-			Can::Renderer3D::DeleteObject(road_end);
-			Can::Renderer3D::DeleteObject(road_start);
-			delete road_end;
-			delete road_start;
-
-			return road;
 		}
-		return nullptr;
+
+		int vertexCount = terrain->indexCount * (3 + 4 + 3);
+		terrain->VB->Bind();
+		terrain->VB->ReDo(terrain->Vertices, sizeof(float) * vertexCount);
+		terrain->VB->Unbind();
+	}
+
+	void GameApp::GenerateTJunction(Can::Object* roadP, Can::Object* endP, Can::Object* junctionP, int snappedRoadIndex, const glm::vec3& startCoord, const glm::vec3& junctionCoord, const std::string& shaderPath, const std::string& texturePath, std::vector<Road*>& roads)
+	{
+		glm::vec2 unitX = { 1.0f, 0.0f };
+		Road* road = roads.at(snappedRoadIndex);
+
+		// Find the length and width of a single road
+		float maxRx = 0.0f;
+		float minRx = 0.0f;
+		float maxRz = 0.0f;
+		float minRz = 0.0f;
+		int RVSize = roadP->indexCount;
+		float* roadVerticies = roadP->Vertices;
+		for (size_t i = 0; i < RVSize; i++)
+		{
+			float x = roadVerticies[i * 8];
+			float z = roadVerticies[i * 8 + 2];
+			maxRx = std::max(maxRx, x);
+			minRx = std::min(minRx, x);
+			maxRz = std::max(maxRz, z);
+			minRz = std::min(minRz, z);
+		}
+		float lengthRoad = maxRz - minRz;
+		float widthRoad = maxRx - minRx;
+
+		// Find the length of the crosswalk of the T junction
+		float maxTJ = 0.0f;
+		float maxDiagonal = 0.0f;
+		int TJVSize = junctionP->indexCount;
+		float* TJVerticies = junctionP->Vertices;
+		for (size_t i = 0; i < TJVSize; i++)
+		{
+			float x = TJVerticies[i * 8];
+			float z = TJVerticies[i * 8 + 2];
+			maxTJ = std::max(maxTJ, z);
+			if (x == z)
+				maxDiagonal = std::max(maxDiagonal, x);
+		}
+		float lengthCrossWalk = maxTJ - maxDiagonal;
+
+		glm::vec2 A = {
+			road->startPos.x,
+			road->startPos.z
+		};
+		glm::vec2 B = {
+			road->endPos.x,
+			road->endPos.z
+		};
+		glm::vec2 AB = B - A;
+
+		glm::vec2 C{
+			startCoord.x,
+			startCoord.z
+		};
+		glm::vec2 D{
+			junctionCoord.x,
+			junctionCoord.z
+		};
+		glm::vec2 CD = D - C;
+
+		int edA = AB.x <= 0 ? 180.0f : 0.0f;
+		int edB = AB.x <= 0 ? 180.0f : 0.0f;
+		int edC = CD.x <= 0 ? 180.0f : 0.0f;
+
+		float angleAB = glm::degrees(glm::atan(-AB.y / AB.x)) + 90.0f + edA;
+		float angleCD = glm::degrees(glm::atan(-CD.y / CD.x)) + 90.0f + edC;
+
+		//float angleAB = AB.y < 0 ? glm::degrees(glm::angle(-AB, unitX)) + 180.0f : glm::degrees(glm::angle(AB, unitX));
+		//float angleCD = CD.y < 0 ? glm::degrees(glm::angle(-CD, unitX)) + 180.0f : glm::degrees(glm::angle(CD, unitX));
+
+		float diff = std::fmod(angleCD - angleAB + 180.0f, 180.0f);
+
+		float rotateAmount = diff < 180.0f ? glm::radians(90.0f) : glm::radians(-90.0f);
+		glm::vec2 shiftABAmount = glm::normalize(glm::rotate(AB, rotateAmount)) * (widthRoad / 100.0f) / 2.0f;
+		glm::vec2 Ap = A + shiftABAmount;
+		glm::vec2 Bp = B + shiftABAmount;
+
+		glm::vec2 shiftCDAmount = glm::normalize(glm::rotate(CD, glm::radians(-90.0f))) * (widthRoad / 100.0f) / 2.0f;
+		glm::vec2 Cp = C + shiftCDAmount;
+		glm::vec2 Cn = C - shiftCDAmount;
+		glm::vec2 Dp = D + shiftCDAmount;
+		glm::vec2 Dn = D - shiftCDAmount;
+
+		glm::vec2 I = LineSLineSIntersection(Ap, Bp, C, D);
+		glm::vec2 Ip = LineSLineSIntersection(Ap, Bp, Cp, Dp);
+		glm::vec2 In = LineSLineSIntersection(Ap, Bp, Cn, Dn);
+
+		glm::vec2 Center = A + (I - Ap);
+
+		float lengthAAd = glm::length((Center - A) - (I - Ip)) - (lengthCrossWalk / 100.0f);
+		float lengthBBd = glm::length((Center - B) - (I - In)) - (lengthCrossWalk / 100.0f);
+		float lengthCCd = glm::length((D - C) - (Dp - Ip)) - (lengthCrossWalk / 100.0f);
+
+
+		int countAAd = lengthAAd / (lengthRoad / 100.0f);
+		int countBBd = lengthBBd / (lengthRoad / 100.0f);
+		int countCCd = lengthCCd / (lengthRoad / 100.0f);
+
+		float scaleAAd = (lengthAAd / (lengthRoad / 100.0f)) / countAAd;
+		float scaleBBd = (lengthBBd / (lengthRoad / 100.0f)) / countBBd;
+		float scaleCCd = (lengthCCd / (lengthRoad / 100.0f)) / countCCd;
+
+		Can::Object* roadAAd = new Can::Object();
+		Can::Object* roadBBd = new Can::Object();
+		Can::Object* roadCCd = new Can::Object();
+
+		roadAAd->VA = Can::VertexArray::Create();
+		roadBBd->VA = Can::VertexArray::Create();
+		roadCCd->VA = Can::VertexArray::Create();
+
+		int roadIndexCount = roadP->indexCount;
+
+		roadAAd->indexCount = roadIndexCount * countAAd;
+		roadBBd->indexCount = roadIndexCount * countBBd;
+		roadCCd->indexCount = roadIndexCount * countCCd;
+
+		float* AAdVertices = new float[roadAAd->indexCount * (3 + 2 + 3)];
+		float* BBdVertices = new float[roadBBd->indexCount * (3 + 2 + 3)];
+		float* CCdVertices = new float[roadCCd->indexCount * (3 + 2 + 3)];
+
+		float* roadPVerticies = roadP->Vertices;
+		for (int j = 0; j < countAAd; j++)
+		{
+			for (int i = 0; i < roadIndexCount; i++)
+			{
+				int offset = j * roadIndexCount * 8;
+				int index = i * 8;
+				AAdVertices[offset + index + 0] = roadPVerticies[index + 0];
+				AAdVertices[offset + index + 1] = roadPVerticies[index + 1];
+				AAdVertices[offset + index + 2] = (roadPVerticies[index + 2] + lengthRoad * (j + 0.5f)) * scaleAAd;
+				AAdVertices[offset + index + 3] = roadPVerticies[index + 3];
+				AAdVertices[offset + index + 4] = roadPVerticies[index + 4];
+				AAdVertices[offset + index + 5] = roadPVerticies[index + 5];
+				AAdVertices[offset + index + 6] = roadPVerticies[index + 6];
+				AAdVertices[offset + index + 7] = roadPVerticies[index + 7];
+			}
+		}
+		for (int j = 0; j < countBBd; j++)
+		{
+			for (int i = 0; i < roadIndexCount; i++)
+			{
+				int offset = j * roadIndexCount * 8;
+				int index = i * 8;
+				BBdVertices[offset + index + 0] = roadPVerticies[index + 0];
+				BBdVertices[offset + index + 1] = roadPVerticies[index + 1];
+				BBdVertices[offset + index + 2] = (roadPVerticies[index + 2] + lengthRoad * (j + 0.5f)) * scaleBBd;
+				BBdVertices[offset + index + 3] = roadPVerticies[index + 3];
+				BBdVertices[offset + index + 4] = roadPVerticies[index + 4];
+				BBdVertices[offset + index + 5] = roadPVerticies[index + 5];
+				BBdVertices[offset + index + 6] = roadPVerticies[index + 6];
+				BBdVertices[offset + index + 7] = roadPVerticies[index + 7];
+			}
+		}
+		for (int j = 0; j < countCCd; j++)
+		{
+			for (int i = 0; i < roadIndexCount; i++)
+			{
+				int offset = j * roadIndexCount * 8;
+				int index = i * 8;
+				CCdVertices[offset + index + 0] = roadPVerticies[index + 0];
+				CCdVertices[offset + index + 1] = roadPVerticies[index + 1];
+				CCdVertices[offset + index + 2] = (roadPVerticies[index + 2] + lengthRoad * (j + 0.5f)) * scaleCCd;
+				CCdVertices[offset + index + 3] = roadPVerticies[index + 3];
+				CCdVertices[offset + index + 4] = roadPVerticies[index + 4];
+				CCdVertices[offset + index + 5] = roadPVerticies[index + 5];
+				CCdVertices[offset + index + 6] = roadPVerticies[index + 6];
+				CCdVertices[offset + index + 7] = roadPVerticies[index + 7];
+			}
+		}
+
+		roadAAd->Vertices = AAdVertices;
+		roadBBd->Vertices = BBdVertices;
+		roadCCd->Vertices = CCdVertices;
+
+		roadAAd->VB = Can::VertexBuffer::Create(roadAAd->Vertices, sizeof(float) * roadAAd->indexCount * (3 + 2 + 3), true);
+		roadBBd->VB = Can::VertexBuffer::Create(roadBBd->Vertices, sizeof(float) * roadBBd->indexCount * (3 + 2 + 3), true);
+		roadCCd->VB = Can::VertexBuffer::Create(roadCCd->Vertices, sizeof(float) * roadCCd->indexCount * (3 + 2 + 3), true);
+
+		roadBBd->VB->SetLayout({
+		   { Can::ShaderDataType::Float3, "a_Position"},
+		   { Can::ShaderDataType::Float2, "a_UV"},
+		   { Can::ShaderDataType::Float3, "a_Normal"}
+			});
+		roadAAd->VB->SetLayout({
+		   { Can::ShaderDataType::Float3, "a_Position"},
+		   { Can::ShaderDataType::Float2, "a_UV"},
+		   { Can::ShaderDataType::Float3, "a_Normal"}
+			});
+		roadCCd->VB->SetLayout({
+		   { Can::ShaderDataType::Float3, "a_Position"},
+		   { Can::ShaderDataType::Float2, "a_UV"},
+		   { Can::ShaderDataType::Float3, "a_Normal"}
+			});
+
+		roadAAd->VA->AddVertexBuffer(roadAAd->VB);
+		roadBBd->VA->AddVertexBuffer(roadBBd->VB);
+		roadCCd->VA->AddVertexBuffer(roadCCd->VB);
+
+		uint32_t* AAdIndices = new uint32_t[roadAAd->indexCount];
+		uint32_t* BBdIndices = new uint32_t[roadBBd->indexCount];
+		uint32_t* CCdIndices = new uint32_t[roadCCd->indexCount];
+
+		for (int i = 0; i < roadAAd->indexCount; i++) AAdIndices[i] = i;
+		for (int i = 0; i < roadBBd->indexCount; i++) BBdIndices[i] = i;
+		for (int i = 0; i < roadCCd->indexCount; i++) CCdIndices[i] = i;
+
+		roadAAd->Indices = AAdIndices;
+		roadBBd->Indices = BBdIndices;
+		roadCCd->Indices = CCdIndices;
+
+		roadAAd->IB = Can::IndexBuffer::Create(AAdIndices, roadAAd->indexCount);
+		roadBBd->IB = Can::IndexBuffer::Create(BBdIndices, roadBBd->indexCount);
+		roadCCd->IB = Can::IndexBuffer::Create(CCdIndices, roadCCd->indexCount);
+
+		roadAAd->VA->SetIndexBuffer(roadAAd->IB);
+		roadBBd->VA->SetIndexBuffer(roadBBd->IB);
+		roadCCd->VA->SetIndexBuffer(roadCCd->IB);
+
+		roadAAd->T = Can::Texture2D::Create(texturePath);
+		roadBBd->T = Can::Texture2D::Create(texturePath);
+		roadCCd->T = Can::Texture2D::Create(texturePath);
+
+		roadAAd->S = Can::Shader::Create(shaderPath);
+		roadBBd->S = Can::Shader::Create(shaderPath);
+		roadCCd->S = Can::Shader::Create(shaderPath);
+
+		roadAAd->S->Bind();
+		roadAAd->S->SetInt("u_Texture", 0);
+		roadAAd->S->SetFloat3("u_LightPos", { 1.0f, 1.0f, -1.0f });
+
+		roadBBd->S->Bind();
+		roadBBd->S->SetInt("u_Texture", 0);
+		roadBBd->S->SetFloat3("u_LightPos", { 1.0f, 1.0f, -1.0f });
+
+		roadCCd->S->Bind();
+		roadCCd->S->SetInt("u_Texture", 0);
+		roadCCd->S->SetFloat3("u_LightPos", { 1.0f, 1.0f, -1.0f });
+
+		float rotateAAdAmount = glm::radians(angleAB);
+		float rotateBBdAmount = glm::radians(angleAB + 180.0f);
+		float rotateCCdAmount = glm::radians(angleCD);
+
+		SetTransform(roadAAd, { A.x, startCoord.y, A.y }, { 0.01f, 0.01f, 0.01f }, { 0.0f, rotateAAdAmount, 0.0f });
+		SetTransform(roadBBd, { B.x, startCoord.y, B.y }, { 0.01f, 0.01f, 0.01f }, { 0.0f, rotateBBdAmount, 0.0f });
+		SetTransform(roadCCd, { C.x, startCoord.y, C.y }, { 0.01f, 0.01f, 0.01f }, { 0.0f, rotateCCdAmount, 0.0f });
+
+		Can::Renderer3D::AddObject(roadAAd);
+		Can::Renderer3D::AddObject(roadBBd);
+		Can::Renderer3D::AddObject(roadCCd);
+
+
+		Can::Renderer3D::DeleteObject(road->object);
+		roads.erase(roads.begin() + snappedRoadIndex);
+
+		std::array<glm::vec3, 2> arrAAd = {
+			glm::vec3{ A.x, startCoord.y, A.y },
+			glm::vec3{ A.x, startCoord.y, A.y } +(glm::normalize(glm::vec3{ AB.x, 0, AB.y }) * lengthAAd)
+		};
+		std::array<glm::vec3, 2> arrBBd = {
+			glm::vec3{ B.x, startCoord.y, B.y },
+					glm::vec3{ B.x, startCoord.y, B.y } -(glm::normalize(glm::vec3{ AB.x, 0, AB.y }) * lengthBBd)
+		};
+		std::array<glm::vec3, 2> arrCCd = {
+			glm::vec3{ C.x, startCoord.y, C.y },
+					glm::vec3{ C.x, startCoord.y, C.y } +(glm::normalize(glm::vec3{ CD.x, 0, CD.y }) * lengthCCd)
+		};
+
+		std::array<glm::vec2, 2> arrAAdIndex = {
+			glm::vec2{ glm::abs((int)arrAAd[0].x * 50.f), glm::abs((int)arrAAd[0].z * 50.f) },
+			glm::vec2{ glm::abs((int)arrAAd[1].x * 50.f), glm::abs((int)arrAAd[1].z * 50.f) },
+		};
+
+		std::array<glm::vec2, 2> arrBBdIndex = {
+			glm::vec2{ glm::abs((int)arrBBd[0].x * 50.f), glm::abs((int)arrBBd[0].z * 50.f) },
+			glm::vec2{ glm::abs((int)arrBBd[1].x * 50.f), glm::abs((int)arrBBd[1].z * 50.f) },
+		};
+
+		std::array<glm::vec2, 2> arrCCdIndex = {
+			glm::vec2{ glm::abs((int)arrCCd[0].x * 50.f), glm::abs((int)arrCCd[0].z * 50.f) },
+			glm::vec2{ glm::abs((int)arrCCd[1].x * 50.f), glm::abs((int)arrCCd[1].z * 50.f) },
+		};
+
+		roads.push_back(new Road{ arrAAd[0], arrAAd[1], roadAAd, nullptr, nullptr });
+		roads.push_back(new Road{ arrBBd[0], arrBBd[1], roadBBd, nullptr, nullptr });
+		roads.push_back(new Road{ arrCCd[0], arrCCd[1], roadCCd, nullptr, nullptr });
+
+		LevelTheTerrain(arrAAdIndex[0], arrAAdIndex[1], arrAAd[0], arrAAd[1], m_Terrain, testScene->roadPrefabWidth / 200.0f);
+		LevelTheTerrain(arrBBdIndex[0], arrBBdIndex[1], arrBBd[0], arrBBd[1], m_Terrain, testScene->roadPrefabWidth / 200.0f);
+		LevelTheTerrain(arrCCdIndex[0], arrCCdIndex[1], arrCCd[0], arrCCd[1], m_Terrain, testScene->roadPrefabWidth / 200.0f);
+	}
+
+	void GameApp::UpdateTheJunction(Junction* junction, Can::Object* prefab, const std::string& shaderPath, const std::string& texturePath)
+	{
+		float maxJZ = 0.0f;
+		float minJZ = 0.0f;
+		float maxJX = 0.0f;
+		float minJX = 0.0f;
+		int JVSize = prefab->indexCount;
+		float* JVerticies = prefab->Vertices;
+		for (size_t i = 0; i < JVSize; i++)
+		{
+			float x = JVerticies[i * 8];
+			float z = JVerticies[i * 8 + 2];
+
+			maxJZ = std::max(maxJZ, z);
+			minJZ = std::min(minJZ, z);
+
+			maxJX = std::max(maxJX, x);
+			minJX = std::min(minJX, x);
+		}
+		float length = maxJZ - minJZ;
+		float width = maxJX - minJX;
+
+		glm::vec2 juncPos = {
+			junction->position.x ,
+			junction->position.z
+		};
+
+		std::sort(junction->connectedRoads.begin(), junction->connectedRoads.end(), sort_with_angle());
+
+		std::vector<glm::vec2> Intersections;
+
+		size_t roadCount = junction->connectedRoads.size();
+		for (size_t i = 0; i < roadCount; i++)
+		{
+			size_t iNext = (i + 1) % roadCount;
+			Road* r1 = junction->connectedRoads[i];
+			Road* r2 = junction->connectedRoads[iNext];
+
+			glm::vec2 R0_1 = junction == r1->startJunction ? glm::vec2{ r1->startPos.x, r1->startPos.z } : glm::vec2{ r1->endPos.x, r1->endPos.z };
+			glm::vec2 R1_1 = junction == r1->startJunction ? glm::vec2{ r1->endPos.x, r1->endPos.z } : glm::vec2{ r1->startPos.x, r1->startPos.z };
+			glm::vec2 R0_2 = junction == r2->startJunction ? glm::vec2{ r2->startPos.x, r2->startPos.z } : glm::vec2{ r2->endPos.x, r2->endPos.z };
+			glm::vec2 R1_2 = junction == r2->startJunction ? glm::vec2{ r2->endPos.x, r2->endPos.z } : glm::vec2{ r2->startPos.x, r2->startPos.z };
+
+
+			glm::vec2 R0R1_1 = R1_1 - R0_1;
+			glm::vec2 R0R1_2 = R1_2 - R0_2;
+
+			int ed1 = R0R1_1.x <= 0 ? 180.0f : 0.0f;
+			int ed2 = R0R1_2.x <= 0 ? 180.0f : 0.0f;
+
+			float angleR0R1_1 = glm::degrees(glm::atan(-R0R1_1.y / R0R1_1.x)) + ed1;
+			float angleR0R1_2 = glm::degrees(glm::atan(-R0R1_2.y / R0R1_2.x)) + ed2;
+
+			glm::vec2 shiftR0R1_1Amount = glm::normalize(glm::rotate(R0R1_1, glm::radians(-90.0f))) * (width / 100.0f) / 2.0f;
+			glm::vec2 shiftR0R1_2Amount = glm::normalize(glm::rotate(R0R1_2, glm::radians(90.0f))) * (width / 100.0f) / 2.0f;
+
+			glm::vec3 R0_1d = {
+				R0_1.x + shiftR0R1_1Amount.x,
+				R0_1.y + shiftR0R1_1Amount.y,
+				0
+			};
+			glm::vec2 R1_1d = {
+				R1_1.x + shiftR0R1_1Amount.x,
+				R1_1.y + shiftR0R1_1Amount.y
+			};
+			glm::vec3 R0_2d = {
+				R0_2.x + shiftR0R1_2Amount.x,
+				R0_2.y + shiftR0R1_2Amount.y,
+				0
+			};
+
+			glm::vec3 R0R1_1V = {
+				R0R1_1.x,
+				R0R1_1.y,
+				0.0f
+			};
+			glm::vec3 R0R1_2V = {
+				R0R1_2.x,
+				R0R1_2.y,
+				0.0f
+			};
+			
+			R0R1_2V = glm::rotate(R0R1_2V, glm::radians(90.0f), { 0.0f, 0.0f, 1.0f });
+			glm::vec3 I = RayPlaneIntersection(R0_1d, R0R1_1V, R0_2d, R0R1_2V);
+
+			Intersections.push_back(glm::vec2{ I.x, I.y });
+		}
+
+		if (junction->object != nullptr)
+		{
+			Can::Renderer3D::DeleteObject(junction->object);
+			delete junction->object;
+		}
+
+		Can::Object* junctionObject = new Can::Object();
+		junction->object = junctionObject;
+
+		junctionObject->VA = Can::VertexArray::Create();
+
+		int prefabIndexCount = prefab->indexCount;
+		junctionObject->indexCount = prefabIndexCount * roadCount;
+
+		float* junctionVertices = new float[junctionObject->indexCount * (3 + 2 + 3)];
+		float* prefabVerticies = prefab->Vertices;
+		glm::vec2 center = { 0.0f, 0.0f };
+		for (size_t i = 0; i < roadCount; i++)
+		{
+			Road* r = junction->connectedRoads[i];
+			glm::vec2 intersection1 = Intersections[i];
+			glm::vec2 intersection2 = Intersections[(roadCount + i - 1) % roadCount];
+
+			glm::vec2 R0 = junction == r->startJunction ? glm::vec2{ r->startPos.x, r->startPos.z } : glm::vec2{ r->endPos.x, r->endPos.z };
+			glm::vec2 R1 = junction == r->startJunction ? glm::vec2{ r->endPos.x, r->endPos.z } : glm::vec2{ r->startPos.x, r->startPos.z };
+
+			glm::vec2 JR1 = R1 - juncPos;
+			float lJR1 = glm::length(JR1);
+			glm::vec2 shiftAmount = glm::normalize(glm::rotate(JR1, glm::radians(90.0f))) * (width / 100.0f) / 2.0f;
+
+			glm::vec2 R1p = R1 + shiftAmount;
+			glm::vec2 R1n = R1 - shiftAmount;
+
+			float lengthN = lJR1 - glm::length(R1n - intersection1);
+			float lengthP = lJR1 - glm::length(R1p - intersection2);
+			float l = 0.0f;
+			if (lengthN < lengthP)
+			{
+				float size = glm::length(R1p - intersection2) - (length / 100.0f);
+				glm::vec2 temp = R1 - glm::normalize(JR1) * size;
+				l = lengthP;
+				if (junction == r->startJunction)
+				{
+					r->startPos.x = temp.x;
+					r->startPos.z = temp.y;
+				}
+				else
+				{
+					r->endPos.x = temp.x;
+					r->endPos.z = temp.y;
+				}
+			}
+			else
+			{
+				float size = glm::length(R1n - intersection1) - (length / 100.0f);
+				glm::vec2 temp = R1 - glm::normalize(JR1) * size;
+				l = lengthN;
+				if (junction == r->startJunction)
+				{
+					r->startPos.x = temp.x;
+					r->startPos.z = temp.y;
+				}
+				else
+				{
+					r->endPos.x = temp.x;
+					r->endPos.z = temp.y;
+				}
+			}
+			
+			ReconstructRoad(r, testScene->roadPrefab, "assets/shaders/Object.glsl", "assets/objects/road.png");
+
+			int ed = JR1.x <= 0 ? 180.0f : 0.0f;
+			float angle = glm::radians(glm::degrees(glm::atan(-JR1.y / JR1.x)) + ed + 90.0f);
+
+			for (int j = 0; j < prefabIndexCount; j++)
+			{
+				int offset = i * prefabIndexCount * 8;
+				int index = j * 8;
+				glm::vec2 point = {
+					prefabVerticies[index + 0],
+					prefabVerticies[index + 2]
+				};
+				if (prefabVerticies[index + 2] < 0.001f && prefabVerticies[index + 2] > -0.001f)
+				{
+					float percent = std::abs(point.x / (width / 2.0f));
+					if (prefabVerticies[index + 0] < 0.0f)
+						point.y += percent * lengthP * 100.0f;
+					else if (prefabVerticies[index + 0] > 0.0f)
+						point.y += percent * lengthN * 100.0f;
+				}
+				else
+				{
+					point.y += l * 100.0f;
+				}
+
+				glm::vec2 rotatedPoint = RotateAPointAroundAPoint(point, center, -angle);
+
+				junctionVertices[offset + index + 0] = rotatedPoint.x;
+				junctionVertices[offset + index + 1] = prefabVerticies[index + 1];
+				junctionVertices[offset + index + 2] = rotatedPoint.y;
+				junctionVertices[offset + index + 3] = prefabVerticies[index + 3];
+				junctionVertices[offset + index + 4] = prefabVerticies[index + 4];
+				junctionVertices[offset + index + 5] = prefabVerticies[index + 5];
+				junctionVertices[offset + index + 6] = prefabVerticies[index + 6];
+				junctionVertices[offset + index + 7] = prefabVerticies[index + 7];
+			}
+		}
+
+		junctionObject->Vertices = junctionVertices;
+
+		junctionObject->VB = Can::VertexBuffer::Create(junctionObject->Vertices, sizeof(float) * junctionObject->indexCount * (3 + 2 + 3), true);
+
+		junctionObject->VB->SetLayout({
+		   { Can::ShaderDataType::Float3, "a_Position"},
+		   { Can::ShaderDataType::Float2, "a_UV"},
+		   { Can::ShaderDataType::Float3, "a_Normal"}
+			});
+
+		junctionObject->VA->AddVertexBuffer(junctionObject->VB);
+
+		uint32_t* junctionIndices = new uint32_t[junctionObject->indexCount];
+
+		for (int i = 0; i < junctionObject->indexCount; i++) junctionIndices[i] = i;
+
+		junctionObject->Indices = junctionIndices;
+
+		junctionObject->IB = Can::IndexBuffer::Create(junctionIndices, junctionObject->indexCount);
+
+		junctionObject->VA->SetIndexBuffer(junctionObject->IB);
+
+		junctionObject->T = Can::Texture2D::Create(texturePath);
+
+		junctionObject->S = Can::Shader::Create(shaderPath);
+
+		junctionObject->S->Bind();
+		junctionObject->S->SetInt("u_Texture", 0);
+		junctionObject->S->SetFloat3("u_LightPos", { 1.0f, 1.0f, -1.0f });
+
+		SetTransform(junctionObject, junction->position + glm::vec3{ 0.0f, 0.01f, 0.0f }, { 0.01f, 0.01f, 0.01f });
+		Can::Renderer3D::AddObject(junctionObject);
+	}
+
+	void GameApp::ReconstructRoad(Road* road, Can::Object* prefab, const std::string& shaderPath, const std::string& texturePath)
+	{
+		float maxRz = 0.0f;
+		float minRz = 0.0f;
+		int RVSize = prefab->indexCount;
+		float* roadVerticies = prefab->Vertices;
+		for (size_t i = 0; i < RVSize; i++)
+		{
+			float z = roadVerticies[i * 8 + 2];
+			maxRz = std::max(maxRz, z);
+			minRz = std::min(minRz, z);
+		}
+		float lengthRoad = maxRz - minRz;
+
+
+		glm::vec2 A = {
+			road->startPos.x,
+			road->startPos.z
+		};
+		glm::vec2 B = {
+			road->endPos.x,
+			road->endPos.z
+		};
+		glm::vec2 AB = B - A;
+
+
+		int edA = AB.x <= 0 ? 180.0f : 0.0f;
+		float angle = glm::degrees(glm::atan(-AB.y / AB.x)) + 90.0f + edA;
+
+		float lengthAB = glm::length(AB);
+
+		int count = lengthAB / (lengthRoad / 100.0f);
+		float scale = (lengthAB / (lengthRoad / 100.0f)) / count;
+
+		if (road->object != nullptr)
+		{
+			Can::Renderer3D::DeleteObject(road->object);
+			delete road->object;
+		}
+
+		Can::Object* roadObject = new Can::Object();
+
+		roadObject->VA = Can::VertexArray::Create();
+
+		int roadIndexCount = prefab->indexCount;
+
+		roadObject->indexCount = roadIndexCount * count;
+
+		float* roadVertices = new float[roadObject->indexCount * (3 + 2 + 3)];
+
+		float* prefabVerticies = prefab->Vertices;
+
+		for (int j = 0; j < count; j++)
+		{
+			for (int i = 0; i < roadIndexCount; i++)
+			{
+				int offset = j * roadIndexCount * 8;
+				int index = i * 8;
+				roadVertices[offset + index + 0] = prefabVerticies[index + 0];
+				roadVertices[offset + index + 1] = prefabVerticies[index + 1];
+				roadVertices[offset + index + 2] = (prefabVerticies[index + 2] + lengthRoad * (j + 0.5f)) * scale;
+				roadVertices[offset + index + 3] = prefabVerticies[index + 3];
+				roadVertices[offset + index + 4] = prefabVerticies[index + 4];
+				roadVertices[offset + index + 5] = prefabVerticies[index + 5];
+				roadVertices[offset + index + 6] = prefabVerticies[index + 6];
+				roadVertices[offset + index + 7] = prefabVerticies[index + 7];
+			}
+		}
+
+		roadObject->Vertices = roadVertices;
+
+		roadObject->VB = Can::VertexBuffer::Create(roadObject->Vertices, sizeof(float) * roadObject->indexCount * (3 + 2 + 3), true);
+
+		roadObject->VB->SetLayout({
+		   { Can::ShaderDataType::Float3, "a_Position"},
+		   { Can::ShaderDataType::Float2, "a_UV"},
+		   { Can::ShaderDataType::Float3, "a_Normal"}
+			});
+
+		roadObject->VA->AddVertexBuffer(roadObject->VB);
+
+		uint32_t* roadIndices = new uint32_t[roadObject->indexCount];
+
+		for (int i = 0; i < roadObject->indexCount; i++) roadIndices[i] = i;
+
+		roadObject->Indices = roadIndices;
+
+		roadObject->IB = Can::IndexBuffer::Create(roadIndices, roadObject->indexCount);
+
+		roadObject->VA->SetIndexBuffer(roadObject->IB);
+
+		roadObject->T = Can::Texture2D::Create(texturePath);
+		roadObject->S = Can::Shader::Create(shaderPath);
+
+		roadObject->S->Bind();
+		roadObject->S->SetInt("u_Texture", 0);
+		roadObject->S->SetFloat3("u_LightPos", { 1.0f, 1.0f, -1.0f });
+
+		float rotateAmount = glm::radians(angle);
+
+		SetTransform(roadObject, road->startPos + glm::vec3{ 0.0f, 0.01f, 0.0f }, { 0.01f, 0.01f, 0.01f }, { 0.0f, rotateAmount, 0.0f });
+		road->object = roadObject;
+		Can::Renderer3D::AddObject(roadObject);
 	}
 
 	Can::Object* GameApp::UploadTerrain(const std::string& texturePath)
@@ -354,7 +946,7 @@ namespace Can
 		int w = width - 1;
 		int h = height - 1;
 		float* vertecies = new float[w * h * 2 * 3 * (3 + 4 + 3)];
-		glm::vec3 color1 = { 19.0f / 255.0f, 173.0f / 255.0f, 14.0f / 255.0f };
+		glm::vec3 color1 = { 9.0f / 255.0f, 255.0f / 255.0f, 4.0f / 255.0f };
 		glm::vec3 color2 = { 25.0f / 255.0f, 93.0f / 255.0f, 24.0f / 255.0f };
 		glm::vec3 color3 = { 182.0f / 255.0f, 64.0f / 255.0f, 16.0f / 255.0f };
 		glm::vec3 color4 = { 61.0f / 255.0f, 28.0f / 255.0f, 10.0f / 255.0f };
