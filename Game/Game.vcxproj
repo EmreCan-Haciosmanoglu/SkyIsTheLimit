@@ -135,20 +135,24 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="src\GameApp.h" />
+    <ClInclude Include="src\SceneEntity.h" />
+    <ClInclude Include="src\TestScene.h" />
+    <ClInclude Include="src\UIScene.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\GameApp.cpp" />
+    <ClCompile Include="src\SceneEntity.cpp" />
+    <ClCompile Include="src\TestScene.cpp" />
+    <ClCompile Include="src\UIScene.cpp" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\Engine\Can\Can\vendor\imgui\ImGui.vcxproj">
       <Project>{C0FF640D-2C14-8DBE-F595-301E616989EF}</Project>
     </ProjectReference>
     <ProjectReference Include="..\Engine\Can\Can\Can.vcxproj">
       <Project>{D7DC870B-43E6-877C-CC61-9E7C386A937C}</Project>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="src\GameApp.cpp" />
-    <ClCompile Include="src\TestScene.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="src\GameApp.h" />
-    <ClInclude Include="src\TestScene.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

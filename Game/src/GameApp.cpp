@@ -14,11 +14,13 @@ namespace Can
 {
 	GameApp::GameApp()
 		: testScene(new TestScene(this))
+		, uiScene(new UIScene(this))
 		, m_Terrain(new Can::Object())
 	{
 		//m_Terrain = UploadTerrain("assets/objects/heightmap_smallest.png");
 		m_Terrain = UploadTerrain("assets/objects/flat_land.png");
 		PushLayer(testScene);
+		PushOverlay(uiScene);
 	}
 
 	GameApp::~GameApp()

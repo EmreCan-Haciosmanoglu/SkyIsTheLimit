@@ -2,6 +2,8 @@
 #include "Can.h"
 
 #include "TestScene.h"
+#include "UIScene.h"
+#include "SceneEntity.h"
 
 namespace Can
 {
@@ -99,5 +101,6 @@ namespace Can
 	private:
 
 		TestScene* testScene;
+		UIScene* uiScene;
 	};
 }

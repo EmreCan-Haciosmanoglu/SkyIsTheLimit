@@ -16,7 +16,6 @@ namespace Can
 		End* startEnd = nullptr;
 		End* endEnd = nullptr;
 	};
-
 	struct sort_with_angle
 	{
 		inline bool operator() (const Road* road1, const Road* road2)
@@ -74,7 +73,6 @@ namespace Can
 			return (angleR0R1_1 < angleR0R1_2);
 		}
 	};
-
 	struct Junction {
 		glm::vec3 position;
 		Can::Object* object = nullptr;
