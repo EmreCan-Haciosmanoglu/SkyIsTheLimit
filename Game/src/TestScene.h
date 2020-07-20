@@ -3,9 +3,9 @@
 
 namespace Can
 {
-	class Road;
-	class Junction;
-	class End;
+	struct Road;
+	struct Junction;
+	struct End;
 
 	struct Road {
 		glm::vec3 startPos;
