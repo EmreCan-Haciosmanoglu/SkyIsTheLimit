@@ -3,7 +3,6 @@
 
 #include "TestScene.h"
 #include "UIScene.h"
-#include "SceneEntity.h"
 
 namespace Can
 {

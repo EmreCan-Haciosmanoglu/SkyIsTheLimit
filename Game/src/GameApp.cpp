@@ -246,6 +246,7 @@ namespace Can
 			Can::Renderer3D::AddObject(target);
 			return target;
 		}
+		return nullptr;
 	}
 
 	void GameApp::LevelTheTerrain(const glm::vec2& startIndex, const glm::vec2& endIndex, const glm::vec3& startCoord, const glm::vec3& endCoord, Can::Object* terrain, float width)
@@ -273,8 +274,8 @@ namespace Can
 			{
 				if (x < 0 || y < 0 || x >= terrain->w - 1 || y >= terrain->h - 1)
 					continue;
-				int dist1 = (x + (terrain->w - 1) * y) * 60;
-				int dist2 = (x + (terrain->w - 1) * (y - 1)) * 60;
+				size_t dist1 = (x + (terrain->w - 1) * y) * 60;
+				size_t dist2 = (x + (terrain->w - 1) * (y - 1)) * 60;
 				glm::vec2 AP = {
 					data[dist1] - startCoord.x,
 					data[dist1 + 2] - startCoord.z
@@ -366,9 +367,9 @@ namespace Can
 		};
 		glm::vec2 CD = D - C;
 
-		int edA = AB.x <= 0 ? 180.0f : 0.0f;
-		int edB = AB.x <= 0 ? 180.0f : 0.0f;
-		int edC = CD.x <= 0 ? 180.0f : 0.0f;
+		float edA = AB.x <= 0.0f ? 180.0f : 0.0f;
+		float edB = AB.x <= 0.0f ? 180.0f : 0.0f;
+		float edC = CD.x <= 0.0f ? 180.0f : 0.0f;
 
 		float angleAB = glm::degrees(glm::atan(-AB.y / AB.x)) + 90.0f + edA;
 		float angleCD = glm::degrees(glm::atan(-CD.y / CD.x)) + 90.0f + edC;
@@ -400,9 +401,9 @@ namespace Can
 		float lengthCCd = glm::length((D - C) - (Dp - Ip)) - (lengthCrossWalk / 100.0f);
 
 
-		int countAAd = lengthAAd / (lengthRoad / 100.0f);
-		int countBBd = lengthBBd / (lengthRoad / 100.0f);
-		int countCCd = lengthCCd / (lengthRoad / 100.0f);
+		int countAAd = (int)(lengthAAd / (lengthRoad / 100.0f));
+		int countBBd = (int)(lengthBBd / (lengthRoad / 100.0f));
+		int countCCd = (int)(lengthCCd / (lengthRoad / 100.0f));
 
 		float scaleAAd = (lengthAAd / (lengthRoad / 100.0f)) / countAAd;
 		float scaleBBd = (lengthBBd / (lengthRoad / 100.0f)) / countBBd;
@@ -644,8 +645,8 @@ namespace Can
 			glm::vec2 R0R1_1 = R1_1 - R0_1;
 			glm::vec2 R0R1_2 = R1_2 - R0_2;
 
-			int ed1 = R0R1_1.x <= 0 ? 180.0f : 0.0f;
-			int ed2 = R0R1_2.x <= 0 ? 180.0f : 0.0f;
+			float ed1 = R0R1_1.x <= 0.0f ? 180.0f : 0.0f;
+			float ed2 = R0R1_2.x <= 0.0f ? 180.0f : 0.0f;
 
 			float angleR0R1_1 = glm::degrees(glm::atan(-R0R1_1.y / R0R1_1.x)) + ed1;
 			float angleR0R1_2 = glm::degrees(glm::atan(-R0R1_2.y / R0R1_2.x)) + ed2;
@@ -696,7 +697,7 @@ namespace Can
 
 		junctionObject->VA = Can::VertexArray::Create();
 
-		int prefabIndexCount = prefab->indexCount;
+		size_t prefabIndexCount = prefab->indexCount;
 		junctionObject->indexCount = prefabIndexCount * roadCount;
 
 		float* junctionVertices = new float[junctionObject->indexCount * (3 + 2 + 3)];
@@ -756,13 +757,13 @@ namespace Can
 			
 			ReconstructRoad(r, testScene->roadPrefab, "assets/shaders/Object.glsl", "assets/objects/road.png");
 
-			int ed = JR1.x <= 0 ? 180.0f : 0.0f;
+			float ed = JR1.x <= 0.0f ? 180.0f : 0.0f;
 			float angle = glm::radians(glm::degrees(glm::atan(-JR1.y / JR1.x)) + ed + 90.0f);
 
-			for (int j = 0; j < prefabIndexCount; j++)
+			for (size_t j = 0; j < prefabIndexCount; j++)
 			{
-				int offset = i * prefabIndexCount * 8;
-				int index = j * 8;
+				size_t offset = i * prefabIndexCount * 8;
+				size_t index = j * 8;
 				glm::vec2 point = {
 					prefabVerticies[index + 0],
 					prefabVerticies[index + 2]
@@ -853,12 +854,12 @@ namespace Can
 		glm::vec2 AB = B - A;
 
 
-		int edA = AB.x <= 0 ? 180.0f : 0.0f;
+		float edA = AB.x <= 0.0f ? 180.0f : 0.0f;
 		float angle = glm::degrees(glm::atan(-AB.y / AB.x)) + 90.0f + edA;
 
 		float lengthAB = glm::length(AB);
 
-		int count = lengthAB / (lengthRoad / 100.0f);
+		int count = (int)(lengthAB / (lengthRoad / 100.0f));
 		float scale = (lengthAB / (lengthRoad / 100.0f)) / count;
 
 		if (road->object != nullptr)
