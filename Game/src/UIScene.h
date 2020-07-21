@@ -1,9 +1,11 @@
 #pragma once
 #include "Can.h"
-#include "Can/ECS/Entity.h"
 
 namespace Can
 {
+	bool CheckCollision(entt::entity id, entt::registry* registry, const glm::vec2& clickPosition);
+	void Draw(entt::entity id, entt::registry* registry, const glm::vec2& offset);
+	
 	class GameApp;
 	class UIScene : public Can::Layer::Layer
 	{
@@ -19,12 +21,25 @@ namespace Can
 
 		bool OnMousePressed(Can::Event::MouseButtonPressedEvent& event);
 
+	public:
+		Scene* m_Scene;
+
+		Button* m_ButtonRoads = nullptr;
+		Button* m_ButtonBuildings = nullptr;
+		Button* m_ButtonDebug = nullptr;
+		Button* m_ButtonNeeds = nullptr;
+		Button* m_ButtonTools = nullptr;
+
+		Panel* m_PanelRoads = nullptr;
+		Panel* m_PanelBuildings = nullptr;
+		Panel* m_PanelDebug = nullptr;
+		Panel* m_PanelNeeds = nullptr;
+		Panel* m_PanelTools = nullptr;
+
 	private:
 		GameApp* m_Parent;
 		float m_ZoomLevel;
 		float m_AspectRatio;
 		Can::Camera::OrthographicCameraController m_CameraController;
-
-		Entity* m_Scene;
 	};
 }
