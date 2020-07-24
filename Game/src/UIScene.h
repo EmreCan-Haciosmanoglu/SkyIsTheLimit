@@ -51,6 +51,21 @@ namespace Can
 		Button* m_ButtonTools_13 = nullptr;
 		Button* m_ButtonTools_14 = nullptr;
 
+		Button* m_ButtonNeeds_01 = nullptr;
+		Button* m_ButtonNeeds_02 = nullptr;
+		Button* m_ButtonNeeds_03 = nullptr;
+		Button* m_ButtonNeeds_04 = nullptr;
+		Button* m_ButtonNeeds_05 = nullptr;
+		Button* m_ButtonNeeds_06 = nullptr;
+		Button* m_ButtonNeeds_07 = nullptr;
+		Button* m_ButtonNeeds_08 = nullptr;
+		Button* m_ButtonNeeds_09 = nullptr;
+		Button* m_ButtonNeeds_10 = nullptr;
+		Button* m_ButtonNeeds_11 = nullptr;
+		Button* m_ButtonNeeds_12 = nullptr;
+		Button* m_ButtonNeeds_13 = nullptr;
+		Button* m_ButtonNeeds_14 = nullptr;
+
 	private:
 		GameApp* m_Parent;
 		float m_ZoomLevel;
