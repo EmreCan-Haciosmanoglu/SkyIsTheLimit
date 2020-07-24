@@ -48,6 +48,8 @@ namespace Can
 		Button* m_ButtonTools_10 = nullptr;
 		Button* m_ButtonTools_11 = nullptr;
 		Button* m_ButtonTools_12 = nullptr;
+		Button* m_ButtonTools_13 = nullptr;
+		Button* m_ButtonTools_14 = nullptr;
 
 	private:
 		GameApp* m_Parent;
