@@ -295,7 +295,7 @@ namespace Can
 			m_Scene->m_Registry,
 			m_ButtonTools->entityID,
 			glm::vec3{ 0.5f, 1.6f, 0.001f },
-			glm::vec3{ 3.5f, height * (3.0f / 5.0f) - 1.0f, 1.0f },
+			glm::vec3{ 3.5f, 11.0f, 1.0f },
 			glm::vec4{ 147.0f / 255.0f, 225.0f / 255.0f, 216.0f / 255.0f, 1.0f },
 			[]() {std::cout << "You clicked the panel that is for Tools!" << std::endl; }
 		);
