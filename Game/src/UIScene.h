@@ -36,6 +36,19 @@ namespace Can
 		Panel* m_PanelNeeds = nullptr;
 		Panel* m_PanelTools = nullptr;
 
+		Button* m_ButtonTools_01 = nullptr;
+		Button* m_ButtonTools_02 = nullptr;
+		Button* m_ButtonTools_03 = nullptr;
+		Button* m_ButtonTools_04 = nullptr;
+		Button* m_ButtonTools_05 = nullptr;
+		Button* m_ButtonTools_06 = nullptr;
+		Button* m_ButtonTools_07 = nullptr;
+		Button* m_ButtonTools_08 = nullptr;
+		Button* m_ButtonTools_09 = nullptr;
+		Button* m_ButtonTools_10 = nullptr;
+		Button* m_ButtonTools_11 = nullptr;
+		Button* m_ButtonTools_12 = nullptr;
+
 	private:
 		GameApp* m_Parent;
 		float m_ZoomLevel;
