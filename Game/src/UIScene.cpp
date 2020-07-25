@@ -447,6 +447,35 @@ namespace Can
 		delete m_PanelNeeds;
 		delete m_PanelTools;
 
+		delete m_ButtonTools_01;
+		delete m_ButtonTools_02;
+		delete m_ButtonTools_03;
+		delete m_ButtonTools_04;
+		delete m_ButtonTools_05;
+		delete m_ButtonTools_06;
+		delete m_ButtonTools_07;
+		delete m_ButtonTools_08;
+		delete m_ButtonTools_09;
+		delete m_ButtonTools_10;
+		delete m_ButtonTools_11;
+		delete m_ButtonTools_12;
+		delete m_ButtonTools_13;
+		delete m_ButtonTools_14;
+
+		delete m_ButtonNeeds_01;
+		delete m_ButtonNeeds_02;
+		delete m_ButtonNeeds_03;
+		delete m_ButtonNeeds_04;
+		delete m_ButtonNeeds_05;
+		delete m_ButtonNeeds_06;
+		delete m_ButtonNeeds_07;
+		delete m_ButtonNeeds_08;
+		delete m_ButtonNeeds_09;
+		delete m_ButtonNeeds_10;
+		delete m_ButtonNeeds_11;
+		delete m_ButtonNeeds_12;
+		delete m_ButtonNeeds_13;
+		delete m_ButtonNeeds_14;
 	}
 
 	void UIScene::OnUpdate(Can::TimeStep ts)
