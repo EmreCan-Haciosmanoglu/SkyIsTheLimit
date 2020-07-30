@@ -135,12 +135,21 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="src\End.h" />
     <ClInclude Include="src\GameApp.h" />
+    <ClInclude Include="src\GameIncludes.h" />
+    <ClInclude Include="src\Helper.h" />
+    <ClInclude Include="src\Junction.h" />
+    <ClInclude Include="src\Road.h" />
     <ClInclude Include="src\TestScene.h" />
     <ClInclude Include="src\UIScene.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\End.cpp" />
     <ClCompile Include="src\GameApp.cpp" />
+    <ClCompile Include="src\Helper.cpp" />
+    <ClCompile Include="src\Junction.cpp" />
+    <ClCompile Include="src\Road.cpp" />
     <ClCompile Include="src\TestScene.cpp" />
     <ClCompile Include="src\UIScene.cpp" />
   </ItemGroup>

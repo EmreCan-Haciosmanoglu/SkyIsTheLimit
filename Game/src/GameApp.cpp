@@ -11,8 +11,6 @@ Can::Application* Can::CreateApplication()
 namespace Can
 {
 	GameApp::GameApp()
-		: testScene(new TestScene(this))
-		, uiScene(new UIScene(this))
 	{
 		terrainPrefab = Helper::GetPrefabForTerrain("assets/objects/flat_land.png");
 		//terrainPrefab = Helper::GetPrefabForTerrain("assets/objects/heightmap_smallest.png");
@@ -21,6 +19,8 @@ namespace Can
 		LoadJunctions();
 		LoadEnds();
 
+		testScene = new TestScene(this);
+		uiScene = new UIScene(this);
 		PushLayer(testScene);
 		PushOverlay(uiScene);
 	}
