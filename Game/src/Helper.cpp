@@ -16,13 +16,14 @@ namespace Can::Helper
 
 
 		return
-			(leftPlaneCollisionPoint.y >= least.y && leftPlaneCollisionPoint.y <= most.y && leftPlaneCollisionPoint.z >= least.z && leftPlaneCollisionPoint.z <= most.z) ||
-			(rigthPlaneCollisionPoint.y >= least.y && rigthPlaneCollisionPoint.y <= most.y && rigthPlaneCollisionPoint.z >= least.z && rigthPlaneCollisionPoint.z <= most.z) ||
 			(bottomPlaneCollisionPoint.x >= least.x && bottomPlaneCollisionPoint.x <= most.x && bottomPlaneCollisionPoint.z >= least.z && bottomPlaneCollisionPoint.z <= most.z) ||
 			(topPlaneCollisionPoint.x >= least.x && topPlaneCollisionPoint.x <= most.x && topPlaneCollisionPoint.z >= least.z && topPlaneCollisionPoint.z <= most.z) ||
+			(leftPlaneCollisionPoint.y >= least.y && leftPlaneCollisionPoint.y <= most.y && leftPlaneCollisionPoint.z >= least.z && leftPlaneCollisionPoint.z <= most.z) ||
+			(rigthPlaneCollisionPoint.y >= least.y && rigthPlaneCollisionPoint.y <= most.y && rigthPlaneCollisionPoint.z >= least.z && rigthPlaneCollisionPoint.z <= most.z) ||
 			(nearPlaneCollisionPoint.x >= least.x && nearPlaneCollisionPoint.x <= most.x && nearPlaneCollisionPoint.y >= least.y && nearPlaneCollisionPoint.y <= most.y) ||
 			(farPlaneCollisionPoint.x >= least.x && farPlaneCollisionPoint.x <= most.x && farPlaneCollisionPoint.y >= least.y && farPlaneCollisionPoint.y <= most.y);
 	}
+
 	glm::vec3 RayPlaneIntersection(const glm::vec3& X, const glm::vec3& v, const glm::vec3& C, const glm::vec3& n)
 	{
 		glm::vec3 w = C - X;
