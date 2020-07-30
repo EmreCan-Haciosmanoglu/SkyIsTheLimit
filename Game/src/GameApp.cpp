@@ -17,6 +17,10 @@ namespace Can
 		terrainPrefab = Helper::GetPrefabForTerrain("assets/objects/flat_land.png");
 		//terrainPrefab = Helper::GetPrefabForTerrain("assets/objects/heightmap_smallest.png");
 
+		LoadRoads();
+		LoadJunctions();
+		LoadEnds();
+
 		PushLayer(testScene);
 		PushOverlay(uiScene);
 	}
@@ -50,7 +54,7 @@ namespace Can
 
 		size_t junctionCount = junctionobjfiles.size();
 		for (size_t i = 0; i < junctionCount; i++)
-			roads.push_back(new Prefab(junctionobjfiles[i], TEMP_JUNCTION_SHADER_FILE_PATH, junctionpngfiles[i]));
+			junctions.push_back(new Prefab(junctionobjfiles[i], TEMP_JUNCTION_SHADER_FILE_PATH, junctionpngfiles[i]));
 	}
 	void GameApp::LoadEnds()
 	{
@@ -64,6 +68,6 @@ namespace Can
 
 		size_t endCount = endobjfiles.size();
 		for (size_t i = 0; i < endCount; i++)
-			roads.push_back(new Prefab(endobjfiles[i], TEMP_END_SHADER_FILE_PATH, endpngfiles[i]));
+			ends.push_back(new Prefab(endobjfiles[i], TEMP_END_SHADER_FILE_PATH, endpngfiles[i]));
 	}
 }
