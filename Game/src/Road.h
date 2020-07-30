@@ -9,13 +9,20 @@ namespace Can
 	class Road
 	{
 	public:
-		Road();
+		Road() = default;
+		Road(Prefab* prefab, const glm::vec3& startPos, const glm::vec3& endPos);
+		Road(Object* object, const glm::vec3& startPos, const glm::vec3& endPos);
 		~Road();
 
 	public:
-		glm::vec3 startPos;
-		glm::vec3 endPos;
+		glm::vec3 startPosition;
+		glm::vec3 endPosition;
+
+		glm::vec3 direction;
+		float length;
+
 		Can::Object* object;
+
 		Junction* startJunction;
 		Junction* endJunction;
 		End* startEnd;
