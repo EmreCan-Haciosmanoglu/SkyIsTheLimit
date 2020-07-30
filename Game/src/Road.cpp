@@ -8,24 +8,25 @@
 
 namespace Can
 {
-    Road::Road(Prefab* prefab, const glm::vec3& startPos, const glm::vec3& endPos)
-        : startPosition(startPos)
-        , endPosition(endPos)
-        , direction(glm::normalize(endPos - startPos))
-        , length(glm::length(endPos - startPos))
-        , object(Helper::ConstructRoadObject(prefab,startPos, endPos))
-    {
-    }
-    Road::Road(Object* object, const glm::vec3& startPos, const glm::vec3& endPos)
-        : startPosition(startPos)
-        , endPosition(endPos)
-        , direction(glm::normalize(endPos - startPos))
-        , length(glm::length(endPos - startPos))
-        , object(object)
-    {
-    }
-    Road::~Road()
-    {
-        delete object;
-    }
+	Road::Road(Prefab* prefab, const glm::vec3& startPos, const glm::vec3& endPos)
+		: startPosition(startPos)
+		, endPosition(endPos)
+		, direction(glm::normalize(endPos - startPos))
+		, rotation({ 0.0f, glm::atan(direction.y / direction.x), glm::atan(direction.z / direction.x) + (direction.x <= 0 ? glm::radians(180.0f) : 0.0f) })
+		, length(glm::length(endPos - startPos))
+		, object(Helper::ConstructRoadObject(prefab, startPos, endPos))
+	{
+	}
+	Road::Road(Object* object, const glm::vec3& startPos, const glm::vec3& endPos)
+		: startPosition(startPos)
+		, endPosition(endPos)
+		, direction(glm::normalize(endPos - startPos))
+		, length(glm::length(endPos - startPos))
+		, object(object)
+	{
+	}
+	Road::~Road()
+	{
+		delete object;
+	}
 }

@@ -19,6 +19,7 @@ namespace Can
 		glm::vec3 endPosition;
 
 		glm::vec3 direction;
+		glm::vec3 rotation;
 		float length;
 
 		Can::Object* object;
