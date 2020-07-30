@@ -107,6 +107,23 @@ namespace Can::Helper
 		return object;
 	}
 
+	std::vector<std::string> GetFiles(const std::string& folder, const std::string& filter, const std::string& fileType)
+	{
+		std::vector<std::string> files;
+		namespace fs = std::filesystem;
+		for (const auto& entry : std::filesystem::directory_iterator(folder))
+		{
+			std::string file = entry.path().string();
+
+			if (file.find(filter) != std::string::npos)
+			{
+				if (file.find(fileType) != std::string::npos)
+					files.push_back(file);
+			}
+		}
+		return files;
+	}
+
 	void LevelTheTerrain(const glm::vec2& startIndex, const glm::vec2& endIndex, const glm::vec3& startCoord, const glm::vec3& endCoord, Can::Object* terrain, float width)
 	{
 		glm::vec2 AB = {
