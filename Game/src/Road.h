@@ -10,7 +10,7 @@ namespace Can
 	{
 	public:
 		Road() = default;
-		Road(Prefab* prefab, const glm::vec3& startPos, const glm::vec3& endPos);
+		Road(const Ref<Prefab>& prefab, const glm::vec3& startPos, const glm::vec3& endPos);
 		Road(Object* object, const glm::vec3& startPos, const glm::vec3& endPos);
 		~Road();
 
