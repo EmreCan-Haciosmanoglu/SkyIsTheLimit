@@ -7,17 +7,19 @@
 
 namespace Can::Helper
 {
-	std::vector<std::string> GetFiles(const std::string& folder, const std::string& filter, const std::string& fileType);
-	
-	void LevelTheTerrain(const glm::vec2& startIndex, const glm::vec2& endIndex, const glm::vec3& startCoord, const glm::vec3& endCoord, Can::Object* terrain, float width);
-
-	bool RayTriangleIntersection(const glm::vec3& camPos, const glm::vec3& ray, const glm::vec3& A, const glm::vec3& B, const glm::vec3& C, const glm::vec3& normal);
+	bool CheckBoundingBoxHit(const glm::vec3& rayStartPoint, const glm::vec3& ray, const glm::vec3& least, const glm::vec3& most);
 
 	glm::vec3 RayPlaneIntersection(const glm::vec3& X, const glm::vec3& v, const glm::vec3& C, const glm::vec3& n);
 
-	glm::vec2 RotateAPointAroundAPoint(const glm::vec2& p1, const glm::vec2& p2, float angleInRadians);
-
 	glm::vec2 LineSLineSIntersection(glm::vec2 p0, glm::vec2 p1, glm::vec2 p2, glm::vec2 p3);
+
+	bool RayTriangleIntersection(const glm::vec3& camPos, const glm::vec3& ray, const glm::vec3& A, const glm::vec3& B, const glm::vec3& C, const glm::vec3& normal);
+
+	Can::Object* ConstructObject(const std::string& shaderPath, const std::string& texturePath, std::vector < glm::vec3 >& vertices, std::vector < glm::vec2 >& uvs, std::vector < glm::vec3 >& normals);
+
+	std::vector<std::string> GetFiles(const std::string& folder, const std::string& filter, const std::string& fileType);
+	
+	void LevelTheTerrain(const glm::vec2& startIndex, const glm::vec2& endIndex, const glm::vec3& startCoord, const glm::vec3& endCoord, Can::Object* terrain, float width);
 
 	void GenerateTJunction(Can::Object* roadP, Can::Object* endP, Can::Object* junctionP, int snappedRoadIndex, const glm::vec3& startCoord, const glm::vec3& junctionCoord, const std::string& shaderPath, const std::string& texturePath, std::vector<Road*>& roads);
 
@@ -25,9 +27,9 @@ namespace Can::Helper
 
 	void ReconstructRoad(Road* road, Can::Object* prefab, const std::string& shaderPath, const std::string& texturePath);
 
-	Can::Object* ConstructObject(const std::string& shaderPath, const std::string& texturePath, std::vector < glm::vec3 >& vertices, std::vector < glm::vec2 >& uvs, std::vector < glm::vec3 >& normals);
-
 	Can::Prefab* GetPrefabForTerrain(const std::string& texturePath);
+
+	glm::vec2 RotateAPointAroundAPoint(const glm::vec2& p1, const glm::vec2& p2, float angleInRadians);
 
 	struct sort_with_angle
 	{

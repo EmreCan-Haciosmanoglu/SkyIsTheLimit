@@ -3,7 +3,26 @@
 
 namespace Can::Helper
 {
+	bool CheckBoundingBoxHit(const glm::vec3& rayStartPoint, const glm::vec3& ray, const glm::vec3& least, const glm::vec3& most)
+	{
+		glm::vec3 leftPlaneCollisionPoint = Helper::RayPlaneIntersection(rayStartPoint, ray, { least.x, 0.0f, 0.0f }, { 1.0f, 0.0f, 0.0f });
+		glm::vec3 rigthPlaneCollisionPoint = Helper::RayPlaneIntersection(rayStartPoint, ray, { most.x, 0.0f, 0.0f }, { 1.0f, 0.0f, 0.0f });
 
+		glm::vec3 bottomPlaneCollisionPoint = Helper::RayPlaneIntersection(rayStartPoint, ray, { 0.0f, least.y, 0.0f }, { 0.0f, 1.0f, 0.0f });
+		glm::vec3 topPlaneCollisionPoint = Helper::RayPlaneIntersection(rayStartPoint, ray, { 0.0f, most.y, 0.0f }, { 0.0f, 1.0f, 0.0f });
+
+		glm::vec3 nearPlaneCollisionPoint = Helper::RayPlaneIntersection(rayStartPoint, ray, { 0.0f, 0.0f, least.z }, { 0.0f, 0.0f, 1.0f });
+		glm::vec3 farPlaneCollisionPoint = Helper::RayPlaneIntersection(rayStartPoint, ray, { 0.0f, 0.0f, most.z }, { 0.0f, 0.0f, 1.0f });
+
+
+		return
+			(leftPlaneCollisionPoint.y >= least.y && leftPlaneCollisionPoint.y <= most.y && leftPlaneCollisionPoint.z >= least.z && leftPlaneCollisionPoint.z <= most.z) ||
+			(rigthPlaneCollisionPoint.y >= least.y && rigthPlaneCollisionPoint.y <= most.y && rigthPlaneCollisionPoint.z >= least.z && rigthPlaneCollisionPoint.z <= most.z) ||
+			(bottomPlaneCollisionPoint.x >= least.x && bottomPlaneCollisionPoint.x <= most.x && bottomPlaneCollisionPoint.z >= least.z && bottomPlaneCollisionPoint.z <= most.z) ||
+			(topPlaneCollisionPoint.x >= least.x && topPlaneCollisionPoint.x <= most.x && topPlaneCollisionPoint.z >= least.z && topPlaneCollisionPoint.z <= most.z) ||
+			(nearPlaneCollisionPoint.x >= least.x && nearPlaneCollisionPoint.x <= most.x && nearPlaneCollisionPoint.y >= least.y && nearPlaneCollisionPoint.y <= most.y) ||
+			(farPlaneCollisionPoint.x >= least.x && farPlaneCollisionPoint.x <= most.x && farPlaneCollisionPoint.y >= least.y && farPlaneCollisionPoint.y <= most.y);
+	}
 	glm::vec3 RayPlaneIntersection(const glm::vec3& X, const glm::vec3& v, const glm::vec3& C, const glm::vec3& n)
 	{
 		glm::vec3 w = C - X;
