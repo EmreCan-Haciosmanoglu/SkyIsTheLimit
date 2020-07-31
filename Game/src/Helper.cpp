@@ -1,7 +1,7 @@
 #include "canpch.h"
 #include "Helper.h"
 
-namespace Can::Helper
+namespace  Can::Helper
 {
 	bool CheckBoundingBoxHit(const glm::vec3& rayStartPoint, const glm::vec3& ray, const glm::vec3& least, const glm::vec3& most)
 	{
@@ -71,10 +71,10 @@ namespace Can::Helper
 		return a > 0 && a < 1 && b > 0 && b < 1 && a + b < 1;
 	}
 
-	Can::Object* ConstructObject(const std::string& shaderPath, const std::string& texturePath, std::vector<glm::vec3>& vertices, std::vector<glm::vec2>& uvs, std::vector<glm::vec3>& normals)
+	Object* ConstructObject(const std::string& shaderPath, const std::string& texturePath, std::vector<glm::vec3>& vertices, std::vector<glm::vec2>& uvs, std::vector<glm::vec3>& normals)
 	{
-		Can::Object* object = new Can::Object();
-		object->VA = Can::VertexArray::Create();
+		Object* object = new  Object();
+		object->VA = VertexArray::Create();
 		int vSize = vertices.size();
 		object->indexCount = vSize;
 		int size = vSize * (3 + 2 + 3);
@@ -94,11 +94,11 @@ namespace Can::Helper
 		}
 
 		object->Vertices = m_Vertices;
-		object->VB = Can::VertexBuffer::Create(m_Vertices, sizeof(float) * size, true);
+		object->VB = VertexBuffer::Create(m_Vertices, sizeof(float) * size, true);
 		object->VB->SetLayout({
-		   { Can::ShaderDataType::Float3, "a_Position"},
-		   { Can::ShaderDataType::Float2, "a_UV"},
-		   { Can::ShaderDataType::Float3, "a_Normal"}
+		   {  ShaderDataType::Float3, "a_Position"},
+		   {  ShaderDataType::Float2, "a_UV"},
+		   {  ShaderDataType::Float3, "a_Normal"}
 			});
 
 		object->VA->AddVertexBuffer(object->VB);
@@ -111,11 +111,11 @@ namespace Can::Helper
 		}
 
 		object->Indices = m_Indices;
-		object->IB = Can::IndexBuffer::Create(m_Indices, vSize);
+		object->IB = IndexBuffer::Create(m_Indices, vSize);
 		object->VA->SetIndexBuffer(object->IB);
 
-		object->T = Can::Texture2D::Create(texturePath);
-		object->S = Can::Shader::Create(shaderPath);
+		object->T = Texture2D::Create(texturePath);
+		object->S = Shader::Create(shaderPath);
 
 		object->S->Bind();
 		object->S->SetInt("u_Texture", 0);
@@ -144,7 +144,7 @@ namespace Can::Helper
 		return files;
 	}
 
-	void LevelTheTerrain(const glm::vec2& startIndex, const glm::vec2& endIndex, const glm::vec3& startCoord, const glm::vec3& endCoord, Can::Object* terrain, float width)
+	void LevelTheTerrain(const glm::vec2& startIndex, const glm::vec2& endIndex, const glm::vec3& startCoord, const glm::vec3& endCoord, Object* terrain, float width)
 	{
 		glm::vec2 AB = {
 			endCoord.x - startCoord.x ,
@@ -203,7 +203,7 @@ namespace Can::Helper
 		terrain->VB->Unbind();
 	}
 
-	void GenerateTJunction(Can::Object* roadP, Can::Object* endP, Can::Object* junctionP, int snappedRoadIndex, const glm::vec3& startCoord, const glm::vec3& junctionCoord, const std::string& shaderPath, const std::string& texturePath, std::vector<Road*>& roads)
+	void GenerateTJunction(Object* roadP, Object* endP, Object* junctionP, int snappedRoadIndex, const glm::vec3& startCoord, const glm::vec3& junctionCoord, const std::string& shaderPath, const std::string& texturePath, std::vector<Road*>& roads)
 	{
 		glm::vec2 unitX = { 1.0f, 0.0f };
 		Road* road = roads.at(snappedRoadIndex);
@@ -304,13 +304,13 @@ namespace Can::Helper
 		float scaleBBd = (lengthBBd / (lengthRoad / 100.0f)) / countBBd;
 		float scaleCCd = (lengthCCd / (lengthRoad / 100.0f)) / countCCd;
 
-		Can::Object* roadAAd = new Can::Object();
-		Can::Object* roadBBd = new Can::Object();
-		Can::Object* roadCCd = new Can::Object();
+		Object* roadAAd = new  Object();
+		Object* roadBBd = new  Object();
+		Object* roadCCd = new  Object();
 
-		roadAAd->VA = Can::VertexArray::Create();
-		roadBBd->VA = Can::VertexArray::Create();
-		roadCCd->VA = Can::VertexArray::Create();
+		roadAAd->VA = VertexArray::Create();
+		roadBBd->VA = VertexArray::Create();
+		roadCCd->VA = VertexArray::Create();
 
 		int roadIndexCount = roadP->indexCount;
 
@@ -376,24 +376,24 @@ namespace Can::Helper
 		roadBBd->Vertices = BBdVertices;
 		roadCCd->Vertices = CCdVertices;
 
-		roadAAd->VB = Can::VertexBuffer::Create(roadAAd->Vertices, sizeof(float) * roadAAd->indexCount * (3 + 2 + 3), true);
-		roadBBd->VB = Can::VertexBuffer::Create(roadBBd->Vertices, sizeof(float) * roadBBd->indexCount * (3 + 2 + 3), true);
-		roadCCd->VB = Can::VertexBuffer::Create(roadCCd->Vertices, sizeof(float) * roadCCd->indexCount * (3 + 2 + 3), true);
+		roadAAd->VB = VertexBuffer::Create(roadAAd->Vertices, sizeof(float) * roadAAd->indexCount * (3 + 2 + 3), true);
+		roadBBd->VB = VertexBuffer::Create(roadBBd->Vertices, sizeof(float) * roadBBd->indexCount * (3 + 2 + 3), true);
+		roadCCd->VB = VertexBuffer::Create(roadCCd->Vertices, sizeof(float) * roadCCd->indexCount * (3 + 2 + 3), true);
 
 		roadBBd->VB->SetLayout({
-		   { Can::ShaderDataType::Float3, "a_Position"},
-		   { Can::ShaderDataType::Float2, "a_UV"},
-		   { Can::ShaderDataType::Float3, "a_Normal"}
+		   {  ShaderDataType::Float3, "a_Position"},
+		   {  ShaderDataType::Float2, "a_UV"},
+		   {  ShaderDataType::Float3, "a_Normal"}
 			});
 		roadAAd->VB->SetLayout({
-		   { Can::ShaderDataType::Float3, "a_Position"},
-		   { Can::ShaderDataType::Float2, "a_UV"},
-		   { Can::ShaderDataType::Float3, "a_Normal"}
+		   {  ShaderDataType::Float3, "a_Position"},
+		   {  ShaderDataType::Float2, "a_UV"},
+		   {  ShaderDataType::Float3, "a_Normal"}
 			});
 		roadCCd->VB->SetLayout({
-		   { Can::ShaderDataType::Float3, "a_Position"},
-		   { Can::ShaderDataType::Float2, "a_UV"},
-		   { Can::ShaderDataType::Float3, "a_Normal"}
+		   {  ShaderDataType::Float3, "a_Position"},
+		   {  ShaderDataType::Float2, "a_UV"},
+		   {  ShaderDataType::Float3, "a_Normal"}
 			});
 
 		roadAAd->VA->AddVertexBuffer(roadAAd->VB);
@@ -412,21 +412,21 @@ namespace Can::Helper
 		roadBBd->Indices = BBdIndices;
 		roadCCd->Indices = CCdIndices;
 
-		roadAAd->IB = Can::IndexBuffer::Create(AAdIndices, roadAAd->indexCount);
-		roadBBd->IB = Can::IndexBuffer::Create(BBdIndices, roadBBd->indexCount);
-		roadCCd->IB = Can::IndexBuffer::Create(CCdIndices, roadCCd->indexCount);
+		roadAAd->IB = IndexBuffer::Create(AAdIndices, roadAAd->indexCount);
+		roadBBd->IB = IndexBuffer::Create(BBdIndices, roadBBd->indexCount);
+		roadCCd->IB = IndexBuffer::Create(CCdIndices, roadCCd->indexCount);
 
 		roadAAd->VA->SetIndexBuffer(roadAAd->IB);
 		roadBBd->VA->SetIndexBuffer(roadBBd->IB);
 		roadCCd->VA->SetIndexBuffer(roadCCd->IB);
 
-		roadAAd->T = Can::Texture2D::Create(texturePath);
-		roadBBd->T = Can::Texture2D::Create(texturePath);
-		roadCCd->T = Can::Texture2D::Create(texturePath);
+		roadAAd->T = Texture2D::Create(texturePath);
+		roadBBd->T = Texture2D::Create(texturePath);
+		roadCCd->T = Texture2D::Create(texturePath);
 
-		roadAAd->S = Can::Shader::Create(shaderPath);
-		roadBBd->S = Can::Shader::Create(shaderPath);
-		roadCCd->S = Can::Shader::Create(shaderPath);
+		roadAAd->S = Shader::Create(shaderPath);
+		roadBBd->S = Shader::Create(shaderPath);
+		roadCCd->S = Shader::Create(shaderPath);
 
 		roadAAd->S->Bind();
 		roadAAd->S->SetInt("u_Texture", 0);
@@ -448,12 +448,12 @@ namespace Can::Helper
 		SetTransform(roadBBd, { B.x, startCoord.y, B.y }, { 0.01f, 0.01f, 0.01f }, { 0.0f, rotateBBdAmount, 0.0f });
 		SetTransform(roadCCd, { C.x, startCoord.y, C.y }, { 0.01f, 0.01f, 0.01f }, { 0.0f, rotateCCdAmount, 0.0f });
 
-		Can::Renderer3D::AddObject(roadAAd);
-		Can::Renderer3D::AddObject(roadBBd);
-		Can::Renderer3D::AddObject(roadCCd);
+		Renderer3D::AddObject(roadAAd);
+		Renderer3D::AddObject(roadBBd);
+		Renderer3D::AddObject(roadCCd);
 
 
-		Can::Renderer3D::DeleteObject(road->object);
+		Renderer3D::DeleteObject(road->object);
 		roads.erase(roads.begin() + snappedRoadIndex);
 
 		std::array<glm::vec3, 2> arrAAd = {
@@ -493,7 +493,7 @@ namespace Can::Helper
 		LevelTheTerrain(arrCCdIndex[0], arrCCdIndex[1], arrCCd[0], arrCCd[1], m_Terrain, testScene->roadPrefabWidth / 200.0f);
 	}
 
-	void UpdateTheJunction(Junction* junction, Can::Object* prefab, const std::string& shaderPath, const std::string& texturePath)
+	void UpdateTheJunction(Junction* junction, Object* prefab, const std::string& shaderPath, const std::string& texturePath)
 	{
 		float maxJZ = 0.0f;
 		float minJZ = 0.0f;
@@ -583,14 +583,14 @@ namespace Can::Helper
 
 		if (junction->object != nullptr)
 		{
-			Can::Renderer3D::DeleteObject(junction->object);
+			Renderer3D::DeleteObject(junction->object);
 			delete junction->object;
 		}
 
-		Can::Object* junctionObject = new Can::Object();
+		Object* junctionObject = new  Object();
 		junction->object = junctionObject;
 
-		junctionObject->VA = Can::VertexArray::Create();
+		junctionObject->VA = VertexArray::Create();
 
 		size_t prefabIndexCount = prefab->indexCount;
 		junctionObject->indexCount = prefabIndexCount * roadCount;
@@ -691,12 +691,12 @@ namespace Can::Helper
 
 		junctionObject->Vertices = junctionVertices;
 
-		junctionObject->VB = Can::VertexBuffer::Create(junctionObject->Vertices, sizeof(float) * junctionObject->indexCount * (3 + 2 + 3), true);
+		junctionObject->VB = VertexBuffer::Create(junctionObject->Vertices, sizeof(float) * junctionObject->indexCount * (3 + 2 + 3), true);
 
 		junctionObject->VB->SetLayout({
-		   { Can::ShaderDataType::Float3, "a_Position"},
-		   { Can::ShaderDataType::Float2, "a_UV"},
-		   { Can::ShaderDataType::Float3, "a_Normal"}
+		   {  ShaderDataType::Float3, "a_Position"},
+		   {  ShaderDataType::Float2, "a_UV"},
+		   {  ShaderDataType::Float3, "a_Normal"}
 			});
 
 		junctionObject->VA->AddVertexBuffer(junctionObject->VB);
@@ -707,23 +707,23 @@ namespace Can::Helper
 
 		junctionObject->Indices = junctionIndices;
 
-		junctionObject->IB = Can::IndexBuffer::Create(junctionIndices, junctionObject->indexCount);
+		junctionObject->IB = IndexBuffer::Create(junctionIndices, junctionObject->indexCount);
 
 		junctionObject->VA->SetIndexBuffer(junctionObject->IB);
 
-		junctionObject->T = Can::Texture2D::Create(texturePath);
+		junctionObject->T = Texture2D::Create(texturePath);
 
-		junctionObject->S = Can::Shader::Create(shaderPath);
+		junctionObject->S = Shader::Create(shaderPath);
 
 		junctionObject->S->Bind();
 		junctionObject->S->SetInt("u_Texture", 0);
 		junctionObject->S->SetFloat3("u_LightPos", { 1.0f, 1.0f, -1.0f });
 
 		SetTransform(junctionObject, junction->position + glm::vec3{ 0.0f, 0.01f, 0.0f }, { 0.01f, 0.01f, 0.01f });
-		Can::Renderer3D::AddObject(junctionObject);
+		Renderer3D::AddObject(junctionObject);
 	}
 
-	void ReconstructRoad(Road* road, Can::Object* prefab, const std::string& shaderPath, const std::string& texturePath)
+	void ReconstructRoad(Road* road, Object* prefab, const std::string& shaderPath, const std::string& texturePath)
 	{
 		float maxRz = 0.0f;
 		float minRz = 0.0f;
@@ -759,13 +759,13 @@ namespace Can::Helper
 
 		if (road->object != nullptr)
 		{
-			Can::Renderer3D::DeleteObject(road->object);
+			Renderer3D::DeleteObject(road->object);
 			delete road->object;
 		}
 
-		Can::Object* roadObject = new Can::Object();
+		Object* roadObject = new  Object();
 
-		roadObject->VA = Can::VertexArray::Create();
+		roadObject->VA = VertexArray::Create();
 
 		int roadIndexCount = prefab->indexCount;
 
@@ -794,12 +794,12 @@ namespace Can::Helper
 
 		roadObject->Vertices = roadVertices;
 
-		roadObject->VB = Can::VertexBuffer::Create(roadObject->Vertices, sizeof(float) * roadObject->indexCount * (3 + 2 + 3), true);
+		roadObject->VB = VertexBuffer::Create(roadObject->Vertices, sizeof(float) * roadObject->indexCount * (3 + 2 + 3), true);
 
 		roadObject->VB->SetLayout({
-		   { Can::ShaderDataType::Float3, "a_Position"},
-		   { Can::ShaderDataType::Float2, "a_UV"},
-		   { Can::ShaderDataType::Float3, "a_Normal"}
+		   {  ShaderDataType::Float3, "a_Position"},
+		   {  ShaderDataType::Float2, "a_UV"},
+		   {  ShaderDataType::Float3, "a_Normal"}
 			});
 
 		roadObject->VA->AddVertexBuffer(roadObject->VB);
@@ -810,12 +810,12 @@ namespace Can::Helper
 
 		roadObject->Indices = roadIndices;
 
-		roadObject->IB = Can::IndexBuffer::Create(roadIndices, roadObject->indexCount);
+		roadObject->IB = IndexBuffer::Create(roadIndices, roadObject->indexCount);
 
 		roadObject->VA->SetIndexBuffer(roadObject->IB);
 
-		roadObject->T = Can::Texture2D::Create(texturePath);
-		roadObject->S = Can::Shader::Create(shaderPath);
+		roadObject->T = Texture2D::Create(texturePath);
+		roadObject->S = Shader::Create(shaderPath);
 
 		roadObject->S->Bind();
 		roadObject->S->SetInt("u_Texture", 0);
@@ -825,14 +825,13 @@ namespace Can::Helper
 
 		SetTransform(roadObject, road->startPos + glm::vec3{ 0.0f, 0.01f, 0.0f }, { 0.01f, 0.01f, 0.01f }, { 0.0f, rotateAmount, 0.0f });
 		road->object = roadObject;
-		Can::Renderer3D::AddObject(roadObject);
+		Renderer3D::AddObject(roadObject);
 	}
 
-	Can::Prefab* GetPrefabForTerrain(const std::string& texturePath)
+	Ref<Prefab> GetPrefabForTerrain(const std::string& texturePath)
 	{
 #define COLOR_COUNT 5
 #define TEMP_TERRAIN_SHADER "assets/shaders/Cube.glsl"
-		Prefab* terrainPrefab = new Prefab();
 
 		std::array<glm::vec4, COLOR_COUNT> colors = {
 			glm::vec4{ 9.0f / 255.0f, 255.0f / 255.0f, 4.0f / 255.0f, 1.0f },
@@ -848,12 +847,9 @@ namespace Can::Helper
 		size_t w = width - 1;
 		size_t h = height - 1;
 
-		terrainPrefab->boundingBoxL = { 0.0f, 0.0f, -height };
-		terrainPrefab->boundingBoxM = { width, 1.0f * COLOR_COUNT, 0.0f };
-
-		terrainPrefab->indexCount = w * h * 2 * 3;
-		terrainPrefab->vertexCount = terrainPrefab->indexCount * (3 + 4 + 3);
-		float* vertices = new float[terrainPrefab->vertexCount];
+		size_t indexCount = w * h * 2 * 3;
+		size_t vertexCount = indexCount * (3 + 4 + 3);
+		float* vertices = new float[vertexCount];
 
 		int vertexIndex = 0;
 		for (size_t y = 0; y < h; y++)
@@ -997,29 +993,9 @@ namespace Can::Helper
 			}
 		}
 
-		uint32_t* indices = new uint32_t[terrainPrefab->indexCount];
-		for (size_t i = 0; i < terrainPrefab->indexCount; i++)
-			indices[i] = i;
-
-		terrainPrefab->vertices = vertices;
-
-		terrainPrefab->vertexBuffer = VertexBuffer::Create(terrainPrefab->vertices, sizeof(float) * terrainPrefab->vertexCount, true);
-		terrainPrefab->vertexBuffer->SetLayout({
-		   { Can::ShaderDataType::Float3, "a_Position"},
-		   { Can::ShaderDataType::Float4, "a_Color"},
-		   { Can::ShaderDataType::Float3, "a_Normal"}
-			});
-		terrainPrefab->vertexArray = VertexArray::Create();
-		terrainPrefab->vertexArray->AddVertexBuffer(terrainPrefab->vertexBuffer);
-
-		terrainPrefab->indexBuffer = IndexBuffer::Create(indices, terrainPrefab->indexCount);
-		terrainPrefab->vertexArray->SetIndexBuffer(terrainPrefab->indexBuffer);
-
-		terrainPrefab->shader = Shader::Create(TEMP_TERRAIN_SHADER);
-
-		terrainPrefab->shader->Bind();
-		terrainPrefab->shader->SetInt("u_Texture", 0);
-		terrainPrefab->shader->SetFloat3("u_LightPos", { 4.0f, 0.0f, 0.0f });
+		Ref<Prefab> terrainPrefab = CreateRef<Prefab>("", TEMP_TERRAIN_SHADER, "", vertices, indexCount, vertexCount, BufferLayout{ { ShaderDataType::Float3, "a_Position"}, { ShaderDataType::Float4, "a_Color"}, { ShaderDataType::Float3, "a_Normal"} });
+		terrainPrefab->boundingBoxL = { 0.0f, 0.0f, -height };
+		terrainPrefab->boundingBoxM = { width, 1.0f * COLOR_COUNT, 0.0f };
 
 		return terrainPrefab;
 	}
