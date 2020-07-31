@@ -30,7 +30,7 @@ namespace Can
 	{
 		delete object;
 	}
-	void Road::ConstructObject(const Ref<Prefab>& prefab, const glm::vec3& startPos, const glm::vec3& endPos)
+	void Road::ConstructObject(const Ref<Prefab>& prefab)
 	{
 		float lengthRoad = prefab->boundingBoxM.x - prefab->boundingBoxL.x;
 		int count = (int)(length / lengthRoad);
@@ -62,5 +62,12 @@ namespace Can
 
 
 		object = new Object(newPrefab, startPosition, glm::vec3{ 1.0f, 1.0f, 1.0f }, rotation);
+	}
+	void Road::ReconstructObject(const Ref<Prefab>& prefab)
+	{
+		if (object)
+			delete object;
+
+		ConstructObject(prefab);
 	}
 }

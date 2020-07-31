@@ -15,7 +15,8 @@ namespace Can
 		~Road();
 
 	public:
-		void ConstructObject(const Ref<Prefab>& prefab, const glm::vec3& startPos, const glm::vec3& endPos);
+		void ConstructObject(const Ref<Prefab>& prefab);
+		void ReconstructObject(const Ref<Prefab>& prefab);
 
 	public:
 		glm::vec3 startPosition;
