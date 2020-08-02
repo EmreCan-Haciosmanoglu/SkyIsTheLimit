@@ -17,11 +17,11 @@ namespace Can
 		void LoadEnds();
 
 	public:
-		std::vector<Prefab*> roads;
-		std::vector<Prefab*> junctions;
-		std::vector<Prefab*> ends;
+		std::vector<Ref<Prefab>> roads;
+		std::vector<Ref<Prefab>> junctions;
+		std::vector<Ref<Prefab>> ends;
 
-		Prefab* terrainPrefab;
+		Ref<Prefab> terrainPrefab;
 
 	private:
 		TestScene* testScene;
