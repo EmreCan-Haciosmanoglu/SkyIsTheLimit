@@ -15,17 +15,15 @@ namespace Can::Helper
 
 	bool RayTriangleIntersection(const glm::vec3& camPos, const glm::vec3& ray, const glm::vec3& A, const glm::vec3& B, const glm::vec3& C, const glm::vec3& normal);
 
-	 Object* ConstructObject(const std::string& shaderPath, const std::string& texturePath, std::vector < glm::vec3 >& vertices, std::vector < glm::vec2 >& uvs, std::vector < glm::vec3 >& normals);
+	Object* ConstructObject(const std::string& shaderPath, const std::string& texturePath, std::vector < glm::vec3 >& vertices, std::vector < glm::vec2 >& uvs, std::vector < glm::vec3 >& normals);
 
 	std::vector<std::string> GetFiles(const std::string& folder, const std::string& filter, const std::string& fileType);
-	
-	void LevelTheTerrain(const glm::vec2& startIndex, const glm::vec2& endIndex, const glm::vec3& startCoord, const glm::vec3& endCoord,  Object* terrain, float width);
 
-	void GenerateTJunction( Object* roadP,  Object* endP,  Object* junctionP, int snappedRoadIndex, const glm::vec3& startCoord, const glm::vec3& junctionCoord, const std::string& shaderPath, const std::string& texturePath, std::vector<Road*>& roads);
+	void LevelTheTerrain(const glm::vec2& startIndex, const glm::vec2& endIndex, const glm::vec3& startCoord, const glm::vec3& endCoord, Object* terrain, float width);
 
-	void UpdateTheJunction(Junction* junction,  Object* prefab, const std::string& shaderPath, const std::string& texturePath);
+	void GenerateTJunction(Object* roadP, Object* endP, Object* junctionP, int snappedRoadIndex, const glm::vec3& startCoord, const glm::vec3& junctionCoord, const std::string& shaderPath, const std::string& texturePath, std::vector<Road*>& roads);
 
-	void ReconstructRoad(Road* road,  Object* prefab, const std::string& shaderPath, const std::string& texturePath);
+	void ReconstructRoad(Road* road, Object* prefab, const std::string& shaderPath, const std::string& texturePath);
 	Ref<Prefab> GetPrefabForTerrain(const std::string& texturePath);
 
 	glm::vec2 RotateAPointAroundAPoint(const glm::vec2& p1, const glm::vec2& p2, float angleInRadians);
@@ -34,16 +32,16 @@ namespace Can::Helper
 	{
 		inline bool operator() (const Road* road1, const Road* road2)
 		{
-			glm::vec3 R0R1_1;
-			glm::vec3 R0R1_2;
+			float roadR1;
+			float roadR2;
 			if (
 				road1->endJunction != nullptr &&
 				road2->endJunction != nullptr &&
 				road1->endJunction == road2->endJunction
 				)
 			{
-				R0R1_1 = road1->startPos - road1->endPos;
-				R0R1_2 = road2->startPos - road2->endPos;
+				roadR1 = road1->rotation.z + glm::radians(180.0f);
+				roadR2 = road2->rotation.z + glm::radians(180.0f);
 			}
 			else if (
 				road1->endJunction != nullptr &&
@@ -51,8 +49,8 @@ namespace Can::Helper
 				road1->endJunction == road2->startJunction
 				)
 			{
-				R0R1_1 = road1->startPos - road1->endPos;
-				R0R1_2 = road2->endPos - road2->startPos;
+				roadR1 = road1->rotation.z + glm::radians(180.0f);
+				roadR2 = road2->rotation.z;
 			}
 			else if (
 				road1->startJunction != nullptr &&
@@ -60,8 +58,8 @@ namespace Can::Helper
 				road1->startJunction == road2->endJunction
 				)
 			{
-				R0R1_1 = road1->endPos - road1->startPos;
-				R0R1_2 = road2->startPos - road2->endPos;
+				roadR1 = road1->rotation.z;
+				roadR2 = road2->rotation.z + glm::radians(180.0f);
 			}
 			else if (
 				road1->startJunction != nullptr &&
@@ -69,22 +67,16 @@ namespace Can::Helper
 				road1->startJunction == road2->startJunction
 				)
 			{
-				R0R1_1 = road1->endPos - road1->startPos;
-				R0R1_2 = road2->endPos - road2->startPos;
+				roadR1 = road1->rotation.z;
+				roadR2 = road2->rotation.z;
 			}
 			else
 			{
-				R0R1_1 = { 0.01f, 1.0f, 0.01f };
-				R0R1_2 = { 0.01f, 1.0f, 0.01f };
+				roadR1 = 0.001f;
+				roadR2 = 0.002f;
 			}
 
-			float ed1 = R0R1_1.x <= 0.0f ? 180.0f : 0.0f;
-			float ed2 = R0R1_2.x <= 0.0f ? 180.0f : 0.0f;
-
-			float angleR0R1_1 = std::fmod(glm::degrees(glm::atan(-R0R1_1.z / R0R1_1.x)) + ed1 + 360.0f, 360.0f);
-			float angleR0R1_2 = std::fmod(glm::degrees(glm::atan(-R0R1_2.z / R0R1_2.x)) + ed2 + 360.0f, 360.0f);
-
-			return (angleR0R1_1 < angleR0R1_2);
+			return (roadR1 < roadR2);
 		}
 	};
 }
