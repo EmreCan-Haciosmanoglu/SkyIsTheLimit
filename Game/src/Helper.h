@@ -23,7 +23,6 @@ namespace Can::Helper
 
 	void GenerateTJunction(Object* roadP, Object* endP, Object* junctionP, int snappedRoadIndex, const glm::vec3& startCoord, const glm::vec3& junctionCoord, const std::string& shaderPath, const std::string& texturePath, std::vector<Road*>& roads);
 
-	void ReconstructRoad(Road* road, Object* prefab, const std::string& shaderPath, const std::string& texturePath);
 	Ref<Prefab> GetPrefabForTerrain(const std::string& texturePath);
 
 	glm::vec2 RotateAPointAroundAPoint(const glm::vec2& p1, const glm::vec2& p2, float angleInRadians);
