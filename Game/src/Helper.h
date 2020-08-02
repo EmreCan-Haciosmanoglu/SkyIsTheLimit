@@ -15,8 +15,6 @@ namespace Can::Helper
 
 	bool RayTriangleIntersection(const glm::vec3& camPos, const glm::vec3& ray, const glm::vec3& A, const glm::vec3& B, const glm::vec3& C, const glm::vec3& normal);
 
-	Object* ConstructObject(const std::string& shaderPath, const std::string& texturePath, std::vector < glm::vec3 >& vertices, std::vector < glm::vec2 >& uvs, std::vector < glm::vec3 >& normals);
-
 	std::vector<std::string> GetFiles(const std::string& folder, const std::string& filter, const std::string& fileType);
 
 	void LevelTheTerrain(const glm::vec2& startIndex, const glm::vec2& endIndex, const glm::vec3& startCoord, const glm::vec3& endCoord, Object* terrain, float width);

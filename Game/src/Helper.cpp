@@ -71,62 +71,6 @@ namespace  Can::Helper
 		return a > 0 && a < 1 && b > 0 && b < 1 && a + b < 1;
 	}
 
-	Object* ConstructObject(const std::string& shaderPath, const std::string& texturePath, std::vector<glm::vec3>& vertices, std::vector<glm::vec2>& uvs, std::vector<glm::vec3>& normals)
-	{
-		Object* object = new  Object();
-		object->VA = VertexArray::Create();
-		int vSize = vertices.size();
-		object->indexCount = vSize;
-		int size = vSize * (3 + 2 + 3);
-		float* m_Vertices = new float[size];
-
-		for (int i = 0; i < vSize; i++)
-		{
-			int index = i * 8;
-			m_Vertices[index + 0] = vertices[i].x;
-			m_Vertices[index + 1] = vertices[i].y;
-			m_Vertices[index + 2] = vertices[i].z;
-			m_Vertices[index + 3] = uvs[i].x;
-			m_Vertices[index + 4] = uvs[i].y;
-			m_Vertices[index + 5] = normals[i].x;
-			m_Vertices[index + 6] = normals[i].y;
-			m_Vertices[index + 7] = normals[i].z;
-		}
-
-		object->Vertices = m_Vertices;
-		object->VB = VertexBuffer::Create(m_Vertices, sizeof(float) * size, true);
-		object->VB->SetLayout({
-		   {  ShaderDataType::Float3, "a_Position"},
-		   {  ShaderDataType::Float2, "a_UV"},
-		   {  ShaderDataType::Float3, "a_Normal"}
-			});
-
-		object->VA->AddVertexBuffer(object->VB);
-
-		uint32_t* m_Indices = new uint32_t[vSize];
-
-		for (int i = 0; i < vSize; i++)
-		{
-			m_Indices[i] = i;
-		}
-
-		object->Indices = m_Indices;
-		object->IB = IndexBuffer::Create(m_Indices, vSize);
-		object->VA->SetIndexBuffer(object->IB);
-
-		object->T = Texture2D::Create(texturePath);
-		object->S = Shader::Create(shaderPath);
-
-		object->S->Bind();
-		object->S->SetInt("u_Texture", 0);
-		object->S->SetFloat3("u_LightPos", { 1.0f, 1.0f, -1.0f });
-
-		SetTransform(object, { 0.0f, 0.0f, 0.0f }, { 1.0f, 1.0f, 1.0f });
-
-
-		return object;
-	}
-
 	std::vector<std::string> GetFiles(const std::string& folder, const std::string& filter, const std::string& fileType)
 	{
 		std::vector<std::string> files;
