@@ -10,8 +10,8 @@ namespace Can
 	{
 	public:
 		Road() = default;
-		Road(const Ref<Prefab>& prefab, const glm::vec3& startPos, const glm::vec3& endPos);
-		Road(Object* object, const glm::vec3& startPos, const glm::vec3& endPos);
+		Road(const Ref<Prefab>& prefab, const glm::vec3& startPos, const glm::vec3& endPos, const std::array<Ref<Prefab>, 3> type);
+		Road(Object* object, const glm::vec3& startPos, const glm::vec3& endPos, const std::array<Ref<Prefab>, 3> type);
 		~Road();
 
 	public:
@@ -26,11 +26,13 @@ namespace Can
 		glm::vec3 rotation;
 		float length;
 
-		Can::Object* object;
+		Object* object;
 
 		Junction* startJunction;
 		Junction* endJunction;
 		End* startEnd;
 		End* endEnd;
+
+		std::array<Ref<Prefab>, 3> type;
 	};
 }

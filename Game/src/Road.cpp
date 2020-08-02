@@ -8,22 +8,24 @@
 
 namespace Can
 {
-	Road::Road(const Ref<Prefab>& prefab, const glm::vec3& startPos, const glm::vec3& endPos)
+	Road::Road(const Ref<Prefab>& prefab, const glm::vec3& startPos, const glm::vec3& endPos, const std::array<Ref<Prefab>, 3> type)
 		: startPosition(startPos)
 		, endPosition(endPos)
 		, direction(glm::normalize(endPos - startPos))
 		, rotation({ 0.0f, glm::atan(direction.y / direction.x), glm::atan(direction.z / direction.x) + (direction.x <= 0 ? glm::radians(180.0f) : 0.0f) })
 		, length(glm::length(endPos - startPos))
 		, object(nullptr)
+		, type(type)
 	{
-		ConstructObject(prefab, startPos, endPos);
+		ConstructObject(prefab);
 	}
-	Road::Road(Object* object, const glm::vec3& startPos, const glm::vec3& endPos)
+	Road::Road(Object* object, const glm::vec3& startPos, const glm::vec3& endPos, const std::array<Ref<Prefab>, 3> type)
 		: startPosition(startPos)
 		, endPosition(endPos)
 		, direction(glm::normalize(endPos - startPos))
 		, length(glm::length(endPos - startPos))
 		, object(object)
+		, type(type)
 	{
 	}
 	Road::~Road()
@@ -61,7 +63,7 @@ namespace Can
 		newPrefab->boundingBoxM.x *= count * scale;
 
 
-		object = new Object(newPrefab, startPosition, glm::vec3{ 1.0f, 1.0f, 1.0f }, rotation);
+		object = new Object(newPrefab, prefab, startPosition, glm::vec3{ 1.0f, 1.0f, 1.0f }, rotation);
 	}
 	void Road::ReconstructObject(const Ref<Prefab>& prefab)
 	{
