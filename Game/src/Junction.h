@@ -8,12 +8,19 @@ namespace Can
 	class Junction
 	{
 	public:
-		Junction();
-		~Junction();
+		Junction(const glm::vec3& position = { 0.0f, 0.0f, 0.0f });
+		Junction(const std::vector<Object*>& object, const glm::vec3& position = { 0.0f, 0.0f, 0.0f });
+		~Junction() = default;
+
+	public:
+		void ConstructObject();
+		void ReconstructObject();
 
 	public:
 		glm::vec3 position;
-		Can::Object* object = nullptr;
+
+		std::vector<Object*> junctionPieces;
 		std::vector<Road*> connectedRoads;
+
 	};
 }
