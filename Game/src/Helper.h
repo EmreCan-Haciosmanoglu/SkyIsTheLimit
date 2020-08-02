@@ -19,8 +19,6 @@ namespace Can::Helper
 
 	void LevelTheTerrain(const glm::vec2& startIndex, const glm::vec2& endIndex, const glm::vec3& startCoord, const glm::vec3& endCoord, Object* terrain, float width);
 
-	void GenerateTJunction(Object* roadP, Object* endP, Object* junctionP, int snappedRoadIndex, const glm::vec3& startCoord, const glm::vec3& junctionCoord, const std::string& shaderPath, const std::string& texturePath, std::vector<Road*>& roads);
-
 	Ref<Prefab> GetPrefabForTerrain(const std::string& texturePath);
 
 	glm::vec2 RotateAPointAroundAPoint(const glm::vec2& p1, const glm::vec2& p2, float angleInRadians);
