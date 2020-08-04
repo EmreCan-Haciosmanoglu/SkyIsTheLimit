@@ -8,12 +8,13 @@ namespace Can
 	class End
 	{
 	public:
-		End();
+		End(Road* connectedRoad, const Ref<Prefab>& prefab);
+		End(Road* connectedRoad, const Ref<Prefab>& prefab, const glm::vec3& position);
+		End(Road* connectedRoad, const Ref<Prefab>& prefab, const glm::vec3& position, const glm::vec3& rotation);
+		End(Road* connectedRoad, Object* object);
 		~End();
 
 	public:
-		glm::vec3 position;
-		glm::vec2 rotation;
 		Can::Object* object;
 		Road* connectedRoad;
 	};
