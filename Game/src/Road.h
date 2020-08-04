@@ -23,7 +23,7 @@ namespace Can
 		glm::vec3 endPosition;
 
 		glm::vec3 direction;
-		glm::vec3 rotation;
+		glm::vec3 rotation; // Maybe duplicated
 		float length;
 
 		Object* object;
@@ -34,5 +34,8 @@ namespace Can
 		End* endEnd;
 
 		std::array<Ref<Prefab>, 3> type;
+		// 0 => Road
+		// 1 => Junction
+		// 2 => End
 	};
 }

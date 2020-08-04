@@ -9,6 +9,11 @@ namespace Can
 	Junction::Junction(const glm::vec3& position)
 		: position(position)
 	{
+	}
+	Junction::Junction(const std::vector<Road*>& connectedRoads, const glm::vec3& position)
+		: position(position)
+		, connectedRoads(connectedRoads)
+	{
 		ConstructObject();
 	}
 	Junction::Junction(const std::vector<Object*>& junctionPieces, const glm::vec3& position)
