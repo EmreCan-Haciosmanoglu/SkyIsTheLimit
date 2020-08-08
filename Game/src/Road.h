@@ -18,9 +18,17 @@ namespace Can
 		void ConstructObject(const Ref<Prefab>& prefab);
 		void ReconstructObject(const Ref<Prefab>& prefab);
 
-	public:
+		inline const glm::vec3& GetStartPosition() const { return startPosition; }
+		inline const glm::vec3& GetEndPosition() const { return endPosition; }
+
+		void SetStartPosition(const glm::vec3& pos);
+		void SetEndPosition(const glm::vec3& pos);
+
+	private:
 		glm::vec3 startPosition;
 		glm::vec3 endPosition;
+
+	public:
 
 		glm::vec3 direction;
 		glm::vec3 rotation; // Maybe duplicated
@@ -28,10 +36,10 @@ namespace Can
 
 		Object* object;
 
-		Junction* startJunction;
-		Junction* endJunction;
-		End* startEnd;
-		End* endEnd;
+		Junction* startJunction = nullptr;
+		Junction* endJunction = nullptr;
+		End* startEnd = nullptr;
+		End* endEnd = nullptr;
 
 		std::array<Ref<Prefab>, 3> type;
 		// 0 => Road

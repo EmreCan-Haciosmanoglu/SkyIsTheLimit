@@ -12,7 +12,7 @@ namespace Can
 		: startPosition(startPos)
 		, endPosition(endPos)
 		, direction(glm::normalize(endPos - startPos))
-		, rotation({ 0.0f, glm::atan(direction.y / direction.x), glm::atan(direction.z / direction.x) + (direction.x <= 0 ? glm::radians(180.0f) : 0.0f) })
+		, rotation({ 0.0f, -(glm::atan(direction.z / direction.x) + (direction.x <= 0 ? glm::radians(180.0f) : 0.0f)), glm::atan(direction.y / direction.x) })
 		, length(glm::length(endPos - startPos))
 		, object(nullptr)
 		, type(type)
@@ -23,6 +23,7 @@ namespace Can
 		: startPosition(startPos)
 		, endPosition(endPos)
 		, direction(glm::normalize(endPos - startPos))
+		, rotation({ 0.0f, -(glm::atan(direction.z / direction.x) + (direction.x <= 0 ? glm::radians(180.0f) : 0.0f)), glm::atan(direction.y / direction.x) })
 		, length(glm::length(endPos - startPos))
 		, object(object)
 		, type(type)
@@ -48,7 +49,7 @@ namespace Can
 			{
 				size_t index = i * 8;
 				vertices[c * prefab->indexCount * 8 + index + 0] = scale * (prefab->vertices[index + 0] + (c * lengthRoad));
-				vertices[c * prefab->indexCount * 8 + index + 1] = prefab->vertices[index + 1];
+				vertices[c * prefab->indexCount * 8 + index + 1] = prefab->vertices[index + 1] + 0.1f;
 				vertices[c * prefab->indexCount * 8 + index + 2] = prefab->vertices[index + 2];
 				vertices[c * prefab->indexCount * 8 + index + 3] = prefab->vertices[index + 3];
 				vertices[c * prefab->indexCount * 8 + index + 4] = prefab->vertices[index + 4];
@@ -71,5 +72,26 @@ namespace Can
 			delete object;
 
 		ConstructObject(prefab);
+	}
+
+	void Road::SetStartPosition(const glm::vec3& pos)
+	{
+		startPosition = pos;
+		direction = glm::normalize(endPosition - startPosition);
+		length = glm::length(endPosition - startPosition);
+		rotation = { 0.0f, -(glm::atan(direction.z / direction.x) + (direction.x <= 0 ? glm::radians(180.0f) : 0.0f)), glm::atan(direction.y / direction.x) };
+
+		Ref<Prefab> type = object->type;
+		ReconstructObject(type);
+	}
+	void Road::SetEndPosition(const glm::vec3& pos)
+	{
+		endPosition = pos;
+		direction = glm::normalize(endPosition - startPosition);
+		length = glm::length(endPosition - startPosition);
+		rotation = { 0.0f, -(glm::atan(direction.z / direction.x) + (direction.x <= 0 ? glm::radians(180.0f) : 0.0f)), glm::atan(direction.y / direction.x) };
+		
+		Ref<Prefab> type = object->type;
+		ReconstructObject(type);
 	}
 }
