@@ -60,13 +60,13 @@ namespace  Can::Helper
 		return p0 + (t * s10);
 	}
 
-	bool RayTriangleIntersection(const glm::vec3& camPos, const glm::vec3& ray, const glm::vec3& A, const glm::vec3& B, const glm::vec3& C, const glm::vec3& normal)
+	bool RayTriangleIntersection(const glm::vec3& camPos, const glm::vec3& ray, const glm::vec3& A, const glm::vec3& B, const glm::vec3& C, const glm::vec3& normal, glm::vec3& intersection)
 	{
 		glm::vec3 u = (C - B) - (glm::dot(C - A, C - B) / glm::dot(C - A, C - A)) * (C - A);
 		glm::vec3 v = (B - A) - (glm::dot(B - C, B - A) / glm::dot(B - C, B - C)) * (B - C);
-		glm::vec3 I = camPos + ray * (glm::dot(A - camPos, normal) / glm::dot(ray, normal));
-		float a = 1 - glm::dot(v, I - A) / glm::dot(v, B - A);
-		float b = 1 - glm::dot(u, I - B) / glm::dot(u, C - B);
+		intersection = camPos + ray * (glm::dot(A - camPos, normal) / glm::dot(ray, normal));
+		float a = 1 - glm::dot(v, intersection - A) / glm::dot(v, B - A);
+		float b = 1 - glm::dot(u, intersection - B) / glm::dot(u, C - B);
 
 		return a > 0 && a < 1 && b > 0 && b < 1 && a + b < 1;
 	}
@@ -90,14 +90,14 @@ namespace  Can::Helper
 
 	void LevelTheTerrain(const glm::vec2& startIndex, const glm::vec2& endIndex, const glm::vec3& startCoord, const glm::vec3& endCoord, Object* terrain, float width)
 	{
-		glm::vec2 AB = {
+		/*glm::vec2 AB = {
 			endCoord.x - startCoord.x ,
 			endCoord.z - startCoord.z
 		};
 		float mAB = glm::length(AB);
 		glm::vec3 SE = endCoord - startCoord;
 
-		float* data = terrain->Vertices;
+		float* data = terrain->prefab->vertices;
 
 		bool xC = startIndex.x < endIndex.x + 1;
 		int xA = xC ? 1 : -1;
@@ -144,12 +144,11 @@ namespace  Can::Helper
 		int vertexCount = terrain->indexCount * (3 + 4 + 3);
 		terrain->VB->Bind();
 		terrain->VB->ReDo(terrain->Vertices, sizeof(float) * vertexCount);
-		terrain->VB->Unbind();
+		terrain->VB->Unbind();*/
 	}
 
 	Ref<Prefab> GetPrefabForTerrain(const std::string& texturePath)
 	{
-#define COLOR_COUNT 5
 #define TEMP_TERRAIN_SHADER "assets/shaders/Cube.glsl"
 
 		std::array<glm::vec4, COLOR_COUNT> colors = {
@@ -183,9 +182,9 @@ namespace  Can::Helper
 				{
 					float z = (p1[0] / 256.0f) * COLOR_COUNT;
 					size_t heightIndex = z;
-					vertices[vertexIndex++] = x;
+					vertices[vertexIndex++] = x / TERRAIN_SCALE_DOWN;
 					vertices[vertexIndex++] = z;
-					vertices[vertexIndex++] = -y;
+					vertices[vertexIndex++] = -(y / TERRAIN_SCALE_DOWN);
 
 					vertices[vertexIndex++] = colors[heightIndex].r;
 					vertices[vertexIndex++] = colors[heightIndex].g;
@@ -197,9 +196,9 @@ namespace  Can::Helper
 				{
 					float z = (p4[0] / 256.0f) * COLOR_COUNT;
 					size_t heightIndex = z;
-					vertices[vertexIndex++] = (x + 1);
+					vertices[vertexIndex++] = (x + 1) / TERRAIN_SCALE_DOWN;
 					vertices[vertexIndex++] = z;
-					vertices[vertexIndex++] = -y;
+					vertices[vertexIndex++] = -(y / TERRAIN_SCALE_DOWN);
 
 					vertices[vertexIndex++] = colors[heightIndex].r;
 					vertices[vertexIndex++] = colors[heightIndex].g;
@@ -211,9 +210,9 @@ namespace  Can::Helper
 				{
 					float z = (p3[0] / 256.0f) * COLOR_COUNT;
 					size_t heightIndex = z;
-					vertices[vertexIndex++] = (x + 1);
+					vertices[vertexIndex++] = (x + 1) / TERRAIN_SCALE_DOWN;
 					vertices[vertexIndex++] = z;
-					vertices[vertexIndex++] = -(y + 1);
+					vertices[vertexIndex++] = -((y + 1) / TERRAIN_SCALE_DOWN);
 
 					vertices[vertexIndex++] = colors[heightIndex].r;
 					vertices[vertexIndex++] = colors[heightIndex].g;
@@ -225,9 +224,9 @@ namespace  Can::Helper
 				{
 					float z = (p1[0] / 256.0f) * COLOR_COUNT;
 					size_t heightIndex = z;
-					vertices[vertexIndex++] = x;
+					vertices[vertexIndex++] = x / TERRAIN_SCALE_DOWN;
 					vertices[vertexIndex++] = z;
-					vertices[vertexIndex++] = -y;
+					vertices[vertexIndex++] = -(y / TERRAIN_SCALE_DOWN);
 
 					vertices[vertexIndex++] = colors[heightIndex].r;
 					vertices[vertexIndex++] = colors[heightIndex].g;
@@ -239,9 +238,9 @@ namespace  Can::Helper
 				{
 					float z = (p3[0] / 256.0f) * COLOR_COUNT;
 					size_t heightIndex = z;
-					vertices[vertexIndex++] = (x + 1);
+					vertices[vertexIndex++] = (x + 1) / TERRAIN_SCALE_DOWN;
 					vertices[vertexIndex++] = z;
-					vertices[vertexIndex++] = -(y + 1);
+					vertices[vertexIndex++] = -((y + 1) / TERRAIN_SCALE_DOWN);
 
 					vertices[vertexIndex++] = colors[heightIndex].r;
 					vertices[vertexIndex++] = colors[heightIndex].g;
@@ -253,9 +252,9 @@ namespace  Can::Helper
 				{
 					float z = (p2[0] / 256.0f) * COLOR_COUNT;
 					size_t heightIndex = z;
-					vertices[vertexIndex++] = x;
+					vertices[vertexIndex++] = x / TERRAIN_SCALE_DOWN;
 					vertices[vertexIndex++] = z;
-					vertices[vertexIndex++] = -(y + 1);
+					vertices[vertexIndex++] = -((y + 1) / TERRAIN_SCALE_DOWN);
 
 					vertices[vertexIndex++] = colors[heightIndex].r;
 					vertices[vertexIndex++] = colors[heightIndex].g;
@@ -282,8 +281,8 @@ namespace  Can::Helper
 				glm::vec3 u2 = a01 - a00;
 				glm::vec3 v2 = a11 - a00;
 
-				glm::vec3 norm1 = glm::cross(v1, u1);
-				glm::vec3 norm2 = glm::cross(v2, u2);
+				glm::vec3 norm1 = glm::normalize(glm::cross(v1, u1));
+				glm::vec3 norm2 = glm::normalize(glm::cross(v2, u2));
 
 				vertices[vertexIndex + 0 + 7] = norm1.x;
 				vertices[vertexIndex + 0 + 8] = norm1.y;
@@ -313,8 +312,8 @@ namespace  Can::Helper
 		}
 
 		Ref<Prefab> terrainPrefab = CreateRef<Prefab>("", TEMP_TERRAIN_SHADER, "", vertices, indexCount, vertexCount, BufferLayout{ { ShaderDataType::Float3, "a_Position"}, { ShaderDataType::Float4, "a_Color"}, { ShaderDataType::Float3, "a_Normal"} });
-		terrainPrefab->boundingBoxL = { 0.0f, 0.0f, -height };
-		terrainPrefab->boundingBoxM = { width, 1.0f * COLOR_COUNT, 0.0f };
+		terrainPrefab->boundingBoxL = { 0.0f, 0.0f, -(height / TERRAIN_SCALE_DOWN) };
+		terrainPrefab->boundingBoxM = { width / TERRAIN_SCALE_DOWN, 1.0f * COLOR_COUNT, 0.0f };
 
 		return terrainPrefab;
 	}
