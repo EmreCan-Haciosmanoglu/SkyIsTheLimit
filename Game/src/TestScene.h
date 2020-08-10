@@ -21,12 +21,17 @@ namespace Can
 		virtual void OnEvent(Can::Event::Event& event) override;
 
 		bool OnMousePressed(Can::Event::MouseButtonPressedEvent& event);
-	private:
 
+		void SetSelectedConstructionRoad(size_t index);
+
+	private:
 		glm::vec3 GetRayCastedFromScreen();
 
 	private:
 		GameApp* m_Parent;
+
+		Object* m_Terrain;
+
 		Can::Camera::Controller::Perspective m_MainCameraController;
 
 		bool b_RoadConstructionStarted = false;
@@ -53,17 +58,12 @@ namespace Can
 		std::vector<Junction*> m_Junctions;
 		std::vector<End*> m_Ends;
 
-		std::vector<Can::Object*> m_RoadGuidelines;
-		std::vector<Can::Object*> m_JunctionGuidelines;
-		Can::Object* m_RoadGuidelinesStart = nullptr;
-		Can::Object* m_RoadGuidelinesEnd = nullptr;
+		std::vector<std::vector<Object*>> m_RoadGuidelines;
+		std::vector<size_t> m_RoadGuidelinesInUse;
+		Object* m_RoadGuidelinesStart = nullptr; // End /? Object
+		Object* m_RoadGuidelinesEnd = nullptr;
 
+		size_t m_RoadConstructionType = 0;
 
-	public:
-		Can::Object* roadPrefab;
-		Can::Object* endPrefab;
-		Can::Object* JunctionPrefab;
-		float roadPrefabWidth = 0.0f;
-		float roadPrefabLength = 0.0f;
 	};
 }

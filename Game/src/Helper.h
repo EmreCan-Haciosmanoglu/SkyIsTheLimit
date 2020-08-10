@@ -21,7 +21,7 @@ namespace Can::Helper
 
 	void LevelTheTerrain(const glm::vec2& startIndex, const glm::vec2& endIndex, const glm::vec3& startCoord, const glm::vec3& endCoord, Object* terrain, float width);
 
-	Ref<Prefab> GetPrefabForTerrain(const std::string& texturePath);
+	Prefab*GetPrefabForTerrain(const std::string& texturePath);
 
 	std::vector<std::string> GetFiles(const std::string& folder, const std::string& filter, const std::string& fileType);
 
@@ -37,8 +37,8 @@ namespace Can::Helper
 				road1->endJunction == road2->endJunction
 				)
 			{
-				roadR1 = road1->rotation.z + glm::radians(180.0f);
-				roadR2 = road2->rotation.z + glm::radians(180.0f);
+				roadR1 = road1->rotation.y + glm::radians(180.0f);
+				roadR2 = road2->rotation.y + glm::radians(180.0f);
 			}
 			else if (
 				road1->endJunction != nullptr &&
@@ -46,8 +46,8 @@ namespace Can::Helper
 				road1->endJunction == road2->startJunction
 				)
 			{
-				roadR1 = road1->rotation.z + glm::radians(180.0f);
-				roadR2 = road2->rotation.z;
+				roadR1 = road1->rotation.y + glm::radians(180.0f);
+				roadR2 = road2->rotation.y;
 			}
 			else if (
 				road1->startJunction != nullptr &&
@@ -55,8 +55,8 @@ namespace Can::Helper
 				road1->startJunction == road2->endJunction
 				)
 			{
-				roadR1 = road1->rotation.z;
-				roadR2 = road2->rotation.z + glm::radians(180.0f);
+				roadR1 = road1->rotation.y;
+				roadR2 = road2->rotation.y + glm::radians(180.0f);
 			}
 			else if (
 				road1->startJunction != nullptr &&
@@ -64,16 +64,17 @@ namespace Can::Helper
 				road1->startJunction == road2->startJunction
 				)
 			{
-				roadR1 = road1->rotation.z;
-				roadR2 = road2->rotation.z;
+				roadR1 = road1->rotation.y;
+				roadR2 = road2->rotation.y;
 			}
 			else
 			{
 				roadR1 = 0.001f;
 				roadR2 = 0.002f;
 			}
-
-			return (roadR1 < roadR2);
+			roadR1 = std::fmod(roadR1 + glm::radians(360.0f), 360.0f);
+			roadR2 = std::fmod(roadR2 + glm::radians(360.0f), 360.0f);
+			return (roadR1 > roadR2);
 		}
 	};
 }

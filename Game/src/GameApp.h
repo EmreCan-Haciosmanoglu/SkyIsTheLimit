@@ -12,18 +12,21 @@ namespace Can
 		GameApp();
 		~GameApp();
 
-		void LoadRoads();
-		void LoadJunctions();
-		void LoadEnds();
+	private:
+		std::vector<Prefab*> LoadRoadPrefabs();
+		std::vector<Prefab*> LoadJunctionPrefabs();
+		std::vector<Prefab*> LoadEndPrefabs();
+
+		void CombinePrefabs();
 
 	public:
-		std::vector<Ref<Prefab>> roads;
-		std::vector<Ref<Prefab>> junctions;
-		std::vector<Ref<Prefab>> ends;
+		Prefab* terrainPrefab;
 
-		Ref<Prefab> terrainPrefab;
-
-	private:
+		std::vector<std::array<Prefab*, 3>> roads;
+		// 0 => Road
+		// 1 => Junction
+		// 2 => End
+		
 		TestScene* testScene;
 		UIScene* uiScene;
 	};

@@ -147,7 +147,7 @@ namespace  Can::Helper
 		terrain->VB->Unbind();*/
 	}
 
-	Ref<Prefab> GetPrefabForTerrain(const std::string& texturePath)
+	Prefab*GetPrefabForTerrain(const std::string& texturePath)
 	{
 #define TEMP_TERRAIN_SHADER "assets/shaders/Cube.glsl"
 
@@ -311,7 +311,7 @@ namespace  Can::Helper
 			}
 		}
 
-		Ref<Prefab> terrainPrefab = CreateRef<Prefab>("", TEMP_TERRAIN_SHADER, "", vertices, indexCount, vertexCount, BufferLayout{ { ShaderDataType::Float3, "a_Position"}, { ShaderDataType::Float4, "a_Color"}, { ShaderDataType::Float3, "a_Normal"} });
+		Prefab*terrainPrefab = new Prefab("", TEMP_TERRAIN_SHADER, "", vertices, indexCount, vertexCount, BufferLayout{ { ShaderDataType::Float3, "a_Position"}, { ShaderDataType::Float4, "a_Color"}, { ShaderDataType::Float3, "a_Normal"} });
 		terrainPrefab->boundingBoxL = { 0.0f, 0.0f, -(height / TERRAIN_SCALE_DOWN) };
 		terrainPrefab->boundingBoxM = { width / TERRAIN_SCALE_DOWN, 1.0f * COLOR_COUNT, 0.0f };
 

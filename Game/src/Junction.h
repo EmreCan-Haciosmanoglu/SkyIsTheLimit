@@ -14,10 +14,9 @@ namespace Can
 		~Junction() = default;
 
 	public:
+		void ConstructObject();
 		void ReconstructObject();
 
-	private:
-		void ConstructObject();
 
 	public:
 		glm::vec3 position;
