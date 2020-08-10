@@ -10,13 +10,14 @@ namespace Can
 	{
 	public:
 		Road() = default;
-		Road(const Ref<Prefab>& prefab, const glm::vec3& startPos, const glm::vec3& endPos, const std::array<Ref<Prefab>, 3> type);
-		Road(Object* object, const glm::vec3& startPos, const glm::vec3& endPos, const std::array<Ref<Prefab>, 3> type);
+		Road(Road* road, const glm::vec3& startPos, const glm::vec3& endPos);
+		Road(Prefab* prefab, const glm::vec3& startPos, const glm::vec3& endPos, const std::array<Prefab*, 3>& type, size_t typeIndex);
+		Road(Object* object, const glm::vec3& startPos, const glm::vec3& endPos, const std::array<Prefab*, 3>& type, size_t typeIndex);
 		~Road();
 
 	public:
-		void ConstructObject(const Ref<Prefab>& prefab);
-		void ReconstructObject(const Ref<Prefab>& prefab);
+		void ConstructObject(Prefab* prefab);
+		void ReconstructObject(Prefab* prefab);
 
 		inline const glm::vec3& GetStartPosition() const { return startPosition; }
 		inline const glm::vec3& GetEndPosition() const { return endPosition; }
@@ -34,16 +35,14 @@ namespace Can
 		glm::vec3 rotation; // Maybe duplicated
 		float length;
 
-		Object* object;
+		Object* object = nullptr;
 
 		Junction* startJunction = nullptr;
 		Junction* endJunction = nullptr;
 		End* startEnd = nullptr;
 		End* endEnd = nullptr;
 
-		std::array<Ref<Prefab>, 3> type;
-		// 0 => Road
-		// 1 => Junction
-		// 2 => End
+		size_t typeIndex;
+		std::array<Prefab*, 3> type = { nullptr, nullptr, nullptr };
 	};
 }
