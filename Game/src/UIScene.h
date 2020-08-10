@@ -66,8 +66,10 @@ namespace Can
 		Button* m_ButtonNeeds_13 = nullptr;
 		Button* m_ButtonNeeds_14 = nullptr;
 
-	private:
+		std::vector<Button*> m_RoadPanelButtonList;
+
 		GameApp* m_Parent;
+	private:
 		float m_ZoomLevel;
 		float m_AspectRatio;
 		Can::Camera::OrthographicCameraController m_CameraController;
