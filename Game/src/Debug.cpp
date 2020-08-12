@@ -22,8 +22,40 @@ namespace Can
 
 	void Debug::OnImGuiRender()
 	{
-		ImGui::Begin("Settings");
-		ImGui::End();
+
+		ImGui::Begin("Construction Mode");
+		static bool construct = true;
+		static bool upgrade = false;
+		static bool destruction = false;
+		static bool none = false;
+		if (ImGui::RadioButton("Construct", construct))
+		{
+			construct = true;
+			upgrade = false;
+			destruction = false;
+			none = false;
+		}
+		if (ImGui::RadioButton("Upgrade", upgrade))
+		{
+			construct = false;
+			upgrade = true;
+			destruction = false;
+			none = false;
+		}
+		if (ImGui::RadioButton("Destruction", destruction))
+		{
+			construct = false;
+			upgrade = false;
+			destruction = true;
+			none = false;
+		}
+		if (ImGui::RadioButton("None", none))
+		{
+			construct = false;
+			upgrade = false;
+			destruction = false;
+			none = true;
+		}
 	}
 	bool Debug::OnMousePressed(Event::MouseButtonPressedEvent& event)
 	{
