@@ -7,6 +7,13 @@
 
 namespace Can
 {
+	enum ConstructionMode
+	{
+		None,
+		Construct,
+		Upgrade,
+		Destruct
+	};
 	class GameApp;
 	class TestScene : public Can::Layer::Layer
 	{
@@ -29,7 +36,7 @@ namespace Can
 
 	public:
 		std::array<bool, 4> snapOptions = { true, false, false, false };
-
+		ConstructionMode m_ConstructionMode = ConstructionMode::Construct;
 	private:
 		GameApp* m_Parent;
 

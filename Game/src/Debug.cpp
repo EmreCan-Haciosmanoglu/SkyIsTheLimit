@@ -22,42 +22,19 @@ namespace Can
 
 	void Debug::OnImGuiRender()
 	{
+		static TestScene* testScene = m_Parent->testScene;
 
 		ImGui::Begin("Construction Mode");
-		static bool construct = true;
-		static bool upgrade = false;
-		static bool destruction = false;
-		static bool none = false;
-		if (ImGui::RadioButton("Construct", construct))
-		{
-			construct = true;
-			upgrade = false;
-			destruction = false;
-			none = false;
-		}
-		if (ImGui::RadioButton("Upgrade", upgrade))
-		{
-			construct = false;
-			upgrade = true;
-			destruction = false;
-			none = false;
-		}
-		if (ImGui::RadioButton("Destruction", destruction))
-		{
-			construct = false;
-			upgrade = false;
-			destruction = true;
-			none = false;
-		}
-		if (ImGui::RadioButton("None", none))
-		{
-			construct = false;
-			upgrade = false;
-			destruction = false;
-			none = true;
-		}
-		static TestScene* testScene = m_Parent->testScene;
+		if (ImGui::RadioButton("Construct", testScene->m_ConstructionMode == Construct))
+			testScene->m_ConstructionMode = Construct;
+		if (ImGui::RadioButton("Upgrade", testScene->m_ConstructionMode == Upgrade))
+			testScene->m_ConstructionMode = Upgrade;
+		if (ImGui::RadioButton("Destruction", testScene->m_ConstructionMode == Destruct))
+			testScene->m_ConstructionMode = Destruct;
+		if (ImGui::RadioButton("None", testScene->m_ConstructionMode == None))
+			testScene->m_ConstructionMode = None;
 		ImGui::End();
+
 		ImGui::Begin("Snap Options");
 		ImGui::Checkbox("Road Snap", &testScene->snapOptions[0]);
 		ImGui::Checkbox("Length Snap", &testScene->snapOptions[1]);
