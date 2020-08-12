@@ -517,7 +517,7 @@ namespace Can
 	void UIScene::OnEvent(Can::Event::Event& event)
 	{
 		Can::Event::EventDispatcher dispatcher(event);
-		dispatcher.Dispatch<Can::Event::MouseButtonPressedEvent>(CAN_BIND_EVENT_FN(UIScene::OnMousePressed));
+		dispatcher.Dispatch<Event::MouseButtonPressedEvent>(CAN_BIND_EVENT_FN(UIScene::OnMousePressed));
 
 	}
 	bool UIScene::OnMousePressed(Can::Event::MouseButtonPressedEvent& event)

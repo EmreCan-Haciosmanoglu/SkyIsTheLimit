@@ -14,9 +14,13 @@ namespace Can
 		virtual void OnAttach() override {};
 		virtual void OnDetach() override {};
 
-		virtual void OnUpdate(Can::TimeStep ts) override;
-		virtual void OnEvent(Can::Event::Event& event) override;
+		virtual void OnUpdate(TimeStep ts) override;
+		virtual void OnEvent(Event::Event& event) override;
 		virtual void OnImGuiRender() override;
+
+		bool OnMousePressed(Event::MouseButtonPressedEvent& event);
+		bool OnKeyPressed(Event::KeyPressedEvent& event);
+		
 	private:
 		GameApp* m_Parent;
 	};
