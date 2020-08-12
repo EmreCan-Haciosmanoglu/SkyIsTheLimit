@@ -27,6 +27,9 @@ namespace Can
 	private:
 		glm::vec3 GetRayCastedFromScreen();
 
+	public:
+		std::array<bool, 4> snapOptions = { true, false, false, false };
+
 	private:
 		GameApp* m_Parent;
 

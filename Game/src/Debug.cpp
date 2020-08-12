@@ -56,6 +56,14 @@ namespace Can
 			destruction = false;
 			none = true;
 		}
+		static TestScene* testScene = m_Parent->testScene;
+		ImGui::End();
+		ImGui::Begin("Snap Options");
+		ImGui::Checkbox("Road Snap", &testScene->snapOptions[0]);
+		ImGui::Checkbox("Length Snap", &testScene->snapOptions[1]);
+		ImGui::Checkbox("Angle Snap", &testScene->snapOptions[2]);
+		ImGui::Checkbox("Grid Snap", &testScene->snapOptions[3]);
+		ImGui::End();
 	}
 	bool Debug::OnMousePressed(Event::MouseButtonPressedEvent& event)
 	{
