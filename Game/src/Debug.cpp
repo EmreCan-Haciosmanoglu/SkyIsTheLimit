@@ -9,14 +9,6 @@ namespace Can
 	{
 	}
 
-	void Debug::OnAttach()
-	{
-	}
-
-	void Debug::OnDetach()
-	{
-	}
-
 	void Debug::OnUpdate(Can::TimeStep ts)
 	{
 	}

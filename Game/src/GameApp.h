@@ -3,6 +3,7 @@
 
 #include "TestScene.h"
 #include "UIScene.h"
+#include "Debug.h"
 
 namespace Can
 {
@@ -29,5 +30,6 @@ namespace Can
 		
 		TestScene* testScene;
 		UIScene* uiScene;
+		Debug* debugScene;
 	};
 }

@@ -4,7 +4,6 @@
 
 namespace Can
 {
-
 	class GameApp;
 	class Debug : public Can::Layer::Layer
 	{

@@ -19,10 +19,12 @@ namespace Can
 
 		CombinePrefabs();
 
-		testScene = new TestScene(this);
 		uiScene = new UIScene(this);
+		debugScene = new Debug(this);
+		testScene = new TestScene(this);
 		PushLayer(testScene);
 		PushOverlay(uiScene);
+		PushOverlay(debugScene);
 	}
 
 	GameApp::~GameApp()
