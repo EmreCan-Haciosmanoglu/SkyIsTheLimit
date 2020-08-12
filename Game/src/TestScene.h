@@ -36,6 +36,7 @@ namespace Can
 
 	public:
 		std::array<bool, 4> snapOptions = { true, false, false, false };
+		std::array<bool, 5> roadRestrictionOptions = { false, false, false, false, false };
 		ConstructionMode m_ConstructionMode = ConstructionMode::Construct;
 	private:
 		GameApp* m_Parent;

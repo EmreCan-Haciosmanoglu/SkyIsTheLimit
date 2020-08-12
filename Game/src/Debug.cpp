@@ -35,11 +35,19 @@ namespace Can
 			testScene->m_ConstructionMode = None;
 		ImGui::End();
 
-		ImGui::Begin("Snap Options");
-		ImGui::Checkbox("Road Snap", &testScene->snapOptions[0]);
-		ImGui::Checkbox("Length Snap", &testScene->snapOptions[1]);
-		ImGui::Checkbox("Angle Snap", &testScene->snapOptions[2]);
-		ImGui::Checkbox("Grid Snap", &testScene->snapOptions[3]);
+		ImGui::Begin("Road Building Snap Options");
+		ImGui::Checkbox("Road", &testScene->snapOptions[0]);
+		ImGui::Checkbox("Length", &testScene->snapOptions[1]);
+		ImGui::Checkbox("Angle", &testScene->snapOptions[2]);
+		ImGui::Checkbox("Grid", &testScene->snapOptions[3]);
+		ImGui::End();
+
+		ImGui::Begin("Road Building Restriction Options");
+		ImGui::Checkbox("Small angles", &testScene->roadRestrictionOptions[0]);
+		ImGui::Checkbox("Short lengths", &testScene->roadRestrictionOptions[1]);
+		ImGui::Checkbox("Collisions with other rads", &testScene->roadRestrictionOptions[2]);
+		ImGui::Checkbox("Collisions with buildings", &testScene->roadRestrictionOptions[3]);
+		ImGui::Checkbox("Collisions with other objects", &testScene->roadRestrictionOptions[4]);
 		ImGui::End();
 	}
 	bool Debug::OnMousePressed(Event::MouseButtonPressedEvent& event)
