@@ -136,7 +136,7 @@ namespace Can
 		else if (testScene->m_ConstructionMode == ConstructionMode::Building)
 		{
 			ImGui::Text("Building Construction Restriction Options");
-			ImGui::BeginChild("Building Construction Restriction Options", ImVec2(0, 135), true);
+			ImGui::BeginChild("Building Construction Restriction Options", ImVec2(0, 85), true);
 			ImGui::Checkbox("Collisions with other buildings", &testScene->buildingRestrictionOptions[0]);
 			ImGui::Checkbox("Collisions with roads", &testScene->buildingRestrictionOptions[1]);
 			ImGui::Checkbox("Collisions with other objects", &testScene->buildingRestrictionOptions[2]);
