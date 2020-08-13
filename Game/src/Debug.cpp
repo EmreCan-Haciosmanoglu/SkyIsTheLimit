@@ -59,7 +59,25 @@ namespace Can
 				if (ImGui::Selectable(text.c_str(), is_selected, 0, ImVec2(0, 25)))
 				{
 					size_t length = text.copy(current_road_item.data(), text.size(), 0);
-					testScene->m_RoadConstructionType = i;
+					testScene->SetSelectedConstructionRoad(i);
+				}
+				if (is_selected)
+					ImGui::SetItemDefaultFocus();
+			}
+			ImGui::EndCombo();
+		}
+		static std::string current_building_item = "";
+		if (ImGui::BeginCombo("Selected Building", current_building_item.c_str()))
+		{
+			for (size_t i = 0; i < m_Parent->buildings.size(); i++)
+			{
+				bool is_selected = testScene->m_BuildingType == i;
+				std::string text = "Building-";
+				text += std::to_string(i);
+				if (ImGui::Selectable(text.c_str(), is_selected, 0, ImVec2(0, 25)))
+				{
+					size_t length = text.copy(current_building_item.data(), text.size(), 0);
+					testScene->m_BuildingType = i;
 				}
 				if (is_selected)
 					ImGui::SetItemDefaultFocus();

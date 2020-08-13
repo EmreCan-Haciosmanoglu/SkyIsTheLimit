@@ -47,6 +47,7 @@ namespace Can
 		RoadConstructionMode m_RoadConstructionMode = RoadConstructionMode::Construct;
 		ConstructionMode m_ConstructionMode = ConstructionMode::Road;
 		size_t m_RoadConstructionType = 0;
+		size_t m_BuildingType = 0;
 
 	private:
 		GameApp* m_Parent;
