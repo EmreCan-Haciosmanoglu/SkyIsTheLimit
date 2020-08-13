@@ -46,6 +46,18 @@ namespace Can
 			testScene->m_RoadConstructionMode = RoadConstructionMode::None;
 		ImGui::EndChild();
 
+		ImGui::Text("Building Construction Mode");
+		ImGui::BeginChild("Building Construction Mode", ImVec2(0, 110), true);
+		if (ImGui::RadioButton("Construct", testScene->m_BuildingConstructionMode == BuildingConstructionMode::Construct))
+			testScene->m_BuildingConstructionMode = BuildingConstructionMode::Construct;
+		if (ImGui::RadioButton("Upgrade(?)", testScene->m_BuildingConstructionMode == BuildingConstructionMode::Upgrade))
+			testScene->m_BuildingConstructionMode = BuildingConstructionMode::Upgrade;
+		if (ImGui::RadioButton("Destruction", testScene->m_BuildingConstructionMode == BuildingConstructionMode::Destruct))
+			testScene->m_BuildingConstructionMode = BuildingConstructionMode::Destruct;
+		if (ImGui::RadioButton("None", testScene->m_BuildingConstructionMode == BuildingConstructionMode::None))
+			testScene->m_BuildingConstructionMode = BuildingConstructionMode::None;
+		ImGui::EndChild();
+
 		ImGui::Text("Selected Objects");
 		ImGui::BeginChild("Selected Objects", ImVec2(0, 60), true);
 		static std::string current_road_item = "";
@@ -58,7 +70,7 @@ namespace Can
 				text += std::to_string(i);
 				if (ImGui::Selectable(text.c_str(), is_selected, 0, ImVec2(0, 25)))
 				{
-					size_t length = text.copy(current_road_item.data(), text.size(), 0);
+					text.copy(current_road_item.data(), text.size(), 0);
 					testScene->SetSelectedConstructionRoad(i);
 				}
 				if (is_selected)
@@ -76,7 +88,7 @@ namespace Can
 				text += std::to_string(i);
 				if (ImGui::Selectable(text.c_str(), is_selected, 0, ImVec2(0, 25)))
 				{
-					size_t length = text.copy(current_building_item.data(), text.size(), 0);
+					text.copy(current_building_item.data(), text.size(), 0);
 					testScene->m_BuildingType = i;
 				}
 				if (is_selected)

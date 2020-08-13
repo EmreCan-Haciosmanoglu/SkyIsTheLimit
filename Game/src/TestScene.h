@@ -14,6 +14,13 @@ namespace Can
 		Upgrade,
 		Destruct
 	};
+	enum class BuildingConstructionMode
+	{
+		None,
+		Construct,
+		Upgrade,
+		Destruct
+	};
 	
 	enum class ConstructionMode
 	{
@@ -45,6 +52,7 @@ namespace Can
 		std::array<bool, 4> snapOptions = { true, false, false, false };
 		std::array<bool, 5> roadRestrictionOptions = { false, false, false, false, false };
 		RoadConstructionMode m_RoadConstructionMode = RoadConstructionMode::Construct;
+		BuildingConstructionMode m_BuildingConstructionMode = BuildingConstructionMode::Construct;
 		ConstructionMode m_ConstructionMode = ConstructionMode::Road;
 		size_t m_RoadConstructionType = 0;
 		size_t m_BuildingType = 0;
