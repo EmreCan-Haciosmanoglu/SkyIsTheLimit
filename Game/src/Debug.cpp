@@ -46,6 +46,28 @@ namespace Can
 			testScene->m_RoadConstructionMode = RoadConstructionMode::None;
 		ImGui::EndChild();
 
+		ImGui::Text("Selected Objects");
+		ImGui::BeginChild("Selected Objects", ImVec2(0, 60), true);
+		static std::string current_road_item = "";
+		if (ImGui::BeginCombo("Selected Road", current_road_item.c_str()))
+		{
+			for (size_t i = 0; i < m_Parent->roads.size(); i++)
+			{
+				bool is_selected = testScene->m_RoadConstructionType == i;
+				std::string text = "Road-";
+				text += std::to_string(i);
+				if (ImGui::Selectable(text.c_str(), is_selected, 0, ImVec2(0, 25)))
+				{
+					size_t length = text.copy(current_road_item.data(), text.size(), 0);
+					testScene->m_RoadConstructionType = i;
+				}
+				if (is_selected)
+					ImGui::SetItemDefaultFocus();
+			}
+			ImGui::EndCombo();
+		}
+		ImGui::EndChild();
+
 		ImGui::Text("Road Construction Snap Options");
 		ImGui::BeginChild("Road Construction Snap Options", ImVec2(0, 110), true);
 		ImGui::Checkbox("Road", &testScene->snapOptions[0]);
