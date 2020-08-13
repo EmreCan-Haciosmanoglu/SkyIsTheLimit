@@ -52,6 +52,7 @@ namespace Can
 		std::array<bool, 4> roadSnapOptions = { true, false, false, false };
 		std::array<bool, 2> buildingSnapOptions = { true, false };
 		std::array<bool, 5> roadRestrictionOptions = { false, false, false, false, false };
+		std::array<bool, 3> buildingRestrictionOptions = { false, false, false };
 		RoadConstructionMode m_RoadConstructionMode = RoadConstructionMode::Construct;
 		BuildingConstructionMode m_BuildingConstructionMode = BuildingConstructionMode::Construct;
 		ConstructionMode m_ConstructionMode = ConstructionMode::Road;
