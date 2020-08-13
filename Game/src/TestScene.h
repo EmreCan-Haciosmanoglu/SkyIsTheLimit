@@ -21,7 +21,7 @@ namespace Can
 		Upgrade,
 		Destruct
 	};
-	
+
 	enum class ConstructionMode
 	{
 		Road,
@@ -49,7 +49,8 @@ namespace Can
 		glm::vec3 GetRayCastedFromScreen();
 
 	public:
-		std::array<bool, 4> snapOptions = { true, false, false, false };
+		std::array<bool, 4> roadSnapOptions = { true, false, false, false };
+		std::array<bool, 2> buildingSnapOptions = { true, false };
 		std::array<bool, 5> roadRestrictionOptions = { false, false, false, false, false };
 		RoadConstructionMode m_RoadConstructionMode = RoadConstructionMode::Construct;
 		BuildingConstructionMode m_BuildingConstructionMode = BuildingConstructionMode::Construct;

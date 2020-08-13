@@ -107,14 +107,19 @@ namespace Can
 		{
 			ImGui::Text("Road Construction Snap Options");
 			ImGui::BeginChild("Road Construction Snap Options", ImVec2(0, 110), true);
-			ImGui::Checkbox("Road", &testScene->snapOptions[0]);
-			ImGui::Checkbox("Length", &testScene->snapOptions[1]);
-			ImGui::Checkbox("Angle", &testScene->snapOptions[2]);
-			ImGui::Checkbox("Grid", &testScene->snapOptions[3]);
+			ImGui::Checkbox("Road", &testScene->roadSnapOptions[0]);
+			ImGui::Checkbox("Length", &testScene->roadSnapOptions[1]);
+			ImGui::Checkbox("Angle", &testScene->roadSnapOptions[2]);
+			ImGui::Checkbox("Grid", &testScene->roadSnapOptions[3]);
 			ImGui::EndChild();
 		}
 		else if (testScene->m_ConstructionMode == ConstructionMode::Building)
 		{
+			ImGui::Text("Building Construction Snap Options");
+			ImGui::BeginChild("Building Construction Snap Options", ImVec2(0, 60), true);
+			ImGui::Checkbox("Road", &testScene->buildingSnapOptions[0]);
+			ImGui::Checkbox("Building", &testScene->buildingSnapOptions[1]);
+			ImGui::EndChild();
 		}
 
 		if (testScene->m_ConstructionMode == ConstructionMode::Road)
