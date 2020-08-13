@@ -3,6 +3,7 @@
 
 #include "TestScene.h"
 #include "UIScene.h"
+#include "Debug.h"
 
 namespace Can
 {
@@ -23,11 +24,13 @@ namespace Can
 		Prefab* terrainPrefab;
 
 		std::vector<std::array<Prefab*, 3>> roads;
+		std::vector<Prefab*> buildings;
 		// 0 => Road
 		// 1 => Junction
 		// 2 => End
 		
 		TestScene* testScene;
 		UIScene* uiScene;
+		Debug* debugScene;
 	};
 }

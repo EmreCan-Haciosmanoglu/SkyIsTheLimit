@@ -7,6 +7,27 @@
 
 namespace Can
 {
+	enum class RoadConstructionMode
+	{
+		None,
+		Construct,
+		Upgrade,
+		Destruct
+	};
+	enum class BuildingConstructionMode
+	{
+		None,
+		Construct,
+		Upgrade,
+		Destruct
+	};
+
+	enum class ConstructionMode
+	{
+		Road,
+		Building
+	};
+
 	class GameApp;
 	class TestScene : public Can::Layer::Layer
 	{
@@ -26,6 +47,17 @@ namespace Can
 
 	private:
 		glm::vec3 GetRayCastedFromScreen();
+
+	public:
+		std::array<bool, 4> roadSnapOptions = { true, false, false, false };
+		std::array<bool, 2> buildingSnapOptions = { true, false };
+		std::array<bool, 5> roadRestrictionOptions = { false, false, false, false, false };
+		std::array<bool, 3> buildingRestrictionOptions = { false, false, false };
+		RoadConstructionMode m_RoadConstructionMode = RoadConstructionMode::Construct;
+		BuildingConstructionMode m_BuildingConstructionMode = BuildingConstructionMode::Construct;
+		ConstructionMode m_ConstructionMode = ConstructionMode::Road;
+		size_t m_RoadConstructionType = 0;
+		size_t m_BuildingType = 0;
 
 	private:
 		GameApp* m_Parent;
@@ -63,7 +95,6 @@ namespace Can
 		Object* m_RoadGuidelinesStart = nullptr; // End /? Object
 		Object* m_RoadGuidelinesEnd = nullptr;
 
-		size_t m_RoadConstructionType = 0;
 
 	};
 }
