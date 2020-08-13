@@ -7,13 +7,14 @@
 
 namespace Can
 {
-	enum ConstructionMode
+	enum RoadConstructionMode
 	{
 		None,
 		Construct,
 		Upgrade,
 		Destruct
 	};
+	
 	class GameApp;
 	class TestScene : public Can::Layer::Layer
 	{
@@ -37,7 +38,7 @@ namespace Can
 	public:
 		std::array<bool, 4> snapOptions = { true, false, false, false };
 		std::array<bool, 5> roadRestrictionOptions = { false, false, false, false, false };
-		ConstructionMode m_ConstructionMode = ConstructionMode::Construct;
+		RoadConstructionMode m_RoadConstructionMode = RoadConstructionMode::Construct;
 	private:
 		GameApp* m_Parent;
 
