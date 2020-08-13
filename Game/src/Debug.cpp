@@ -26,22 +26,28 @@ namespace Can
 
 		ImGui::Begin("Debug");
 
-		ImGui::Text("Building Type");
-
-		ImGui::Text("Road Construction Mode");
-		ImGui::BeginChild("Road Construction Mode", ImVec2(250, 110), true);
-		if (ImGui::RadioButton("Construct", testScene->m_RoadConstructionMode == Construct))
-			testScene->m_RoadConstructionMode = Construct;
-		if (ImGui::RadioButton("Upgrade", testScene->m_RoadConstructionMode == Upgrade))
-			testScene->m_RoadConstructionMode = Upgrade;
-		if (ImGui::RadioButton("Destruction", testScene->m_RoadConstructionMode == Destruct))
-			testScene->m_RoadConstructionMode = Destruct;
-		if (ImGui::RadioButton("None", testScene->m_RoadConstructionMode == None))
-			testScene->m_RoadConstructionMode = None;
+		ImGui::Text("Construction Type");
+		ImGui::BeginChild("Construction Type", ImVec2(0, 60), true);
+		if (ImGui::RadioButton("Road", testScene->m_ConstructionMode == ConstructionMode::Road))
+			testScene->m_ConstructionMode = ConstructionMode::Road;
+		if (ImGui::RadioButton("Building", testScene->m_ConstructionMode == ConstructionMode::Building))
+			testScene->m_ConstructionMode = ConstructionMode::Building;
 		ImGui::EndChild();
 
-		ImGui::Text("Road Building Snap Options");
-		ImGui::BeginChild("Road Building Snap Options", ImVec2(250, 110),true);
+		ImGui::Text("Road Construction Mode");
+		ImGui::BeginChild("Road Construction Mode", ImVec2(0, 110), true);
+		if (ImGui::RadioButton("Construct", testScene->m_RoadConstructionMode == RoadConstructionMode::Construct))
+			testScene->m_RoadConstructionMode = RoadConstructionMode::Construct;
+		if (ImGui::RadioButton("Upgrade", testScene->m_RoadConstructionMode == RoadConstructionMode::Upgrade))
+			testScene->m_RoadConstructionMode = RoadConstructionMode::Upgrade;
+		if (ImGui::RadioButton("Destruction", testScene->m_RoadConstructionMode == RoadConstructionMode::Destruct))
+			testScene->m_RoadConstructionMode = RoadConstructionMode::Destruct;
+		if (ImGui::RadioButton("None", testScene->m_RoadConstructionMode == RoadConstructionMode::None))
+			testScene->m_RoadConstructionMode = RoadConstructionMode::None;
+		ImGui::EndChild();
+
+		ImGui::Text("Road Construction Snap Options");
+		ImGui::BeginChild("Road Construction Snap Options", ImVec2(0, 110), true);
 		ImGui::Checkbox("Road", &testScene->snapOptions[0]);
 		ImGui::Checkbox("Length", &testScene->snapOptions[1]);
 		ImGui::Checkbox("Angle", &testScene->snapOptions[2]);
@@ -49,7 +55,7 @@ namespace Can
 		ImGui::EndChild();
 
 		ImGui::Text("Road Building Restriction Options");
-		ImGui::BeginChild("Road Building Restriction Options", ImVec2(250, 135), true);
+		ImGui::BeginChild("Road Building Restriction Options", ImVec2(0, 135), true);
 		ImGui::Checkbox("Small angles", &testScene->roadRestrictionOptions[0]);
 		ImGui::Checkbox("Short lengths", &testScene->roadRestrictionOptions[1]);
 		ImGui::Checkbox("Collisions with other rads", &testScene->roadRestrictionOptions[2]);
