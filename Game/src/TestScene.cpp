@@ -743,6 +743,12 @@ namespace Can
 			m_Ends.erase(position);
 			delete road->startEnd;
 		}
+		if (road->endEnd != nullptr)
+		{
+			auto position = std::find(m_Ends.begin(), m_Ends.end(), road->endEnd);
+			m_Ends.erase(position);
+			delete road->endEnd;
+		}
 	}
 
 	glm::vec3 TestScene::GetRayCastedFromScreen()
