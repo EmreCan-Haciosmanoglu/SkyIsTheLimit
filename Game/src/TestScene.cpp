@@ -735,6 +735,16 @@ namespace Can
 
 	}
 
+	void TestScene::DeleteSelectedRoad(Road* road)
+	{
+		if (road->startEnd != nullptr)
+		{
+			auto position = std::find(m_Ends.begin(), m_Ends.end(), road->startEnd);
+			m_Ends.erase(position);
+			delete road->startEnd;
+		}
+	}
+
 	glm::vec3 TestScene::GetRayCastedFromScreen()
 	{
 		auto [mouseX, mouseY] = Can::Input::GetMousePos();

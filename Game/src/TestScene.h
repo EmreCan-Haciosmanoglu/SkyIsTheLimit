@@ -44,6 +44,8 @@ namespace Can
 		bool OnMousePressed(Can::Event::MouseButtonPressedEvent& event);
 
 		void SetSelectedConstructionRoad(size_t index);
+		void DeleteSelectedRoad(Road* road);
+
 		void SetSelectedConstructionBuilding(size_t index) { m_BuildingType = index; }
 
 	private:
