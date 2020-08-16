@@ -44,6 +44,7 @@ namespace Can
 		bool OnMousePressed(Can::Event::MouseButtonPressedEvent& event);
 
 		void SetSelectedConstructionRoad(size_t index);
+		void SetSelectedConstructionBuilding(size_t index) { m_BuildingType = index; }
 
 	private:
 		glm::vec3 GetRayCastedFromScreen();

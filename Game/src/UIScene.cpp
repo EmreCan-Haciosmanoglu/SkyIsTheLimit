@@ -21,7 +21,7 @@ namespace Can
 		m_ButtonRoads = new Button(
 			m_Scene->m_Registry,
 			m_Scene->entityID,
-			glm::vec3{ 1.0f, height * (4.0f / 5.0f) - 1.6f, 0.0011f },
+			glm::vec3{ 1.0f, height * (4.0f / 5.0f) - 1.7f, 0.0011f },
 			glm::vec3{ 3.0f, 1.0f, 1.0f },
 			glm::vec4{ 221.0f / 255.0f, 255.0f / 255.0f, 247.0f / 255.0f, 1.0f },
 			[this, height]() {
@@ -30,16 +30,13 @@ namespace Can
 
 				entt::entity panelRoadsID = this->m_PanelRoads->entityID;
 				entt::entity panelBuildingsID = this->m_PanelBuildings->entityID;
-				entt::entity panelDebugID = this->m_PanelDebug->entityID;
 
-				if (mainRegistry.has<HiddenComponent>(panelBuildingsID) && mainRegistry.has<HiddenComponent>(panelDebugID))
+				if (mainRegistry.has<HiddenComponent>(panelBuildingsID))
 				{
 					entt::entity buttonRoadsID = this->m_ButtonRoads->entityID;
 					entt::entity buttonBuildingsID = this->m_ButtonBuildings->entityID;
-					entt::entity buttonDebugID = this->m_ButtonDebug->entityID;
 					TransformComponent& transformR = mainRegistry.get<TransformComponent>(buttonRoadsID);
 					TransformComponent& transformB = mainRegistry.get<TransformComponent>(buttonBuildingsID);
-					TransformComponent& transformD = mainRegistry.get<TransformComponent>(buttonDebugID);
 
 					glm::vec3 movement = { 0.0f, height / 5.0f, 0.0f };
 
@@ -48,14 +45,12 @@ namespace Can
 						mainRegistry.remove<HiddenComponent>(panelRoadsID);
 						transformR.Transform = glm::translate(transformR.Transform, -movement);
 						transformB.Transform = glm::translate(transformB.Transform, -movement);
-						transformD.Transform = glm::translate(transformD.Transform, -movement);
 					}
 					else
 					{
 						mainRegistry.emplace<HiddenComponent>(panelRoadsID);
 						transformR.Transform = glm::translate(transformR.Transform, movement);
 						transformB.Transform = glm::translate(transformB.Transform, movement);
-						transformD.Transform = glm::translate(transformD.Transform, movement);
 					}
 				}
 				else
@@ -64,7 +59,6 @@ namespace Can
 					{
 						mainRegistry.remove<HiddenComponent>(panelRoadsID);
 						mainRegistry.emplace_or_replace<HiddenComponent>(panelBuildingsID);
-						mainRegistry.emplace_or_replace<HiddenComponent>(panelDebugID);
 					}
 					else
 					{
@@ -77,7 +71,7 @@ namespace Can
 		m_ButtonBuildings = new Button(
 			m_Scene->m_Registry,
 			m_Scene->entityID,
-			glm::vec3{ 5.0f, height * (4.0f / 5.0f) - 1.6f, 0.0011f },
+			glm::vec3{ 5.0f, height * (4.0f / 5.0f) - 1.7f, 0.0011f },
 			glm::vec3{ 3.0f, 1.0f, 1.0f },
 			glm::vec4{ 255.0f / 255.0f, 166.0f / 255.0f, 158.0f / 255.0f, 1.0f },
 			[this, height]() {
@@ -86,16 +80,13 @@ namespace Can
 
 				entt::entity panelRoadsID = this->m_PanelRoads->entityID;
 				entt::entity panelBuildingsID = this->m_PanelBuildings->entityID;
-				entt::entity panelDebugID = this->m_PanelDebug->entityID;
 
-				if (mainRegistry.has<HiddenComponent>(panelRoadsID) && mainRegistry.has<HiddenComponent>(panelDebugID))
+				if (mainRegistry.has<HiddenComponent>(panelRoadsID))
 				{
 					entt::entity buttonRoadsID = this->m_ButtonRoads->entityID;
 					entt::entity buttonBuildingsID = this->m_ButtonBuildings->entityID;
-					entt::entity buttonDebugID = this->m_ButtonDebug->entityID;
 					TransformComponent& transformR = mainRegistry.get<TransformComponent>(buttonRoadsID);
 					TransformComponent& transformB = mainRegistry.get<TransformComponent>(buttonBuildingsID);
-					TransformComponent& transformD = mainRegistry.get<TransformComponent>(buttonDebugID);
 
 					glm::vec3 movement = { 0.0f, height / 5.0f, 0.0f };
 
@@ -104,14 +95,12 @@ namespace Can
 						mainRegistry.remove<HiddenComponent>(panelBuildingsID);
 						transformR.Transform = glm::translate(transformR.Transform, -movement);
 						transformB.Transform = glm::translate(transformB.Transform, -movement);
-						transformD.Transform = glm::translate(transformD.Transform, -movement);
 					}
 					else
 					{
 						mainRegistry.emplace<HiddenComponent>(panelBuildingsID);
 						transformR.Transform = glm::translate(transformR.Transform, movement);
 						transformB.Transform = glm::translate(transformB.Transform, movement);
-						transformD.Transform = glm::translate(transformD.Transform, movement);
 					}
 				}
 				else
@@ -120,67 +109,10 @@ namespace Can
 					{
 						mainRegistry.remove<HiddenComponent>(panelBuildingsID);
 						mainRegistry.emplace_or_replace<HiddenComponent>(panelRoadsID);
-						mainRegistry.emplace_or_replace<HiddenComponent>(panelDebugID);
 					}
 					else
 					{
 						mainRegistry.emplace<HiddenComponent>(panelBuildingsID);
-					}
-				}
-			}
-		);
-
-		m_ButtonDebug = new Button(
-			m_Scene->m_Registry,
-			m_Scene->entityID,
-			glm::vec3{ 9.0f, height * (4.0f / 5.0f) - 1.6f, 0.0011f },
-			glm::vec3{ 3.0f, 1.0f, 1.0f },
-			glm::vec4{ 70.0f / 255.0f, 34.0f / 255.0f, 85.0f / 255.0f, 1.0f },
-			[this, height]() {
-
-				entt::registry& mainRegistry = this->m_Scene->m_Registry;
-
-				entt::entity panelRoadsID = this->m_PanelRoads->entityID;
-				entt::entity panelBuildingsID = this->m_PanelBuildings->entityID;
-				entt::entity panelDebugID = this->m_PanelDebug->entityID;
-
-				if (mainRegistry.has<HiddenComponent>(panelRoadsID) && mainRegistry.has<HiddenComponent>(panelBuildingsID))
-				{
-					entt::entity buttonRoadsID = this->m_ButtonRoads->entityID;
-					entt::entity buttonBuildingsID = this->m_ButtonBuildings->entityID;
-					entt::entity buttonDebugID = this->m_ButtonDebug->entityID;
-					TransformComponent& transformR = mainRegistry.get<TransformComponent>(buttonRoadsID);
-					TransformComponent& transformB = mainRegistry.get<TransformComponent>(buttonBuildingsID);
-					TransformComponent& transformD = mainRegistry.get<TransformComponent>(buttonDebugID);
-
-					glm::vec3 movement = { 0.0f, height / 5.0f, 0.0f };
-
-					if (mainRegistry.has<HiddenComponent>(panelDebugID))
-					{
-						mainRegistry.remove<HiddenComponent>(panelDebugID);
-						transformR.Transform = glm::translate(transformR.Transform, -movement);
-						transformB.Transform = glm::translate(transformB.Transform, -movement);
-						transformD.Transform = glm::translate(transformD.Transform, -movement);
-					}
-					else
-					{
-						mainRegistry.emplace<HiddenComponent>(panelDebugID);
-						transformR.Transform = glm::translate(transformR.Transform, movement);
-						transformB.Transform = glm::translate(transformB.Transform, movement);
-						transformD.Transform = glm::translate(transformD.Transform, movement);
-					}
-				}
-				else
-				{
-					if (mainRegistry.has<HiddenComponent>(panelDebugID))
-					{
-						mainRegistry.remove<HiddenComponent>(panelDebugID);
-						mainRegistry.emplace_or_replace<HiddenComponent>(panelRoadsID);
-						mainRegistry.emplace_or_replace<HiddenComponent>(panelBuildingsID);
-					}
-					else
-					{
-						mainRegistry.emplace<HiddenComponent>(panelDebugID);
 					}
 				}
 			}
@@ -239,7 +171,6 @@ namespace Can
 		std::vector<entt::entity> buttonList = {
 			 m_ButtonRoads->entityID,
 			 m_ButtonBuildings->entityID,
-			 m_ButtonDebug->entityID,
 			 m_ButtonNeeds->entityID,
 			 m_ButtonTools->entityID
 		};
@@ -267,17 +198,6 @@ namespace Can
 		);
 		m_Scene->m_Registry.emplace<HiddenComponent>(m_PanelBuildings->entityID);
 		m_Scene->m_Registry.emplace<ChildrenComponent>(m_ButtonBuildings->entityID, std::vector<entt::entity>{ m_PanelBuildings->entityID });
-
-		m_PanelDebug = new Panel(
-			m_Scene->m_Registry,
-			m_ButtonDebug->entityID,
-			glm::vec3{ 0.5f, height - 4.5f, 0.001f },
-			glm::vec3{ width - 1.0f, 4.0f, 1.0f },
-			glm::vec4{ 70.0f / 255.0f, 34.0f / 255.0f, 85.0f / 255.0f, 1.0f },
-			[]() {std::cout << "You clicked the panel that is for the Debug!" << std::endl; }
-		);
-		m_Scene->m_Registry.emplace<HiddenComponent>(m_PanelDebug->entityID);
-		m_Scene->m_Registry.emplace<ChildrenComponent>(m_ButtonDebug->entityID, std::vector<entt::entity>{ m_PanelDebug->entityID });
 
 		m_PanelNeeds = new Panel(
 			m_Scene->m_Registry,
@@ -427,24 +347,44 @@ namespace Can
 			};
 			m_Scene->m_Registry.emplace<ChildrenComponent>(m_PanelNeeds->entityID, needsButtonList);
 		}
-		{
+		/*Buttons in the Roads panel*/ {
 			size_t roadCount = m_Parent->roads.size();
 			ChildrenComponent& children = m_Scene->m_Registry.emplace<ChildrenComponent>(m_PanelRoads->entityID, std::vector<entt::entity>{});
 			for (size_t i = 0; i < roadCount; i++)
 			{
-				Button* roadpanelbutton = new Button(
+				Button* roadPanelbutton = new Button(
 					m_Scene->m_Registry,
 					m_PanelRoads->entityID,
 					glm::vec3{ 1.0f + i * 4.0f, height - 4.0f, 0.0011f },
 					glm::vec3{ 3.0f, 3.0f, 1.0f },
-					glm::vec4{ 0.0f, 0.0f, 0.0f, 1.0f },
+					glm::vec4{ 1.0f, 1.0f, 1.0f, 1.0f },
 					[i, this]() {
-						std::cout << "You clicked the " << (i + 1) << "th Button inside the Road panel!" << std::endl; 
-						this->m_Parent->testScene->SetSelectedConstructionRoad(i); 
+						std::cout << "You clicked the " << (i + 1) << "th Button inside the Road panel!" << std::endl;
+						this->m_Parent->testScene->SetSelectedConstructionRoad(i);
 					}
 				);
-				children.Children.push_back(roadpanelbutton->entityID);
-				m_RoadPanelButtonList.push_back(roadpanelbutton);
+				children.Children.push_back(roadPanelbutton->entityID);
+				m_RoadPanelButtonList.push_back(roadPanelbutton);
+			}
+		}
+		/*Buttons in the Building panel*/ {
+			size_t buildingCount = m_Parent->buildings.size();
+			ChildrenComponent& children = m_Scene->m_Registry.emplace<ChildrenComponent>(m_PanelBuildings->entityID, std::vector<entt::entity>{});
+			for (size_t i = 0; i < buildingCount; i++)
+			{
+				Button* buildingPanelbutton = new Button(
+					m_Scene->m_Registry,
+					m_PanelBuildings->entityID,
+					glm::vec3{ 1.0f + i * 4.0f, height - 4.0f, 0.0011f },
+					glm::vec3{ 3.0f, 3.0f, 1.0f },
+					glm::vec4{ 1.0f, 1.0f, 1.0f, 1.0f },
+					[i, this]() {
+						std::cout << "You clicked the " << (i + 1) << "th Button inside the Building panel!" << std::endl;
+						this->m_Parent->testScene->SetSelectedConstructionBuilding(i);
+					}
+				);
+				children.Children.push_back(buildingPanelbutton->entityID);
+				m_BuildingPanelButtonList.push_back(buildingPanelbutton);
 			}
 		}
 	}
@@ -455,13 +395,11 @@ namespace Can
 
 		delete m_ButtonRoads;
 		delete  m_ButtonBuildings;
-		delete  m_ButtonDebug;
 		delete  m_ButtonNeeds;
 		delete  m_ButtonTools;
 
 		delete m_PanelRoads;
 		delete m_PanelBuildings;
-		delete m_PanelDebug;
 		delete m_PanelNeeds;
 		delete m_PanelTools;
 

@@ -26,13 +26,11 @@ namespace Can
 
 		Button* m_ButtonRoads = nullptr;
 		Button* m_ButtonBuildings = nullptr;
-		Button* m_ButtonDebug = nullptr;
 		Button* m_ButtonNeeds = nullptr;
 		Button* m_ButtonTools = nullptr;
 
 		Panel* m_PanelRoads = nullptr;
 		Panel* m_PanelBuildings = nullptr;
-		Panel* m_PanelDebug = nullptr;
 		Panel* m_PanelNeeds = nullptr;
 		Panel* m_PanelTools = nullptr;
 
@@ -67,6 +65,7 @@ namespace Can
 		Button* m_ButtonNeeds_14 = nullptr;
 
 		std::vector<Button*> m_RoadPanelButtonList;
+		std::vector<Button*> m_BuildingPanelButtonList;
 
 		GameApp* m_Parent;
 	private:
