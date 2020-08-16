@@ -67,6 +67,7 @@ namespace Can
 		Button* m_ButtonNeeds_14 = nullptr;
 
 		std::vector<Button*> m_RoadPanelButtonList;
+		std::vector<Button*> m_BuildingPanelButtonList;
 
 		GameApp* m_Parent;
 	private:

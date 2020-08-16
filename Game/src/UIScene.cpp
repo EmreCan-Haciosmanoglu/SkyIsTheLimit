@@ -427,24 +427,44 @@ namespace Can
 			};
 			m_Scene->m_Registry.emplace<ChildrenComponent>(m_PanelNeeds->entityID, needsButtonList);
 		}
-		{
+		/*Buttons in the Roads panel*/ {
 			size_t roadCount = m_Parent->roads.size();
 			ChildrenComponent& children = m_Scene->m_Registry.emplace<ChildrenComponent>(m_PanelRoads->entityID, std::vector<entt::entity>{});
 			for (size_t i = 0; i < roadCount; i++)
 			{
-				Button* roadpanelbutton = new Button(
+				Button* roadPanelbutton = new Button(
 					m_Scene->m_Registry,
 					m_PanelRoads->entityID,
 					glm::vec3{ 1.0f + i * 4.0f, height - 4.0f, 0.0011f },
 					glm::vec3{ 3.0f, 3.0f, 1.0f },
 					glm::vec4{ 0.0f, 0.0f, 0.0f, 1.0f },
 					[i, this]() {
-						std::cout << "You clicked the " << (i + 1) << "th Button inside the Road panel!" << std::endl; 
-						this->m_Parent->testScene->SetSelectedConstructionRoad(i); 
+						std::cout << "You clicked the " << (i + 1) << "th Button inside the Road panel!" << std::endl;
+						this->m_Parent->testScene->SetSelectedConstructionRoad(i);
 					}
 				);
-				children.Children.push_back(roadpanelbutton->entityID);
-				m_RoadPanelButtonList.push_back(roadpanelbutton);
+				children.Children.push_back(roadPanelbutton->entityID);
+				m_RoadPanelButtonList.push_back(roadPanelbutton);
+			}
+		}
+		/*Buttons in the Building panel*/ {
+			size_t buildingCount = m_Parent->roads.size();
+			ChildrenComponent& children = m_Scene->m_Registry.emplace<ChildrenComponent>(m_PanelBuildings->entityID, std::vector<entt::entity>{});
+			for (size_t i = 0; i < buildingCount; i++)
+			{
+				Button* buildingPanelbutton = new Button(
+					m_Scene->m_Registry,
+					m_PanelBuildings->entityID,
+					glm::vec3{ 1.0f + i * 4.0f, height - 4.0f, 0.0011f },
+					glm::vec3{ 3.0f, 3.0f, 1.0f },
+					glm::vec4{ 0.0f, 0.0f, 0.0f, 1.0f },
+					[i, this]() {
+						std::cout << "You clicked the " << (i + 1) << "th Button inside the Building panel!" << std::endl;
+						this->m_Parent->testScene->SetSelectedConstructionBuilding(i);
+					}
+				);
+				children.Children.push_back(buildingPanelbutton->entityID);
+				m_BuildingPanelButtonList.push_back(buildingPanelbutton);
 			}
 		}
 	}

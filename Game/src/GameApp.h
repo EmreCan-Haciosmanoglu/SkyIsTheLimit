@@ -24,13 +24,13 @@ namespace Can
 		Prefab* terrainPrefab;
 
 		std::vector<std::array<Prefab*, 3>> roads;
-		std::vector<Prefab*> buildings;
 		// 0 => Road
 		// 1 => Junction
 		// 2 => End
+		std::vector<Prefab*> buildings;
 		
-		TestScene* testScene;
-		UIScene* uiScene;
-		Debug* debugScene;
+		TestScene* testScene = nullptr;
+		UIScene* uiScene = nullptr;
+		Debug* debugScene = nullptr;
 	};
 }
