@@ -21,7 +21,7 @@ namespace Can
 		m_ButtonRoads = new Button(
 			m_Scene->m_Registry,
 			m_Scene->entityID,
-			glm::vec3{ 1.0f, height * (4.0f / 5.0f) - 1.6f, 0.0011f },
+			glm::vec3{ 1.0f, height * (4.0f / 5.0f) - 1.7f, 0.0011f },
 			glm::vec3{ 3.0f, 1.0f, 1.0f },
 			glm::vec4{ 221.0f / 255.0f, 255.0f / 255.0f, 247.0f / 255.0f, 1.0f },
 			[this, height]() {
@@ -71,7 +71,7 @@ namespace Can
 		m_ButtonBuildings = new Button(
 			m_Scene->m_Registry,
 			m_Scene->entityID,
-			glm::vec3{ 5.0f, height * (4.0f / 5.0f) - 1.6f, 0.0011f },
+			glm::vec3{ 5.0f, height * (4.0f / 5.0f) - 1.7f, 0.0011f },
 			glm::vec3{ 3.0f, 1.0f, 1.0f },
 			glm::vec4{ 255.0f / 255.0f, 166.0f / 255.0f, 158.0f / 255.0f, 1.0f },
 			[this, height]() {
