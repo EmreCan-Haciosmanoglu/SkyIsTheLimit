@@ -23,7 +23,8 @@ namespace Can
 	void Debug::OnImGuiRender()
 	{
 		static TestScene* testScene = m_Parent->testScene;
-
+		if (!is_open)
+			return;
 		ImGui::Begin("Debug");
 
 		ImGui::Text("Construction Type");
@@ -150,6 +151,8 @@ namespace Can
 	}
 	bool Debug::OnKeyPressed(Event::KeyPressedEvent& event)
 	{
+		if (event.GetKeyCode() == CAN_KEY_GRAVE_ACCENT)
+			is_open = !is_open;
 		return ImGui::GetIO().WantCaptureKeyboard;
 	}
 }

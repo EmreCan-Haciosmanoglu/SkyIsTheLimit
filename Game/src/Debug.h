@@ -23,5 +23,6 @@ namespace Can
 		
 	private:
 		GameApp* m_Parent;
+		bool is_open = true;
 	};
 }
