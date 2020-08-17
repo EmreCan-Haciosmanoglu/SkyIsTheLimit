@@ -739,16 +739,107 @@ namespace Can
 	{
 		if (road->startEnd != nullptr)
 		{
-			auto position = std::find(m_Ends.begin(), m_Ends.end(), road->startEnd);
-			m_Ends.erase(position);
+			auto endPosition = std::find(m_Ends.begin(), m_Ends.end(), road->startEnd);
+			m_Ends.erase(endPosition);
 			delete road->startEnd;
+		}
+		else
+		{
+			Junction* junction = road->startJunction;
+			std::vector<Road*>& connectedRoads= junction->connectedRoads;
+			auto roadPosition = std::find(connectedRoads.begin(), connectedRoads.end(), road);
+			connectedRoads.erase(roadPosition);
+			if (connectedRoads.size() == 1)
+			{
+				Road* otherRoad = connectedRoads[0];
+				if (otherRoad->startJunction == junction)
+				{
+					End* newEnd = new End(
+						otherRoad,
+						m_Parent->roads[otherRoad->typeIndex][2],
+						junction->position,
+						glm::vec3{ 1.0f, 1.0f, 1.0f },
+						glm::vec3{ 0.0f, otherRoad->rotation.y + glm::radians(180.0f), otherRoad->rotation.z }
+					);
+					otherRoad->startEnd = newEnd;
+					otherRoad->startJunction = nullptr;
+					otherRoad->SetStartPosition(junction->position);
+					m_Ends.push_back(newEnd);
+				}
+				else
+				{
+					End* newEnd = new End(
+						otherRoad,
+						m_Parent->roads[otherRoad->typeIndex][2],
+						junction->position,
+						glm::vec3{ 1.0f, 1.0f, 1.0f },
+						glm::vec3{ 0.0f, otherRoad->rotation.y, otherRoad->rotation.z }
+					);
+					otherRoad->endEnd = newEnd;
+					otherRoad->endJunction = nullptr;
+					otherRoad->SetEndPosition(junction->position);
+					m_Ends.push_back(newEnd);
+				}
+
+				auto juncPosition = std::find(m_Junctions.begin(), m_Junctions.end(), junction);
+				m_Junctions.erase(juncPosition);
+				delete junction;
+			}
+			junction->ReconstructObject();
 		}
 		if (road->endEnd != nullptr)
 		{
-			auto position = std::find(m_Ends.begin(), m_Ends.end(), road->endEnd);
-			m_Ends.erase(position);
+			auto endPosition = std::find(m_Ends.begin(), m_Ends.end(), road->endEnd);
+			m_Ends.erase(endPosition);
 			delete road->endEnd;
 		}
+		else
+		{
+			Junction* junction = road->endJunction;
+			std::vector<Road*>& connectedRoads = junction->connectedRoads;
+			auto roadPosition = std::find(connectedRoads.begin(), connectedRoads.end(), road);
+			connectedRoads.erase(roadPosition);
+			if (connectedRoads.size() == 1)
+			{
+				Road* otherRoad = connectedRoads[0];
+				if (otherRoad->startJunction == junction)
+				{
+					End* newEnd = new End(
+						otherRoad,
+						m_Parent->roads[otherRoad->typeIndex][2],
+						junction->position,
+						glm::vec3{ 1.0f, 1.0f, 1.0f },
+						glm::vec3{ 0.0f, otherRoad->rotation.y + glm::radians(180.0f), otherRoad->rotation.z }
+					);
+					otherRoad->startEnd = newEnd;
+					otherRoad->startJunction = nullptr;
+					otherRoad->SetStartPosition(junction->position);
+					m_Ends.push_back(newEnd);
+				}
+				else
+				{
+					End* newEnd = new End(
+						otherRoad,
+						m_Parent->roads[otherRoad->typeIndex][2],
+						junction->position,
+						glm::vec3{ 1.0f, 1.0f, 1.0f },
+						glm::vec3{ 0.0f, otherRoad->rotation.y, otherRoad->rotation.z }
+					);
+					otherRoad->endEnd = newEnd;
+					otherRoad->endJunction = nullptr;
+					otherRoad->SetEndPosition(junction->position);
+					m_Ends.push_back(newEnd);
+				}
+
+				auto juncPosition = std::find(m_Junctions.begin(), m_Junctions.end(), junction);
+				m_Junctions.erase(juncPosition);
+				delete junction;
+			}
+			junction->ReconstructObject();
+		}
+		auto position = std::find(m_Roads.begin(), m_Roads.end(), road);
+		m_Roads.erase(position);
+		delete road;
 	}
 
 	glm::vec3 TestScene::GetRayCastedFromScreen()
