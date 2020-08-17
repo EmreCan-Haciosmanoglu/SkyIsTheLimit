@@ -40,340 +40,29 @@ namespace Can
 		glm::vec3 camPos = m_MainCameraController.GetCamera().GetPosition();
 		glm::vec3 forward = GetRayCastedFromScreen();
 
-		//delete?
 		glm::vec3 I = Helper::RayPlaneIntersection(camPos, forward, { 0.0f, 0.0f, 0.0f, }, { 0.0f, 1.0f, 0.0f, });
 
 		if (isnan(I.x) == false)
 		{
-			Prefab* selectedRoad = m_Parent->roads[m_RoadConstructionType][0];
-			float roadPrefabWidth = selectedRoad->boundingBoxM.z - selectedRoad->boundingBoxL.z;
-			float roadPrefabLength = selectedRoad->boundingBoxM.x - selectedRoad->boundingBoxL.x;
-			if (b_RoadConstructionStarted == false)
+			switch (m_ConstructionMode)
 			{
-				m_RoadConstructionStartSnappedType = -1;
-				bool snapped = false;
-				glm::vec3 prevLocation = I;/* GetTerrainHeight */
-
-				float snapDist = roadPrefabWidth;
-				for (Junction* junction : m_Junctions)
+			case Can::ConstructionMode::Road:
+				switch (m_RoadConstructionMode)
 				{
-					glm::vec3 Intersection = Helper::RayPlaneIntersection(camPos, forward, junction->position, { 0.0f, 1.0f, 0.0f, });
-
-					float distance = glm::length(junction->position - Intersection);
-					if (distance < snapDist)
-					{
-						snapped = true;
-						prevLocation = junction->position;
-						m_RoadConstructionStartSnappedType = 0;
-						m_RoadConstructionStartSnappedJunction = junction;
-						break;
-					}
+				case Can::RoadConstructionMode::None:
+					break;
+				case Can::RoadConstructionMode::Construct:
+					OnUpdate_RoadContruction(I, camPos, forward);
+					break;
+				case Can::RoadConstructionMode::Upgrade:
+					break;
+				case Can::RoadConstructionMode::Destruct:
+					OnUpdate_RoadDestruction();
+					break;
 				}
-
-				if (!snapped)
-				{
-
-					for (End* end : m_Ends)
-					{
-						float endRadius = end->object->prefab->boundingBoxM.x - end->object->prefab->boundingBoxL.x;
-						snapDist = roadPrefabWidth / 2.0f + endRadius;
-
-						glm::vec3 Intersection = Helper::RayPlaneIntersection(camPos, forward, end->object->position, { 0.0f, 1.0f, 0.0f, });
-
-						float distance = glm::length(end->object->position - Intersection);
-						if (distance < snapDist)
-						{
-							snapped = true;
-							prevLocation = end->object->position;
-							m_RoadConstructionStartSnappedType = 1;
-							m_RoadConstructionStartSnappedEnd = end;
-							break;
-						}
-					}
-				}
-
-				if (!snapped)
-				{
-					for (Road* road : m_Roads)
-					{
-						float roadWidth = road->object->prefab->boundingBoxM.z - road->object->prefab->boundingBoxL.z;
-						snapDist = (roadPrefabWidth + roadWidth) / 2.0f;
-
-						road->object->enabled = true;
-						glm::vec3 Intersection = Helper::RayPlaneIntersection(camPos, forward, road->GetStartPosition(), { 0.0f, 1.0f, 0.0f, });
-
-
-						glm::vec3 B = Intersection - road->GetStartPosition();
-						float bLength = glm::length(B);
-
-						float angle = glm::acos(glm::dot(road->direction, B) / bLength);
-						float distance = bLength * glm::sin(angle);
-
-						if (distance < snapDist)
-						{
-							float c = bLength * glm::cos(angle);
-							if (c <= roadPrefabLength || c >= road->length - roadPrefabLength)
-								continue;
-
-							snapped = true;
-							prevLocation = road->GetStartPosition() + glm::normalize(road->direction) * c;
-							m_RoadConstructionStartSnappedType = 2;
-							m_RoadConstructionStartSnappedRoad = road;
-							break;
-						}
-					}
-				}
-				b_RoadConstructionStartSnapped = snapped;
-				if (snapped)
-					m_RoadConstructionStartCoordinate = prevLocation;
-
-				m_RoadGuidelinesStart->SetTransform(prevLocation + glm::vec3{ 0.0f, 0.15f, 0.0f }, { 1.0f, 1.0f, 1.0f }, { 0.0f, glm::radians(180.0f), 0.0f });
-				m_RoadGuidelinesEnd->SetTransform(prevLocation + glm::vec3{ 0.0f, 0.15f, 0.0f }, { 1.0f, 1.0f, 1.0f }, { 0.0f, 0.0f, 0.0f });
-			}
-			else
-			{
-				m_RoadConstructionEndCoordinate = I;
-				m_RoadConstructionEndSnappedType = -1;
-				bool snapped = false;
-				float snapDist = roadPrefabWidth;
-
-				for (Junction* junction : m_Junctions)
-				{
-					glm::vec3 Intersection = Helper::RayPlaneIntersection(camPos, forward, junction->position, { 0.0f, 1.0f, 0.0f, });
-
-					float distance = glm::length(junction->position - Intersection);
-					if (distance < snapDist)
-					{
-						snapped = true;
-						m_RoadConstructionEndCoordinate = junction->position;
-						m_RoadConstructionEndSnappedType = 0;
-						m_RoadConstructionEndSnappedJunction = junction;
-						break;
-					}
-				}
-
-				if (!snapped)
-				{
-					for (End* end : m_Ends)
-					{
-						float endRadius = end->object->prefab->boundingBoxM.x - end->object->prefab->boundingBoxL.x;
-						snapDist = roadPrefabWidth / 2.0f + endRadius;
-
-						glm::vec3 Intersection = Helper::RayPlaneIntersection(camPos, forward, end->object->position, { 0.0f, 1.0f, 0.0f, });
-
-						float distance = glm::length(end->object->position - Intersection);
-						if (distance < snapDist)
-						{
-							snapped = true;
-							m_RoadConstructionEndCoordinate = end->object->position;
-							m_RoadConstructionEndSnappedType = 1;
-							m_RoadConstructionEndSnappedEnd = end;
-							break;
-						}
-					}
-				}
-
-				if (!snapped)
-				{
-					for (Road* road : m_Roads)
-					{
-						float roadWidth = road->object->prefab->boundingBoxM.z - road->object->prefab->boundingBoxL.z;
-						snapDist = (roadPrefabWidth + roadWidth) / 2.0f;
-
-						road->object->enabled = true;
-						glm::vec3 Intersection = Helper::RayPlaneIntersection(camPos, forward, road->GetStartPosition(), { 0.0f, 1.0f, 0.0f, });
-
-						glm::vec3 B = Intersection - road->GetStartPosition();
-						float bLength = glm::length(B);
-
-						float angle = glm::acos(glm::dot(road->direction, B) / bLength);
-						float distance = bLength * glm::sin(angle);
-
-						if (distance < snapDist)
-						{
-							float c = bLength * glm::cos(angle);
-							if (c <= roadPrefabLength || c >= road->length - roadPrefabLength)
-								continue;
-
-							snapped = true;
-							m_RoadConstructionEndCoordinate = road->GetStartPosition() + road->direction * c;
-							m_RoadConstructionEndSnappedType = 2;
-							m_RoadConstructionEndSnappedRoad = road;
-							break;
-						}
-					}
-				}
-
-				b_RoadConstructionEndSnapped = snapped;
-
-				glm::vec3 AB = m_RoadConstructionEndCoordinate - m_RoadConstructionStartCoordinate;
-				glm::vec3 normalizedAB = glm::normalize(AB);
-
-				float rotationOffset = AB.x < 0.0f ? 180.0f : 0.0f;
-				float rotationStart = glm::atan(-AB.z / AB.x) + glm::radians(180.0f + rotationOffset);
-				float rotationEnd = glm::atan(-AB.z / AB.x) + glm::radians(rotationOffset);
-
-				m_RoadGuidelinesStart->enabled = !b_RoadConstructionStartSnapped;
-				m_RoadGuidelinesEnd->enabled = !b_RoadConstructionEndSnapped;
-
-				m_RoadGuidelinesStart->SetTransform(m_RoadConstructionStartCoordinate + glm::vec3{ 0.0f, 0.15f, 0.0f }, { 1.0f, 1.0f, 1.0f }, { 0.0f, rotationStart, 0.0f });
-				m_RoadGuidelinesEnd->SetTransform(m_RoadConstructionEndCoordinate + glm::vec3{ 0.0f, 0.15f, 0.0f }, { 1.0f, 1.0f, 1.0f }, { 0.0f, rotationEnd, 0.0f });
-
-				float availableABLength = (
-					glm::length(AB)
-					- (b_RoadConstructionStartSnapped ? roadPrefabLength : 0.0f)
-					- (b_RoadConstructionEndSnapped ? roadPrefabLength : 0.0f)
-					);
-				availableABLength = std::max(availableABLength, 0.0f);
-
-				int countAB = availableABLength / roadPrefabLength;
-				float scaleAB = (availableABLength / roadPrefabLength) / countAB;
-				float scaledRoadLength = availableABLength / countAB;
-
-				for (std::vector<Object*>& os : m_RoadGuidelines)
-					for (Object* rg : os)
-						rg->enabled = false;
-				for (size_t& inUse : m_RoadGuidelinesInUse)
-					inUse = 0;
-
-				int discountStart = (b_RoadConstructionStartSnapped ? 1 : 0);
-
-				m_RoadGuidelinesInUse[m_RoadConstructionType] += countAB;
-				if (m_RoadGuidelinesInUse[m_RoadConstructionType] > m_RoadGuidelines[m_RoadConstructionType].size())
-					for (size_t j = m_RoadGuidelines[m_RoadConstructionType].size(); j < m_RoadGuidelinesInUse[m_RoadConstructionType]; j++)
-						m_RoadGuidelines[m_RoadConstructionType].push_back(new Object(m_Parent->roads[m_RoadConstructionType][0], m_Parent->roads[m_RoadConstructionType][0]));
-
-				for (size_t j = 0; j < countAB; j++)
-				{
-					Object* roadG = m_RoadGuidelines[m_RoadConstructionType][j];
-					roadG->enabled = true;
-					roadG->SetTransform(
-						m_RoadConstructionStartCoordinate + (normalizedAB * ((j + discountStart) * scaledRoadLength)) + glm::vec3{ 0.0f, 0.15f, 0.0f },
-						glm::vec3{ 1.0f * scaleAB, 1.0f, 1.0f },
-						glm::vec3{ 0.0f, rotationEnd, 0.0f }
-					);
-				}
-
-				if (m_RoadConstructionStartSnappedType == 2)
-				{
-					float snappedRoadPrefabLength = m_RoadConstructionStartSnappedRoad->type[0]->boundingBoxM.x - m_RoadConstructionStartSnappedRoad->type[0]->boundingBoxL.x;
-					size_t snappedRoadTypeIndex = m_RoadConstructionStartSnappedRoad->typeIndex;
-					m_RoadConstructionStartSnappedRoad->object->enabled = false;
-					glm::vec3 R0I = m_RoadConstructionStartCoordinate - m_RoadConstructionStartSnappedRoad->GetStartPosition();
-					glm::vec3 R1I = m_RoadConstructionStartCoordinate - m_RoadConstructionStartSnappedRoad->GetEndPosition();
-
-					glm::vec3 normalizedR0I = glm::normalize(R0I);
-					glm::vec3 normalizedR1I = glm::normalize(R1I);
-
-					glm::vec3 rotationR0I = m_RoadConstructionStartSnappedRoad->rotation;
-					glm::vec3 rotationR1I = {
-						0.0f,
-						m_RoadConstructionStartSnappedRoad->rotation.y + glm::radians(180.0f),
-						-m_RoadConstructionStartSnappedRoad->rotation.z
-					};
-
-					float availableR0ILength = std::max(glm::length(R0I) - snappedRoadPrefabLength, 0.0f);
-					float availableR1ILength = std::max(glm::length(R1I) - snappedRoadPrefabLength, 0.0f);
-
-					int countR0I = availableR0ILength / snappedRoadPrefabLength;
-					int countR1I = availableR1ILength / snappedRoadPrefabLength;
-
-					float scaleR0I = (availableR0ILength / snappedRoadPrefabLength) / countR0I;
-					float scaleR1I = (availableR1ILength / snappedRoadPrefabLength) / countR1I;
-
-					float scaledR0IRoadLength = availableR0ILength / countR0I;
-					float scaledR1IRoadLength = availableR1ILength / countR1I;
-
-					size_t prevIndex = m_RoadGuidelinesInUse[snappedRoadTypeIndex];
-					m_RoadGuidelinesInUse[snappedRoadTypeIndex] += countR0I;
-					m_RoadGuidelinesInUse[snappedRoadTypeIndex] += countR1I;
-					if (m_RoadGuidelinesInUse[snappedRoadTypeIndex] > m_RoadGuidelines[snappedRoadTypeIndex].size())
-						for (size_t j = m_RoadGuidelines[snappedRoadTypeIndex].size(); j < m_RoadGuidelinesInUse[snappedRoadTypeIndex]; j++)
-							m_RoadGuidelines[snappedRoadTypeIndex].push_back(new Object(m_Parent->roads[snappedRoadTypeIndex][0], m_Parent->roads[snappedRoadTypeIndex][0]));
-
-					for (size_t j = 0; j < countR0I; j++)
-					{
-						Object* roadG = m_RoadGuidelines[snappedRoadTypeIndex][j + prevIndex];
-						roadG->enabled = true;
-						roadG->SetTransform(
-							m_RoadConstructionStartSnappedRoad->GetStartPosition() + normalizedR0I * (j * scaledR0IRoadLength) + glm::vec3{ 0.0f, 0.15f, 0.0f },
-							glm::vec3{ 1.0f * scaleR0I, 1.0f, 1.0f },
-							rotationR0I
-						);
-					}
-
-					for (size_t j = 0; j < countR1I; j++)
-					{
-						Object* roadG = m_RoadGuidelines[snappedRoadTypeIndex][j + prevIndex + countR0I];
-						roadG->enabled = true;
-						roadG->SetTransform(
-							m_RoadConstructionStartSnappedRoad->GetEndPosition() + normalizedR1I * (j * scaledR1IRoadLength) + glm::vec3{ 0.0f, 0.15f, 0.0f },
-							glm::vec3{ 1.0f * scaleR1I, 1.0f, 1.0f },
-							rotationR1I
-						);
-					}
-				}
-
-				if (m_RoadConstructionEndSnappedType == 2)
-				{
-					float snappedRoadPrefabLength = m_RoadConstructionEndSnappedRoad->type[0]->boundingBoxM.x - m_RoadConstructionEndSnappedRoad->type[0]->boundingBoxL.x;
-					size_t snappedRoadTypeIndex = m_RoadConstructionEndSnappedRoad->typeIndex;
-					m_RoadConstructionEndSnappedRoad->object->enabled = false;
-					glm::vec3 R0I = m_RoadConstructionEndCoordinate - m_RoadConstructionEndSnappedRoad->GetStartPosition();
-					glm::vec3 R1I = m_RoadConstructionEndCoordinate - m_RoadConstructionEndSnappedRoad->GetEndPosition();
-
-					glm::vec3 normalizedR0I = glm::normalize(R0I);
-					glm::vec3 normalizedR1I = glm::normalize(R1I);
-
-					glm::vec3 rotationR0I = m_RoadConstructionEndSnappedRoad->rotation;
-					glm::vec3 rotationR1I = {
-						0.0f,
-						m_RoadConstructionEndSnappedRoad->rotation.y + glm::radians(180.0f),
-						-m_RoadConstructionEndSnappedRoad->rotation.z
-					};
-
-					float availableR0ILength = std::max(glm::length(R0I) - snappedRoadPrefabLength, 0.0f);
-					float availableR1ILength = std::max(glm::length(R1I) - snappedRoadPrefabLength, 0.0f);
-
-					int countR0I = availableR0ILength / snappedRoadPrefabLength;
-					int countR1I = availableR1ILength / snappedRoadPrefabLength;
-
-					float scaleR0I = (availableR0ILength / snappedRoadPrefabLength) / countR0I;
-					float scaleR1I = (availableR1ILength / snappedRoadPrefabLength) / countR1I;
-
-					float scaledR0IRoadLength = availableR0ILength / countR0I;
-					float scaledR1IRoadLength = availableR1ILength / countR1I;
-
-
-					size_t prevIndex = m_RoadGuidelinesInUse[snappedRoadTypeIndex];
-					m_RoadGuidelinesInUse[snappedRoadTypeIndex] += countR0I;
-					m_RoadGuidelinesInUse[snappedRoadTypeIndex] += countR1I;
-					if (m_RoadGuidelinesInUse[snappedRoadTypeIndex] > m_RoadGuidelines[snappedRoadTypeIndex].size())
-						for (size_t j = m_RoadGuidelines[snappedRoadTypeIndex].size(); j < m_RoadGuidelinesInUse[snappedRoadTypeIndex]; j++)
-							m_RoadGuidelines[snappedRoadTypeIndex].push_back(new Object(m_Parent->roads[snappedRoadTypeIndex][0], m_Parent->roads[snappedRoadTypeIndex][0]));
-
-					for (size_t j = 0; j < countR0I; j++)
-					{
-						Object* roadG = m_RoadGuidelines[snappedRoadTypeIndex][j + prevIndex];
-						roadG->enabled = true;
-						roadG->SetTransform(
-							m_RoadConstructionEndSnappedRoad->GetStartPosition() + normalizedR0I * (j * scaledR0IRoadLength) + glm::vec3{ 0.0f, 0.15f, 0.0f },
-							glm::vec3{ 1.0f * scaleR0I, 1.0f, 1.0f },
-							rotationR0I
-						);
-					}
-
-					for (size_t j = 0; j < countR1I; j++)
-					{
-						Object* roadG = m_RoadGuidelines[snappedRoadTypeIndex][j + prevIndex + countR0I];
-						roadG->enabled = true;
-						roadG->SetTransform(
-							m_RoadConstructionEndSnappedRoad->GetEndPosition() + normalizedR1I * (j * scaledR1IRoadLength) + glm::vec3{ 0.0f, 0.15f, 0.0f },
-							glm::vec3{ 1.0f * scaleR1I, 1.0f, 1.0f },
-							rotationR1I
-						);
-					}
-				}
+				break;
+			case Can::ConstructionMode::Building:
+				break;
 			}
 		}
 
@@ -746,7 +435,7 @@ namespace Can
 		else
 		{
 			Junction* junction = road->startJunction;
-			std::vector<Road*>& connectedRoads= junction->connectedRoads;
+			std::vector<Road*>& connectedRoads = junction->connectedRoads;
 			auto roadPosition = std::find(connectedRoads.begin(), connectedRoads.end(), road);
 			connectedRoads.erase(roadPosition);
 			if (connectedRoads.size() == 1)
@@ -840,6 +529,343 @@ namespace Can
 		auto position = std::find(m_Roads.begin(), m_Roads.end(), road);
 		m_Roads.erase(position);
 		delete road;
+	}
+
+	void TestScene::OnUpdate_RoadContruction(glm::vec3 prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection)
+	{
+		Prefab* selectedRoad = m_Parent->roads[m_RoadConstructionType][0];
+		float roadPrefabWidth = selectedRoad->boundingBoxM.z - selectedRoad->boundingBoxL.z;
+		float roadPrefabLength = selectedRoad->boundingBoxM.x - selectedRoad->boundingBoxL.x;
+		if (b_RoadConstructionStarted == false)
+		{
+			m_RoadConstructionStartSnappedType = -1;
+			bool snapped = false;
+
+			float snapDist = roadPrefabWidth;
+			for (Junction* junction : m_Junctions)
+			{
+				glm::vec3 Intersection = Helper::RayPlaneIntersection(cameraPosition, cameraDirection, junction->position, { 0.0f, 1.0f, 0.0f, });
+
+				float distance = glm::length(junction->position - Intersection);
+				if (distance < snapDist)
+				{
+					snapped = true;
+					prevLocation = junction->position;
+					m_RoadConstructionStartSnappedType = 0;
+					m_RoadConstructionStartSnappedJunction = junction;
+					break;
+				}
+			}
+
+			if (!snapped)
+			{
+
+				for (End* end : m_Ends)
+				{
+					float endRadius = end->object->prefab->boundingBoxM.x - end->object->prefab->boundingBoxL.x;
+					snapDist = roadPrefabWidth / 2.0f + endRadius;
+
+					glm::vec3 Intersection = Helper::RayPlaneIntersection(cameraPosition, cameraDirection, end->object->position, { 0.0f, 1.0f, 0.0f, });
+
+					float distance = glm::length(end->object->position - Intersection);
+					if (distance < snapDist)
+					{
+						snapped = true;
+						prevLocation = end->object->position;
+						m_RoadConstructionStartSnappedType = 1;
+						m_RoadConstructionStartSnappedEnd = end;
+						break;
+					}
+				}
+			}
+
+			if (!snapped)
+			{
+				for (Road* road : m_Roads)
+				{
+					float roadWidth = road->object->prefab->boundingBoxM.z - road->object->prefab->boundingBoxL.z;
+					snapDist = (roadPrefabWidth + roadWidth) / 2.0f;
+
+					road->object->enabled = true;
+					glm::vec3 Intersection = Helper::RayPlaneIntersection(cameraPosition, cameraDirection, road->GetStartPosition(), { 0.0f, 1.0f, 0.0f, });
+
+
+					glm::vec3 B = Intersection - road->GetStartPosition();
+					float bLength = glm::length(B);
+
+					float angle = glm::acos(glm::dot(road->direction, B) / bLength);
+					float distance = bLength * glm::sin(angle);
+
+					if (distance < snapDist)
+					{
+						float c = bLength * glm::cos(angle);
+						if (c <= roadPrefabLength || c >= road->length - roadPrefabLength)
+							continue;
+
+						snapped = true;
+						prevLocation = road->GetStartPosition() + glm::normalize(road->direction) * c;
+						m_RoadConstructionStartSnappedType = 2;
+						m_RoadConstructionStartSnappedRoad = road;
+						break;
+					}
+				}
+			}
+			b_RoadConstructionStartSnapped = snapped;
+			if (snapped)
+				m_RoadConstructionStartCoordinate = prevLocation;
+
+			m_RoadGuidelinesStart->SetTransform(prevLocation + glm::vec3{ 0.0f, 0.15f, 0.0f }, { 1.0f, 1.0f, 1.0f }, { 0.0f, glm::radians(180.0f), 0.0f });
+			m_RoadGuidelinesEnd->SetTransform(prevLocation + glm::vec3{ 0.0f, 0.15f, 0.0f }, { 1.0f, 1.0f, 1.0f }, { 0.0f, 0.0f, 0.0f });
+		}
+		else
+		{
+			m_RoadConstructionEndCoordinate = prevLocation;
+			m_RoadConstructionEndSnappedType = -1;
+			bool snapped = false;
+			float snapDist = roadPrefabWidth;
+
+			for (Junction* junction : m_Junctions)
+			{
+				glm::vec3 Intersection = Helper::RayPlaneIntersection(cameraPosition, cameraDirection, junction->position, { 0.0f, 1.0f, 0.0f, });
+
+				float distance = glm::length(junction->position - Intersection);
+				if (distance < snapDist)
+				{
+					snapped = true;
+					m_RoadConstructionEndCoordinate = junction->position;
+					m_RoadConstructionEndSnappedType = 0;
+					m_RoadConstructionEndSnappedJunction = junction;
+					break;
+				}
+			}
+
+			if (!snapped)
+			{
+				for (End* end : m_Ends)
+				{
+					float endRadius = end->object->prefab->boundingBoxM.x - end->object->prefab->boundingBoxL.x;
+					snapDist = roadPrefabWidth / 2.0f + endRadius;
+
+					glm::vec3 Intersection = Helper::RayPlaneIntersection(cameraPosition, cameraDirection, end->object->position, { 0.0f, 1.0f, 0.0f, });
+
+					float distance = glm::length(end->object->position - Intersection);
+					if (distance < snapDist)
+					{
+						snapped = true;
+						m_RoadConstructionEndCoordinate = end->object->position;
+						m_RoadConstructionEndSnappedType = 1;
+						m_RoadConstructionEndSnappedEnd = end;
+						break;
+					}
+				}
+			}
+
+			if (!snapped)
+			{
+				for (Road* road : m_Roads)
+				{
+					float roadWidth = road->object->prefab->boundingBoxM.z - road->object->prefab->boundingBoxL.z;
+					snapDist = (roadPrefabWidth + roadWidth) / 2.0f;
+
+					road->object->enabled = true;
+					glm::vec3 Intersection = Helper::RayPlaneIntersection(cameraPosition, cameraDirection, road->GetStartPosition(), { 0.0f, 1.0f, 0.0f, });
+
+					glm::vec3 B = Intersection - road->GetStartPosition();
+					float bLength = glm::length(B);
+
+					float angle = glm::acos(glm::dot(road->direction, B) / bLength);
+					float distance = bLength * glm::sin(angle);
+
+					if (distance < snapDist)
+					{
+						float c = bLength * glm::cos(angle);
+						if (c <= roadPrefabLength || c >= road->length - roadPrefabLength)
+							continue;
+
+						snapped = true;
+						m_RoadConstructionEndCoordinate = road->GetStartPosition() + road->direction * c;
+						m_RoadConstructionEndSnappedType = 2;
+						m_RoadConstructionEndSnappedRoad = road;
+						break;
+					}
+				}
+			}
+
+			b_RoadConstructionEndSnapped = snapped;
+
+			glm::vec3 AB = m_RoadConstructionEndCoordinate - m_RoadConstructionStartCoordinate;
+			glm::vec3 normalizedAB = glm::normalize(AB);
+
+			float rotationOffset = AB.x < 0.0f ? 180.0f : 0.0f;
+			float rotationStart = glm::atan(-AB.z / AB.x) + glm::radians(180.0f + rotationOffset);
+			float rotationEnd = glm::atan(-AB.z / AB.x) + glm::radians(rotationOffset);
+
+			m_RoadGuidelinesStart->enabled = !b_RoadConstructionStartSnapped;
+			m_RoadGuidelinesEnd->enabled = !b_RoadConstructionEndSnapped;
+
+			m_RoadGuidelinesStart->SetTransform(m_RoadConstructionStartCoordinate + glm::vec3{ 0.0f, 0.15f, 0.0f }, { 1.0f, 1.0f, 1.0f }, { 0.0f, rotationStart, 0.0f });
+			m_RoadGuidelinesEnd->SetTransform(m_RoadConstructionEndCoordinate + glm::vec3{ 0.0f, 0.15f, 0.0f }, { 1.0f, 1.0f, 1.0f }, { 0.0f, rotationEnd, 0.0f });
+
+			float availableABLength = (
+				glm::length(AB)
+				- (b_RoadConstructionStartSnapped ? roadPrefabLength : 0.0f)
+				- (b_RoadConstructionEndSnapped ? roadPrefabLength : 0.0f)
+				);
+			availableABLength = std::max(availableABLength, 0.0f);
+
+			int countAB = availableABLength / roadPrefabLength;
+			float scaleAB = (availableABLength / roadPrefabLength) / countAB;
+			float scaledRoadLength = availableABLength / countAB;
+
+			for (std::vector<Object*>& os : m_RoadGuidelines)
+				for (Object* rg : os)
+					rg->enabled = false;
+			for (size_t& inUse : m_RoadGuidelinesInUse)
+				inUse = 0;
+
+			int discountStart = (b_RoadConstructionStartSnapped ? 1 : 0);
+
+			m_RoadGuidelinesInUse[m_RoadConstructionType] += countAB;
+			if (m_RoadGuidelinesInUse[m_RoadConstructionType] > m_RoadGuidelines[m_RoadConstructionType].size())
+				for (size_t j = m_RoadGuidelines[m_RoadConstructionType].size(); j < m_RoadGuidelinesInUse[m_RoadConstructionType]; j++)
+					m_RoadGuidelines[m_RoadConstructionType].push_back(new Object(m_Parent->roads[m_RoadConstructionType][0], m_Parent->roads[m_RoadConstructionType][0]));
+
+			for (size_t j = 0; j < countAB; j++)
+			{
+				Object* roadG = m_RoadGuidelines[m_RoadConstructionType][j];
+				roadG->enabled = true;
+				roadG->SetTransform(
+					m_RoadConstructionStartCoordinate + (normalizedAB * ((j + discountStart) * scaledRoadLength)) + glm::vec3{ 0.0f, 0.15f, 0.0f },
+					glm::vec3{ 1.0f * scaleAB, 1.0f, 1.0f },
+					glm::vec3{ 0.0f, rotationEnd, 0.0f }
+				);
+			}
+
+			if (m_RoadConstructionStartSnappedType == 2)
+			{
+				float snappedRoadPrefabLength = m_RoadConstructionStartSnappedRoad->type[0]->boundingBoxM.x - m_RoadConstructionStartSnappedRoad->type[0]->boundingBoxL.x;
+				size_t snappedRoadTypeIndex = m_RoadConstructionStartSnappedRoad->typeIndex;
+				m_RoadConstructionStartSnappedRoad->object->enabled = false;
+				glm::vec3 R0I = m_RoadConstructionStartCoordinate - m_RoadConstructionStartSnappedRoad->GetStartPosition();
+				glm::vec3 R1I = m_RoadConstructionStartCoordinate - m_RoadConstructionStartSnappedRoad->GetEndPosition();
+
+				glm::vec3 normalizedR0I = glm::normalize(R0I);
+				glm::vec3 normalizedR1I = glm::normalize(R1I);
+
+				glm::vec3 rotationR0I = m_RoadConstructionStartSnappedRoad->rotation;
+				glm::vec3 rotationR1I = {
+					0.0f,
+					m_RoadConstructionStartSnappedRoad->rotation.y + glm::radians(180.0f),
+					-m_RoadConstructionStartSnappedRoad->rotation.z
+				};
+
+				float availableR0ILength = std::max(glm::length(R0I) - snappedRoadPrefabLength, 0.0f);
+				float availableR1ILength = std::max(glm::length(R1I) - snappedRoadPrefabLength, 0.0f);
+
+				int countR0I = availableR0ILength / snappedRoadPrefabLength;
+				int countR1I = availableR1ILength / snappedRoadPrefabLength;
+
+				float scaleR0I = (availableR0ILength / snappedRoadPrefabLength) / countR0I;
+				float scaleR1I = (availableR1ILength / snappedRoadPrefabLength) / countR1I;
+
+				float scaledR0IRoadLength = availableR0ILength / countR0I;
+				float scaledR1IRoadLength = availableR1ILength / countR1I;
+
+				size_t prevIndex = m_RoadGuidelinesInUse[snappedRoadTypeIndex];
+				m_RoadGuidelinesInUse[snappedRoadTypeIndex] += countR0I;
+				m_RoadGuidelinesInUse[snappedRoadTypeIndex] += countR1I;
+				if (m_RoadGuidelinesInUse[snappedRoadTypeIndex] > m_RoadGuidelines[snappedRoadTypeIndex].size())
+					for (size_t j = m_RoadGuidelines[snappedRoadTypeIndex].size(); j < m_RoadGuidelinesInUse[snappedRoadTypeIndex]; j++)
+						m_RoadGuidelines[snappedRoadTypeIndex].push_back(new Object(m_Parent->roads[snappedRoadTypeIndex][0], m_Parent->roads[snappedRoadTypeIndex][0]));
+
+				for (size_t j = 0; j < countR0I; j++)
+				{
+					Object* roadG = m_RoadGuidelines[snappedRoadTypeIndex][j + prevIndex];
+					roadG->enabled = true;
+					roadG->SetTransform(
+						m_RoadConstructionStartSnappedRoad->GetStartPosition() + normalizedR0I * (j * scaledR0IRoadLength) + glm::vec3{ 0.0f, 0.15f, 0.0f },
+						glm::vec3{ 1.0f * scaleR0I, 1.0f, 1.0f },
+						rotationR0I
+					);
+				}
+
+				for (size_t j = 0; j < countR1I; j++)
+				{
+					Object* roadG = m_RoadGuidelines[snappedRoadTypeIndex][j + prevIndex + countR0I];
+					roadG->enabled = true;
+					roadG->SetTransform(
+						m_RoadConstructionStartSnappedRoad->GetEndPosition() + normalizedR1I * (j * scaledR1IRoadLength) + glm::vec3{ 0.0f, 0.15f, 0.0f },
+						glm::vec3{ 1.0f * scaleR1I, 1.0f, 1.0f },
+						rotationR1I
+					);
+				}
+			}
+
+			if (m_RoadConstructionEndSnappedType == 2)
+			{
+				float snappedRoadPrefabLength = m_RoadConstructionEndSnappedRoad->type[0]->boundingBoxM.x - m_RoadConstructionEndSnappedRoad->type[0]->boundingBoxL.x;
+				size_t snappedRoadTypeIndex = m_RoadConstructionEndSnappedRoad->typeIndex;
+				m_RoadConstructionEndSnappedRoad->object->enabled = false;
+				glm::vec3 R0I = m_RoadConstructionEndCoordinate - m_RoadConstructionEndSnappedRoad->GetStartPosition();
+				glm::vec3 R1I = m_RoadConstructionEndCoordinate - m_RoadConstructionEndSnappedRoad->GetEndPosition();
+
+				glm::vec3 normalizedR0I = glm::normalize(R0I);
+				glm::vec3 normalizedR1I = glm::normalize(R1I);
+
+				glm::vec3 rotationR0I = m_RoadConstructionEndSnappedRoad->rotation;
+				glm::vec3 rotationR1I = {
+					0.0f,
+					m_RoadConstructionEndSnappedRoad->rotation.y + glm::radians(180.0f),
+					-m_RoadConstructionEndSnappedRoad->rotation.z
+				};
+
+				float availableR0ILength = std::max(glm::length(R0I) - snappedRoadPrefabLength, 0.0f);
+				float availableR1ILength = std::max(glm::length(R1I) - snappedRoadPrefabLength, 0.0f);
+
+				int countR0I = availableR0ILength / snappedRoadPrefabLength;
+				int countR1I = availableR1ILength / snappedRoadPrefabLength;
+
+				float scaleR0I = (availableR0ILength / snappedRoadPrefabLength) / countR0I;
+				float scaleR1I = (availableR1ILength / snappedRoadPrefabLength) / countR1I;
+
+				float scaledR0IRoadLength = availableR0ILength / countR0I;
+				float scaledR1IRoadLength = availableR1ILength / countR1I;
+
+
+				size_t prevIndex = m_RoadGuidelinesInUse[snappedRoadTypeIndex];
+				m_RoadGuidelinesInUse[snappedRoadTypeIndex] += countR0I;
+				m_RoadGuidelinesInUse[snappedRoadTypeIndex] += countR1I;
+				if (m_RoadGuidelinesInUse[snappedRoadTypeIndex] > m_RoadGuidelines[snappedRoadTypeIndex].size())
+					for (size_t j = m_RoadGuidelines[snappedRoadTypeIndex].size(); j < m_RoadGuidelinesInUse[snappedRoadTypeIndex]; j++)
+						m_RoadGuidelines[snappedRoadTypeIndex].push_back(new Object(m_Parent->roads[snappedRoadTypeIndex][0], m_Parent->roads[snappedRoadTypeIndex][0]));
+
+				for (size_t j = 0; j < countR0I; j++)
+				{
+					Object* roadG = m_RoadGuidelines[snappedRoadTypeIndex][j + prevIndex];
+					roadG->enabled = true;
+					roadG->SetTransform(
+						m_RoadConstructionEndSnappedRoad->GetStartPosition() + normalizedR0I * (j * scaledR0IRoadLength) + glm::vec3{ 0.0f, 0.15f, 0.0f },
+						glm::vec3{ 1.0f * scaleR0I, 1.0f, 1.0f },
+						rotationR0I
+					);
+				}
+
+				for (size_t j = 0; j < countR1I; j++)
+				{
+					Object* roadG = m_RoadGuidelines[snappedRoadTypeIndex][j + prevIndex + countR0I];
+					roadG->enabled = true;
+					roadG->SetTransform(
+						m_RoadConstructionEndSnappedRoad->GetEndPosition() + normalizedR1I * (j * scaledR1IRoadLength) + glm::vec3{ 0.0f, 0.15f, 0.0f },
+						glm::vec3{ 1.0f * scaleR1I, 1.0f, 1.0f },
+						rotationR1I
+					);
+				}
+			}
+		}
+	}
+
+	void TestScene::OnUpdate_RoadDestruction()
+	{
 	}
 
 	glm::vec3 TestScene::GetRayCastedFromScreen()

@@ -48,6 +48,9 @@ namespace Can
 
 		void SetSelectedConstructionBuilding(size_t index) { m_BuildingType = index; }
 
+		void OnUpdate_RoadContruction(glm::vec3 prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection);
+		void OnUpdate_RoadDestruction();
+
 	private:
 		glm::vec3 GetRayCastedFromScreen();
 
