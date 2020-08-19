@@ -538,160 +538,28 @@ namespace Can
 		float roadPrefabLength = selectedRoad->boundingBoxM.x - selectedRoad->boundingBoxL.x;
 		if (b_RoadConstructionStarted == false)
 		{
-			m_RoadConstructionStartSnappedType = -1;
-			bool snapped = false;
-
-			float snapDist = roadPrefabWidth;
-			for (Junction* junction : m_Junctions)
-			{
-				glm::vec3 Intersection = Helper::RayPlaneIntersection(cameraPosition, cameraDirection, junction->position, { 0.0f, 1.0f, 0.0f, });
-
-				float distance = glm::length(junction->position - Intersection);
-				if (distance < snapDist)
-				{
-					snapped = true;
-					prevLocation = junction->position;
-					m_RoadConstructionStartSnappedType = 0;
-					m_RoadConstructionStartSnappedJunction = junction;
-					break;
-				}
-			}
-
-			if (!snapped)
-			{
-
-				for (End* end : m_Ends)
-				{
-					float endRadius = end->object->prefab->boundingBoxM.x - end->object->prefab->boundingBoxL.x;
-					snapDist = roadPrefabWidth / 2.0f + endRadius;
-
-					glm::vec3 Intersection = Helper::RayPlaneIntersection(cameraPosition, cameraDirection, end->object->position, { 0.0f, 1.0f, 0.0f, });
-
-					float distance = glm::length(end->object->position - Intersection);
-					if (distance < snapDist)
-					{
-						snapped = true;
-						prevLocation = end->object->position;
-						m_RoadConstructionStartSnappedType = 1;
-						m_RoadConstructionStartSnappedEnd = end;
-						break;
-					}
-				}
-			}
-
-			if (!snapped)
-			{
-				for (Road* road : m_Roads)
-				{
-					float roadWidth = road->object->prefab->boundingBoxM.z - road->object->prefab->boundingBoxL.z;
-					snapDist = (roadPrefabWidth + roadWidth) / 2.0f;
-
-					road->object->enabled = true;
-					glm::vec3 Intersection = Helper::RayPlaneIntersection(cameraPosition, cameraDirection, road->GetStartPosition(), { 0.0f, 1.0f, 0.0f, });
-
-
-					glm::vec3 B = Intersection - road->GetStartPosition();
-					float bLength = glm::length(B);
-
-					float angle = glm::acos(glm::dot(road->direction, B) / bLength);
-					float distance = bLength * glm::sin(angle);
-
-					if (distance < snapDist)
-					{
-						float c = bLength * glm::cos(angle);
-						if (c <= roadPrefabLength || c >= road->length - roadPrefabLength)
-							continue;
-
-						snapped = true;
-						prevLocation = road->GetStartPosition() + glm::normalize(road->direction) * c;
-						m_RoadConstructionStartSnappedType = 2;
-						m_RoadConstructionStartSnappedRoad = road;
-						break;
-					}
-				}
-			}
-			b_RoadConstructionStartSnapped = snapped;
-			if (snapped)
-				m_RoadConstructionStartCoordinate = prevLocation;
+			RoadSnapInformation snapInformation = DidRoadSnapped(cameraPosition, cameraDirection);
+			prevLocation = snapInformation.snapped ? snapInformation.snapLocation : prevLocation;
+			b_RoadConstructionStartSnapped = snapInformation.snapped;
+			m_RoadConstructionStartSnappedType = snapInformation.snapType;
+			m_RoadConstructionStartSnappedJunction = snapInformation.snappedJunction;
+			m_RoadConstructionStartSnappedEnd = snapInformation.snappedEnd;
+			m_RoadConstructionStartSnappedRoad = snapInformation.snappedRoad;
+			m_RoadConstructionStartCoordinate = prevLocation;
 
 			m_RoadGuidelinesStart->SetTransform(prevLocation + glm::vec3{ 0.0f, 0.15f, 0.0f }, { 1.0f, 1.0f, 1.0f }, { 0.0f, glm::radians(180.0f), 0.0f });
 			m_RoadGuidelinesEnd->SetTransform(prevLocation + glm::vec3{ 0.0f, 0.15f, 0.0f }, { 1.0f, 1.0f, 1.0f }, { 0.0f, 0.0f, 0.0f });
 		}
 		else
 		{
+			RoadSnapInformation snapInformation = DidRoadSnapped(cameraPosition, cameraDirection);
+			prevLocation = snapInformation.snapped ? snapInformation.snapLocation : prevLocation;
+			b_RoadConstructionEndSnapped = snapInformation.snapped;
+			m_RoadConstructionEndSnappedType = snapInformation.snapType;
+			m_RoadConstructionEndSnappedJunction = snapInformation.snappedJunction;
+			m_RoadConstructionEndSnappedEnd = snapInformation.snappedEnd;
+			m_RoadConstructionEndSnappedRoad = snapInformation.snappedRoad;
 			m_RoadConstructionEndCoordinate = prevLocation;
-			m_RoadConstructionEndSnappedType = -1;
-			bool snapped = false;
-			float snapDist = roadPrefabWidth;
-
-			for (Junction* junction : m_Junctions)
-			{
-				glm::vec3 Intersection = Helper::RayPlaneIntersection(cameraPosition, cameraDirection, junction->position, { 0.0f, 1.0f, 0.0f, });
-
-				float distance = glm::length(junction->position - Intersection);
-				if (distance < snapDist)
-				{
-					snapped = true;
-					m_RoadConstructionEndCoordinate = junction->position;
-					m_RoadConstructionEndSnappedType = 0;
-					m_RoadConstructionEndSnappedJunction = junction;
-					break;
-				}
-			}
-
-			if (!snapped)
-			{
-				for (End* end : m_Ends)
-				{
-					float endRadius = end->object->prefab->boundingBoxM.x - end->object->prefab->boundingBoxL.x;
-					snapDist = roadPrefabWidth / 2.0f + endRadius;
-
-					glm::vec3 Intersection = Helper::RayPlaneIntersection(cameraPosition, cameraDirection, end->object->position, { 0.0f, 1.0f, 0.0f, });
-
-					float distance = glm::length(end->object->position - Intersection);
-					if (distance < snapDist)
-					{
-						snapped = true;
-						m_RoadConstructionEndCoordinate = end->object->position;
-						m_RoadConstructionEndSnappedType = 1;
-						m_RoadConstructionEndSnappedEnd = end;
-						break;
-					}
-				}
-			}
-
-			if (!snapped)
-			{
-				for (Road* road : m_Roads)
-				{
-					float roadWidth = road->object->prefab->boundingBoxM.z - road->object->prefab->boundingBoxL.z;
-					snapDist = (roadPrefabWidth + roadWidth) / 2.0f;
-
-					road->object->enabled = true;
-					glm::vec3 Intersection = Helper::RayPlaneIntersection(cameraPosition, cameraDirection, road->GetStartPosition(), { 0.0f, 1.0f, 0.0f, });
-
-					glm::vec3 B = Intersection - road->GetStartPosition();
-					float bLength = glm::length(B);
-
-					float angle = glm::acos(glm::dot(road->direction, B) / bLength);
-					float distance = bLength * glm::sin(angle);
-
-					if (distance < snapDist)
-					{
-						float c = bLength * glm::cos(angle);
-						if (c <= roadPrefabLength || c >= road->length - roadPrefabLength)
-							continue;
-
-						snapped = true;
-						m_RoadConstructionEndCoordinate = road->GetStartPosition() + road->direction * c;
-						m_RoadConstructionEndSnappedType = 2;
-						m_RoadConstructionEndSnappedRoad = road;
-						break;
-					}
-				}
-			}
-
-			b_RoadConstructionEndSnapped = snapped;
 
 			glm::vec3 AB = m_RoadConstructionEndCoordinate - m_RoadConstructionStartCoordinate;
 			glm::vec3 normalizedAB = glm::normalize(AB);
@@ -908,5 +776,76 @@ namespace Can
 		right = glm::rotate(right, glm::radians(offsetDegrees.x), up);
 		forward = glm::rotate(forward, glm::radians(offsetDegrees.y), right);
 		return forward;
+	}
+
+	RoadSnapInformation TestScene::DidRoadSnapped(const glm::vec3& cameraPosition, const glm::vec3& cameraDirection)
+	{
+		Prefab* selectedRoad = m_Parent->roads[m_RoadConstructionType][0];
+		float roadPrefabWidth = selectedRoad->boundingBoxM.z - selectedRoad->boundingBoxL.z;
+		float snapDistance = roadPrefabWidth;
+		RoadSnapInformation results{ false, { 0.0f, 0.0f, 0.0f }, -1 };
+		for (Junction* junction : m_Junctions)
+		{
+			glm::vec3 Intersection = Helper::RayPlaneIntersection(cameraPosition, cameraDirection, junction->position, { 0.0f, 1.0f, 0.0f, });
+
+			float distance = glm::length(junction->position - Intersection);
+			if (distance < snapDistance)
+			{
+				results.snapLocation = junction->position;
+				results.snapped = true;
+				results.snapType = 0;
+				results.snappedJunction = junction;
+				return results;
+			}
+		}
+
+		for (End* end : m_Ends)
+		{
+			float endRadius = end->object->prefab->boundingBoxM.x - end->object->prefab->boundingBoxL.x;
+			snapDistance = roadPrefabWidth / 2.0f + endRadius;
+
+			glm::vec3 Intersection = Helper::RayPlaneIntersection(cameraPosition, cameraDirection, end->object->position, { 0.0f, 1.0f, 0.0f, });
+
+			float distance = glm::length(end->object->position - Intersection);
+			if (distance < snapDistance)
+			{
+				results.snapLocation = end->object->position;
+				results.snapped = true;
+				results.snapType = 1;
+				results.snappedEnd = end;
+				return results;
+			}
+		}
+
+		float roadPrefabLength = selectedRoad->boundingBoxM.x - selectedRoad->boundingBoxL.x;
+		for (Road* road : m_Roads)
+		{
+			float roadWidth = road->object->prefab->boundingBoxM.z - road->object->prefab->boundingBoxL.z;
+			snapDistance = (roadPrefabWidth + roadWidth) / 2.0f;
+
+			road->object->enabled = true;
+			glm::vec3 Intersection = Helper::RayPlaneIntersection(cameraPosition, cameraDirection, road->GetStartPosition(), { 0.0f, 1.0f, 0.0f, });
+
+
+			glm::vec3 B = Intersection - road->GetStartPosition();
+			float bLength = glm::length(B);
+
+			float angle = glm::acos(glm::dot(road->direction, B) / bLength);
+			float distance = bLength * glm::sin(angle);
+
+			if (distance < snapDistance)
+			{
+				float c = bLength * glm::cos(angle);
+				if (c <= roadPrefabLength || c >= road->length - roadPrefabLength)
+					continue;
+
+				results.snapLocation = road->GetStartPosition() + glm::normalize(road->direction) * c;
+				results.snapped = true;
+				results.snapType = 2;
+				results.snappedRoad = road;
+				return results;
+			}
+		}
+		return results;
 	}
 }

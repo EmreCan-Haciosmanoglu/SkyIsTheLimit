@@ -21,11 +21,20 @@ namespace Can
 		Upgrade,
 		Destruct
 	};
-
 	enum class ConstructionMode
 	{
 		Road,
 		Building
+	};
+
+	struct RoadSnapInformation
+	{
+		bool snapped;
+		glm::vec3 snapLocation;
+		int snapType;
+		Junction* snappedJunction = nullptr;
+		End* snappedEnd = nullptr;
+		Road* snappedRoad = nullptr;
 	};
 
 	class GameApp;
@@ -53,6 +62,7 @@ namespace Can
 
 	private:
 		glm::vec3 GetRayCastedFromScreen();
+		RoadSnapInformation DidRoadSnapped(const glm::vec3& cameraPosition, const glm::vec3& cameraDirection);
 
 	public:
 		std::array<bool, 4> roadSnapOptions = { true, false, false, false };
