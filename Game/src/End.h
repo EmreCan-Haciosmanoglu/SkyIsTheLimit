@@ -16,6 +16,9 @@ namespace Can
 		~End();
 
 	public:
+
+		glm::vec3 position;
+
 		Can::Object* object;
 		Road* connectedRoad;
 	};
