@@ -104,6 +104,11 @@ namespace Can
 		int m_RoadConstructionStartSnappedType = -1;
 		int m_RoadConstructionEndSnappedType = -1;
 
+		Junction* m_RoadDestructionSnappedJunction = nullptr;
+		End* m_RoadDestructionSnappedEnd = nullptr;
+		Road* m_RoadDestructionSnappedRoad = nullptr;
+		int m_RoadDestructionSnappedType = -1;
+
 
 		std::vector<Road*> m_Roads;
 		std::vector<Junction*> m_Junctions;

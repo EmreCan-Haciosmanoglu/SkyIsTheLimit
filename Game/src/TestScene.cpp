@@ -770,6 +770,10 @@ namespace Can
 	{
 		RoadSnapInformation snapInformation = DidRoadSnapped(cameraPosition, cameraDirection);
 
+		m_RoadDestructionSnappedJunction = snapInformation.snappedJunction;
+		m_RoadDestructionSnappedEnd = snapInformation.snappedEnd;
+		m_RoadDestructionSnappedRoad = snapInformation.snappedRoad;
+
 		for (Junction* junction : m_Junctions)
 			for (Object* obj : junction->junctionPieces)
 				obj->SetTransform(junction->position);
@@ -782,12 +786,12 @@ namespace Can
 
 		if (snapInformation.snapped)
 		{
-			if (snapInformation.snappedJunction != nullptr)
+			if (m_RoadDestructionSnappedJunction != nullptr)
 			{
-				for (Object* obj : snapInformation.snappedJunction->junctionPieces)
-					obj->SetTransform(snapInformation.snappedJunction->position + glm::vec3{ 0.0f, 0.1f, 0.0f });
+				for (Object* obj : m_RoadDestructionSnappedJunction->junctionPieces)
+					obj->SetTransform(m_RoadDestructionSnappedJunction->position + glm::vec3{ 0.0f, 0.1f, 0.0f });
 
-				for (Road* road : snapInformation.snappedJunction->connectedRoads)
+				for (Road* road : m_RoadDestructionSnappedJunction->connectedRoads)
 				{
 					if (road->startEnd != nullptr)
 						road->startEnd->object->SetTransform(road->startEnd->position + glm::vec3{ 0.0f, 0.1f, 0.0f });
@@ -796,9 +800,9 @@ namespace Can
 					road->object->SetTransform(road->GetStartPosition() + glm::vec3{ 0.0f, 0.1f, 0.0f });
 				}
 			}
-			else if (snapInformation.snappedEnd != nullptr)
+			else if (m_RoadDestructionSnappedEnd != nullptr)
 			{
-				Road* road = snapInformation.snappedEnd->connectedRoad;
+				Road* road = m_RoadDestructionSnappedEnd->connectedRoad;
 
 				if (road->startEnd != nullptr)
 					road->startEnd->object->SetTransform(road->startEnd->position + glm::vec3{ 0.0f, 0.1f, 0.0f });
@@ -808,11 +812,11 @@ namespace Can
 			}
 			else
 			{
-				if (snapInformation.snappedRoad->startEnd != nullptr)
-					snapInformation.snappedRoad->startEnd->object->SetTransform(snapInformation.snappedRoad->startEnd->position + glm::vec3{ 0.0f, 0.1f, 0.0f });
-				if (snapInformation.snappedRoad->endEnd != nullptr)
-					snapInformation.snappedRoad->endEnd->object->SetTransform(snapInformation.snappedRoad->endEnd->position + glm::vec3{ 0.0f, 0.1f, 0.0f });
-				snapInformation.snappedRoad->object->SetTransform(snapInformation.snappedRoad->GetStartPosition() + glm::vec3{ 0.0f, 0.1f, 0.0f });
+				if (m_RoadDestructionSnappedRoad->startEnd != nullptr)
+					m_RoadDestructionSnappedRoad->startEnd->object->SetTransform(m_RoadDestructionSnappedRoad->startEnd->position + glm::vec3{ 0.0f, 0.1f, 0.0f });
+				if (m_RoadDestructionSnappedRoad->endEnd != nullptr)
+					m_RoadDestructionSnappedRoad->endEnd->object->SetTransform(m_RoadDestructionSnappedRoad->endEnd->position + glm::vec3{ 0.0f, 0.1f, 0.0f });
+				m_RoadDestructionSnappedRoad->object->SetTransform(m_RoadDestructionSnappedRoad->GetStartPosition() + glm::vec3{ 0.0f, 0.1f, 0.0f });
 			}
 		}
 	}
