@@ -31,7 +31,6 @@ namespace Can
 	{
 		bool snapped;
 		glm::vec3 snapLocation;
-		int snapType;
 		Junction* snappedJunction = nullptr;
 		End* snappedEnd = nullptr;
 		Road* snappedRoad = nullptr;
@@ -101,13 +100,10 @@ namespace Can
 		End* m_RoadConstructionEndSnappedEnd = nullptr;
 		Road* m_RoadConstructionEndSnappedRoad = nullptr;
 
-		int m_RoadConstructionStartSnappedType = -1;
-		int m_RoadConstructionEndSnappedType = -1;
 
 		Junction* m_RoadDestructionSnappedJunction = nullptr;
 		End* m_RoadDestructionSnappedEnd = nullptr;
 		Road* m_RoadDestructionSnappedRoad = nullptr;
-		int m_RoadDestructionSnappedType = -1;
 
 
 		std::vector<Road*> m_Roads;
