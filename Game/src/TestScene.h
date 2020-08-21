@@ -21,11 +21,19 @@ namespace Can
 		Upgrade,
 		Destruct
 	};
-
 	enum class ConstructionMode
 	{
 		Road,
 		Building
+	};
+
+	struct RoadSnapInformation
+	{
+		bool snapped;
+		glm::vec3 snapLocation;
+		Junction* snappedJunction = nullptr;
+		End* snappedEnd = nullptr;
+		Road* snappedRoad = nullptr;
 	};
 
 	class GameApp;
@@ -39,15 +47,24 @@ namespace Can
 		virtual void OnDetach() override {}
 
 		virtual void OnUpdate(Can::TimeStep ts) override;
+		void OnUpdate_RoadConstruction(glm::vec3 prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection);
+		void OnUpdate_RoadDestruction(glm::vec3 prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection);
+
 		virtual void OnEvent(Can::Event::Event& event) override;
 
 		bool OnMousePressed(Can::Event::MouseButtonPressedEvent& event);
+		bool OnMousePressed_RoadConstruction(const glm::vec3& cameraPosition, const glm::vec3& cameraDirection);
+		bool OnMousePressed_RoadDestruction();
+
 
 		void SetSelectedConstructionRoad(size_t index);
+		void DeleteSelectedRoad(Road* road);
+
 		void SetSelectedConstructionBuilding(size_t index) { m_BuildingType = index; }
 
 	private:
 		glm::vec3 GetRayCastedFromScreen();
+		RoadSnapInformation DidRoadSnapped(const glm::vec3& cameraPosition, const glm::vec3& cameraDirection);
 
 	public:
 		std::array<bool, 4> roadSnapOptions = { true, false, false, false };
@@ -83,8 +100,10 @@ namespace Can
 		End* m_RoadConstructionEndSnappedEnd = nullptr;
 		Road* m_RoadConstructionEndSnappedRoad = nullptr;
 
-		int m_RoadConstructionStartSnappedType = -1;
-		int m_RoadConstructionEndSnappedType = -1;
+
+		Junction* m_RoadDestructionSnappedJunction = nullptr;
+		End* m_RoadDestructionSnappedEnd = nullptr;
+		Road* m_RoadDestructionSnappedRoad = nullptr;
 
 
 		std::vector<Road*> m_Roads;

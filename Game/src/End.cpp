@@ -6,27 +6,32 @@
 namespace Can
 {
 	End::End(Road* connectedRoad, Prefab* prefab)
-		: connectedRoad(connectedRoad)
+		: position({ 0.0f, 0.0f, 0.0f })
+		, connectedRoad(connectedRoad)
 		, object(new Object(prefab, prefab))
 	{
 	}
 	End::End(Road* connectedRoad, Prefab* prefab, const glm::vec3& position)
-		: connectedRoad(connectedRoad)
+		: position(position)
+		, connectedRoad(connectedRoad)
 		, object(new Object(prefab, prefab, position))
 	{
 	}
 	End::End(Road* connectedRoad, Prefab* prefab, const glm::vec3& position, const glm::vec3& scale)
-		: connectedRoad(connectedRoad)
+		: position(position)
+		, connectedRoad(connectedRoad)
 		, object(new Object(prefab, prefab, position, scale))
 	{
 	}
 	End::End(Road* connectedRoad, Prefab* prefab, const glm::vec3& position, const glm::vec3& scale, const glm::vec3& rotation)
-		: connectedRoad(connectedRoad)
+		: position(position)
+		, connectedRoad(connectedRoad)
 		, object(new Object(prefab, prefab, position, scale, rotation))
 	{
 	}
 	End::End(Road* connectedRoad, Object* object)
-		: connectedRoad(connectedRoad)
+		: position(object->position)
+		, connectedRoad(connectedRoad)
 		, object(object)
 	{
 	}
