@@ -57,7 +57,7 @@ namespace Can
 				case Can::RoadConstructionMode::Upgrade:
 					break;
 				case Can::RoadConstructionMode::Destruct:
-					OnUpdate_RoadDestruction();
+					OnUpdate_RoadDestruction(I, camPos, forward);
 					break;
 				}
 				break;
@@ -732,8 +732,55 @@ namespace Can
 		}
 	}
 
-	void TestScene::OnUpdate_RoadDestruction()
+	void TestScene::OnUpdate_RoadDestruction(glm::vec3 prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection)
 	{
+		RoadSnapInformation snapInformation = DidRoadSnapped(cameraPosition, cameraDirection);
+
+		for (Junction* junction : m_Junctions)
+			for (Object* obj : junction->junctionPieces)
+				obj->SetTransform(junction->position);
+
+		for (End* end : m_Ends)
+			end->object->SetTransform(end->position);
+
+		for (Road* road : m_Roads)
+			road->object->SetTransform(road->GetStartPosition());
+
+		if (snapInformation.snapped)
+		{
+			if (snapInformation.snappedJunction != nullptr)
+			{
+				for (Object* obj : snapInformation.snappedJunction->junctionPieces)
+					obj->SetTransform(snapInformation.snappedJunction->position + glm::vec3{ 0.0f, 0.1f, 0.0f });
+
+				for (Road* road : snapInformation.snappedJunction->connectedRoads)
+				{
+					if (road->startEnd != nullptr)
+						road->startEnd->object->SetTransform(road->startEnd->position + glm::vec3{ 0.0f, 0.1f, 0.0f });
+					if (road->endEnd != nullptr)
+						road->endEnd->object->SetTransform(road->endEnd->position + glm::vec3{ 0.0f, 0.1f, 0.0f });
+					road->object->SetTransform(road->GetStartPosition() + glm::vec3{ 0.0f, 0.1f, 0.0f });
+				}
+			}
+			else if (snapInformation.snappedEnd != nullptr)
+			{
+				Road* road = snapInformation.snappedEnd->connectedRoad;
+
+				if (road->startEnd != nullptr)
+					road->startEnd->object->SetTransform(road->startEnd->position + glm::vec3{ 0.0f, 0.1f, 0.0f });
+				if (road->endEnd != nullptr)
+					road->endEnd->object->SetTransform(road->endEnd->position + glm::vec3{ 0.0f, 0.1f, 0.0f });
+				road->object->SetTransform(road->GetStartPosition() + glm::vec3{ 0.0f, 0.1f, 0.0f });
+			}
+			else
+			{
+				if (snapInformation.snappedRoad->startEnd != nullptr)
+					snapInformation.snappedRoad->startEnd->object->SetTransform(snapInformation.snappedRoad->startEnd->position + glm::vec3{ 0.0f, 0.1f, 0.0f });
+				if (snapInformation.snappedRoad->endEnd != nullptr)
+					snapInformation.snappedRoad->endEnd->object->SetTransform(snapInformation.snappedRoad->endEnd->position + glm::vec3{ 0.0f, 0.1f, 0.0f });
+				snapInformation.snappedRoad->object->SetTransform(snapInformation.snappedRoad->GetStartPosition() + glm::vec3{ 0.0f, 0.1f, 0.0f });
+			}
+		}
 	}
 
 	glm::vec3 TestScene::GetRayCastedFromScreen()
