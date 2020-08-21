@@ -52,7 +52,7 @@ namespace Can
 				case Can::RoadConstructionMode::None:
 					break;
 				case Can::RoadConstructionMode::Construct:
-					OnUpdate_RoadContruction(I, camPos, forward);
+					OnUpdate_RoadConstruction(I, camPos, forward);
 					break;
 				case Can::RoadConstructionMode::Upgrade:
 					break;
@@ -85,8 +85,6 @@ namespace Can
 		glm::vec3 camPos = m_MainCameraController.GetCamera().GetPosition();
 		glm::vec3 forward = GetRayCastedFromScreen();
 
-		float* data = m_Terrain->prefab->vertices;
-		bool willBreak = false;
 
 		glm::vec3 bottomPlaneCollisionPoint = Helper::RayPlaneIntersection(camPos, forward, { 0.0f, 0.0f, 0.0f }, { 0.0f, 1.0f, 0.0f });
 		glm::vec3 topPlaneCollisionPoint = Helper::RayPlaneIntersection(camPos, forward, { 0.0f, 1.0f * COLOR_COUNT, 0.0f }, { 0.0f, 1.0f, 0.0f });
@@ -96,6 +94,38 @@ namespace Can
 
 		if (!Helper::CheckBoundingBoxHit(camPos, forward, m_Terrain->prefab->boundingBoxL, m_Terrain->prefab->boundingBoxM))
 			return false;
+
+		switch (m_ConstructionMode)
+		{
+		case Can::ConstructionMode::Road:
+			switch (m_RoadConstructionMode)
+			{
+			case Can::RoadConstructionMode::None:
+				break;
+			case Can::RoadConstructionMode::Construct:
+				OnMousePressed_RoadConstruction(camPos, forward);
+				break;
+			case Can::RoadConstructionMode::Upgrade:
+				break;
+			case Can::RoadConstructionMode::Destruct:
+				OnMousePressed_RoadDestruction();
+				break;
+			}
+			break;
+		case Can::ConstructionMode::Building:
+			break;
+		}
+		return false;
+	}
+
+	bool TestScene::OnMousePressed_RoadConstruction(const glm::vec3& cameraPosition, const glm::vec3& cameraDirection)
+	{
+		float* data = m_Terrain->prefab->vertices;
+		glm::vec3 bottomPlaneCollisionPoint = Helper::RayPlaneIntersection(cameraPosition, cameraDirection, { 0.0f, 0.0f, 0.0f }, { 0.0f, 1.0f, 0.0f });
+		glm::vec3 topPlaneCollisionPoint = Helper::RayPlaneIntersection(cameraPosition, cameraDirection, { 0.0f, 1.0f * COLOR_COUNT, 0.0f }, { 0.0f, 1.0f, 0.0f });
+
+		bottomPlaneCollisionPoint.z *= -1;
+		topPlaneCollisionPoint.z *= -1;
 
 		float terrainW = m_Terrain->prefab->boundingBoxM.x * TERRAIN_SCALE_DOWN;
 		float terrainH = -m_Terrain->prefab->boundingBoxL.z * TERRAIN_SCALE_DOWN;
@@ -125,8 +155,8 @@ namespace Can
 					float* C = &data[index + 20];
 					glm::vec3 intersection;
 					bool result = Helper::RayTriangleIntersection(
-						camPos,
-						forward,
+						cameraPosition,
+						cameraDirection,
 						{ A[0], A[1], A[2] },
 						{ B[0], B[1], B[2] },
 						{ C[0], C[1], C[2] },
@@ -410,7 +440,11 @@ namespace Can
 			m_RoadGuidelinesStart->enabled = true;
 			m_RoadGuidelinesEnd->enabled = true;
 		}
+		return false;
+	}
 
+	bool TestScene::OnMousePressed_RoadDestruction()
+	{
 		return false;
 	}
 
@@ -531,7 +565,7 @@ namespace Can
 		delete road;
 	}
 
-	void TestScene::OnUpdate_RoadContruction(glm::vec3 prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection)
+	void TestScene::OnUpdate_RoadConstruction(glm::vec3 prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection)
 	{
 		Prefab* selectedRoad = m_Parent->roads[m_RoadConstructionType][0];
 		float roadPrefabWidth = selectedRoad->boundingBoxM.z - selectedRoad->boundingBoxL.z;

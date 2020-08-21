@@ -48,17 +48,20 @@ namespace Can
 		virtual void OnDetach() override {}
 
 		virtual void OnUpdate(Can::TimeStep ts) override;
+		void OnUpdate_RoadConstruction(glm::vec3 prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection);
+		void OnUpdate_RoadDestruction(glm::vec3 prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection);
+
 		virtual void OnEvent(Can::Event::Event& event) override;
 
 		bool OnMousePressed(Can::Event::MouseButtonPressedEvent& event);
+		bool OnMousePressed_RoadConstruction(const glm::vec3& cameraPosition, const glm::vec3& cameraDirection);
+		bool OnMousePressed_RoadDestruction();
+
 
 		void SetSelectedConstructionRoad(size_t index);
 		void DeleteSelectedRoad(Road* road);
 
 		void SetSelectedConstructionBuilding(size_t index) { m_BuildingType = index; }
-
-		void OnUpdate_RoadContruction(glm::vec3 prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection);
-		void OnUpdate_RoadDestruction(glm::vec3 prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection);
 
 	private:
 		glm::vec3 GetRayCastedFromScreen();
