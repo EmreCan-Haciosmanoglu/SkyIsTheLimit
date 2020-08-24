@@ -360,6 +360,8 @@ namespace Can
 					glm::vec4{ 1.0f, 1.0f, 1.0f, 1.0f },
 					[i, this]() {
 						std::cout << "You clicked the " << (i + 1) << "th Button inside the Road panel!" << std::endl;
+						this->m_Parent->testScene->SetConstructionMode(ConstructionMode::Road);
+						this->m_Parent->testScene->SetRoadConstructionMode(RoadConstructionMode::Construct);
 						this->m_Parent->testScene->SetSelectedConstructionRoad(i);
 					}
 				);
