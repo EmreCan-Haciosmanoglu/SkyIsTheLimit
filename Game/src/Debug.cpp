@@ -40,13 +40,13 @@ namespace Can
 			ImGui::Text("Road Construction Mode");
 			ImGui::BeginChild("Road Construction Mode", ImVec2(0, 110), true);
 			if (ImGui::RadioButton("Construct", testScene->m_RoadConstructionMode == RoadConstructionMode::Construct))
-				testScene->m_RoadConstructionMode = RoadConstructionMode::Construct;
+				testScene->SetRoadConstructionMode(RoadConstructionMode::Construct);
 			if (ImGui::RadioButton("Upgrade", testScene->m_RoadConstructionMode == RoadConstructionMode::Upgrade))
-				testScene->m_RoadConstructionMode = RoadConstructionMode::Upgrade;
+				testScene->SetRoadConstructionMode(RoadConstructionMode::Upgrade);
 			if (ImGui::RadioButton("Destruction", testScene->m_RoadConstructionMode == RoadConstructionMode::Destruct))
-				testScene->m_RoadConstructionMode = RoadConstructionMode::Destruct;
+				testScene->SetRoadConstructionMode(RoadConstructionMode::Destruct);
 			if (ImGui::RadioButton("None", testScene->m_RoadConstructionMode == RoadConstructionMode::None))
-				testScene->m_RoadConstructionMode = RoadConstructionMode::None;
+				testScene->SetRoadConstructionMode(RoadConstructionMode::None);
 			ImGui::EndChild();
 		}
 		else if (testScene->m_ConstructionMode == ConstructionMode::Building)

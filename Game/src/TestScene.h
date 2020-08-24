@@ -61,6 +61,10 @@ namespace Can
 		void DeleteSelectedRoad(Road* road);
 
 		void SetSelectedConstructionBuilding(size_t index) { m_BuildingType = index; }
+		
+		void SetRoadConstructionMode(RoadConstructionMode mode);
+
+		void ResetStates();
 
 	private:
 		glm::vec3 GetRayCastedFromScreen();
@@ -85,10 +89,8 @@ namespace Can
 
 	private:
 		GameApp* m_Parent;
-
 		Object* m_Terrain;
-
-		Can::Camera::Controller::Perspective m_MainCameraController;
+		Camera::Controller::Perspective m_MainCameraController;
 
 		bool b_RoadConstructionStarted = false;
 		bool b_RoadConstructionEnded = false;

@@ -463,7 +463,15 @@ namespace Can
 
 	bool TestScene::OnMousePressed(Can::Event::MouseButtonPressedEvent& event)
 	{
-		if (event.GetMouseButton() != MouseCode::Button0)
+		MouseCode button = event.GetMouseButton();
+		if (button == MouseCode::Button1)
+		{
+			ResetStates();
+			m_RoadGuidelinesStart->enabled = true;
+			m_RoadGuidelinesEnd->enabled = true;
+			return false;
+		}
+		else if (button != MouseCode::Button0)
 			return false;
 		glm::vec3 camPos = m_MainCameraController.GetCamera().GetPosition();
 		glm::vec3 forward = GetRayCastedFromScreen();
@@ -795,28 +803,7 @@ namespace Can
 			}
 
 			//Helper::LevelTheTerrain(startIndex, endIndex, newRoad->startPos, newRoad->endPos, m_Parent->m_Terrain, roadPrefabWidth);
-
-			//reset EVERYTHING
-			b_RoadConstructionStarted = false;
-			b_RoadConstructionEnded = false;
-			b_RoadConstructionStartSnapped = false;
-			b_RoadConstructionEndSnapped = false;
-
-			m_RoadConstructionStartSnappedJunction = nullptr;
-			m_RoadConstructionStartSnappedEnd = nullptr;
-			m_RoadConstructionStartSnappedRoad = nullptr;
-
-			m_RoadConstructionEndSnappedJunction = nullptr;
-			m_RoadConstructionEndSnappedEnd = nullptr;
-			m_RoadConstructionEndSnappedRoad = nullptr;
-
-
-			for (std::vector<Object*>& os : m_RoadGuidelines)
-				for (Object* rg : os)
-					rg->enabled = false;
-			for (size_t& inUse : m_RoadGuidelinesInUse)
-				inUse = 0;
-
+			ResetStates();
 			m_RoadGuidelinesStart->enabled = true;
 			m_RoadGuidelinesEnd->enabled = true;
 		}
@@ -962,6 +949,81 @@ namespace Can
 		auto position = std::find(m_Roads.begin(), m_Roads.end(), road);
 		m_Roads.erase(position);
 		delete road;
+	}
+
+	void TestScene::SetRoadConstructionMode(RoadConstructionMode mode)
+	{
+		ResetStates();
+		m_RoadConstructionMode = mode;
+
+		switch (m_RoadConstructionMode)
+		{
+		case Can::RoadConstructionMode::None:
+			break;
+		case Can::RoadConstructionMode::Construct:
+			m_RoadGuidelinesStart->enabled = true;
+			m_RoadGuidelinesEnd->enabled = true;
+			break;
+		case Can::RoadConstructionMode::Upgrade:
+			break;
+		case Can::RoadConstructionMode::Destruct:
+			break;
+		default:
+			break;
+		}
+	}
+
+	void TestScene::ResetStates()
+	{
+		b_RoadConstructionStarted = false;
+		b_RoadConstructionEnded = false;
+		b_RoadConstructionStartSnapped = false;
+		b_RoadConstructionEndSnapped = false;
+
+		m_RoadConstructionStartCoordinate = { -1.0f, -1.0f, -1.0f };
+		m_RoadConstructionEndCoordinate = { -1.0f, -1.0f, -1.0f };
+
+		m_RoadConstructionStartSnappedJunction = nullptr;
+		m_RoadConstructionStartSnappedEnd = nullptr;
+		m_RoadConstructionStartSnappedRoad = nullptr;
+
+		m_RoadConstructionEndSnappedJunction = nullptr;
+		m_RoadConstructionEndSnappedEnd = nullptr;
+		m_RoadConstructionEndSnappedRoad = nullptr;
+
+		m_RoadDestructionSnappedJunction = nullptr;
+		m_RoadDestructionSnappedEnd = nullptr;
+		m_RoadDestructionSnappedRoad = nullptr;
+
+		for (Road* road : m_Roads)
+		{
+			road->object->enabled = true;
+			road->object->SetTransform(road->GetStartPosition());
+		}
+
+		for (Junction* junction : m_Junctions)
+		{
+			for (Object* obj : junction->junctionPieces)
+			{
+				obj->enabled = true;
+				obj->SetTransform(junction->position);
+			}
+		}
+
+		for (End* end : m_Ends)
+		{
+			end->object->enabled = true;
+			end->object->SetTransform(end->position);
+		}
+
+		for (std::vector<Object*>& os : m_RoadGuidelines)
+			for (Object* rg : os)
+				rg->enabled = false;
+		for (size_t& inUse : m_RoadGuidelinesInUse)
+			inUse = 0;
+
+		m_RoadGuidelinesStart->enabled = false;
+		m_RoadGuidelinesEnd->enabled = false;
 	}
 
 	glm::vec3 TestScene::GetRayCastedFromScreen()
