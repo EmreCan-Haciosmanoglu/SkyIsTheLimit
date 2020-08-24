@@ -951,6 +951,21 @@ namespace Can
 		delete road;
 	}
 
+	void TestScene::SetConstructionMode(ConstructionMode mode)
+	{
+		m_ConstructionMode = mode;
+		switch (m_ConstructionMode)
+		{
+		case Can::ConstructionMode::Road:
+			SetRoadConstructionMode(m_RoadConstructionMode);
+			break;
+		case Can::ConstructionMode::Building:
+			break;
+		default:
+			break;
+		}
+	}
+
 	void TestScene::SetRoadConstructionMode(RoadConstructionMode mode)
 	{
 		ResetStates();

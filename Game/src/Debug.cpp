@@ -30,9 +30,9 @@ namespace Can
 		ImGui::Text("Construction Type");
 		ImGui::BeginChild("Construction Type", ImVec2(0, 60), true);
 		if (ImGui::RadioButton("Road", testScene->m_ConstructionMode == ConstructionMode::Road))
-			testScene->m_ConstructionMode = ConstructionMode::Road;
+			testScene->SetConstructionMode(ConstructionMode::Road);
 		if (ImGui::RadioButton("Building", testScene->m_ConstructionMode == ConstructionMode::Building))
-			testScene->m_ConstructionMode = ConstructionMode::Building;
+			testScene->SetConstructionMode(ConstructionMode::Building);
 		ImGui::EndChild();
 
 		if (testScene->m_ConstructionMode == ConstructionMode::Road)

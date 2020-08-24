@@ -62,6 +62,7 @@ namespace Can
 
 		void SetSelectedConstructionBuilding(size_t index) { m_BuildingType = index; }
 		
+		void SetConstructionMode(ConstructionMode mode);
 		void SetRoadConstructionMode(RoadConstructionMode mode);
 
 		void ResetStates();
