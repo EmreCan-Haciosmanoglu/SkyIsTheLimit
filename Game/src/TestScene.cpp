@@ -463,6 +463,8 @@ namespace Can
 
 	bool TestScene::OnMousePressed(Can::Event::MouseButtonPressedEvent& event)
 	{
+		if (event.GetMouseButton() != MouseCode::Button0)
+			return false;
 		glm::vec3 camPos = m_MainCameraController.GetCamera().GetPosition();
 		glm::vec3 forward = GetRayCastedFromScreen();
 
