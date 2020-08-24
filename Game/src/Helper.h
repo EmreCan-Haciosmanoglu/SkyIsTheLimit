@@ -72,8 +72,8 @@ namespace Can::Helper
 				roadR1 = 0.001f;
 				roadR2 = 0.002f;
 			}
-			roadR1 = std::fmod(roadR1 + glm::radians(360.0f), 360.0f);
-			roadR2 = std::fmod(roadR2 + glm::radians(360.0f), 360.0f);
+			roadR1 = std::fmod(roadR1 + glm::radians(360.0f), glm::radians(360.0f));
+			roadR2 = std::fmod(roadR2 + glm::radians(360.0f), glm::radians(360.0f));
 			return (roadR1 > roadR2);
 		}
 	};
