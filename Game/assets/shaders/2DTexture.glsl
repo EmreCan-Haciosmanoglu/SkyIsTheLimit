@@ -20,13 +20,13 @@ void main()
 
 layout(location = 0) out vec4 color;
 
-uniform sampler2D u_Texture;
 uniform vec4 u_Color;
-uniform int u_TextureScale;
+uniform float u_TilingFactor;
+uniform sampler2D u_Texture;
 
 in vec2 v_TexCoord;
 
 void main()
 {
-	color = texture(u_Texture, v_TexCoord * u_TextureScale) * u_Color;
+	color = texture(u_Texture, v_TexCoord * u_TilingFactor) * u_Color;
 }
