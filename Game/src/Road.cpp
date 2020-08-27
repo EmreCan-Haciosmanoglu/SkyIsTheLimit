@@ -54,23 +54,25 @@ namespace Can
 		size_t indexCount = prefab->indexCount * count;
 		size_t vertexCount = indexCount * (3 + 2 + 3);
 
-		float* vertices = new float[vertexCount];
+		TexturedObjectVertex* TOVertices = new TexturedObjectVertex[indexCount];
 		for (int c = 0; c < count; c++)
 		{
 			for (int i = 0; i < prefab->indexCount; i++)
 			{
-				size_t index = i * 8;
-				vertices[c * prefab->indexCount * 8 + index + 0] = scale * (prefab->vertices[index + 0] + (c * lengthRoad));
-				vertices[c * prefab->indexCount * 8 + index + 1] = prefab->vertices[index + 1];
-				vertices[c * prefab->indexCount * 8 + index + 2] = prefab->vertices[index + 2];
-				vertices[c * prefab->indexCount * 8 + index + 3] = prefab->vertices[index + 3];
-				vertices[c * prefab->indexCount * 8 + index + 4] = prefab->vertices[index + 4];
-				vertices[c * prefab->indexCount * 8 + index + 5] = prefab->vertices[index + 5];
-				vertices[c * prefab->indexCount * 8 + index + 6] = prefab->vertices[index + 6];
-				vertices[c * prefab->indexCount * 8 + index + 7] = prefab->vertices[index + 7];
+				size_t offset = c * prefab->indexCount + i;
+				size_t index = i * 9;
+				TOVertices[offset].Position.x = scale * (prefab->vertices[index + 0] + (c * lengthRoad));
+				TOVertices[offset].Position.y = prefab->vertices[index + 1];
+				TOVertices[offset].Position.z = prefab->vertices[index + 2];
+				TOVertices[offset].UV.x = prefab->vertices[index + 3];
+				TOVertices[offset].UV.y = prefab->vertices[index + 4];
+				TOVertices[offset].Normal.x = prefab->vertices[index + 5];
+				TOVertices[offset].Normal.y = prefab->vertices[index + 6];
+				TOVertices[offset].Normal.z = prefab->vertices[index + 7];
+				TOVertices[offset].TextureIndex = prefab->vertices[index + 8];
 			}
 		}
-		Prefab* newPrefab = new Prefab(prefab->objectPath, prefab->shaderPath, prefab->texturePath, vertices, indexCount);
+		Prefab* newPrefab = new Prefab(prefab->objectPath, prefab->shaderPath, prefab->texturePath, (float*)TOVertices, indexCount);
 		newPrefab->boundingBoxL = prefab->boundingBoxL;
 		newPrefab->boundingBoxM = prefab->boundingBoxM;
 		newPrefab->boundingBoxM.x *= count * scale;

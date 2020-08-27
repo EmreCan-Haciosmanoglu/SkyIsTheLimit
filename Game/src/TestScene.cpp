@@ -464,15 +464,6 @@ namespace Can
 	bool TestScene::OnMousePressed(Can::Event::MouseButtonPressedEvent& event)
 	{
 		MouseCode button = event.GetMouseButton();
-		if (button == MouseCode::Button1)
-		{
-			ResetStates();
-			m_RoadGuidelinesStart->enabled = true;
-			m_RoadGuidelinesEnd->enabled = true;
-			return false;
-		}
-		else if (button != MouseCode::Button0)
-			return false;
 		glm::vec3 camPos = m_MainCameraController.GetCamera().GetPosition();
 		glm::vec3 forward = GetRayCastedFromScreen();
 
@@ -494,6 +485,15 @@ namespace Can
 			case Can::RoadConstructionMode::None:
 				break;
 			case Can::RoadConstructionMode::Construct:
+				if (button == MouseCode::Button1)
+				{
+					ResetStates();
+					m_RoadGuidelinesStart->enabled = true;
+					m_RoadGuidelinesEnd->enabled = true;
+					return false;
+				}
+				else if (button != MouseCode::Button0)
+					return false;
 				OnMousePressed_RoadConstruction(camPos, forward);
 				break;
 			case Can::RoadConstructionMode::Upgrade:

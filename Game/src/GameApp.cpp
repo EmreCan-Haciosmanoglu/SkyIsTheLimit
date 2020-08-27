@@ -23,7 +23,7 @@ namespace Can
 		debugScene = new Debug(this);
 		testScene = new TestScene(this);
 		PushLayer(testScene);
-		PushOverlay(uiScene);
+		//PushOverlay(uiScene);
 		PushOverlay(debugScene);
 	}
 
@@ -43,7 +43,7 @@ namespace Can
 
 	std::vector<Prefab*> GameApp::LoadRoadPrefabs()
 	{
-#define TEMP_ROAD_SHADER_FILE_PATH "assets/shaders/Object.glsl"
+#define TEMP_ROAD_SHADER_FILE_PATH "assets/shaders/3DTexturedObject.glsl"
 		std::vector<Prefab*> result;
 		namespace fs = std::filesystem;
 		std::string s = fs::current_path().string();
@@ -59,7 +59,7 @@ namespace Can
 	}
 	std::vector<Prefab*> GameApp::LoadJunctionPrefabs()
 	{
-#define TEMP_JUNCTION_SHADER_FILE_PATH "assets/shaders/Object.glsl"
+#define TEMP_JUNCTION_SHADER_FILE_PATH "assets/shaders/3DTexturedObject.glsl"
 		std::vector<Prefab*> result;
 		namespace fs = std::filesystem;
 		std::string s = fs::current_path().string();
@@ -75,7 +75,7 @@ namespace Can
 	}
 	std::vector<Prefab*> GameApp::LoadEndPrefabs()
 	{
-#define TEMP_END_SHADER_FILE_PATH "assets/shaders/Object.glsl"
+#define TEMP_END_SHADER_FILE_PATH "assets/shaders/3DTexturedObject.glsl"
 		std::vector<Prefab*> result;
 		namespace fs = std::filesystem;
 		std::string s = fs::current_path().string();

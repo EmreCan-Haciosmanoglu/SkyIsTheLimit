@@ -138,7 +138,6 @@
     <ClInclude Include="src\Debug.h" />
     <ClInclude Include="src\End.h" />
     <ClInclude Include="src\GameApp.h" />
-    <ClInclude Include="src\GameIncludes.h" />
     <ClInclude Include="src\Helper.h" />
     <ClInclude Include="src\Junction.h" />
     <ClInclude Include="src\Road.h" />

@@ -568,10 +568,10 @@ namespace Can
 
 		glm::mat4 newTransform = glm::translate(glm::mat4(1.0f), pos) * glm::scale(glm::mat4(1), scale);
 
-		Can::Renderer2D::DrawQuad(pos - glm::vec3{ 0.0f, 0.0f, 0.00001f }, scale + glm::vec3{ 0.1f, 0.1f, 0.1f }, { 0.0f, 0.0f, 0.0f, 1.0f });
+		Can::Renderer2D::DrawQuad(DrawQuadParameters{ pos - glm::vec3{ 0.0f, 0.0f, 0.00001f }, scale + glm::vec3{ 0.1f, 0.1f, 0.1f }, 0.0f, { 0.0f, 0.0f, 0.0f, 1.0f } });
 		if (spriteRenderer.texture)
-			Can::Renderer2D::DrawQuad(newTransform, spriteRenderer.texture, spriteRenderer.color);
+			Can::Renderer2D::DrawQuad(newTransform, DrawQuadParameters{ glm::vec3(0.0f), glm::vec3(0.0f), 0.0f, spriteRenderer.color, spriteRenderer.texture });
 		else
-			Can::Renderer2D::DrawQuad(newTransform, spriteRenderer.color);
+			Can::Renderer2D::DrawQuad(newTransform, DrawQuadParameters{ glm::vec3(0.0f), glm::vec3(0.0f), 0.0f, spriteRenderer.color, nullptr });
 	}
 }

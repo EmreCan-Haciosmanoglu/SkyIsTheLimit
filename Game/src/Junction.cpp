@@ -85,7 +85,8 @@ namespace Can
 			float roadWidth = prefab->boundingBoxM.z - prefab->boundingBoxL.z;
 			float roadLength = prefab->boundingBoxM.x - prefab->boundingBoxL.x;
 
-			float* pieceVertices = new float[indexCount * (3 + 2 + 3)];
+			//float* pieceVertices = new float[indexCount * (3 + 2 + 3)];
+			TexturedObjectVertex* TOVertices = new TexturedObjectVertex[indexCount];
 			float* prefabVerticies = prefab->vertices;
 
 			glm::vec3 intersection1 = Intersections[i];
@@ -133,7 +134,7 @@ namespace Can
 
 			for (size_t j = 0; j < indexCount; j++)
 			{
-				size_t index = j * 8;
+				size_t index = j * (int)(sizeof(TexturedObjectVertex) / sizeof(float));
 				glm::vec2 point = {
 					prefabVerticies[index + 0],
 					prefabVerticies[index + 2]
@@ -153,17 +154,18 @@ namespace Can
 
 				glm::vec2 rotatedPoint = Helper::RotateAPointAroundAPoint(point, center, -angle);
 
-				pieceVertices[index + 0] = rotatedPoint.x;
-				pieceVertices[index + 1] = prefabVerticies[index + 1];
-				pieceVertices[index + 2] = rotatedPoint.y;
-				pieceVertices[index + 3] = prefabVerticies[index + 3];
-				pieceVertices[index + 4] = prefabVerticies[index + 4];
-				pieceVertices[index + 5] = prefabVerticies[index + 5];
-				pieceVertices[index + 6] = prefabVerticies[index + 6];
-				pieceVertices[index + 7] = prefabVerticies[index + 7];
+				TOVertices[j].Position.x = rotatedPoint.x;
+				TOVertices[j].Position.y = prefabVerticies[index + 1];
+				TOVertices[j].Position.z = rotatedPoint.y;
+				TOVertices[j].UV.x = prefabVerticies[index + 3];
+				TOVertices[j].UV.y = prefabVerticies[index + 4];
+				TOVertices[j].Normal.x = prefabVerticies[index + 5];
+				TOVertices[j].Normal.x = prefabVerticies[index + 6];
+				TOVertices[j].Normal.x = prefabVerticies[index + 7];
+				TOVertices[j].TextureIndex = 0.0f;
 			}
 
-			Prefab* newPrefab = new Prefab(prefab->objectPath, prefab->shaderPath, prefab->texturePath, pieceVertices, indexCount);
+			Prefab* newPrefab = new Prefab(prefab->objectPath, prefab->shaderPath, prefab->texturePath, (float*)TOVertices, indexCount);
 			junctionPieces.push_back(new Object(newPrefab, prefab, position));
 		}
 	}
