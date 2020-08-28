@@ -1,5 +1,6 @@
 #include "GameApp.h"
 #include "Can/EntryPoint.h"
+#include "Can.h"
 
 #include "Helper.h"
 
@@ -19,11 +20,14 @@ namespace Can
 
 		CombinePrefabs();
 
-		uiScene = new UIScene(this);
-		debugScene = new Debug(this);
 		testScene = new TestScene(this);
 		PushLayer(testScene);
-		//PushOverlay(uiScene);
+
+		uiScene = new UIScene(this);
+		PushOverlay(uiScene);
+		//PushLayer(uiScene);
+
+		debugScene = new Debug(this);
 		PushOverlay(debugScene);
 	}
 

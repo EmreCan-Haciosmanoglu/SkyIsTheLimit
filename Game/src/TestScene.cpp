@@ -92,6 +92,16 @@ namespace Can
 		}
 		else
 		{
+			b_ConstructionRestricted = false;
+
+			RoadSnapInformation snapInformation = DidRoadSnapped(cameraPosition, cameraDirection);
+			prevLocation = snapInformation.snapped ? snapInformation.snapLocation : prevLocation;
+			b_RoadConstructionEndSnapped = snapInformation.snapped;
+			m_RoadConstructionEndSnappedJunction = snapInformation.snappedJunction;
+			m_RoadConstructionEndSnappedEnd = snapInformation.snappedEnd;
+			m_RoadConstructionEndSnappedRoad = snapInformation.snappedRoad;
+			m_RoadConstructionEndCoordinate = prevLocation;
+
 			bool angleIsRestricted = false;
 			if (!roadRestrictionOptions[0])
 			{
@@ -147,88 +157,63 @@ namespace Can
 
 					angleIsRestricted = angle < 0.5f || angle > 2.63f;
 				}
-			}
 
-			if (!angleIsRestricted)
-			{
-				RoadSnapInformation snapInformation = DidRoadSnapped(cameraPosition, cameraDirection);
-
-				b_RoadConstructionEndSnapped = snapInformation.snapped;
-				m_RoadConstructionEndSnappedJunction = snapInformation.snappedJunction;
-				m_RoadConstructionEndSnappedEnd = snapInformation.snappedEnd;
-				m_RoadConstructionEndSnappedRoad = snapInformation.snappedRoad;
-
-				if (snapInformation.snapped)
-					if (!roadRestrictionOptions[0])
+				if (m_RoadConstructionEndSnappedJunction)
+				{
+					for (Road* road : m_RoadConstructionEndSnappedJunction->connectedRoads)
 					{
-						if (m_RoadConstructionEndSnappedJunction)
+						glm::vec3 directionOldRoad = road->startJunction == m_RoadConstructionEndSnappedJunction ? road->direction : -road->direction;
+						directionOldRoad.y = 0;
+						directionOldRoad = glm::normalize(directionOldRoad);
+
+						glm::vec3 directionNewRoad = m_RoadConstructionStartCoordinate - prevLocation;
+						directionNewRoad.y = 0;
+						directionNewRoad = glm::normalize(directionNewRoad);
+
+						float angle = glm::acos(glm::dot(directionOldRoad, directionNewRoad));
+
+						if (angle < 0.5f)
 						{
-							for (Road* road : m_RoadConstructionEndSnappedJunction->connectedRoads)
-							{
-								glm::vec3 directionOldRoad = road->startJunction == m_RoadConstructionEndSnappedJunction ? road->direction : -road->direction;
-								directionOldRoad.y = 0;
-								directionOldRoad = glm::normalize(directionOldRoad);
-
-								glm::vec3 directionNewRoad = m_RoadConstructionStartCoordinate - prevLocation;
-								directionNewRoad.y = 0;
-								directionNewRoad = glm::normalize(directionNewRoad);
-
-								float angle = glm::acos(glm::dot(directionOldRoad, directionNewRoad));
-
-								if (angle < 0.5f)
-								{
-									angleIsRestricted = true;
-									break;
-								}
-							}
-						}
-						else if (m_RoadConstructionEndSnappedEnd)
-						{
-							Road* road = m_RoadConstructionEndSnappedEnd->connectedRoad;
-
-							glm::vec3 directionOldRoad = road->startEnd == m_RoadConstructionEndSnappedEnd ? road->direction : -road->direction;
-							directionOldRoad.y = 0;
-							directionOldRoad = glm::normalize(directionOldRoad);
-
-							glm::vec3 directionNewRoad = m_RoadConstructionStartCoordinate - prevLocation;
-							directionNewRoad.y = 0;
-							directionNewRoad = glm::normalize(directionNewRoad);
-
-							float angle = glm::acos(glm::dot(directionOldRoad, directionNewRoad));
-
-							angleIsRestricted = angle < 0.5f;
-						}
-						else if (m_RoadConstructionEndSnappedRoad)
-						{
-							glm::vec3 directionOldRoad = m_RoadConstructionEndSnappedRoad->direction;
-
-							directionOldRoad.y = 0;
-							directionOldRoad = glm::normalize(directionOldRoad);
-
-							glm::vec3 directionNewRoad = m_RoadConstructionStartCoordinate - prevLocation;
-							directionNewRoad.y = 0;
-							directionNewRoad = glm::normalize(directionNewRoad);
-
-							float angle = glm::acos(glm::dot(directionOldRoad, directionNewRoad));
-
-							angleIsRestricted = angle < 0.5f || angle > 2.63f;
+							angleIsRestricted = true;
+							break;
 						}
 					}
-
-				if (!angleIsRestricted)
-				{
-					prevLocation = snapInformation.snapped ? snapInformation.snapLocation : prevLocation;
-					m_RoadConstructionEndCoordinate = prevLocation;
 				}
-				else
+				else if (m_RoadConstructionEndSnappedEnd)
 				{
-					b_RoadConstructionEndSnapped = false;
-					m_RoadConstructionEndSnappedJunction = nullptr;
-					m_RoadConstructionEndSnappedEnd = nullptr;
-					m_RoadConstructionEndSnappedRoad = nullptr;
+					Road* road = m_RoadConstructionEndSnappedEnd->connectedRoad;
+
+					glm::vec3 directionOldRoad = road->startEnd == m_RoadConstructionEndSnappedEnd ? road->direction : -road->direction;
+					directionOldRoad.y = 0;
+					directionOldRoad = glm::normalize(directionOldRoad);
+
+					glm::vec3 directionNewRoad = m_RoadConstructionStartCoordinate - prevLocation;
+					directionNewRoad.y = 0;
+					directionNewRoad = glm::normalize(directionNewRoad);
+
+					float angle = glm::acos(glm::dot(directionOldRoad, directionNewRoad));
+
+					angleIsRestricted = angle < 0.5f;
+				}
+				else if (m_RoadConstructionEndSnappedRoad)
+				{
+					glm::vec3 directionOldRoad = m_RoadConstructionEndSnappedRoad->direction;
+
+					directionOldRoad.y = 0;
+					directionOldRoad = glm::normalize(directionOldRoad);
+
+					glm::vec3 directionNewRoad = m_RoadConstructionStartCoordinate - prevLocation;
+					directionNewRoad.y = 0;
+					directionNewRoad = glm::normalize(directionNewRoad);
+
+					float angle = glm::acos(glm::dot(directionOldRoad, directionNewRoad));
+
+					angleIsRestricted = angle < 0.5f || angle > 2.63f;
 				}
 
 			}
+
+			b_ConstructionRestricted |= angleIsRestricted;
 
 			glm::vec3 AB = m_RoadConstructionEndCoordinate - m_RoadConstructionStartCoordinate;
 			glm::vec3 normalizedAB = glm::normalize(AB);
@@ -250,13 +235,21 @@ namespace Can
 				);
 			availableABLength = std::max(availableABLength, 0.0f);
 
-			int countAB = availableABLength / roadPrefabLength;
+			int countAB = (int)(availableABLength / roadPrefabLength);
 			float scaleAB = (availableABLength / roadPrefabLength) / countAB;
 			float scaledRoadLength = availableABLength / countAB;
 
+			m_RoadGuidelinesStart->tintColor = b_ConstructionRestricted ? glm::vec4{ 1.0f, 0.3f, 0.2f, 1.0f } : glm::vec4(1.0f);
+			m_RoadGuidelinesEnd->tintColor = b_ConstructionRestricted ? glm::vec4{ 1.0f, 0.3f, 0.2f, 1.0f } : glm::vec4(1.0f);
+
 			for (std::vector<Object*>& os : m_RoadGuidelines)
+			{
 				for (Object* rg : os)
+				{
+					rg->tintColor = b_ConstructionRestricted ? glm::vec4{ 1.0f, 0.3f, 0.2f, 1.0f } : glm::vec4(1.0f);
 					rg->enabled = false;
+				}
+			}
 			for (size_t& inUse : m_RoadGuidelinesInUse)
 				inUse = 0;
 
@@ -299,8 +292,8 @@ namespace Can
 				float availableR0ILength = std::max(glm::length(R0I) - snappedRoadPrefabLength, 0.0f);
 				float availableR1ILength = std::max(glm::length(R1I) - snappedRoadPrefabLength, 0.0f);
 
-				int countR0I = availableR0ILength / snappedRoadPrefabLength;
-				int countR1I = availableR1ILength / snappedRoadPrefabLength;
+				int countR0I = (int)(availableR0ILength / snappedRoadPrefabLength);
+				int countR1I = (int)(availableR1ILength / snappedRoadPrefabLength);
 
 				float scaleR0I = (availableR0ILength / snappedRoadPrefabLength) / countR0I;
 				float scaleR1I = (availableR1ILength / snappedRoadPrefabLength) / countR1I;
@@ -359,8 +352,8 @@ namespace Can
 				float availableR0ILength = std::max(glm::length(R0I) - snappedRoadPrefabLength, 0.0f);
 				float availableR1ILength = std::max(glm::length(R1I) - snappedRoadPrefabLength, 0.0f);
 
-				int countR0I = availableR0ILength / snappedRoadPrefabLength;
-				int countR1I = availableR1ILength / snappedRoadPrefabLength;
+				int countR0I = (int)(availableR0ILength / snappedRoadPrefabLength);
+				int countR1I = (int)(availableR1ILength / snappedRoadPrefabLength);
 
 				float scaleR0I = (availableR0ILength / snappedRoadPrefabLength) / countR0I;
 				float scaleR1I = (availableR1ILength / snappedRoadPrefabLength) / countR1I;
@@ -539,7 +532,7 @@ namespace Can
 			{
 				for (size_t z = 0; z < 2; z++)
 				{
-					size_t index = (x + (terrainW - 1) * y) * 60 + z * 30;
+					size_t index = (x + ((int)terrainW - 1) * y) * 60 + z * 30;
 					float* A = &data[index + 0];
 					float* B = &data[index + 10];
 					float* C = &data[index + 20];
@@ -562,7 +555,7 @@ namespace Can
 							if (!b_RoadConstructionStartSnapped)
 								m_RoadConstructionStartCoordinate = intersection;
 						}
-						else
+						else if (!b_ConstructionRestricted)
 						{
 							b_RoadConstructionEnded = true;
 							/*if (!b_RoadConstructionEndSnapped)
@@ -1045,8 +1038,8 @@ namespace Can
 	{
 		auto [mouseX, mouseY] = Can::Input::GetMousePos();
 		Application& app = Application::Get();
-		float w = app.GetWindow().GetWidth();
-		float h = app.GetWindow().GetHeight();
+		float w = (float)(app.GetWindow().GetWidth());
+		float h = (float)(app.GetWindow().GetHeight());
 
 		auto camera = m_MainCameraController.GetCamera();
 		glm::vec3 camPos = camera.GetPosition();

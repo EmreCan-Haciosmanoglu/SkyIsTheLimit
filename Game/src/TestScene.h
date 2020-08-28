@@ -125,6 +125,6 @@ namespace Can
 		Object* m_RoadGuidelinesStart = nullptr; // End /? Object
 		Object* m_RoadGuidelinesEnd = nullptr;
 
-
+		bool b_ConstructionRestricted = false;
 	};
 }

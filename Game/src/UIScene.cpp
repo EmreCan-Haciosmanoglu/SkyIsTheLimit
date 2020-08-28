@@ -442,10 +442,12 @@ namespace Can
 		//Can::RenderCommand::SetClearColor({ 0.9f, 0.9f, 0.9f, 1.0f });
 		//Can::RenderCommand::Clear();
 
+		//m_CameraController.OnUpdate(ts);
+
 		float widthHalf = m_AspectRatio * m_ZoomLevel;
 		float heightHalf = m_ZoomLevel;
 
-		Can::Renderer2D::BeginScene(m_CameraController.GetCamera());
+		Renderer2D::BeginScene(m_CameraController.GetCamera());
 
 		glm::vec2 offset = { -widthHalf, heightHalf };
 		ChildrenComponent& children = m_Scene->m_Registry.get<ChildrenComponent>(m_Scene->entityID);
@@ -568,10 +570,10 @@ namespace Can
 
 		glm::mat4 newTransform = glm::translate(glm::mat4(1.0f), pos) * glm::scale(glm::mat4(1), scale);
 
-		Can::Renderer2D::DrawQuad(DrawQuadParameters{ pos - glm::vec3{ 0.0f, 0.0f, 0.00001f }, scale + glm::vec3{ 0.1f, 0.1f, 0.1f }, 0.0f, { 0.0f, 0.0f, 0.0f, 1.0f } });
+		Renderer2D::DrawQuad(DrawQuadParameters{ pos - glm::vec3{ 0.0f, 0.0f, 0.00001f }, scale + glm::vec3{ 0.1f, 0.1f, 0.1f }, 0.0f, { 0.0f, 0.0f, 0.0f, 1.0f }, nullptr });
 		if (spriteRenderer.texture)
-			Can::Renderer2D::DrawQuad(newTransform, DrawQuadParameters{ glm::vec3(0.0f), glm::vec3(0.0f), 0.0f, spriteRenderer.color, spriteRenderer.texture });
+			Renderer2D::DrawQuad(newTransform, DrawQuadParameters{ glm::vec3(0.0f), glm::vec3(0.0f), 0.0f, spriteRenderer.color, spriteRenderer.texture });
 		else
-			Can::Renderer2D::DrawQuad(newTransform, DrawQuadParameters{ glm::vec3(0.0f), glm::vec3(0.0f), 0.0f, spriteRenderer.color, nullptr });
+			Renderer2D::DrawQuad(newTransform, DrawQuadParameters{ glm::vec3(0.0f), glm::vec3(0.0f), 0.0f, spriteRenderer.color, nullptr });
 	}
 }
