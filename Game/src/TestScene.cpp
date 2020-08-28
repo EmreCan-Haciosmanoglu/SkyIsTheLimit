@@ -103,7 +103,7 @@ namespace Can
 			m_RoadConstructionEndCoordinate = prevLocation;
 
 			bool angleIsRestricted = false;
-			if (!roadRestrictionOptions[0])
+			if (roadRestrictionOptions[0])
 			{
 				if (m_RoadConstructionStartSnappedJunction)
 				{
@@ -213,7 +213,31 @@ namespace Can
 
 			}
 
+			bool collisionIsRestricted = false;
+			if (roadRestrictionOptions[1])
+			{
+				glm::vec2 p0 = { m_RoadConstructionStartCoordinate.x, m_RoadConstructionStartCoordinate.z };
+				glm::vec2 p1 = { m_RoadConstructionEndCoordinate.x, m_RoadConstructionEndCoordinate.z };
+				for (Road* road : m_Roads)
+				{
+					if (road == m_RoadConstructionEndSnappedRoad || road == m_RoadConstructionStartSnappedRoad)
+						continue;
+					glm::vec3 roadStart = road->startEnd ? road->GetStartPosition() : road->startJunction->position;
+					glm::vec3 roadEnd = road->endEnd ? road->GetEndPosition() : road->endJunction->position;
+
+					glm::vec2 p2 = { roadStart.x, roadStart.z };
+					glm::vec2 p3 = { roadEnd.x, roadEnd.z };
+
+					if (Helper::LineSLineSIntersection(p0, p1, p2, p3, nullptr))
+					{
+						collisionIsRestricted = true;
+						break;
+					}
+				}
+			}
+
 			b_ConstructionRestricted |= angleIsRestricted;
+			b_ConstructionRestricted |= collisionIsRestricted;
 
 			glm::vec3 AB = m_RoadConstructionEndCoordinate - m_RoadConstructionStartCoordinate;
 			glm::vec3 normalizedAB = glm::normalize(AB);

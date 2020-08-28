@@ -74,7 +74,7 @@ namespace Can
 	public:
 		std::array<bool, 4> roadSnapOptions = { true, false, false, false };
 		std::array<bool, 2> buildingSnapOptions = { true, false };
-		std::array<bool, 5> roadRestrictionOptions = { false, false, false, false, false };
+		std::array<bool, 5> roadRestrictionOptions = { true, true, true, true, true };
 		// 0 : Small Angle
 		// 1 : Short Length
 		// 2 : Collision with other roads
