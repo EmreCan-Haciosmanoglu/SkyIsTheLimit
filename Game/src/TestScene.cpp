@@ -214,7 +214,7 @@ namespace Can
 			}
 
 			bool collisionIsRestricted = false;
-			if (roadRestrictionOptions[1])
+			if (roadRestrictionOptions[2])
 			{
 				glm::vec2 p0 = { m_RoadConstructionStartCoordinate.x, m_RoadConstructionStartCoordinate.z };
 				glm::vec2 p1 = { m_RoadConstructionEndCoordinate.x, m_RoadConstructionEndCoordinate.z };
@@ -222,6 +222,22 @@ namespace Can
 				{
 					if (road == m_RoadConstructionEndSnappedRoad || road == m_RoadConstructionStartSnappedRoad)
 						continue;
+					if (m_RoadConstructionStartSnappedEnd && road == m_RoadConstructionStartSnappedEnd->connectedRoad)
+						continue;
+					if (m_RoadConstructionEndSnappedEnd && road == m_RoadConstructionEndSnappedEnd->connectedRoad)
+						continue;
+					if (m_RoadConstructionStartSnappedJunction)
+					{
+						auto it = std::find(m_RoadConstructionStartSnappedJunction->connectedRoads.begin(), m_RoadConstructionStartSnappedJunction->connectedRoads.end(), road);
+						if (it != m_RoadConstructionStartSnappedJunction->connectedRoads.end())
+							continue;
+					}
+					if (m_RoadConstructionEndSnappedJunction)
+					{
+						auto it = std::find(m_RoadConstructionEndSnappedJunction->connectedRoads.begin(), m_RoadConstructionEndSnappedJunction->connectedRoads.end(), road);
+						if (it != m_RoadConstructionEndSnappedJunction->connectedRoads.end())
+							continue;
+					}
 					glm::vec3 roadStart = road->startEnd ? road->GetStartPosition() : road->startJunction->position;
 					glm::vec3 roadEnd = road->endEnd ? road->GetEndPosition() : road->endJunction->position;
 
@@ -1056,6 +1072,9 @@ namespace Can
 
 		m_RoadGuidelinesStart->enabled = false;
 		m_RoadGuidelinesEnd->enabled = false;
+
+		m_RoadGuidelinesStart->tintColor = { 1.0f, 1.0f, 1.0f, 1.0f };
+		m_RoadGuidelinesEnd->tintColor = { 1.0f, 1.0f, 1.0f, 1.0f };
 	}
 
 	glm::vec3 TestScene::GetRayCastedFromScreen()
