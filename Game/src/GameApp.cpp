@@ -1,5 +1,6 @@
 #include "GameApp.h"
 #include "Can/EntryPoint.h"
+#include "Can.h"
 
 #include "Helper.h"
 
@@ -19,11 +20,14 @@ namespace Can
 
 		CombinePrefabs();
 
-		uiScene = new UIScene(this);
-		debugScene = new Debug(this);
 		testScene = new TestScene(this);
 		PushLayer(testScene);
+
+		uiScene = new UIScene(this);
 		PushOverlay(uiScene);
+		//PushLayer(uiScene);
+
+		debugScene = new Debug(this);
 		PushOverlay(debugScene);
 	}
 
@@ -43,7 +47,7 @@ namespace Can
 
 	std::vector<Prefab*> GameApp::LoadRoadPrefabs()
 	{
-#define TEMP_ROAD_SHADER_FILE_PATH "assets/shaders/Object.glsl"
+#define TEMP_ROAD_SHADER_FILE_PATH "assets/shaders/3DTexturedObject.glsl"
 		std::vector<Prefab*> result;
 		namespace fs = std::filesystem;
 		std::string s = fs::current_path().string();
@@ -59,7 +63,7 @@ namespace Can
 	}
 	std::vector<Prefab*> GameApp::LoadJunctionPrefabs()
 	{
-#define TEMP_JUNCTION_SHADER_FILE_PATH "assets/shaders/Object.glsl"
+#define TEMP_JUNCTION_SHADER_FILE_PATH "assets/shaders/3DTexturedObject.glsl"
 		std::vector<Prefab*> result;
 		namespace fs = std::filesystem;
 		std::string s = fs::current_path().string();
@@ -75,7 +79,7 @@ namespace Can
 	}
 	std::vector<Prefab*> GameApp::LoadEndPrefabs()
 	{
-#define TEMP_END_SHADER_FILE_PATH "assets/shaders/Object.glsl"
+#define TEMP_END_SHADER_FILE_PATH "assets/shaders/3DTexturedObject.glsl"
 		std::vector<Prefab*> result;
 		namespace fs = std::filesystem;
 		std::string s = fs::current_path().string();

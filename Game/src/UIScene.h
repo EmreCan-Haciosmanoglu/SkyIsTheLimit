@@ -1,5 +1,6 @@
 #pragma once
 #include "Can.h"
+#include <glm/gtc/type_ptr.hpp>
 
 namespace Can
 {
@@ -22,6 +23,7 @@ namespace Can
 		bool OnMousePressed(Event::MouseButtonPressedEvent& event);
 
 	public:
+		Can::Ref<Can::Texture2D> m_Tex;
 		Scene* m_Scene;
 
 		Button* m_ButtonRoads = nullptr;

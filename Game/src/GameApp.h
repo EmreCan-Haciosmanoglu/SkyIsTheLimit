@@ -29,7 +29,7 @@ namespace Can
 		// 2 => End
 		std::vector<Prefab*> buildings;
 		
-		TestScene* testScene = nullptr;
+		TestScene* testScene = nullptr; 
 		UIScene* uiScene = nullptr;
 		Debug* debugScene = nullptr;
 	};
