@@ -252,8 +252,6 @@ namespace Can
 				}
 			}
 
-			b_ConstructionRestricted |= angleIsRestricted;
-			b_ConstructionRestricted |= collisionIsRestricted;
 
 			glm::vec3 AB = m_RoadConstructionEndCoordinate - m_RoadConstructionStartCoordinate;
 			glm::vec3 normalizedAB = glm::normalize(AB);
@@ -278,6 +276,12 @@ namespace Can
 			int countAB = (int)(availableABLength / roadPrefabLength);
 			float scaleAB = (availableABLength / roadPrefabLength) / countAB;
 			float scaledRoadLength = availableABLength / countAB;
+
+			bool lengthIsRestricted = roadRestrictionOptions[1] && countAB < 1;
+
+			b_ConstructionRestricted |= angleIsRestricted;
+			b_ConstructionRestricted |= lengthIsRestricted;
+			b_ConstructionRestricted |= collisionIsRestricted;
 
 			m_RoadGuidelinesStart->tintColor = b_ConstructionRestricted ? glm::vec4{ 1.0f, 0.3f, 0.2f, 1.0f } : glm::vec4(1.0f);
 			m_RoadGuidelinesEnd->tintColor = b_ConstructionRestricted ? glm::vec4{ 1.0f, 0.3f, 0.2f, 1.0f } : glm::vec4(1.0f);
