@@ -279,21 +279,11 @@ namespace Can
 
 			bool lengthIsRestricted = roadRestrictionOptions[1] && countAB < 1;
 
-			b_ConstructionRestricted |= angleIsRestricted;
-			b_ConstructionRestricted |= lengthIsRestricted;
-			b_ConstructionRestricted |= collisionIsRestricted;
-
-			m_RoadGuidelinesStart->tintColor = b_ConstructionRestricted ? glm::vec4{ 1.0f, 0.3f, 0.2f, 1.0f } : glm::vec4(1.0f);
-			m_RoadGuidelinesEnd->tintColor = b_ConstructionRestricted ? glm::vec4{ 1.0f, 0.3f, 0.2f, 1.0f } : glm::vec4(1.0f);
-
+			
 			for (std::vector<Object*>& os : m_RoadGuidelines)
-			{
 				for (Object* rg : os)
-				{
-					rg->tintColor = b_ConstructionRestricted ? glm::vec4{ 1.0f, 0.3f, 0.2f, 1.0f } : glm::vec4(1.0f);
 					rg->enabled = false;
-				}
-			}
+
 			for (size_t& inUse : m_RoadGuidelinesInUse)
 				inUse = 0;
 
@@ -338,6 +328,9 @@ namespace Can
 
 				int countR0I = (int)(availableR0ILength / snappedRoadPrefabLength);
 				int countR1I = (int)(availableR1ILength / snappedRoadPrefabLength);
+				
+				lengthIsRestricted |= roadRestrictionOptions[1] && countR0I < 2;
+				lengthIsRestricted |= roadRestrictionOptions[1] && countR1I < 2;
 
 				float scaleR0I = (availableR0ILength / snappedRoadPrefabLength) / countR0I;
 				float scaleR1I = (availableR1ILength / snappedRoadPrefabLength) / countR1I;
@@ -399,6 +392,9 @@ namespace Can
 				int countR0I = (int)(availableR0ILength / snappedRoadPrefabLength);
 				int countR1I = (int)(availableR1ILength / snappedRoadPrefabLength);
 
+				lengthIsRestricted |= roadRestrictionOptions[1] && countR0I < 2;
+				lengthIsRestricted |= roadRestrictionOptions[1] && countR1I < 2;
+
 				float scaleR0I = (availableR0ILength / snappedRoadPrefabLength) / countR0I;
 				float scaleR1I = (availableR1ILength / snappedRoadPrefabLength) / countR1I;
 
@@ -435,6 +431,18 @@ namespace Can
 					);
 				}
 			}
+
+			b_ConstructionRestricted |= angleIsRestricted;
+			b_ConstructionRestricted |= lengthIsRestricted;
+			b_ConstructionRestricted |= collisionIsRestricted; 
+			
+			m_RoadGuidelinesStart->tintColor = b_ConstructionRestricted ? glm::vec4{ 1.0f, 0.3f, 0.2f, 1.0f } : glm::vec4(1.0f);
+			m_RoadGuidelinesEnd->tintColor = b_ConstructionRestricted ? glm::vec4{ 1.0f, 0.3f, 0.2f, 1.0f } : glm::vec4(1.0f);
+
+			for (std::vector<Object*>& os : m_RoadGuidelines)
+				for (Object* rg : os)
+					rg->tintColor = b_ConstructionRestricted ? glm::vec4{ 1.0f, 0.3f, 0.2f, 1.0f } : glm::vec4(1.0f);
+
 		}
 	}
 	void TestScene::OnUpdate_RoadDestruction(glm::vec3 prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection)
