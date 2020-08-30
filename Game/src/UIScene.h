@@ -14,7 +14,7 @@ namespace Can
 		UIScene(GameApp* parent);
 		virtual ~UIScene();
 
-		virtual void OnAttach() override {}
+		virtual void OnAttach() override;
 		virtual void OnDetach() override {}
 
 		virtual void OnUpdate(TimeStep ts) override;
@@ -23,7 +23,6 @@ namespace Can
 		bool OnMousePressed(Event::MouseButtonPressedEvent& event);
 
 	public:
-		Can::Ref<Can::Texture2D> m_Tex;
 		Scene* m_Scene;
 
 		Button* m_ButtonRoads = nullptr;
@@ -74,5 +73,9 @@ namespace Can
 		float m_ZoomLevel;
 		float m_AspectRatio;
 		Can::Camera::OrthographicCameraController m_CameraController;
+
+		Ref<Texture2D> m_Tex;
+		Ref<Texture2D> m_Tex2;
+		Ref<Texture2D> m_Tex3;
 	};
 }

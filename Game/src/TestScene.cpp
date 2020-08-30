@@ -12,7 +12,7 @@ namespace Can
 		, m_MainCameraController(
 			45.0f,
 			1280.0f / 720.0f,
-			0.0001f,
+			0.1f,
 			1000.0f,
 			glm::vec3{ 1.0f, 5.5f, 0.0f },
 			glm::vec3{ -45.0f, 0.0f, 0.0f }
@@ -252,8 +252,32 @@ namespace Can
 				}
 			}
 
-			b_ConstructionRestricted |= angleIsRestricted;
-			b_ConstructionRestricted |= collisionIsRestricted;
+			bool collisionWitBuildingIsRestricted = false;
+			if (roadRestrictionOptions[3])
+			{
+				/*
+				glm::vec3 SE = m_RoadConstructionEndCoordinate - m_RoadConstructionStartCoordinate;
+				glm::vec3 ray = glm::normalize(SE);
+				float length = glm::length(SE);
+				for (Object* building : m_Buildings)
+				{
+					glm::vec3 least = building->prefab->boundingBoxL;
+					glm::vec3 most = building->prefab->boundingBoxM;
+					if (Helper::CheckBoundingBoxHit(m_RoadConstructionStartCoordinate, ray, length, least, most))
+					{
+						m_CollidedBuilding = building;
+						collisionWitBuildingIsRestricted = true;
+						continue;
+					}
+				}
+				*/
+			}
+
+			bool collisionWithOtherObjectsIsRestricted = false;
+			if (roadRestrictionOptions[4])
+			{
+				// Future checks
+			}
 
 			glm::vec3 AB = m_RoadConstructionEndCoordinate - m_RoadConstructionStartCoordinate;
 			glm::vec3 normalizedAB = glm::normalize(AB);
@@ -279,17 +303,13 @@ namespace Can
 			float scaleAB = (availableABLength / roadPrefabLength) / countAB;
 			float scaledRoadLength = availableABLength / countAB;
 
-			m_RoadGuidelinesStart->tintColor = b_ConstructionRestricted ? glm::vec4{ 1.0f, 0.3f, 0.2f, 1.0f } : glm::vec4(1.0f);
-			m_RoadGuidelinesEnd->tintColor = b_ConstructionRestricted ? glm::vec4{ 1.0f, 0.3f, 0.2f, 1.0f } : glm::vec4(1.0f);
+			bool lengthIsRestricted = roadRestrictionOptions[1] && countAB < 1;
+
 
 			for (std::vector<Object*>& os : m_RoadGuidelines)
-			{
 				for (Object* rg : os)
-				{
-					rg->tintColor = b_ConstructionRestricted ? glm::vec4{ 1.0f, 0.3f, 0.2f, 1.0f } : glm::vec4(1.0f);
 					rg->enabled = false;
-				}
-			}
+
 			for (size_t& inUse : m_RoadGuidelinesInUse)
 				inUse = 0;
 
@@ -334,6 +354,9 @@ namespace Can
 
 				int countR0I = (int)(availableR0ILength / snappedRoadPrefabLength);
 				int countR1I = (int)(availableR1ILength / snappedRoadPrefabLength);
+
+				lengthIsRestricted |= roadRestrictionOptions[1] && countR0I < 2;
+				lengthIsRestricted |= roadRestrictionOptions[1] && countR1I < 2;
 
 				float scaleR0I = (availableR0ILength / snappedRoadPrefabLength) / countR0I;
 				float scaleR1I = (availableR1ILength / snappedRoadPrefabLength) / countR1I;
@@ -395,6 +418,9 @@ namespace Can
 				int countR0I = (int)(availableR0ILength / snappedRoadPrefabLength);
 				int countR1I = (int)(availableR1ILength / snappedRoadPrefabLength);
 
+				lengthIsRestricted |= roadRestrictionOptions[1] && countR0I < 2;
+				lengthIsRestricted |= roadRestrictionOptions[1] && countR1I < 2;
+
 				float scaleR0I = (availableR0ILength / snappedRoadPrefabLength) / countR0I;
 				float scaleR1I = (availableR1ILength / snappedRoadPrefabLength) / countR1I;
 
@@ -431,6 +457,20 @@ namespace Can
 					);
 				}
 			}
+
+			b_ConstructionRestricted |= angleIsRestricted;
+			b_ConstructionRestricted |= lengthIsRestricted;
+			b_ConstructionRestricted |= collisionIsRestricted;
+			b_ConstructionRestricted |= collisionWitBuildingIsRestricted;
+			b_ConstructionRestricted |= collisionWithOtherObjectsIsRestricted;
+
+			m_RoadGuidelinesStart->tintColor = b_ConstructionRestricted ? glm::vec4{ 1.0f, 0.3f, 0.2f, 1.0f } : glm::vec4(1.0f);
+			m_RoadGuidelinesEnd->tintColor = b_ConstructionRestricted ? glm::vec4{ 1.0f, 0.3f, 0.2f, 1.0f } : glm::vec4(1.0f);
+
+			for (std::vector<Object*>& os : m_RoadGuidelines)
+				for (Object* rg : os)
+					rg->tintColor = b_ConstructionRestricted ? glm::vec4{ 1.0f, 0.3f, 0.2f, 1.0f } : glm::vec4(1.0f);
+
 		}
 	}
 	void TestScene::OnUpdate_RoadDestruction(glm::vec3 prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection)
@@ -441,8 +481,7 @@ namespace Can
 		m_RoadDestructionSnappedRoad = snapInformation.snappedRoad;
 
 		for (Junction* junction : m_Junctions)
-			for (Object* obj : junction->junctionPieces)
-				obj->SetTransform(junction->position);
+			junction->object->SetTransform(junction->position);
 
 		for (End* end : m_Ends)
 			end->object->SetTransform(end->position);
@@ -454,8 +493,7 @@ namespace Can
 		{
 			if (m_RoadDestructionSnappedJunction != nullptr)
 			{
-				for (Object* obj : m_RoadDestructionSnappedJunction->junctionPieces)
-					obj->SetTransform(m_RoadDestructionSnappedJunction->position + glm::vec3{ 0.0f, 0.1f, 0.0f });
+				m_RoadDestructionSnappedJunction->object->SetTransform(m_RoadDestructionSnappedJunction->position + glm::vec3{ 0.0f, 0.1f, 0.0f });
 
 				for (Road* road : m_RoadDestructionSnappedJunction->connectedRoads)
 				{
@@ -919,8 +957,6 @@ namespace Can
 
 				auto juncPosition = std::find(m_Junctions.begin(), m_Junctions.end(), junction);
 				m_Junctions.erase(juncPosition);
-				for (Object* obj : junction->junctionPieces)
-					delete obj;
 				delete junction;
 			}
 			else
@@ -972,8 +1008,6 @@ namespace Can
 
 				auto juncPosition = std::find(m_Junctions.begin(), m_Junctions.end(), junction);
 				m_Junctions.erase(juncPosition);
-				for (Object* obj : junction->junctionPieces)
-					delete obj;
 				delete junction;
 			}
 			else
@@ -1051,11 +1085,8 @@ namespace Can
 
 		for (Junction* junction : m_Junctions)
 		{
-			for (Object* obj : junction->junctionPieces)
-			{
-				obj->enabled = true;
-				obj->SetTransform(junction->position);
-			}
+			junction->object->enabled = true;
+			junction->object->SetTransform(junction->position);
 		}
 
 		for (End* end : m_Ends)

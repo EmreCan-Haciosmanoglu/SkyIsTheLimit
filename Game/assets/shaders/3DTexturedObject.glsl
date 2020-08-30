@@ -9,18 +9,19 @@ layout(location = 3) in float a_TextureIndex;
 uniform mat4 u_ViewProjection;
 uniform mat4 u_Transform;
 
-out vec2 v_UV;
-out float v_TextureIndex;
-out vec3 v_Normal;
 out vec3 v_FragPosition;
+out vec2 v_UV;
+out vec3 v_Normal;
+out float v_TextureIndex;
 
 void main()
 {
-	v_UV = a_UV;
-	v_TextureIndex = a_TextureIndex;
-	v_Normal = a_Normal;
-	gl_Position = u_ViewProjection * u_Transform * vec4(a_Position,1.0);
     v_FragPosition = vec3(u_Transform * vec4(a_Position,1.0));
+	v_UV = a_UV;
+	v_Normal = a_Normal;
+	v_TextureIndex = a_TextureIndex;
+
+	gl_Position = u_ViewProjection * u_Transform * vec4(a_Position,1.0);
 }
 
 #type fragment
@@ -32,10 +33,10 @@ uniform vec3 u_LightPos;
 uniform vec4 u_TintColor;
 uniform sampler2D u_Textures[32];
 
-in vec2 v_UV;
-in float v_TextureIndex;
-in vec3 v_Normal;
 in vec3 v_FragPosition;
+in vec2 v_UV;
+in vec3 v_Normal;
+in float v_TextureIndex;
 
 void main()
 {
@@ -48,6 +49,8 @@ void main()
 
 	vec3 result = vec3(diffuse.x + 0.1, diffuse.y + 0.1, diffuse.z + 0.1);// * vec3(v_Color);
 
-	color = u_TintColor * texture(u_Textures[int(v_TextureIndex)],v_UV);
+	color = u_TintColor * texture(u_Textures[int(v_TextureIndex+0.1)], v_UV);
+	//color = vec4( v_UV.x, v_UV.y, 1.0f, 1.0f);
+	//color = vec4(1.0- v_TextureIndex,1.0- v_TextureIndex,1.0- v_TextureIndex, 1.0);
 }
 

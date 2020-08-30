@@ -8,17 +8,24 @@ namespace Can
 {
 	Junction::Junction(const glm::vec3& position)
 		: position(position)
+		, object(nullptr)
 	{
 	}
 	Junction::Junction(const std::vector<Road*>& connectedRoads, const glm::vec3& position)
 		: position(position)
+		, object(nullptr)
 		, connectedRoads(connectedRoads)
 	{
 	}
-	Junction::Junction(const std::vector<Object*>& junctionPieces, const glm::vec3& position)
+	Junction::Junction(Object* object, const glm::vec3& position)
 		: position(position)
-		, junctionPieces(junctionPieces)
+		, object(object)
 	{
+	}
+
+	Junction::~Junction()
+	{
+		delete object;
 	}
 
 	void Junction::ConstructObject()
@@ -74,20 +81,41 @@ namespace Can
 			Intersections.push_back(I);
 		}
 
+		size_t indexCount = 0;
+		for (size_t i = 0; i < roadCount; i++)
+			indexCount += connectedRoads[i]->type[1]->indexCount;
+		TexturedObjectVertex* TOVertices = new TexturedObjectVertex[indexCount];
 
+		std::array<Ref<Texture2D>, MAX_TEXTURE_SLOTS> textures;
+		uint8_t textureSlotIndex = 0;
 
-		glm::vec2 center = { 0.0f, 0.0f };
+		size_t offset = 0;
 		for (size_t i = 0; i < roadCount; i++)
 		{
 			Road* r = connectedRoads[i];
 			Prefab* prefab = r->type[1];
-			size_t indexCount = prefab->indexCount;
+			float* prefabVerticies = prefab->vertices;
+			size_t prefabIndexCount = prefab->indexCount;
 			float roadWidth = prefab->boundingBoxM.z - prefab->boundingBoxL.z;
 			float roadLength = prefab->boundingBoxM.x - prefab->boundingBoxL.x;
 
-			//float* pieceVertices = new float[indexCount * (3 + 2 + 3)];
-			TexturedObjectVertex* TOVertices = new TexturedObjectVertex[indexCount];
-			float* prefabVerticies = prefab->vertices;
+			float textureIndex = -1.0f;
+			{
+				for (uint8_t i = 0; i < textureSlotIndex; i++)
+				{
+					if (*(textures[i].get()) == *(prefab->textures[0].get()))
+					{
+						textureIndex = (float)i;
+						break;
+					}
+				}
+				if (textureIndex == -1.0f)
+				{
+					textureIndex = (float)textureSlotIndex;
+					textures[textureSlotIndex] = prefab->textures[0];
+					textureSlotIndex++;
+				}
+			}
 
 			glm::vec3 intersection1 = Intersections[i];
 			glm::vec3 intersection2 = Intersections[((roadCount + i) - 1) % roadCount];
@@ -132,9 +160,10 @@ namespace Can
 
 			float angle = r->rotation.y + glm::radians(r->startJunction == this ? 0.0f : 180.0f);
 
-			for (size_t j = 0; j < indexCount; j++)
+			size_t OneVertexSize = (int)(sizeof(TexturedObjectVertex) / sizeof(float));
+			for (size_t j = 0; j < prefabIndexCount; j++)
 			{
-				size_t index = j * (int)(sizeof(TexturedObjectVertex) / sizeof(float));
+				size_t index = j * OneVertexSize;
 				glm::vec2 point = {
 					prefabVerticies[index + 0],
 					prefabVerticies[index + 2]
@@ -142,9 +171,9 @@ namespace Can
 				if (point.x < 0.001f)
 				{
 					float percent = std::abs(point.y / (roadWidth / 2.0f));
-					if (point.y < 0.0f)
+					if (point.y < 0.001f)
 						point.x += percent * lengthJP;
-					else if (point.y > 0.0f)
+					else if (point.y > 0.001f)
 						point.x += percent * lengthJN;
 				}
 				else
@@ -152,32 +181,34 @@ namespace Can
 					point.x += l;
 				}
 
-				glm::vec2 rotatedPoint = Helper::RotateAPointAroundAPoint(point, center, -angle);
+				glm::vec2 rotatedPoint = Helper::RotateAPointAroundAPoint(point, -angle);
 
-				TOVertices[j].Position.x = rotatedPoint.x;
-				TOVertices[j].Position.y = prefabVerticies[index + 1];
-				TOVertices[j].Position.z = rotatedPoint.y;
-				TOVertices[j].UV.x = prefabVerticies[index + 3];
-				TOVertices[j].UV.y = prefabVerticies[index + 4];
-				TOVertices[j].Normal.x = prefabVerticies[index + 5];
-				TOVertices[j].Normal.x = prefabVerticies[index + 6];
-				TOVertices[j].Normal.x = prefabVerticies[index + 7];
-				TOVertices[j].TextureIndex = 0.0f;
+				TOVertices[offset + j].Position.x = rotatedPoint.x;
+				TOVertices[offset + j].Position.y = prefabVerticies[index + 1];
+				TOVertices[offset + j].Position.z = rotatedPoint.y;
+				TOVertices[offset + j].UV.x = prefabVerticies[index + 3];
+				TOVertices[offset + j].UV.y = prefabVerticies[index + 4];
+				TOVertices[offset + j].Normal.x = prefabVerticies[index + 5];
+				TOVertices[offset + j].Normal.x = prefabVerticies[index + 6];
+				TOVertices[offset + j].Normal.x = prefabVerticies[index + 7];
+				TOVertices[offset + j].TextureIndex = textureIndex;
 			}
-
-			Prefab* newPrefab = new Prefab(prefab->objectPath, prefab->shaderPath, prefab->texturePath, (float*)TOVertices, indexCount);
-			junctionPieces.push_back(new Object(newPrefab, prefab, position));
+			offset += prefabIndexCount;
 		}
+		Prefab* newPrefab = new Prefab(
+			"", // No need
+			connectedRoads[0]->type[1]->shaderPath, // If single shader for roads it okay!
+			textures,
+			textureSlotIndex,
+			(float*)TOVertices,
+			indexCount,
+			indexCount * (int)(sizeof(TexturedObjectVertex) / sizeof(float))
+		);
+		object = new Object(newPrefab, newPrefab, position);
 	}
 	void Junction::ReconstructObject()
 	{
-		for (Object* obj : junctionPieces)
-		{
-			delete obj;
-			obj = nullptr;
-		}
-		junctionPieces.clear();
-
+		delete object;
 		ConstructObject();
 	}
 }
