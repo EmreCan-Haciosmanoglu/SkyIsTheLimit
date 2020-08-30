@@ -253,6 +253,12 @@ namespace Can
 			}
 
 
+			bool collisionWithOtherObjectsIsRestricted = false;
+			if (roadRestrictionOptions[4])
+			{
+				// Future checks
+			}
+
 			glm::vec3 AB = m_RoadConstructionEndCoordinate - m_RoadConstructionStartCoordinate;
 			glm::vec3 normalizedAB = glm::normalize(AB);
 
@@ -279,7 +285,7 @@ namespace Can
 
 			bool lengthIsRestricted = roadRestrictionOptions[1] && countAB < 1;
 
-			
+
 			for (std::vector<Object*>& os : m_RoadGuidelines)
 				for (Object* rg : os)
 					rg->enabled = false;
@@ -328,7 +334,7 @@ namespace Can
 
 				int countR0I = (int)(availableR0ILength / snappedRoadPrefabLength);
 				int countR1I = (int)(availableR1ILength / snappedRoadPrefabLength);
-				
+
 				lengthIsRestricted |= roadRestrictionOptions[1] && countR0I < 2;
 				lengthIsRestricted |= roadRestrictionOptions[1] && countR1I < 2;
 
@@ -434,8 +440,9 @@ namespace Can
 
 			b_ConstructionRestricted |= angleIsRestricted;
 			b_ConstructionRestricted |= lengthIsRestricted;
-			b_ConstructionRestricted |= collisionIsRestricted; 
-			
+			b_ConstructionRestricted |= collisionIsRestricted;
+			b_ConstructionRestricted |= collisionWithOtherObjectsIsRestricted;
+
 			m_RoadGuidelinesStart->tintColor = b_ConstructionRestricted ? glm::vec4{ 1.0f, 0.3f, 0.2f, 1.0f } : glm::vec4(1.0f);
 			m_RoadGuidelinesEnd->tintColor = b_ConstructionRestricted ? glm::vec4{ 1.0f, 0.3f, 0.2f, 1.0f } : glm::vec4(1.0f);
 
