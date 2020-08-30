@@ -12,7 +12,7 @@ namespace Can
 		, m_MainCameraController(
 			45.0f,
 			1280.0f / 720.0f,
-			0.0001f,
+			0.1f,
 			1000.0f,
 			glm::vec3{ 1.0f, 5.5f, 0.0f },
 			glm::vec3{ -45.0f, 0.0f, 0.0f }
@@ -441,8 +441,7 @@ namespace Can
 		m_RoadDestructionSnappedRoad = snapInformation.snappedRoad;
 
 		for (Junction* junction : m_Junctions)
-			for (Object* obj : junction->junctionPieces)
-				obj->SetTransform(junction->position);
+			junction->object->SetTransform(junction->position);
 
 		for (End* end : m_Ends)
 			end->object->SetTransform(end->position);
@@ -454,8 +453,7 @@ namespace Can
 		{
 			if (m_RoadDestructionSnappedJunction != nullptr)
 			{
-				for (Object* obj : m_RoadDestructionSnappedJunction->junctionPieces)
-					obj->SetTransform(m_RoadDestructionSnappedJunction->position + glm::vec3{ 0.0f, 0.1f, 0.0f });
+				m_RoadDestructionSnappedJunction->object->SetTransform(m_RoadDestructionSnappedJunction->position + glm::vec3{ 0.0f, 0.1f, 0.0f });
 
 				for (Road* road : m_RoadDestructionSnappedJunction->connectedRoads)
 				{
@@ -919,8 +917,6 @@ namespace Can
 
 				auto juncPosition = std::find(m_Junctions.begin(), m_Junctions.end(), junction);
 				m_Junctions.erase(juncPosition);
-				for (Object* obj : junction->junctionPieces)
-					delete obj;
 				delete junction;
 			}
 			else
@@ -972,8 +968,6 @@ namespace Can
 
 				auto juncPosition = std::find(m_Junctions.begin(), m_Junctions.end(), junction);
 				m_Junctions.erase(juncPosition);
-				for (Object* obj : junction->junctionPieces)
-					delete obj;
 				delete junction;
 			}
 			else
@@ -1051,11 +1045,8 @@ namespace Can
 
 		for (Junction* junction : m_Junctions)
 		{
-			for (Object* obj : junction->junctionPieces)
-			{
-				obj->enabled = true;
-				obj->SetTransform(junction->position);
-			}
+			junction->object->enabled = true;
+			junction->object->SetTransform(junction->position);
 		}
 
 		for (End* end : m_Ends)

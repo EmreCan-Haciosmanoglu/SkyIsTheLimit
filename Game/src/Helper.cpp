@@ -182,7 +182,7 @@ namespace  Can::Helper
 
 				{
 					float z = (p1[0] / 256.0f) * COLOR_COUNT;
-					size_t heightIndex = z;
+					size_t heightIndex = (size_t)z;
 					vertices[vertexIndex++] = x / TERRAIN_SCALE_DOWN;
 					vertices[vertexIndex++] = z;
 					vertices[vertexIndex++] = -(y / TERRAIN_SCALE_DOWN);
@@ -196,7 +196,7 @@ namespace  Can::Helper
 				}
 				{
 					float z = (p4[0] / 256.0f) * COLOR_COUNT;
-					size_t heightIndex = z;
+					size_t heightIndex = (size_t)z;
 					vertices[vertexIndex++] = (x + 1) / TERRAIN_SCALE_DOWN;
 					vertices[vertexIndex++] = z;
 					vertices[vertexIndex++] = -(y / TERRAIN_SCALE_DOWN);
@@ -210,7 +210,7 @@ namespace  Can::Helper
 				}
 				{
 					float z = (p3[0] / 256.0f) * COLOR_COUNT;
-					size_t heightIndex = z;
+					size_t heightIndex = (size_t)z;
 					vertices[vertexIndex++] = (x + 1) / TERRAIN_SCALE_DOWN;
 					vertices[vertexIndex++] = z;
 					vertices[vertexIndex++] = -((y + 1) / TERRAIN_SCALE_DOWN);
@@ -224,7 +224,7 @@ namespace  Can::Helper
 				}
 				{
 					float z = (p1[0] / 256.0f) * COLOR_COUNT;
-					size_t heightIndex = z;
+					size_t heightIndex = (size_t)z;
 					vertices[vertexIndex++] = x / TERRAIN_SCALE_DOWN;
 					vertices[vertexIndex++] = z;
 					vertices[vertexIndex++] = -(y / TERRAIN_SCALE_DOWN);
@@ -238,7 +238,7 @@ namespace  Can::Helper
 				}
 				{
 					float z = (p3[0] / 256.0f) * COLOR_COUNT;
-					size_t heightIndex = z;
+					size_t heightIndex = (size_t)z;
 					vertices[vertexIndex++] = (x + 1) / TERRAIN_SCALE_DOWN;
 					vertices[vertexIndex++] = z;
 					vertices[vertexIndex++] = -((y + 1) / TERRAIN_SCALE_DOWN);
@@ -252,7 +252,7 @@ namespace  Can::Helper
 				}
 				{
 					float z = (p2[0] / 256.0f) * COLOR_COUNT;
-					size_t heightIndex = z;
+					size_t heightIndex = (size_t)z;
 					vertices[vertexIndex++] = x / TERRAIN_SCALE_DOWN;
 					vertices[vertexIndex++] = z;
 					vertices[vertexIndex++] = -((y + 1) / TERRAIN_SCALE_DOWN);
@@ -319,7 +319,7 @@ namespace  Can::Helper
 		return terrainPrefab;
 	}
 
-	glm::vec2 RotateAPointAroundAPoint(const glm::vec2& p1, const glm::vec2& p2, float angleInRadians)
+	glm::vec2 RotateAPointAroundAPoint(const glm::vec2& p1, float angleInRadians, const glm::vec2& p2)
 	{
 		return glm::vec2{
 			glm::cos(angleInRadians) * (p1.x - p2.x) - glm::sin(angleInRadians) * (p1.y - p2.y) + p2.x,
