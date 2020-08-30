@@ -252,6 +252,26 @@ namespace Can
 				}
 			}
 
+			bool collisionWitBuildingIsRestricted = false;
+			if (roadRestrictionOptions[3])
+			{
+				/*
+				glm::vec3 SE = m_RoadConstructionEndCoordinate - m_RoadConstructionStartCoordinate;
+				glm::vec3 ray = glm::normalize(SE);
+				float length = glm::length(SE);
+				for (Object* building : m_Buildings)
+				{
+					glm::vec3 least = building->prefab->boundingBoxL;
+					glm::vec3 most = building->prefab->boundingBoxM;
+					if (Helper::CheckBoundingBoxHit(m_RoadConstructionStartCoordinate, ray, length, least, most))
+					{
+						m_CollidedBuilding = building;
+						collisionWitBuildingIsRestricted = true;
+						continue;
+					}
+				}
+				*/
+			}
 
 			bool collisionWithOtherObjectsIsRestricted = false;
 			if (roadRestrictionOptions[4])
@@ -441,6 +461,7 @@ namespace Can
 			b_ConstructionRestricted |= angleIsRestricted;
 			b_ConstructionRestricted |= lengthIsRestricted;
 			b_ConstructionRestricted |= collisionIsRestricted;
+			b_ConstructionRestricted |= collisionWitBuildingIsRestricted;
 			b_ConstructionRestricted |= collisionWithOtherObjectsIsRestricted;
 
 			m_RoadGuidelinesStart->tintColor = b_ConstructionRestricted ? glm::vec4{ 1.0f, 0.3f, 0.2f, 1.0f } : glm::vec4(1.0f);
