@@ -74,8 +74,8 @@ namespace Can
 		float m_AspectRatio;
 		Can::Camera::OrthographicCameraController m_CameraController;
 
-		Ref<Texture2D> m_Tex;
-		Ref<Texture2D> m_Tex2;
-		Ref<Texture2D> m_Tex3;
+		//Ref<Texture2D> m_Texture;
+		//Ref<Texture2D> m_Texture2;
+		//Ref<Texture2D> m_Texture3;
 	};
 }

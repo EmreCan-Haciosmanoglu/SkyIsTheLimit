@@ -1,6 +1,7 @@
 #include "canpch.h"
 #include "UIScene.h"
 #include "GameApp.h"
+#include "Helper.h"
 
 namespace Can
 {
@@ -351,6 +352,15 @@ namespace Can
 			};
 			m_Scene->m_Registry.emplace<ChildrenComponent>(m_PanelNeeds->entityID, needsButtonList);
 		}
+
+		// Move this
+		std::vector<Prefab*> result;
+		namespace fs = std::filesystem;
+		std::string s = fs::current_path().string();
+		std::string path = s + "\\assets\\objects\\roads";
+
+		std::vector<std::string> tumbnailimagefiles = Helper::GetFiles(path, "tumbnail_", ".png");
+
 		/*Buttons in the Roads panel*/ {
 			size_t roadCount = m_Parent->roads.size();
 			ChildrenComponent& children = m_Scene->m_Registry.emplace<ChildrenComponent>(m_PanelRoads->entityID, std::vector<entt::entity>{});
@@ -362,7 +372,7 @@ namespace Can
 					glm::vec3{ 1.0f + i * 4.0f, height - 4.0f, 0.0011f },
 					glm::vec3{ 3.0f, 3.0f, 1.0f },
 					glm::vec4{ 1.0f, 1.0f, 1.0f, 1.0f },
-					nullptr,
+					Texture2D::Create(tumbnailimagefiles[i]),
 					[i, this]() {
 						std::cout << "You clicked the " << (i + 1) << "th Button inside the Road panel!" << std::endl;
 						this->m_Parent->testScene->SetConstructionMode(ConstructionMode::Road);
@@ -445,9 +455,9 @@ namespace Can
 
 	void UIScene::OnAttach()
 	{
-		m_Tex = Can::Texture2D::Create("assets/textures/Name.png");
-		m_Tex2 = Can::Texture2D::Create("assets/textures/Man.png");
-		m_Tex3 = Can::Texture2D::Create("assets/textures/Name.png");
+		//m_Texture = Texture2D::Create("assets/textures/Name.png");
+		//m_Texture2 = Texture2D::Create("assets/textures/Man.png");
+		//m_Texture3 = Texture2D::Create("assets/textures/Name.png");
 	}
 
 	void UIScene::OnUpdate(Can::TimeStep ts)
@@ -463,9 +473,9 @@ namespace Can
 		Can::Renderer2D::DrawQuad(Can::DrawQuadParameters{ { -0.5f, 1.5f, 0.0f }, { 1.5f, 0.5f, 1.0f }, 0.0f, { 0.2f, 0.8f, 0.3f, 1.0f }, nullptr });
 		Can::Renderer2D::DrawQuad(Can::DrawQuadParameters{ { 2.3f, -1.0f, 0.0f }, { 3.5f, 5.0f, 1.0f }, rotation, { 0.8f, 0.3f, 0.8f, 1.0f }, nullptr });
 
-		Can::Renderer2D::DrawQuad(Can::DrawQuadParameters{ { 3.0f, 0.0f, +0.111f }, { 5.0f, 5.0f, 1.0f }, rotation * 2.0f , { 1.0f, 1.0f, 1.0f, 1.0f }, m_Tex });
-		Can::Renderer2D::DrawQuad(Can::DrawQuadParameters{ { 3.0f, -3.0f, +0.11f }, { 5.0f, 5.0f, 1.0f }, rotation * 2.0f , { 1.0f, 1.0f, 1.0f, 1.0f }, m_Tex2 });
-		Can::Renderer2D::DrawQuad(Can::DrawQuadParameters{ { 3.0f, 3.0f, +0.1f }, { 5.0f, 5.0f, 1.0f }, rotation * 2.0f , { 1.0f, 1.0f, 1.0f, 1.0f }, m_Tex3 });
+		Can::Renderer2D::DrawQuad(Can::DrawQuadParameters{ { 3.0f, 0.0f, +0.111f }, { 5.0f, 5.0f, 1.0f }, rotation * 2.0f , { 1.0f, 1.0f, 1.0f, 1.0f }, m_Texture });
+		Can::Renderer2D::DrawQuad(Can::DrawQuadParameters{ { 3.0f, -3.0f, +0.11f }, { 5.0f, 5.0f, 1.0f }, rotation * 2.0f , { 1.0f, 1.0f, 1.0f, 1.0f }, m_Texture2 });
+		Can::Renderer2D::DrawQuad(Can::DrawQuadParameters{ { 3.0f, 3.0f, +0.1f }, { 5.0f, 5.0f, 1.0f }, rotation * 2.0f , { 1.0f, 1.0f, 1.0f, 1.0f }, m_Texture3 });
 
 		Can::Renderer2D::EndScene();
 #else
