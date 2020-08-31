@@ -360,6 +360,8 @@ namespace Can
 					glm::vec4{ 1.0f, 1.0f, 1.0f, 1.0f },
 					[i, this]() {
 						std::cout << "You clicked the " << (i + 1) << "th Button inside the Road panel!" << std::endl;
+						this->m_Parent->testScene->SetConstructionMode(ConstructionMode::Road);
+						this->m_Parent->testScene->SetRoadConstructionMode(RoadConstructionMode::Construct);
 						this->m_Parent->testScene->SetSelectedConstructionRoad(i);
 					}
 				);
@@ -435,15 +437,41 @@ namespace Can
 
 	}
 
+	void UIScene::OnAttach()
+	{
+		m_Tex = Can::Texture2D::Create("assets/textures/Name.png");
+		m_Tex2 = Can::Texture2D::Create("assets/textures/Man.png");
+		m_Tex3 = Can::Texture2D::Create("assets/textures/Name.png");
+	}
+
 	void UIScene::OnUpdate(Can::TimeStep ts)
 	{
+
+		static float rotation = 0.5f;
+		rotation += ts * 0.5f;
+
+#if 0
+		Can::Renderer2D::BeginScene(m_CameraController.GetCamera());
+
+		Can::Renderer2D::DrawQuad(Can::DrawQuadParameters{ { 0.0f, -0.2f, 0.0f }, { 1.0f, 1.0f, 1.0f }, 0.0f, { 0.8f, 0.2f, 0.3f, 1.0f }, nullptr });
+		Can::Renderer2D::DrawQuad(Can::DrawQuadParameters{ { -0.5f, 1.5f, 0.0f }, { 1.5f, 0.5f, 1.0f }, 0.0f, { 0.2f, 0.8f, 0.3f, 1.0f }, nullptr });
+		Can::Renderer2D::DrawQuad(Can::DrawQuadParameters{ { 2.3f, -1.0f, 0.0f }, { 3.5f, 5.0f, 1.0f }, rotation, { 0.8f, 0.3f, 0.8f, 1.0f }, nullptr });
+
+		Can::Renderer2D::DrawQuad(Can::DrawQuadParameters{ { 3.0f, 0.0f, +0.111f }, { 5.0f, 5.0f, 1.0f }, rotation * 2.0f , { 1.0f, 1.0f, 1.0f, 1.0f }, m_Tex });
+		Can::Renderer2D::DrawQuad(Can::DrawQuadParameters{ { 3.0f, -3.0f, +0.11f }, { 5.0f, 5.0f, 1.0f }, rotation * 2.0f , { 1.0f, 1.0f, 1.0f, 1.0f }, m_Tex2 });
+		Can::Renderer2D::DrawQuad(Can::DrawQuadParameters{ { 3.0f, 3.0f, +0.1f }, { 5.0f, 5.0f, 1.0f }, rotation * 2.0f , { 1.0f, 1.0f, 1.0f, 1.0f }, m_Tex3 });
+
+		Can::Renderer2D::EndScene();
+#else
 		//Can::RenderCommand::SetClearColor({ 0.9f, 0.9f, 0.9f, 1.0f });
 		//Can::RenderCommand::Clear();
+
+		//m_CameraController.OnUpdate(ts);
 
 		float widthHalf = m_AspectRatio * m_ZoomLevel;
 		float heightHalf = m_ZoomLevel;
 
-		Can::Renderer2D::BeginScene(m_CameraController.GetCamera());
+		Renderer2D::BeginScene(m_CameraController.GetCamera());
 
 		glm::vec2 offset = { -widthHalf, heightHalf };
 		ChildrenComponent& children = m_Scene->m_Registry.get<ChildrenComponent>(m_Scene->entityID);
@@ -451,6 +479,7 @@ namespace Can
 			Draw(entity, &(m_Scene->m_Registry), offset);
 
 		Can::Renderer2D::EndScene();
+#endif
 	}
 	void UIScene::OnEvent(Can::Event::Event& event)
 	{
@@ -566,10 +595,10 @@ namespace Can
 
 		glm::mat4 newTransform = glm::translate(glm::mat4(1.0f), pos) * glm::scale(glm::mat4(1), scale);
 
-		Can::Renderer2D::DrawQuad(pos - glm::vec3{ 0.0f, 0.0f, 0.00001f }, scale + glm::vec3{ 0.1f, 0.1f, 0.1f }, { 0.0f, 0.0f, 0.0f, 1.0f });
+		Renderer2D::DrawQuad(DrawQuadParameters{ pos - glm::vec3{ 0.0f, 0.0f, 0.00001f }, scale + glm::vec3{ 0.1f, 0.1f, 0.1f }, 0.0f, { 0.0f, 0.0f, 0.0f, 1.0f }, nullptr });
 		if (spriteRenderer.texture)
-			Can::Renderer2D::DrawQuad(newTransform, spriteRenderer.texture, spriteRenderer.color);
+			Renderer2D::DrawQuad(newTransform, DrawQuadParameters{ glm::vec3(0.0f), glm::vec3(0.0f), 0.0f, spriteRenderer.color, spriteRenderer.texture });
 		else
-			Can::Renderer2D::DrawQuad(newTransform, spriteRenderer.color);
+			Renderer2D::DrawQuad(newTransform, DrawQuadParameters{ glm::vec3(0.0f), glm::vec3(0.0f), 0.0f, spriteRenderer.color, nullptr });
 	}
 }

@@ -1,5 +1,6 @@
 #pragma once
 #include "Can.h"
+#include <glm/gtc/type_ptr.hpp>
 
 namespace Can
 {
@@ -13,7 +14,7 @@ namespace Can
 		UIScene(GameApp* parent);
 		virtual ~UIScene();
 
-		virtual void OnAttach() override {}
+		virtual void OnAttach() override;
 		virtual void OnDetach() override {}
 
 		virtual void OnUpdate(TimeStep ts) override;
@@ -72,5 +73,9 @@ namespace Can
 		float m_ZoomLevel;
 		float m_AspectRatio;
 		Can::Camera::OrthographicCameraController m_CameraController;
+
+		Ref<Texture2D> m_Tex;
+		Ref<Texture2D> m_Tex2;
+		Ref<Texture2D> m_Tex3;
 	};
 }

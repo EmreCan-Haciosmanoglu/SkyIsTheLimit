@@ -13,15 +13,15 @@ namespace Can::Helper
 
 	glm::vec3 RayPlaneIntersection(const glm::vec3& X, const glm::vec3& v, const glm::vec3& C, const glm::vec3& n);
 
-	glm::vec2 LineSLineSIntersection(glm::vec2 p0, glm::vec2 p1, glm::vec2 p2, glm::vec2 p3);
+	bool LineSLineSIntersection(glm::vec2 p0, glm::vec2 p1, glm::vec2 p2, glm::vec2 p3, glm::vec2* intersection);
 
-	bool RayTriangleIntersection(const glm::vec3& camPos, const glm::vec3& ray, const glm::vec3& A, const glm::vec3& B, const glm::vec3& C, const glm::vec3& normal, glm::vec3& intersection );
+	bool RayTriangleIntersection(const glm::vec3& camPos, const glm::vec3& ray, const glm::vec3& A, const glm::vec3& B, const glm::vec3& C, const glm::vec3& normal, glm::vec3& intersection);
 
-	glm::vec2 RotateAPointAroundAPoint(const glm::vec2& p1, const glm::vec2& p2, float angleInRadians);
+	glm::vec2 RotateAPointAroundAPoint(const glm::vec2& p1, float angleInRadians, const glm::vec2& p2 = { 0.0f, 0.0f });
 
 	void LevelTheTerrain(const glm::vec2& startIndex, const glm::vec2& endIndex, const glm::vec3& startCoord, const glm::vec3& endCoord, Object* terrain, float width);
 
-	Prefab*GetPrefabForTerrain(const std::string& texturePath);
+	Prefab* GetPrefabForTerrain(const std::string& texturePath);
 
 	std::vector<std::string> GetFiles(const std::string& folder, const std::string& filter, const std::string& fileType);
 
@@ -72,8 +72,8 @@ namespace Can::Helper
 				roadR1 = 0.001f;
 				roadR2 = 0.002f;
 			}
-			roadR1 = std::fmod(roadR1 + glm::radians(360.0f), 360.0f);
-			roadR2 = std::fmod(roadR2 + glm::radians(360.0f), 360.0f);
+			roadR1 = std::fmod(roadR1 + glm::radians(360.0f), glm::radians(360.0f));
+			roadR2 = std::fmod(roadR2 + glm::radians(360.0f), glm::radians(360.0f));
 			return (roadR1 > roadR2);
 		}
 	};

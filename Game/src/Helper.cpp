@@ -31,7 +31,7 @@ namespace  Can::Helper
 		return X + k * v;
 	}
 
-	glm::vec2 LineSLineSIntersection(glm::vec2 p0, glm::vec2 p1, glm::vec2 p2, glm::vec2 p3)
+	bool LineSLineSIntersection(glm::vec2 p0, glm::vec2 p1, glm::vec2 p2, glm::vec2 p3, glm::vec2* intersection)
 	{
 		float s_numer, t_numer, denom, t;
 		glm::vec2 s10 = p1 - p0;
@@ -39,25 +39,26 @@ namespace  Can::Helper
 
 		denom = s10.x * s32.y - s32.x * s10.y;
 		if (denom == 0)
-			return glm::vec2{ 0,0 }; // Collinear
+			return false; // Collinear
 		bool denomPositive = denom > 0;
 
 		glm::vec2 s02 = p0 - p2;
 
 		s_numer = s10.x * s02.y - s10.y * s02.x;
 		if ((s_numer < 0) == denomPositive)
-			return glm::vec2{ 0,0 }; // No collision
+			return false; // No collision
 
 		t_numer = s32.x * s02.y - s32.y * s02.x;
 		if ((t_numer < 0) == denomPositive)
-			return glm::vec2{ 0,0 }; // No collision
+			return false; // No collision
 
 		if (((s_numer > denom) == denomPositive) || ((t_numer > denom) == denomPositive))
-			return glm::vec2{ 0,0 }; // No collision
+			return false; // No collision
 		// Collision detected
 		t = t_numer / denom;
-
-		return p0 + (t * s10);
+		if (intersection)
+			(*intersection) = p0 + (t * s10);
+		return true;
 	}
 
 	bool RayTriangleIntersection(const glm::vec3& camPos, const glm::vec3& ray, const glm::vec3& A, const glm::vec3& B, const glm::vec3& C, const glm::vec3& normal, glm::vec3& intersection)
@@ -147,7 +148,7 @@ namespace  Can::Helper
 		terrain->VB->Unbind();*/
 	}
 
-	Prefab*GetPrefabForTerrain(const std::string& texturePath)
+	Prefab* GetPrefabForTerrain(const std::string& texturePath)
 	{
 #define TEMP_TERRAIN_SHADER "assets/shaders/Cube.glsl"
 
@@ -181,7 +182,7 @@ namespace  Can::Helper
 
 				{
 					float z = (p1[0] / 256.0f) * COLOR_COUNT;
-					size_t heightIndex = z;
+					size_t heightIndex = (size_t)z;
 					vertices[vertexIndex++] = x / TERRAIN_SCALE_DOWN;
 					vertices[vertexIndex++] = z;
 					vertices[vertexIndex++] = -(y / TERRAIN_SCALE_DOWN);
@@ -195,7 +196,7 @@ namespace  Can::Helper
 				}
 				{
 					float z = (p4[0] / 256.0f) * COLOR_COUNT;
-					size_t heightIndex = z;
+					size_t heightIndex = (size_t)z;
 					vertices[vertexIndex++] = (x + 1) / TERRAIN_SCALE_DOWN;
 					vertices[vertexIndex++] = z;
 					vertices[vertexIndex++] = -(y / TERRAIN_SCALE_DOWN);
@@ -209,7 +210,7 @@ namespace  Can::Helper
 				}
 				{
 					float z = (p3[0] / 256.0f) * COLOR_COUNT;
-					size_t heightIndex = z;
+					size_t heightIndex = (size_t)z;
 					vertices[vertexIndex++] = (x + 1) / TERRAIN_SCALE_DOWN;
 					vertices[vertexIndex++] = z;
 					vertices[vertexIndex++] = -((y + 1) / TERRAIN_SCALE_DOWN);
@@ -223,7 +224,7 @@ namespace  Can::Helper
 				}
 				{
 					float z = (p1[0] / 256.0f) * COLOR_COUNT;
-					size_t heightIndex = z;
+					size_t heightIndex = (size_t)z;
 					vertices[vertexIndex++] = x / TERRAIN_SCALE_DOWN;
 					vertices[vertexIndex++] = z;
 					vertices[vertexIndex++] = -(y / TERRAIN_SCALE_DOWN);
@@ -237,7 +238,7 @@ namespace  Can::Helper
 				}
 				{
 					float z = (p3[0] / 256.0f) * COLOR_COUNT;
-					size_t heightIndex = z;
+					size_t heightIndex = (size_t)z;
 					vertices[vertexIndex++] = (x + 1) / TERRAIN_SCALE_DOWN;
 					vertices[vertexIndex++] = z;
 					vertices[vertexIndex++] = -((y + 1) / TERRAIN_SCALE_DOWN);
@@ -251,7 +252,7 @@ namespace  Can::Helper
 				}
 				{
 					float z = (p2[0] / 256.0f) * COLOR_COUNT;
-					size_t heightIndex = z;
+					size_t heightIndex = (size_t)z;
 					vertices[vertexIndex++] = x / TERRAIN_SCALE_DOWN;
 					vertices[vertexIndex++] = z;
 					vertices[vertexIndex++] = -((y + 1) / TERRAIN_SCALE_DOWN);
@@ -311,14 +312,14 @@ namespace  Can::Helper
 			}
 		}
 
-		Prefab*terrainPrefab = new Prefab("", TEMP_TERRAIN_SHADER, "", vertices, indexCount, vertexCount, BufferLayout{ { ShaderDataType::Float3, "a_Position"}, { ShaderDataType::Float4, "a_Color"}, { ShaderDataType::Float3, "a_Normal"} });
+		Prefab* terrainPrefab = new Prefab("", TEMP_TERRAIN_SHADER, "", vertices, indexCount, vertexCount, BufferLayout{ { ShaderDataType::Float3, "a_Position"}, { ShaderDataType::Float4, "a_Color"}, { ShaderDataType::Float3, "a_Normal"} });
 		terrainPrefab->boundingBoxL = { 0.0f, 0.0f, -(height / TERRAIN_SCALE_DOWN) };
 		terrainPrefab->boundingBoxM = { width / TERRAIN_SCALE_DOWN, 1.0f * COLOR_COUNT, 0.0f };
 
 		return terrainPrefab;
 	}
 
-	glm::vec2 RotateAPointAroundAPoint(const glm::vec2& p1, const glm::vec2& p2, float angleInRadians)
+	glm::vec2 RotateAPointAroundAPoint(const glm::vec2& p1, float angleInRadians, const glm::vec2& p2)
 	{
 		return glm::vec2{
 			glm::cos(angleInRadians) * (p1.x - p2.x) - glm::sin(angleInRadians) * (p1.y - p2.y) + p2.x,
