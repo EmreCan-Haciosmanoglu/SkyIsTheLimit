@@ -286,7 +286,41 @@ namespace Can
 			float rotationStart = glm::atan(-AB.z / AB.x) + glm::radians(180.0f + rotationOffset);
 			float rotationEnd = glm::atan(-AB.z / AB.x) + glm::radians(rotationOffset);
 
+			if (roadSnapOptions[3] && glm::length(AB) > 0.5f)
+			{
+				if (m_RoadConstructionStartSnappedEnd)
+				{
 
+				}
+				else if (m_RoadConstructionStartSnappedRoad)
+				{
+					float snappedRoadRotationY = glm::degrees(m_RoadConstructionStartSnappedRoad->rotation.y);
+					float newRoadRotationY = glm::degrees(rotationEnd);
+					float angle = std::fmod(snappedRoadRotationY - newRoadRotationY + 720.0f, 180.0f);
+
+					float newAngle = 0.0f;
+					if (angle > 20.0f && angle < 32.0f)
+						newAngle = 30.0f;
+					else if (angle > 80.0f && angle < 100.0f)
+						newAngle = 90.0f;
+					else if (angle > 148.0f && angle < 160.0f)
+						newAngle = 150.0f;
+					else
+						newAngle = angle + 1.0f - std::fmod(angle + 1.0f, 2.0f);
+
+					AB = glm::rotate(AB, glm::radians(angle - newAngle), { 0.0f, 1.0f, 0.0f });
+					m_RoadConstructionEndCoordinate = m_RoadConstructionStartCoordinate + AB;
+				}
+				else
+				{
+
+				}
+			}
+			normalizedAB = glm::normalize(AB);
+
+			rotationOffset = AB.x < 0.0f ? 180.0f : 0.0f;
+			rotationStart = glm::atan(-AB.z / AB.x) + glm::radians(180.0f + rotationOffset);
+			rotationEnd = glm::atan(-AB.z / AB.x) + glm::radians(rotationOffset);
 
 			m_RoadGuidelinesStart->enabled = !b_RoadConstructionStartSnapped;
 			m_RoadGuidelinesEnd->enabled = !b_RoadConstructionEndSnapped;
