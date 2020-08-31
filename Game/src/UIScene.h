@@ -8,7 +8,7 @@ namespace Can
 	void Draw(entt::entity id, entt::registry* registry, const glm::vec2& offset);
 	
 	class GameApp;
-	class UIScene : public Can::Layer::Layer
+	class UIScene : public Layer::Layer
 	{
 	public:
 		UIScene(GameApp* parent);
@@ -72,10 +72,7 @@ namespace Can
 	private:
 		float m_ZoomLevel;
 		float m_AspectRatio;
-		Can::Camera::OrthographicCameraController m_CameraController;
 
-		//Ref<Texture2D> m_Texture;
-		//Ref<Texture2D> m_Texture2;
-		//Ref<Texture2D> m_Texture3;
+		Camera::OrthographicCameraController m_CameraController;
 	};
 }

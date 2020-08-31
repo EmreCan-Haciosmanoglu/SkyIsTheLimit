@@ -455,35 +455,10 @@ namespace Can
 
 	void UIScene::OnAttach()
 	{
-		//m_Texture = Texture2D::Create("assets/textures/Name.png");
-		//m_Texture2 = Texture2D::Create("assets/textures/Man.png");
-		//m_Texture3 = Texture2D::Create("assets/textures/Name.png");
 	}
 
 	void UIScene::OnUpdate(Can::TimeStep ts)
 	{
-
-		static float rotation = 0.5f;
-		rotation += ts * 0.5f;
-
-#if 0
-		Can::Renderer2D::BeginScene(m_CameraController.GetCamera());
-
-		Can::Renderer2D::DrawQuad(Can::DrawQuadParameters{ { 0.0f, -0.2f, 0.0f }, { 1.0f, 1.0f, 1.0f }, 0.0f, { 0.8f, 0.2f, 0.3f, 1.0f }, nullptr });
-		Can::Renderer2D::DrawQuad(Can::DrawQuadParameters{ { -0.5f, 1.5f, 0.0f }, { 1.5f, 0.5f, 1.0f }, 0.0f, { 0.2f, 0.8f, 0.3f, 1.0f }, nullptr });
-		Can::Renderer2D::DrawQuad(Can::DrawQuadParameters{ { 2.3f, -1.0f, 0.0f }, { 3.5f, 5.0f, 1.0f }, rotation, { 0.8f, 0.3f, 0.8f, 1.0f }, nullptr });
-
-		Can::Renderer2D::DrawQuad(Can::DrawQuadParameters{ { 3.0f, 0.0f, +0.111f }, { 5.0f, 5.0f, 1.0f }, rotation * 2.0f , { 1.0f, 1.0f, 1.0f, 1.0f }, m_Texture });
-		Can::Renderer2D::DrawQuad(Can::DrawQuadParameters{ { 3.0f, -3.0f, +0.11f }, { 5.0f, 5.0f, 1.0f }, rotation * 2.0f , { 1.0f, 1.0f, 1.0f, 1.0f }, m_Texture2 });
-		Can::Renderer2D::DrawQuad(Can::DrawQuadParameters{ { 3.0f, 3.0f, +0.1f }, { 5.0f, 5.0f, 1.0f }, rotation * 2.0f , { 1.0f, 1.0f, 1.0f, 1.0f }, m_Texture3 });
-
-		Can::Renderer2D::EndScene();
-#else
-		//Can::RenderCommand::SetClearColor({ 0.9f, 0.9f, 0.9f, 1.0f });
-		//Can::RenderCommand::Clear();
-
-		//m_CameraController.OnUpdate(ts);
-
 		float widthHalf = m_AspectRatio * m_ZoomLevel;
 		float heightHalf = m_ZoomLevel;
 
@@ -495,7 +470,6 @@ namespace Can
 			Draw(entity, &(m_Scene->m_Registry), offset);
 
 		Can::Renderer2D::EndScene();
-#endif
 	}
 	void UIScene::OnEvent(Can::Event::Event& event)
 	{

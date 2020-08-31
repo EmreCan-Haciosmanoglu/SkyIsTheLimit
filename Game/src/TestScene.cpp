@@ -286,6 +286,8 @@ namespace Can
 			float rotationStart = glm::atan(-AB.z / AB.x) + glm::radians(180.0f + rotationOffset);
 			float rotationEnd = glm::atan(-AB.z / AB.x) + glm::radians(rotationOffset);
 
+
+
 			m_RoadGuidelinesStart->enabled = !b_RoadConstructionStartSnapped;
 			m_RoadGuidelinesEnd->enabled = !b_RoadConstructionEndSnapped;
 
