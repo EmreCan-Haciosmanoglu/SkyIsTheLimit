@@ -338,6 +338,30 @@ namespace Can
 					m_RoadConstructionEndCoordinate = m_RoadConstructionStartCoordinate + AB;
 				}
 			}
+			if (glm::length(AB) > 0.5f)
+			{
+				if (m_RoadConstructionEndSnappedRoad)
+				{
+					glm::vec3 n = { -m_RoadConstructionEndSnappedRoad->direction.z,0,m_RoadConstructionEndSnappedRoad->direction.x };
+					m_RoadConstructionEndCoordinate = Helper::RayPlaneIntersection(
+						m_RoadConstructionStartCoordinate,
+						AB,
+						m_RoadConstructionEndSnappedRoad->GetStartPosition(),
+						n
+					);
+					AB = m_RoadConstructionEndCoordinate - m_RoadConstructionStartCoordinate;
+				}
+				else if (m_RoadConstructionEndSnappedEnd)
+				{
+					m_RoadConstructionEndCoordinate = m_RoadConstructionEndSnappedEnd->position;
+					AB = m_RoadConstructionEndCoordinate - m_RoadConstructionStartCoordinate;
+				}
+				else if (m_RoadConstructionEndSnappedJunction)
+				{
+					m_RoadConstructionEndCoordinate = m_RoadConstructionEndSnappedJunction->position;
+					AB = m_RoadConstructionEndCoordinate - m_RoadConstructionStartCoordinate;
+				}
+			}
 			glm::vec3 normalizedAB = glm::normalize(AB);
 
 			rotationOffset = AB.x < 0.0f ? 180.0f : 0.0f;
