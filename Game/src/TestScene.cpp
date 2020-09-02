@@ -280,7 +280,6 @@ namespace Can
 			}
 
 			glm::vec3 AB = m_RoadConstructionEndCoordinate - m_RoadConstructionStartCoordinate;
-			glm::vec3 normalizedAB = glm::normalize(AB);
 
 			float rotationOffset = AB.x < 0.0f ? 180.0f : 0.0f;
 			float rotationStart = glm::atan(-AB.z / AB.x) + glm::radians(180.0f + rotationOffset);
@@ -290,7 +289,26 @@ namespace Can
 			{
 				if (m_RoadConstructionStartSnappedEnd)
 				{
+					float snappedRoadRotationY = glm::degrees(m_RoadConstructionStartSnappedEnd->object->rotation.y) + 180.0f;
+					float newRoadRotationY = glm::degrees(rotationEnd);
+					float angle = std::fmod(snappedRoadRotationY - newRoadRotationY + 720.0f, 360.0f);
 
+					float newAngle = 0.0f;
+					if (angle > 20.0f && angle < 32.0f)
+						newAngle = 30.0f;
+					else if (angle > 80.0f && angle < 100.0f)
+						newAngle = 90.0f;
+					else if (angle > 170.0f && angle < 190.0f)
+						newAngle = 180.0f;
+					else if (angle > 260.0f && angle < 280.0f)
+						newAngle = 270.0f;
+					else if (angle > 328.0f && angle < 340.0f)
+						newAngle = 330.0f;
+					else
+						newAngle = angle + 1.0f - std::fmod(angle + 1.0f, 2.0f);
+
+					AB = glm::rotate(AB, glm::radians(angle - newAngle), { 0.0f, 1.0f, 0.0f });
+					m_RoadConstructionEndCoordinate = m_RoadConstructionStartCoordinate + AB;
 				}
 				else if (m_RoadConstructionStartSnappedRoad)
 				{
@@ -313,10 +331,14 @@ namespace Can
 				}
 				else
 				{
+					float angle = glm::degrees(rotationEnd);
+					float newAngle = angle + 1.0f - std::fmod(angle + 1.0f, 2.0f);
 
+					AB = glm::rotate(AB, glm::radians(angle - newAngle), { 0.0f, 1.0f, 0.0f });
+					m_RoadConstructionEndCoordinate = m_RoadConstructionStartCoordinate + AB;
 				}
 			}
-			normalizedAB = glm::normalize(AB);
+			glm::vec3 normalizedAB = glm::normalize(AB);
 
 			rotationOffset = AB.x < 0.0f ? 180.0f : 0.0f;
 			rotationStart = glm::atan(-AB.z / AB.x) + glm::radians(180.0f + rotationOffset);
