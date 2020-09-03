@@ -284,7 +284,7 @@ namespace Can
 			float rotationOffset = AB.x < 0.0f ? 180.0f : 0.0f;
 			float rotationStart = glm::atan(-AB.z / AB.x) + glm::radians(180.0f + rotationOffset);
 			float rotationEnd = glm::atan(-AB.z / AB.x) + glm::radians(rotationOffset);
-			
+
 			if (roadSnapOptions[1] && glm::length(AB) > 0.5f)
 			{
 				float length = glm::length(AB);
@@ -292,7 +292,13 @@ namespace Can
 				AB = length * glm::normalize(AB);
 				m_RoadConstructionEndCoordinate = m_RoadConstructionStartCoordinate + AB;
 			}
-			
+
+			if (roadSnapOptions[2] && glm::length(AB) > 0.5f)
+			{
+				if (!m_RoadDestructionSnappedJunction && !m_RoadDestructionSnappedEnd && !m_RoadDestructionSnappedRoad)
+					m_RoadConstructionEndCoordinate.y = m_RoadConstructionStartCoordinate.y;
+			}
+
 			if (roadSnapOptions[3] && glm::length(AB) > 0.5f)
 			{
 				if (m_RoadConstructionStartSnappedEnd)
@@ -346,7 +352,7 @@ namespace Can
 					m_RoadConstructionEndCoordinate = m_RoadConstructionStartCoordinate + AB;
 				}
 			}
-			
+
 			if (glm::length(AB) > 0.5f)
 			{
 				if (m_RoadConstructionEndSnappedRoad)
