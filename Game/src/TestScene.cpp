@@ -79,12 +79,15 @@ namespace Can
 		float roadPrefabLength = selectedRoad->boundingBoxM.x - selectedRoad->boundingBoxL.x;
 		if (b_RoadConstructionStarted == false)
 		{
-			RoadSnapInformation snapInformation = DidRoadSnapped(cameraPosition, cameraDirection);
-			prevLocation = snapInformation.snapped ? snapInformation.snapLocation : prevLocation;
-			b_RoadConstructionStartSnapped = snapInformation.snapped;
-			m_RoadConstructionStartSnappedJunction = snapInformation.snappedJunction;
-			m_RoadConstructionStartSnappedEnd = snapInformation.snappedEnd;
-			m_RoadConstructionStartSnappedRoad = snapInformation.snappedRoad;
+			if (roadSnapOptions[0])
+			{
+				RoadSnapInformation snapInformation = DidRoadSnapped(cameraPosition, cameraDirection);
+				prevLocation = snapInformation.snapped ? snapInformation.snapLocation : prevLocation;
+				b_RoadConstructionStartSnapped = snapInformation.snapped;
+				m_RoadConstructionStartSnappedJunction = snapInformation.snappedJunction;
+				m_RoadConstructionStartSnappedEnd = snapInformation.snappedEnd;
+				m_RoadConstructionStartSnappedRoad = snapInformation.snappedRoad;
+			}
 			m_RoadConstructionStartCoordinate = prevLocation;
 
 			m_RoadGuidelinesStart->SetTransform(prevLocation + glm::vec3{ 0.0f, 0.15f, 0.0f }, { 1.0f, 1.0f, 1.0f }, { 0.0f, glm::radians(180.0f), 0.0f });
