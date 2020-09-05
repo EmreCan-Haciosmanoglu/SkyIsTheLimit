@@ -254,6 +254,12 @@ namespace Can
 						collisionIsRestricted = true;
 						break;
 					}
+					float width = road->object->prefab->boundingBoxM.z - road->object->prefab->boundingBoxL.z;
+					if(Helper::DistanceBetweenLineSLineS(p0, p1, p2, p3) < width)
+					{
+						collisionIsRestricted = true;
+						break;
+					}
 				}
 			}
 
