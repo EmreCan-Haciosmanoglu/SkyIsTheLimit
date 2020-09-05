@@ -96,13 +96,15 @@ namespace Can
 		else
 		{
 			b_ConstructionRestricted = false;
-
-			RoadSnapInformation snapInformation = DidRoadSnapped(cameraPosition, cameraDirection);
-			prevLocation = snapInformation.snapped ? snapInformation.snapLocation : prevLocation;
-			b_RoadConstructionEndSnapped = snapInformation.snapped;
-			m_RoadConstructionEndSnappedJunction = snapInformation.snappedJunction;
-			m_RoadConstructionEndSnappedEnd = snapInformation.snappedEnd;
-			m_RoadConstructionEndSnappedRoad = snapInformation.snappedRoad;
+			if (roadSnapOptions[0])
+			{
+				RoadSnapInformation snapInformation = DidRoadSnapped(cameraPosition, cameraDirection);
+				prevLocation = snapInformation.snapped ? snapInformation.snapLocation : prevLocation;
+				b_RoadConstructionEndSnapped = snapInformation.snapped;
+				m_RoadConstructionEndSnappedJunction = snapInformation.snappedJunction;
+				m_RoadConstructionEndSnappedEnd = snapInformation.snappedEnd;
+				m_RoadConstructionEndSnappedRoad = snapInformation.snappedRoad;
+			}
 			m_RoadConstructionEndCoordinate = prevLocation;
 
 			bool angleIsRestricted = false;
