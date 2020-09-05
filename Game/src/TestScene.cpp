@@ -295,7 +295,11 @@ namespace Can
 
 			if (roadSnapOptions[2] && glm::length(AB) > 0.5f)
 			{
-				if (!m_RoadDestructionSnappedJunction && !m_RoadDestructionSnappedEnd && !m_RoadDestructionSnappedRoad)
+				if (
+					!m_RoadDestructionSnappedJunction &&
+					!m_RoadDestructionSnappedRoad &&
+					!m_RoadDestructionSnappedEnd
+					)
 					m_RoadConstructionEndCoordinate.y = m_RoadConstructionStartCoordinate.y;
 			}
 
@@ -341,6 +345,27 @@ namespace Can
 						newAngle = angle + 1.0f - std::fmod(angle + 1.0f, 2.0f);
 
 					AB = glm::rotate(AB, glm::radians(angle - newAngle), { 0.0f, 1.0f, 0.0f });
+					m_RoadConstructionEndCoordinate = m_RoadConstructionStartCoordinate + AB;
+				}
+				else if (m_RoadConstructionStartSnappedJunction)
+				{
+					float newRoadRotationY = glm::degrees(rotationEnd);
+					float smallestAngle = 180.0f;
+					for (Road* road : m_RoadConstructionStartSnappedJunction->connectedRoads)
+					{
+						float snappedRoadRotationY = m_RoadConstructionStartSnappedJunction == road->startJunction ? glm::degrees(road->rotation.y) : glm::degrees(road->rotation.y) + 180.0f;
+						float angle = std::fmod(snappedRoadRotationY - newRoadRotationY + 720.0f, 180.0f);
+						smallestAngle = std::min(smallestAngle, angle);
+					}
+					float newAngle = 0.0f;
+					if (smallestAngle > 20.0f && smallestAngle < 32.0f)
+						newAngle = 30.0f;
+					else if (smallestAngle > 80.0f && smallestAngle < 100.0f)
+						newAngle = 90.0f;
+					else
+						newAngle = smallestAngle + 1.0f - std::fmod(smallestAngle + 1.0f, 2.0f);
+
+					AB = glm::rotate(AB, glm::radians(smallestAngle - newAngle), { 0.0f, 1.0f, 0.0f });
 					m_RoadConstructionEndCoordinate = m_RoadConstructionStartCoordinate + AB;
 				}
 				else
