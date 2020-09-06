@@ -274,7 +274,7 @@ namespace Can
 				{
 					glm::vec3 least = building->prefab->boundingBoxL;
 					glm::vec3 most = building->prefab->boundingBoxM;
-					if (Helper::CheckBoundingBoxHit(m_RoadConstructionStartCoordinate, ray, length, least, most))
+					if (Helper::CheckBoundingRectangleHit(m_RoadConstructionStartCoordinate, ray, length, least, most))
 					{
 						m_CollidedBuilding = building;
 						collisionWitBuildingIsRestricted = true;
@@ -323,7 +323,7 @@ namespace Can
 					float angle = std::fmod(snappedRoadRotationY - newRoadRotationY + 720.0f, 360.0f);
 
 					float newAngle = 0.0f;
-					if (angle > 20.0f && angle < 32.0f)
+					if (angle < 32.0f)
 						newAngle = 30.0f;
 					else if (angle > 80.0f && angle < 100.0f)
 						newAngle = 90.0f;
@@ -331,7 +331,7 @@ namespace Can
 						newAngle = 180.0f;
 					else if (angle > 260.0f && angle < 280.0f)
 						newAngle = 270.0f;
-					else if (angle > 328.0f && angle < 340.0f)
+					else if (angle > 328.0f)
 						newAngle = 330.0f;
 					else
 						newAngle = angle + 1.0f - std::fmod(angle + 1.0f, 2.0f);
@@ -346,7 +346,7 @@ namespace Can
 					float angle = std::fmod(snappedRoadRotationY - newRoadRotationY + 720.0f, 180.0f);
 
 					float newAngle = 0.0f;
-					if (angle > 20.0f && angle < 32.0f)
+					if (angle < 32.0f)
 						newAngle = 30.0f;
 					else if (angle > 80.0f && angle < 100.0f)
 						newAngle = 90.0f;
@@ -369,7 +369,7 @@ namespace Can
 						smallestAngle = std::min(smallestAngle, angle);
 					}
 					float newAngle = 0.0f;
-					if (smallestAngle > 20.0f && smallestAngle < 32.0f)
+					if (smallestAngle < 32.0f)
 						newAngle = 30.0f;
 					else if (smallestAngle > 80.0f && smallestAngle < 100.0f)
 						newAngle = 90.0f;
