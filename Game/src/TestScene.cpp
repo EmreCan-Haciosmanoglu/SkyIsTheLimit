@@ -79,12 +79,15 @@ namespace Can
 		float roadPrefabLength = selectedRoad->boundingBoxM.x - selectedRoad->boundingBoxL.x;
 		if (b_RoadConstructionStarted == false)
 		{
-			RoadSnapInformation snapInformation = DidRoadSnapped(cameraPosition, cameraDirection);
-			prevLocation = snapInformation.snapped ? snapInformation.snapLocation : prevLocation;
-			b_RoadConstructionStartSnapped = snapInformation.snapped;
-			m_RoadConstructionStartSnappedJunction = snapInformation.snappedJunction;
-			m_RoadConstructionStartSnappedEnd = snapInformation.snappedEnd;
-			m_RoadConstructionStartSnappedRoad = snapInformation.snappedRoad;
+			if (roadSnapOptions[0])
+			{
+				RoadSnapInformation snapInformation = DidRoadSnapped(cameraPosition, cameraDirection);
+				prevLocation = snapInformation.snapped ? snapInformation.snapLocation : prevLocation;
+				b_RoadConstructionStartSnapped = snapInformation.snapped;
+				m_RoadConstructionStartSnappedJunction = snapInformation.snappedJunction;
+				m_RoadConstructionStartSnappedEnd = snapInformation.snappedEnd;
+				m_RoadConstructionStartSnappedRoad = snapInformation.snappedRoad;
+			}
 			m_RoadConstructionStartCoordinate = prevLocation;
 
 			m_RoadGuidelinesStart->SetTransform(prevLocation + glm::vec3{ 0.0f, 0.15f, 0.0f }, { 1.0f, 1.0f, 1.0f }, { 0.0f, glm::radians(180.0f), 0.0f });
@@ -93,13 +96,15 @@ namespace Can
 		else
 		{
 			b_ConstructionRestricted = false;
-
-			RoadSnapInformation snapInformation = DidRoadSnapped(cameraPosition, cameraDirection);
-			prevLocation = snapInformation.snapped ? snapInformation.snapLocation : prevLocation;
-			b_RoadConstructionEndSnapped = snapInformation.snapped;
-			m_RoadConstructionEndSnappedJunction = snapInformation.snappedJunction;
-			m_RoadConstructionEndSnappedEnd = snapInformation.snappedEnd;
-			m_RoadConstructionEndSnappedRoad = snapInformation.snappedRoad;
+			if (roadSnapOptions[0])
+			{
+				RoadSnapInformation snapInformation = DidRoadSnapped(cameraPosition, cameraDirection);
+				prevLocation = snapInformation.snapped ? snapInformation.snapLocation : prevLocation;
+				b_RoadConstructionEndSnapped = snapInformation.snapped;
+				m_RoadConstructionEndSnappedJunction = snapInformation.snappedJunction;
+				m_RoadConstructionEndSnappedEnd = snapInformation.snappedEnd;
+				m_RoadConstructionEndSnappedRoad = snapInformation.snappedRoad;
+			}
 			m_RoadConstructionEndCoordinate = prevLocation;
 
 			bool angleIsRestricted = false;
@@ -245,6 +250,12 @@ namespace Can
 					glm::vec2 p3 = { roadEnd.x, roadEnd.z };
 
 					if (Helper::LineSLineSIntersection(p0, p1, p2, p3, nullptr))
+					{
+						collisionIsRestricted = true;
+						break;
+					}
+					float width = road->object->prefab->boundingBoxM.z - road->object->prefab->boundingBoxL.z;
+					if(Helper::DistanceBetweenLineSLineS(p0, p1, p2, p3) < width)
 					{
 						collisionIsRestricted = true;
 						break;
