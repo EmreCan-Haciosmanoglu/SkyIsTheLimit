@@ -14,8 +14,8 @@ namespace Can
 			1280.0f / 720.0f,
 			0.1f,
 			1000.0f,
-			glm::vec3{ 1.0f, 5.5f, 0.0f },
-			glm::vec3{ -45.0f, 0.0f, 0.0f }
+			glm::vec3{ 16.0f, 15.0f, -15.0f },
+			glm::vec3{ -60.0f, 0.0f, 0.0f }
 		)
 	{
 		m_RoadGuidelinesStart = new Object(m_Parent->roads[m_RoadConstructionType][2], m_Parent->roads[m_RoadConstructionType][2], { 0.0f, 0.0f, 0.0f, }, { 1.0f, 1.0f, 1.0f, }, { 0.0f, 0.0f, 0.0f, });
@@ -79,6 +79,11 @@ namespace Can
 		float roadPrefabLength = selectedRoad->boundingBoxM.x - selectedRoad->boundingBoxL.x;
 		if (b_RoadConstructionStarted == false)
 		{
+			if (roadSnapOptions[4])
+			{
+				prevLocation.x = prevLocation.x - std::fmod(prevLocation.x + 0.25f, 0.5f) + 0.25f;
+				prevLocation.z = prevLocation.z - std::fmod(prevLocation.z + 0.25f, 0.5f) - 0.25f;
+			}
 			if (roadSnapOptions[0])
 			{
 				RoadSnapInformation snapInformation = DidRoadSnapped(cameraPosition, cameraDirection);
@@ -96,6 +101,11 @@ namespace Can
 		else
 		{
 			b_ConstructionRestricted = false;
+			if (roadSnapOptions[4])
+			{
+				prevLocation.x = prevLocation.x - std::fmod(prevLocation.x + 0.25f, 0.5f) + 0.25f;
+				prevLocation.z = prevLocation.z - std::fmod(prevLocation.z + 0.25f, 0.5f) - 0.25f;
+			}
 			if (roadSnapOptions[0])
 			{
 				RoadSnapInformation snapInformation = DidRoadSnapped(cameraPosition, cameraDirection);
@@ -255,7 +265,7 @@ namespace Can
 						break;
 					}
 					float width = road->object->prefab->boundingBoxM.z - road->object->prefab->boundingBoxL.z;
-					if(Helper::DistanceBetweenLineSLineS(p0, p1, p2, p3) < width)
+					if (Helper::DistanceBetweenLineSLineS(p0, p1, p2, p3) < width)
 					{
 						collisionIsRestricted = true;
 						break;
