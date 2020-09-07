@@ -104,7 +104,7 @@ namespace Can
 			if (roadSnapOptions[4])
 			{
 				prevLocation.x = prevLocation.x - std::fmod(prevLocation.x + 0.25f, 0.5f) + 0.25f;
-				prevLocation.z = prevLocation.z - std::fmod(prevLocation.z + 0.25f, 0.5f) - 0.25f;
+				prevLocation.z = prevLocation.z - std::fmod(prevLocation.z + 0.25f, 0.5f) + 0.25f;
 			}
 			if (roadSnapOptions[0])
 			{
@@ -343,8 +343,10 @@ namespace Can
 						newAngle = 270.0f;
 					else if (angle > 328.0f)
 						newAngle = 330.0f;
+					else if (Input::IsKeyPressed(KeyCode::LeftControl))
+						newAngle = angle + 2.5f - std::fmod(angle + 2.5f, 5.0f);
 					else
-						newAngle = angle + 1.0f - std::fmod(angle + 1.0f, 2.0f);
+						newAngle = angle;
 
 					AB = glm::rotate(AB, glm::radians(angle - newAngle), { 0.0f, 1.0f, 0.0f });
 					m_RoadConstructionEndCoordinate = m_RoadConstructionStartCoordinate + AB;
@@ -362,10 +364,12 @@ namespace Can
 						newAngle = 90.0f;
 					else if (angle > 148.0f && angle < 160.0f)
 						newAngle = 150.0f;
+					else if (Input::IsKeyPressed(KeyCode::LeftControl))
+						newAngle = angle + 2.5f - std::fmod(angle + 2.5f, 5.0f);
 					else
-						newAngle = angle + 1.0f - std::fmod(angle + 1.0f, 2.0f);
+						newAngle = angle;
 
-					AB = glm::rotate(AB, glm::radians(angle - newAngle), { 0.0f, 1.0f, 0.0f });
+					AB = glm::rotate(AB, -glm::radians(angle - newAngle), { 0.0f, 1.0f, 0.0f });
 					m_RoadConstructionEndCoordinate = m_RoadConstructionStartCoordinate + AB;
 				}
 				else if (m_RoadConstructionStartSnappedJunction)
@@ -383,18 +387,20 @@ namespace Can
 						newAngle = 30.0f;
 					else if (smallestAngle > 80.0f && smallestAngle < 100.0f)
 						newAngle = 90.0f;
+					else if (Input::IsKeyPressed(KeyCode::LeftControl))
+						newAngle = smallestAngle + 2.5f - std::fmod(smallestAngle + 2.5f, 5.0f);
 					else
-						newAngle = smallestAngle + 1.0f - std::fmod(smallestAngle + 1.0f, 2.0f);
+						newAngle = smallestAngle;
 
-					AB = glm::rotate(AB, glm::radians(smallestAngle - newAngle), { 0.0f, 1.0f, 0.0f });
+					AB = glm::rotate(AB, -glm::radians(smallestAngle - newAngle), { 0.0f, 1.0f, 0.0f });
 					m_RoadConstructionEndCoordinate = m_RoadConstructionStartCoordinate + AB;
 				}
-				else
+				else if (Input::IsKeyPressed(KeyCode::LeftControl))
 				{
 					float angle = glm::degrees(rotationEnd);
-					float newAngle = angle + 1.0f - std::fmod(angle + 1.0f, 2.0f);
+					float newAngle = angle + 2.5f - std::fmod(angle + 2.5f, 5.0f);
 
-					AB = glm::rotate(AB, glm::radians(angle - newAngle), { 0.0f, 1.0f, 0.0f });
+					AB = glm::rotate(AB, -glm::radians(angle - newAngle), { 0.0f, 1.0f, 0.0f });
 					m_RoadConstructionEndCoordinate = m_RoadConstructionStartCoordinate + AB;
 				}
 			}
