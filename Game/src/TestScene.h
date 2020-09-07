@@ -72,7 +72,13 @@ namespace Can
 		RoadSnapInformation DidRoadSnapped(const glm::vec3& cameraPosition, const glm::vec3& cameraDirection);
 
 	public:
-		std::array<bool, 4> roadSnapOptions = { true, false, false, false };
+		std::array<bool, 5> roadSnapOptions = { true, true, false, true, false };
+		// 0 : Roads
+		// 1 : Length
+		// 2 : Height
+		// 3 : Angle
+		// 4 : Grid
+
 		std::array<bool, 2> buildingSnapOptions = { true, false };
 		
 		std::array<bool, 5> roadRestrictionOptions = { true, true, true, true, true };

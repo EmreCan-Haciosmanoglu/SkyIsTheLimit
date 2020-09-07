@@ -61,6 +61,96 @@ namespace  Can::Helper
 		return true;
 	}
 
+	float DistanceBetweenLineSLineS(glm::vec2 p1, glm::vec2 p2, glm::vec2 p3, glm::vec2 p4)
+	{
+		glm::vec2 u = p1 - p2;
+		glm::vec2 v = p3 - p4;
+		glm::vec2 w = p2 - p4;
+
+		double a = glm::dot(u, u);
+		double b = glm::dot(u, v);
+		double c = glm::dot(v, v);
+		double d = glm::dot(u, w);
+		double e = glm::dot(v, w);
+		double D = a * c - b * b;
+		double sD = D;
+		double tD = D;
+		double sN = 0.0;
+		double tN = 0.0;
+		double sc = 0.0;
+		double tc = 0.0;
+
+		const double SMALL_NUM = 0.00000001f;
+
+
+		if (D < SMALL_NUM)
+		{
+
+			sN = 0.0;
+			sD = 1.0;
+			tN = e;
+			tD = c;
+		}
+		else
+		{
+			sN = (b * e - c * d);
+			tN = (a * e - b * d);
+			if (sN < 0.0)
+			{
+				sN = 0.0;
+				tN = e;
+				tD = c;
+			}
+			else if (sN > sD)
+			{
+				sN = sD;
+				tN = e + b;
+				tD = c;
+			}
+		}
+
+		if (tN < 0.0)
+		{
+
+			tN = 0.0;
+			if (-d < 0.0)
+				sN = 0.0;
+			else if (-d > a)
+				sN = sD;
+			else
+			{
+				sN = -d;
+				sD = a;
+			}
+		}
+		else if (tN > tD)
+		{
+			tN = tD;
+			if ((-d + b) < 0.0)
+				sN = 0;
+			else if ((-d + b) > a)
+				sN = sD;
+			else
+			{
+				sN = (-d + b);
+				sD = a;
+			}
+		}
+
+		if (abs(sN) < SMALL_NUM)
+			sc = 0.0;
+		else
+			sc = sN / sD;
+
+		if (abs(tN) < SMALL_NUM)
+			tc = 0.0;
+		else
+			tc = tN / tD;
+
+		glm::vec2 dP = w + (u * (float)sc) - (v * (float)tc);
+		return glm::length(dP);
+	}
+
 	bool RayTriangleIntersection(const glm::vec3& camPos, const glm::vec3& ray, const glm::vec3& A, const glm::vec3& B, const glm::vec3& C, const glm::vec3& normal, glm::vec3& intersection)
 	{
 		glm::vec3 u = (C - B) - (glm::dot(C - A, C - B) / glm::dot(C - A, C - A)) * (C - A);
