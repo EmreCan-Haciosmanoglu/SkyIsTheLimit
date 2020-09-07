@@ -14,8 +14,8 @@ namespace Can
 			1280.0f / 720.0f,
 			0.1f,
 			1000.0f,
-			glm::vec3{ 1.0f, 5.5f, 0.0f },
-			glm::vec3{ -45.0f, 0.0f, 0.0f }
+			glm::vec3{ 16.0f, 15.0f, -15.0f },
+			glm::vec3{ -60.0f, 0.0f, 0.0f }
 		)
 	{
 		m_RoadGuidelinesStart = new Object(m_Parent->roads[m_RoadConstructionType][2], m_Parent->roads[m_RoadConstructionType][2], { 0.0f, 0.0f, 0.0f, }, { 1.0f, 1.0f, 1.0f, }, { 0.0f, 0.0f, 0.0f, });
@@ -79,6 +79,11 @@ namespace Can
 		float roadPrefabLength = selectedRoad->boundingBoxM.x - selectedRoad->boundingBoxL.x;
 		if (b_RoadConstructionStarted == false)
 		{
+			if (roadSnapOptions[4])
+			{
+				prevLocation.x = prevLocation.x - std::fmod(prevLocation.x + 0.25f, 0.5f) + 0.25f;
+				prevLocation.z = prevLocation.z - std::fmod(prevLocation.z + 0.25f, 0.5f) - 0.25f;
+			}
 			if (roadSnapOptions[0])
 			{
 				RoadSnapInformation snapInformation = DidRoadSnapped(cameraPosition, cameraDirection);
@@ -96,6 +101,11 @@ namespace Can
 		else
 		{
 			b_ConstructionRestricted = false;
+			if (roadSnapOptions[4])
+			{
+				prevLocation.x = prevLocation.x - std::fmod(prevLocation.x + 0.25f, 0.5f) + 0.25f;
+				prevLocation.z = prevLocation.z - std::fmod(prevLocation.z + 0.25f, 0.5f) + 0.25f;
+			}
 			if (roadSnapOptions[0])
 			{
 				RoadSnapInformation snapInformation = DidRoadSnapped(cameraPosition, cameraDirection);
@@ -255,7 +265,7 @@ namespace Can
 						break;
 					}
 					float width = road->object->prefab->boundingBoxM.z - road->object->prefab->boundingBoxL.z;
-					if(Helper::DistanceBetweenLineSLineS(p0, p1, p2, p3) < width)
+					if (Helper::DistanceBetweenLineSLineS(p0, p1, p2, p3) < width)
 					{
 						collisionIsRestricted = true;
 						break;
@@ -274,7 +284,7 @@ namespace Can
 				{
 					glm::vec3 least = building->prefab->boundingBoxL;
 					glm::vec3 most = building->prefab->boundingBoxM;
-					if (Helper::CheckBoundingBoxHit(m_RoadConstructionStartCoordinate, ray, length, least, most))
+					if (Helper::CheckBoundingRectangleHit(m_RoadConstructionStartCoordinate, ray, length, least, most))
 					{
 						m_CollidedBuilding = building;
 						collisionWitBuildingIsRestricted = true;
@@ -323,7 +333,7 @@ namespace Can
 					float angle = std::fmod(snappedRoadRotationY - newRoadRotationY + 720.0f, 360.0f);
 
 					float newAngle = 0.0f;
-					if (angle > 20.0f && angle < 32.0f)
+					if (angle < 32.0f)
 						newAngle = 30.0f;
 					else if (angle > 80.0f && angle < 100.0f)
 						newAngle = 90.0f;
@@ -331,10 +341,12 @@ namespace Can
 						newAngle = 180.0f;
 					else if (angle > 260.0f && angle < 280.0f)
 						newAngle = 270.0f;
-					else if (angle > 328.0f && angle < 340.0f)
+					else if (angle > 328.0f)
 						newAngle = 330.0f;
+					else if (Input::IsKeyPressed(KeyCode::LeftControl))
+						newAngle = angle + 2.5f - std::fmod(angle + 2.5f, 5.0f);
 					else
-						newAngle = angle + 1.0f - std::fmod(angle + 1.0f, 2.0f);
+						newAngle = angle;
 
 					AB = glm::rotate(AB, glm::radians(angle - newAngle), { 0.0f, 1.0f, 0.0f });
 					m_RoadConstructionEndCoordinate = m_RoadConstructionStartCoordinate + AB;
@@ -346,16 +358,18 @@ namespace Can
 					float angle = std::fmod(snappedRoadRotationY - newRoadRotationY + 720.0f, 180.0f);
 
 					float newAngle = 0.0f;
-					if (angle > 20.0f && angle < 32.0f)
+					if (angle < 32.0f)
 						newAngle = 30.0f;
 					else if (angle > 80.0f && angle < 100.0f)
 						newAngle = 90.0f;
 					else if (angle > 148.0f && angle < 160.0f)
 						newAngle = 150.0f;
+					else if (Input::IsKeyPressed(KeyCode::LeftControl))
+						newAngle = angle + 2.5f - std::fmod(angle + 2.5f, 5.0f);
 					else
-						newAngle = angle + 1.0f - std::fmod(angle + 1.0f, 2.0f);
+						newAngle = angle;
 
-					AB = glm::rotate(AB, glm::radians(angle - newAngle), { 0.0f, 1.0f, 0.0f });
+					AB = glm::rotate(AB, -glm::radians(angle - newAngle), { 0.0f, 1.0f, 0.0f });
 					m_RoadConstructionEndCoordinate = m_RoadConstructionStartCoordinate + AB;
 				}
 				else if (m_RoadConstructionStartSnappedJunction)
@@ -369,22 +383,24 @@ namespace Can
 						smallestAngle = std::min(smallestAngle, angle);
 					}
 					float newAngle = 0.0f;
-					if (smallestAngle > 20.0f && smallestAngle < 32.0f)
+					if (smallestAngle < 32.0f)
 						newAngle = 30.0f;
 					else if (smallestAngle > 80.0f && smallestAngle < 100.0f)
 						newAngle = 90.0f;
+					else if (Input::IsKeyPressed(KeyCode::LeftControl))
+						newAngle = smallestAngle + 2.5f - std::fmod(smallestAngle + 2.5f, 5.0f);
 					else
-						newAngle = smallestAngle + 1.0f - std::fmod(smallestAngle + 1.0f, 2.0f);
+						newAngle = smallestAngle;
 
-					AB = glm::rotate(AB, glm::radians(smallestAngle - newAngle), { 0.0f, 1.0f, 0.0f });
+					AB = glm::rotate(AB, -glm::radians(smallestAngle - newAngle), { 0.0f, 1.0f, 0.0f });
 					m_RoadConstructionEndCoordinate = m_RoadConstructionStartCoordinate + AB;
 				}
-				else
+				else if (Input::IsKeyPressed(KeyCode::LeftControl))
 				{
 					float angle = glm::degrees(rotationEnd);
-					float newAngle = angle + 1.0f - std::fmod(angle + 1.0f, 2.0f);
+					float newAngle = angle + 2.5f - std::fmod(angle + 2.5f, 5.0f);
 
-					AB = glm::rotate(AB, glm::radians(angle - newAngle), { 0.0f, 1.0f, 0.0f });
+					AB = glm::rotate(AB, -glm::radians(angle - newAngle), { 0.0f, 1.0f, 0.0f });
 					m_RoadConstructionEndCoordinate = m_RoadConstructionStartCoordinate + AB;
 				}
 			}
