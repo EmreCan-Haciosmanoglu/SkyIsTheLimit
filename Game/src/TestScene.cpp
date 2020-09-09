@@ -20,8 +20,8 @@ namespace Can
 	{
 		m_RoadGuidelinesStart = new Object(m_Parent->roads[m_RoadConstructionType][2], m_Parent->roads[m_RoadConstructionType][2], { 0.0f, 0.0f, 0.0f, }, { 1.0f, 1.0f, 1.0f, }, { 0.0f, 0.0f, 0.0f, });
 		m_RoadGuidelinesEnd = new Object(m_Parent->roads[m_RoadConstructionType][2], m_Parent->roads[m_RoadConstructionType][2], { 0.0f, 0.0f, 0.0f, }, { 1.0f, 1.0f, 1.0f, }, { 0.0f, 0.0f, 0.0f, });
-
-		size_t roadTypeCount = m_Parent->roads.size();
+		m_BuildingGuideline = new Object(m_Parent->buildings[m_BuildingType], m_Parent->buildings[m_BuildingType], { 0.0f, 0.0f, 0.0f, }, { 1.0f, 1.0f, 1.0f, }, { 0.0f, 0.0f, 0.0f, }, false);
+			size_t roadTypeCount = m_Parent->roads.size();
 		for (size_t i = 0; i < roadTypeCount; i++)
 		{
 			m_RoadGuidelinesInUse.push_back(0);
@@ -1167,6 +1167,13 @@ namespace Can
 		delete road;
 	}
 
+	void TestScene::SetSelectedConstructionBuilding(size_t index)
+	{
+		m_BuildingType = index;
+		delete m_BuildingGuideline;
+		m_BuildingGuideline = new Object(m_Parent->buildings[m_BuildingType], m_Parent->buildings[m_BuildingType], { 0.0f, 0.0f, 0.0f, }, { 1.0f, 1.0f, 1.0f, }, { 0.0f, 0.0f, 0.0f, });
+	}
+
 	void TestScene::SetConstructionMode(ConstructionMode mode)
 	{
 		m_ConstructionMode = mode;
@@ -1176,6 +1183,7 @@ namespace Can
 			SetRoadConstructionMode(m_RoadConstructionMode);
 			break;
 		case Can::ConstructionMode::Building:
+			SetBuildingConstructionMode(m_BuildingConstructionMode);
 			break;
 		default:
 			break;
@@ -1198,6 +1206,27 @@ namespace Can
 		case Can::RoadConstructionMode::Upgrade:
 			break;
 		case Can::RoadConstructionMode::Destruct:
+			break;
+		default:
+			break;
+		}
+	}
+
+	void TestScene::SetBuildingConstructionMode(BuildingConstructionMode mode)
+	{
+		ResetStates();
+		m_BuildingConstructionMode = mode;
+
+		switch (m_BuildingConstructionMode)
+		{
+		case Can::BuildingConstructionMode::None:
+			break;
+		case Can::BuildingConstructionMode::Construct:
+			m_BuildingGuideline->enabled = true;
+			break;
+		case Can::BuildingConstructionMode::Upgrade:
+			break;
+		case Can::BuildingConstructionMode::Destruct:
 			break;
 		default:
 			break;
@@ -1252,9 +1281,11 @@ namespace Can
 
 		m_RoadGuidelinesStart->enabled = false;
 		m_RoadGuidelinesEnd->enabled = false;
+		m_BuildingGuideline->enabled = false;
 
 		m_RoadGuidelinesStart->tintColor = { 1.0f, 1.0f, 1.0f, 1.0f };
 		m_RoadGuidelinesEnd->tintColor = { 1.0f, 1.0f, 1.0f, 1.0f };
+		m_BuildingGuideline->tintColor = { 1.0f, 1.0f, 1.0f, 1.0f };
 	}
 
 	glm::vec3 TestScene::GetRayCastedFromScreen()

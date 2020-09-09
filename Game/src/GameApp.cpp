@@ -19,7 +19,7 @@ namespace Can
 		//terrainPrefab = Helper::GetPrefabForTerrain("assets/objects/heightmap.png");
 
 		LoadRoads();
-		LoadHouses();
+		LoadBuildings();
 
 		testScene = new TestScene(this);
 		PushLayer(testScene);
@@ -46,9 +46,9 @@ namespace Can
 			roads.push_back({ resultRoads[i], resultJunctions[i], resultEnds[i] });
 	}
 
-	void GameApp::LoadRoads()
+	void GameApp::LoadBuildings()
 	{
-		houses = LoadPrefabs("\\assets\\objects\\houses", "house_");
+		buildings = LoadPrefabs("\\assets\\objects\\houses", "House_");
 	}
 
 	std::vector<Prefab*> GameApp::LoadPrefabs(const std::string& folder, const std::string& filter)
@@ -57,7 +57,7 @@ namespace Can
 		std::vector<Prefab*> result;
 		namespace fs = std::filesystem;
 		std::string s = fs::current_path().string();
-		std::string path = s.append(filter.c_str());
+		std::string path = s.append(folder.c_str());
 
 		std::vector<std::string> objfiles = Helper::GetFiles(path, filter, ".obj");
 		std::vector<std::string> pngfiles = Helper::GetFiles(path, filter, ".png");

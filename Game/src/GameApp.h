@@ -17,7 +17,7 @@ namespace Can
 		std::vector<Prefab*> LoadPrefabs(const std::string& folder, const std::string& filter);
 
 		void LoadRoads();
-		void LoadHouses();
+		void LoadBuildings();
 
 	public:
 		Prefab* terrainPrefab;
@@ -28,7 +28,6 @@ namespace Can
 		// 2 => End
 
 		std::vector<Prefab*> buildings;
-		std::vector<Prefab*> houses;
 		
 		TestScene* testScene = nullptr; 
 		UIScene* uiScene = nullptr;
