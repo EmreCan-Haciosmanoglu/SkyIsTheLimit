@@ -14,11 +14,10 @@ namespace Can
 		~GameApp();
 
 	private:
-		std::vector<Prefab*> LoadRoadPrefabs();
-		std::vector<Prefab*> LoadJunctionPrefabs();
-		std::vector<Prefab*> LoadEndPrefabs();
+		std::vector<Prefab*> LoadPrefabs(const std::string& folder, const std::string& filter);
 
-		void CombinePrefabs();
+		void LoadRoads();
+		void LoadBuildings();
 
 	public:
 		Prefab* terrainPrefab;
@@ -27,6 +26,7 @@ namespace Can
 		// 0 => Road
 		// 1 => Junction
 		// 2 => End
+
 		std::vector<Prefab*> buildings;
 		
 		TestScene* testScene = nullptr; 

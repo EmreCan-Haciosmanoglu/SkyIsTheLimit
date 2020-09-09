@@ -357,9 +357,13 @@ namespace Can
 		std::vector<Prefab*> result;
 		namespace fs = std::filesystem;
 		std::string s = fs::current_path().string();
-		std::string path = s + "\\assets\\objects\\roads";
+		std::string pathr = s + "\\assets\\objects\\Roads";
 
-		std::vector<std::string> tumbnailimagefiles = Helper::GetFiles(path, "tumbnail_", ".png");
+		std::vector<std::string> roadtumbnailimagefiles = Helper::GetFiles(pathr, "Thumbnail_", ".png");
+
+		std::string pathh = s + "\\assets\\objects\\Houses";
+
+		std::vector<std::string> buildingtumbnailimagefiles = Helper::GetFiles(pathh, "Thumbnail_", ".png");
 
 		/*Buttons in the Roads panel*/ {
 			size_t roadCount = m_Parent->roads.size();
@@ -372,7 +376,7 @@ namespace Can
 					glm::vec3{ 1.0f + i * 4.0f, height - 4.0f, 0.0011f },
 					glm::vec3{ 3.0f, 3.0f, 1.0f },
 					glm::vec4{ 1.0f, 1.0f, 1.0f, 1.0f },
-					Texture2D::Create(tumbnailimagefiles[i]),
+					Texture2D::Create(roadtumbnailimagefiles[i]),
 					[i, this]() {
 						std::cout << "You clicked the " << (i + 1) << "th Button inside the Road panel!" << std::endl;
 						this->m_Parent->testScene->SetConstructionMode(ConstructionMode::Road);
@@ -395,9 +399,11 @@ namespace Can
 					glm::vec3{ 1.0f + i * 4.0f, height - 4.0f, 0.0011f },
 					glm::vec3{ 3.0f, 3.0f, 1.0f },
 					glm::vec4{ 1.0f, 1.0f, 1.0f, 1.0f },
-					nullptr,
+					Texture2D::Create(buildingtumbnailimagefiles[i]),
 					[i, this]() {
 						std::cout << "You clicked the " << (i + 1) << "th Button inside the Building panel!" << std::endl;
+						this->m_Parent->testScene->SetConstructionMode(ConstructionMode::Building);
+						this->m_Parent->testScene->SetBuildingConstructionMode(BuildingConstructionMode::Construct);
 						this->m_Parent->testScene->SetSelectedConstructionBuilding(i);
 					}
 					});

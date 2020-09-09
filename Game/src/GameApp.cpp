@@ -18,7 +18,8 @@ namespace Can
 		//terrainPrefab = Helper::GetPrefabForTerrain("assets/objects/heightmap_smallest.png");
 		//terrainPrefab = Helper::GetPrefabForTerrain("assets/objects/heightmap.png");
 
-		CombinePrefabs();
+		LoadRoads();
+		LoadBuildings();
 
 		testScene = new TestScene(this);
 		PushLayer(testScene);
@@ -35,62 +36,36 @@ namespace Can
 	{
 	}
 
-	void GameApp::CombinePrefabs()
+	void GameApp::LoadRoads()
 	{
-		std::vector<Prefab*> resultRoads = LoadRoadPrefabs();
-		std::vector<Prefab*> resultJunctions = LoadJunctionPrefabs();
-		std::vector<Prefab*> resultEnds = LoadEndPrefabs();
+		std::vector<Prefab*> resultRoads = LoadPrefabs("\\assets\\objects\\roads", "road_");
+		std::vector<Prefab*> resultJunctions = LoadPrefabs("\\assets\\objects\\roads", "junction_");
+		std::vector<Prefab*> resultEnds = LoadPrefabs("\\assets\\objects\\roads", "end_");
 
 		for (size_t i = 0; i < resultRoads.size(); i++)
 			roads.push_back({ resultRoads[i], resultJunctions[i], resultEnds[i] });
 	}
 
-	std::vector<Prefab*> GameApp::LoadRoadPrefabs()
+	void GameApp::LoadBuildings()
 	{
-#define TEMP_ROAD_SHADER_FILE_PATH "assets/shaders/3DTexturedObject.glsl"
-		std::vector<Prefab*> result;
-		namespace fs = std::filesystem;
-		std::string s = fs::current_path().string();
-		std::string path = s + "\\assets\\objects\\roads";
-
-		std::vector<std::string> roadobjfiles = Helper::GetFiles(path, "road_", ".obj");
-		std::vector<std::string> roadpngfiles = Helper::GetFiles(path, "road_", ".png");
-
-		size_t roadCount = roadobjfiles.size();
-		for (size_t i = 0; i < roadCount; i++)
-			result.push_back(new Prefab(roadobjfiles[i], TEMP_ROAD_SHADER_FILE_PATH, roadpngfiles[i]));
-		return result;
+		buildings = LoadPrefabs("\\assets\\objects\\houses", "House_");
 	}
-	std::vector<Prefab*> GameApp::LoadJunctionPrefabs()
+
+	std::vector<Prefab*> GameApp::LoadPrefabs(const std::string& folder, const std::string& filter)
 	{
-#define TEMP_JUNCTION_SHADER_FILE_PATH "assets/shaders/3DTexturedObject.glsl"
+#define TEMP_SHADER_FILE_PATH "assets/shaders/3DTexturedObject.glsl"
 		std::vector<Prefab*> result;
 		namespace fs = std::filesystem;
 		std::string s = fs::current_path().string();
-		std::string path = s + "\\assets\\objects\\roads";
+		std::string path = s.append(folder.c_str());
 
-		std::vector<std::string> junctionobjfiles = Helper::GetFiles(path, "junction_", ".obj");
-		std::vector<std::string> junctionpngfiles = Helper::GetFiles(path, "junction_", ".png");
+		std::vector<std::string> objfiles = Helper::GetFiles(path, filter, ".obj");
+		std::vector<std::string> pngfiles = Helper::GetFiles(path, filter, ".png");
 
-		size_t junctionCount = junctionobjfiles.size();
-		for (size_t i = 0; i < junctionCount; i++)
-			result.push_back(new Prefab(junctionobjfiles[i], TEMP_JUNCTION_SHADER_FILE_PATH, junctionpngfiles[i]));
+		size_t fileCount = objfiles.size();
+		for (size_t i = 0; i < fileCount; i++)
+			result.push_back(new Prefab(objfiles[i], TEMP_SHADER_FILE_PATH, pngfiles[i]));
 		return result;
-	}
-	std::vector<Prefab*> GameApp::LoadEndPrefabs()
-	{
-#define TEMP_END_SHADER_FILE_PATH "assets/shaders/3DTexturedObject.glsl"
-		std::vector<Prefab*> result;
-		namespace fs = std::filesystem;
-		std::string s = fs::current_path().string();
-		std::string path = s + "\\assets\\objects\\roads";
-
-		std::vector<std::string> endobjfiles = Helper::GetFiles(path, "end_", ".obj");
-		std::vector<std::string> endpngfiles = Helper::GetFiles(path, "end_", ".png");
-
-		size_t endCount = endobjfiles.size();
-		for (size_t i = 0; i < endCount; i++)
-			result.push_back(new Prefab(endobjfiles[i], TEMP_END_SHADER_FILE_PATH, endpngfiles[i]));
-		return result;
+		return std::vector<Prefab*>();
 	}
 }

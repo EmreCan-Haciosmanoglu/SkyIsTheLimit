@@ -60,10 +60,11 @@ namespace Can
 		void SetSelectedConstructionRoad(size_t index);
 		void DeleteSelectedRoad(Road* road);
 
-		void SetSelectedConstructionBuilding(size_t index) { m_BuildingType = index; }
+		void SetSelectedConstructionBuilding(size_t index);
 		
 		void SetConstructionMode(ConstructionMode mode);
 		void SetRoadConstructionMode(RoadConstructionMode mode);
+		void SetBuildingConstructionMode(BuildingConstructionMode mode);
 
 		void ResetStates();
 
@@ -131,6 +132,8 @@ namespace Can
 		std::vector<size_t> m_RoadGuidelinesInUse;
 		Object* m_RoadGuidelinesStart = nullptr; // End /? Object
 		Object* m_RoadGuidelinesEnd = nullptr;
+
+		Object* m_BuildingGuideline = nullptr;
 
 		bool b_ConstructionRestricted = false;
 	};
