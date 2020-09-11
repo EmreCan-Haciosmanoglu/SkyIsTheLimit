@@ -1,9 +1,9 @@
 #pragma once
 #include "Can.h"
-#include "Road.h"
 
 namespace Can
 {
+	class Road;
 	class Building
 	{
 	public:

@@ -1,6 +1,8 @@
 #include "canpch.h"
 #include "Building.h"
 
+#include "Road.h"
+
 namespace Can
 {
 	Building::Building(Prefab* prefab, Road* connectedRoad, const glm::vec3& position, const glm::vec3& rotation)

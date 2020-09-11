@@ -49,6 +49,7 @@ namespace Can
 		virtual void OnUpdate(Can::TimeStep ts) override;
 		void OnUpdate_RoadConstruction(glm::vec3 prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection);
 		void OnUpdate_RoadDestruction(glm::vec3 prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection);
+		void OnUpdate_BuildingConstruction(glm::vec3 prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection);
 
 		virtual void OnEvent(Can::Event::Event& event) override;
 
@@ -81,7 +82,9 @@ namespace Can
 		// 4 : Grid
 
 		std::array<bool, 2> buildingSnapOptions = { true, false };
-		
+		// 0 : Roads
+		// 1 : Buildings
+
 		std::array<bool, 5> roadRestrictionOptions = { true, true, true, true, true };
 		// 0 : Small Angle
 		// 1 : Short Length
@@ -109,20 +112,23 @@ namespace Can
 		glm::vec3 m_RoadConstructionStartCoordinate = { -1.0f, -1.0f, -1.0f };
 		glm::vec3 m_RoadConstructionEndCoordinate = { -1.0f, -1.0f, -1.0f };
 
-		// Construction Start Snap
+		// Road Construction Start Snap
 		Junction* m_RoadConstructionStartSnappedJunction = nullptr;
 		End* m_RoadConstructionStartSnappedEnd = nullptr;
 		Road* m_RoadConstructionStartSnappedRoad = nullptr;
 
-		// Construction End Snap
+		// Road Construction End Snap
 		Junction* m_RoadConstructionEndSnappedJunction = nullptr;
 		End* m_RoadConstructionEndSnappedEnd = nullptr;
 		Road* m_RoadConstructionEndSnappedRoad = nullptr;
 
-		// Destruction Snap
+		// Road Destruction Snap
 		Junction* m_RoadDestructionSnappedJunction = nullptr;
 		End* m_RoadDestructionSnappedEnd = nullptr;
 		Road* m_RoadDestructionSnappedRoad = nullptr;
+
+		// Building Construction Snap
+		Road* m_BuildingConstructionSnappedRoad = nullptr;
 
 		std::vector<Road*> m_Roads;
 		std::vector<Junction*> m_Junctions;
