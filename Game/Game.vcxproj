@@ -135,6 +135,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="src\Building.h" />
     <ClInclude Include="src\Debug.h" />
     <ClInclude Include="src\End.h" />
     <ClInclude Include="src\GameApp.h" />
@@ -149,6 +150,7 @@
     <ClCompile Include="src\End.cpp" />
     <ClCompile Include="src\GameApp.cpp" />
     <ClCompile Include="src\Helper.cpp" />
+    <ClCompile Include="src\Building.cpp" />
     <ClCompile Include="src\Junction.cpp" />
     <ClCompile Include="src\Road.cpp" />
     <ClCompile Include="src\TestScene.cpp" />
