@@ -4,6 +4,8 @@
 #include "Junction.h"
 #include "End.h"
 
+#include "Building.h"
+
 #include "Helper.h"
 
 namespace Can
