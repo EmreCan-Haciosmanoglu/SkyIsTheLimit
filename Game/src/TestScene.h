@@ -1,12 +1,16 @@
 #pragma once
 #include "Can.h"
 
-#include "Road.h"
-#include "Junction.h"
-#include "End.h"
-
 namespace Can
 {
+	class GameApp;
+
+	class Road;
+	class Junction;
+	class End;
+
+	class Building;
+
 	enum class RoadConstructionMode
 	{
 		None,
@@ -36,7 +40,6 @@ namespace Can
 		Road* snappedRoad = nullptr;
 	};
 
-	class GameApp;
 	class TestScene : public Can::Layer::Layer
 	{
 	public:
@@ -56,7 +59,7 @@ namespace Can
 		bool OnMousePressed(Can::Event::MouseButtonPressedEvent& event);
 		bool OnMousePressed_RoadConstruction(const glm::vec3& cameraPosition, const glm::vec3& cameraDirection);
 		bool OnMousePressed_RoadDestruction();
-
+		bool OnMousePressed_BuildingConstruction();
 
 		void SetSelectedConstructionRoad(size_t index);
 		void DeleteSelectedRoad(Road* road);
@@ -109,8 +112,13 @@ namespace Can
 		bool b_RoadConstructionStartSnapped = false;
 		bool b_RoadConstructionEndSnapped = false;
 
+		// Road Construction Transforms
 		glm::vec3 m_RoadConstructionStartCoordinate = { -1.0f, -1.0f, -1.0f };
 		glm::vec3 m_RoadConstructionEndCoordinate = { -1.0f, -1.0f, -1.0f };
+
+		// Building Construction Transforms
+		glm::vec3 m_BuildingConstructionCoordinate = { -1.0f, -1.0f, -1.0f };
+		glm::vec3 m_BuildingConstructionRotation = { -1.0f, -1.0f, -1.0f };
 
 		// Road Construction Start Snap
 		Junction* m_RoadConstructionStartSnappedJunction = nullptr;
@@ -133,6 +141,7 @@ namespace Can
 		std::vector<Road*> m_Roads;
 		std::vector<Junction*> m_Junctions;
 		std::vector<End*> m_Ends;
+		std::vector<Building*> m_Buildings;
 
 		std::vector<std::vector<Object*>> m_RoadGuidelines;
 		std::vector<size_t> m_RoadGuidelinesInUse;

@@ -2,6 +2,11 @@
 #include "TestScene.h"
 #include "GameApp.h"
 
+#include "Road.h"
+#include "Junction.h"
+#include "End.h"
+#include "Building.h"
+
 #include "Helper.h"
 
 namespace Can
@@ -688,7 +693,6 @@ namespace Can
 			}
 		}
 	}
-
 	void TestScene::OnUpdate_BuildingConstruction(glm::vec3 prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection)
 	{
 		m_BuildingGuideline->SetTransform(prevLocation);
@@ -732,8 +736,9 @@ namespace Can
 						continue;
 					prevLocation = road->GetStartPosition() + road->direction * c + shiftAmount;
 					m_BuildingConstructionSnappedRoad = road;
-
-					m_BuildingGuideline->SetTransform(prevLocation, { 1.0f, 1.0f, 1.0f }, { 0.0f, right * glm::radians(180.0f) + glm::radians(90.0f) + road->rotation.y ,0.0f });
+					m_BuildingConstructionCoordinate = prevLocation;
+					m_BuildingConstructionRotation = { 0.0f, right * glm::radians(180.0f) + glm::radians(90.0f) + road->rotation.y ,0.0f };
+					m_BuildingGuideline->SetTransform(m_BuildingConstructionCoordinate, glm::vec3(1.0f), m_BuildingConstructionRotation);
 					snappedToRoad = true;
 					break;
 				}
@@ -792,6 +797,20 @@ namespace Can
 			}
 			break;
 		case Can::ConstructionMode::Building:
+			switch (m_BuildingConstructionMode)
+			{
+			case Can::BuildingConstructionMode::None:
+				break;
+			case Can::BuildingConstructionMode::Construct:
+				OnMousePressed_BuildingConstruction();
+				break;
+			case Can::BuildingConstructionMode::Upgrade:
+				break;
+			case Can::BuildingConstructionMode::Destruct:
+				break;
+			default:
+				break;
+			}
 			break;
 		}
 		return false;
@@ -1112,6 +1131,14 @@ namespace Can
 		else if (m_RoadDestructionSnappedRoad != nullptr)
 		{
 			DeleteSelectedRoad(m_RoadDestructionSnappedRoad);
+		}
+		return false;
+	}
+	bool TestScene::OnMousePressed_BuildingConstruction()
+	{
+		if (m_BuildingConstructionSnappedRoad)
+		{
+			m_BuildingConstructionSnappedRoad->connectedBuildings.push_back(new Building(m_BuildingGuideline->type, m_BuildingConstructionSnappedRoad, m_BuildingConstructionCoordinate, m_BuildingConstructionRotation));
 		}
 		return false;
 	}
