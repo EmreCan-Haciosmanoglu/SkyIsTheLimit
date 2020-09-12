@@ -697,6 +697,7 @@ namespace Can
 		float buildingWidth = selectedBuilding->boundingBoxM.z - selectedBuilding->boundingBoxL.z;
 		float buildingDepthFromCenter = -selectedBuilding->boundingBoxL.x;
 
+		bool snappedToRoad = false;
 		if (buildingSnapOptions[0])
 		{
 			for (Road* road : m_Roads)
@@ -733,12 +734,12 @@ namespace Can
 					m_BuildingConstructionSnappedRoad = road;
 
 					m_BuildingGuideline->SetTransform(prevLocation, { 1.0f, 1.0f, 1.0f }, { 0.0f, right * glm::radians(180.0f) + glm::radians(90.0f) + road->rotation.y ,0.0f });
-
+					snappedToRoad = true;
 					break;
 				}
 			}
 		}
-
+		m_BuildingGuideline->tintColor = snappedToRoad ? glm::vec4(1.0f) : glm::vec4{ 1.0f, 0.3f, 0.2f, 1.0f };
 	}
 
 	void TestScene::OnEvent(Can::Event::Event& event)
