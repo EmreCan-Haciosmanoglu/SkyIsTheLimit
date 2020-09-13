@@ -14,46 +14,79 @@ namespace Can
 		: startPosition(startPos)
 		, endPosition(endPos)
 		, direction(glm::normalize(endPos - startPos))
-		, rotation({
-				0.0f,
-				glm::acos(glm::dot(glm::vec2{ 1.0f, 0.0f }, glm::vec2{ direction.x, direction.z}) / glm::length(glm::vec2{ direction.x, direction.z})),
-				glm::acos(glm::dot(glm::vec3{ direction.x, 0.0f, direction.z}, direction) / glm::length(glm::vec3{ direction.x, 0.0f, direction.z}))
-			})
 		, length(glm::length(endPos - startPos))
 		, type(road->type)
 		, typeIndex(road->typeIndex)
 	{
+		float rotationY = 0.0f;
+		float rotationZ = 0.0f;
+		if (direction.x < 0.0001f && direction.x > -0.0001f)
+		{
+			rotationY = ((float)(direction.z > 0.0f) * 2.0f - 1.0f) * glm::radians(90.0f);
+			rotationZ = glm::atan(direction.y / direction.z);
+		}
+		else
+		{
+			rotationY = glm::atan(direction.z / direction.x) + (float)(direction.x < 0.0f) * glm::radians(180.0f);
+			float dot = glm::dot(direction, glm::vec3{ direction.x, 0.0f, direction.z });
+			float len = glm::length(glm::vec3{ direction.x, 0.0f, direction.z });
+			rotationZ = glm::acos(glm::max(-1.0f, glm::min(dot / len, 1.0f)));
+		}
+		rotation = { 0.0f, -rotationY, rotationZ };
+
 		ConstructObject(road->type[0]);
 	}
 	Road::Road(Prefab* prefab, const glm::vec3& startPos, const glm::vec3& endPos, const std::array<Prefab*, 3>& type, size_t typeIndex)
 		: startPosition(startPos)
 		, endPosition(endPos)
 		, direction(glm::normalize(endPos - startPos))
-		, rotation({
-				0.0f,
-				glm::acos(glm::dot(glm::vec2{ 1.0f, 0.0f }, glm::vec2{ direction.x, direction.z}) / glm::length(glm::vec2{ direction.x, direction.z})),
-				glm::acos(glm::dot(glm::vec3{ direction.x, 0.0f, direction.z}, direction) / glm::length(glm::vec3{ direction.x, 0.0f, direction.z}))
-			})
 		, length(glm::length(endPos - startPos))
 		, type(type)
 		, typeIndex(typeIndex)
 	{
+		float rotationY = 0.0f;
+		float rotationZ = 0.0f;
+		if (direction.x < 0.0001f && direction.x > -0.0001f)
+		{
+			rotationY = ((float)(direction.z > 0.0f) * 2.0f - 1.0f) * glm::radians(90.0f);
+			rotationZ = glm::atan(direction.y / direction.z);
+		}
+		else
+		{
+			rotationY = glm::atan(direction.z / direction.x) + (float)(direction.x < 0.0f) * glm::radians(180.0f);
+			float dot = glm::dot(direction, glm::vec3{ direction.x, 0.0f, direction.z });
+			float len = glm::length(glm::vec3{ direction.x, 0.0f, direction.z });
+			rotationZ = glm::acos(glm::max(-1.0f, glm::min(dot / len, 1.0f)));
+		}
+		rotation = { 0.0f, -rotationY, rotationZ };
+
 		ConstructObject(prefab);
 	}
 	Road::Road(Object* object, const glm::vec3& startPos, const glm::vec3& endPos, const std::array<Prefab*, 3>& type, size_t typeIndex)
 		: startPosition(startPos)
 		, endPosition(endPos)
 		, direction(glm::normalize(endPos - startPos))
-		, rotation({
-				0.0f,
-				glm::acos(glm::dot(glm::vec2{ 1.0f, 0.0f }, glm::vec2{ direction.x, direction.z}) / glm::length(glm::vec2{ direction.x, direction.z})),
-				glm::acos(glm::dot(glm::vec3{ direction.x, 0.0f, direction.z}, direction) / glm::length(glm::vec3{ direction.x, 0.0f, direction.z}))
-			})
 		, length(glm::length(endPos - startPos))
 		, object(object)
 		, type(type)
 		, typeIndex(typeIndex)
 	{
+		float rotationY = 0.0f;
+		float rotationZ = 0.0f;
+		if (direction.x < 0.0001f && direction.x > -0.0001f)
+		{
+			rotationY = ((float)(direction.z > 0.0f) * 2.0f - 1.0f) * glm::radians(90.0f);
+			rotationZ = glm::atan(direction.y / direction.z);
+		}
+		else
+		{
+			rotationY = glm::atan(direction.z / direction.x) + (float)(direction.x < 0.0f) * glm::radians(180.0f);
+			float dot = glm::dot(direction, glm::vec3{ direction.x, 0.0f, direction.z });
+			float len = glm::length(glm::vec3{ direction.x, 0.0f, direction.z });
+			rotationZ = glm::acos(glm::max(-1.0f, glm::min(dot / len, 1.0f)));
+		}
+		rotation = { 0.0f, -rotationY, rotationZ };
+
 	}
 	Road::~Road()
 	{
@@ -92,7 +125,7 @@ namespace Can
 		newPrefab->boundingBoxM.x *= count * scale;
 
 
-		object = new Object(newPrefab, prefab, startPosition, glm::vec3{ 1.0f, 1.0f, 1.0f }, rotation);
+		object = new Object(newPrefab, prefab, startPosition, glm::vec3(1.0f), rotation);
 	}
 	void Road::ReconstructObject(Prefab* prefab)
 	{
