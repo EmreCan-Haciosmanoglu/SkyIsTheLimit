@@ -35,7 +35,7 @@ namespace  Can::Helper
 		};
 	}
 
-	glm::vec2 CheckRotatedSquareCollision(const glm::vec2& r1l, const glm::vec2& r1m, float rot1, const glm::vec2& pos1, const glm::vec2& r2l, const glm::vec2& r2m, float rot2, const glm::vec2& pos2)
+	glm::vec2 CheckRotatedRectangleCollision(const glm::vec2& r1l, const glm::vec2& r1m, float rot1, const glm::vec2& pos1, const glm::vec2& r2l, const glm::vec2& r2m, float rot2, const glm::vec2& pos2)
 	{
 		std::array<glm::vec2, 4> rotated_rect1 = {
 			RotateAPointAroundAPoint(glm::vec2{ r1l.x, r1l.y }, rot1) + pos1,

@@ -11,7 +11,7 @@ namespace Can::Helper
 #define COLOR_COUNT 5
 	bool CheckBoundingBoxHit(const glm::vec3& rayStartPoint, const glm::vec3& ray, const glm::vec3& least, const glm::vec3& most);
 
-	glm::vec2 CheckRotatedSquareCollision(
+	glm::vec2 CheckRotatedRectangleCollision(
 		const glm::vec2& r1l,
 		const glm::vec2& r1m,
 		float rot1,
