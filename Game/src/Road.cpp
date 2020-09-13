@@ -14,7 +14,11 @@ namespace Can
 		: startPosition(startPos)
 		, endPosition(endPos)
 		, direction(glm::normalize(endPos - startPos))
-		, rotation({ 0.0f, -(glm::atan(direction.z / direction.x) + (direction.x <= 0.0f ? glm::radians(180.0f) : 0.0f)), glm::atan(direction.y / direction.x) })
+		, rotation({
+				0.0f,
+				glm::acos(glm::dot(glm::vec2{ 1.0f, 0.0f }, glm::vec2{ direction.x, direction.z}) / glm::length(glm::vec2{ direction.x, direction.z})),
+				glm::acos(glm::dot(glm::vec3{ direction.x, 0.0f, direction.z}, direction) / glm::length(glm::vec3{ direction.x, 0.0f, direction.z}))
+			})
 		, length(glm::length(endPos - startPos))
 		, type(road->type)
 		, typeIndex(road->typeIndex)
@@ -25,7 +29,11 @@ namespace Can
 		: startPosition(startPos)
 		, endPosition(endPos)
 		, direction(glm::normalize(endPos - startPos))
-		, rotation({ 0.0f, -(glm::atan(direction.z / direction.x) + (direction.x <= 0.0f ? glm::radians(180.0f) : 0.0f)), glm::atan(direction.y / direction.x) })
+		, rotation({
+				0.0f,
+				glm::acos(glm::dot(glm::vec2{ 1.0f, 0.0f }, glm::vec2{ direction.x, direction.z}) / glm::length(glm::vec2{ direction.x, direction.z})),
+				glm::acos(glm::dot(glm::vec3{ direction.x, 0.0f, direction.z}, direction) / glm::length(glm::vec3{ direction.x, 0.0f, direction.z}))
+			})
 		, length(glm::length(endPos - startPos))
 		, type(type)
 		, typeIndex(typeIndex)
@@ -36,7 +44,11 @@ namespace Can
 		: startPosition(startPos)
 		, endPosition(endPos)
 		, direction(glm::normalize(endPos - startPos))
-		, rotation({ 0.0f, -(glm::atan(direction.z / direction.x) + (direction.x <= 0.0f ? glm::radians(180.0f) : 0.0f)), glm::atan(direction.y / direction.x) })
+		, rotation({
+				0.0f,
+				glm::acos(glm::dot(glm::vec2{ 1.0f, 0.0f }, glm::vec2{ direction.x, direction.z}) / glm::length(glm::vec2{ direction.x, direction.z})),
+				glm::acos(glm::dot(glm::vec3{ direction.x, 0.0f, direction.z}, direction) / glm::length(glm::vec3{ direction.x, 0.0f, direction.z}))
+			})
 		, length(glm::length(endPos - startPos))
 		, object(object)
 		, type(type)
