@@ -6,6 +6,8 @@ namespace Can
 	class Junction;
 	class End;
 
+	class Building;
+
 	class Road
 	{
 	public:
@@ -41,6 +43,8 @@ namespace Can
 		Junction* endJunction = nullptr;
 		End* startEnd = nullptr;
 		End* endEnd = nullptr;
+
+		std::vector<Building*> connectedBuildings;
 
 		size_t typeIndex;
 		std::array<Prefab*, 3> type = { nullptr, nullptr, nullptr };

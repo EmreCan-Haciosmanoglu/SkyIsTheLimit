@@ -2,6 +2,11 @@
 #include "TestScene.h"
 #include "GameApp.h"
 
+#include "Road.h"
+#include "Junction.h"
+#include "End.h"
+#include "Building.h"
+
 #include "Helper.h"
 
 namespace Can
@@ -15,13 +20,13 @@ namespace Can
 			0.1f,
 			1000.0f,
 			glm::vec3{ 16.0f, 15.0f, -15.0f },
-			glm::vec3{ -60.0f, 0.0f, 0.0f }
+			glm::vec3{ -90.0f, 0.0f, 0.0f }
 		)
 	{
 		m_RoadGuidelinesStart = new Object(m_Parent->roads[m_RoadConstructionType][2], m_Parent->roads[m_RoadConstructionType][2], { 0.0f, 0.0f, 0.0f, }, { 1.0f, 1.0f, 1.0f, }, { 0.0f, 0.0f, 0.0f, });
 		m_RoadGuidelinesEnd = new Object(m_Parent->roads[m_RoadConstructionType][2], m_Parent->roads[m_RoadConstructionType][2], { 0.0f, 0.0f, 0.0f, }, { 1.0f, 1.0f, 1.0f, }, { 0.0f, 0.0f, 0.0f, });
 		m_BuildingGuideline = new Object(m_Parent->buildings[m_BuildingType], m_Parent->buildings[m_BuildingType], { 0.0f, 0.0f, 0.0f, }, { 1.0f, 1.0f, 1.0f, }, { 0.0f, 0.0f, 0.0f, }, false);
-			size_t roadTypeCount = m_Parent->roads.size();
+		size_t roadTypeCount = m_Parent->roads.size();
 		for (size_t i = 0; i < roadTypeCount; i++)
 		{
 			m_RoadGuidelinesInUse.push_back(0);
@@ -62,6 +67,20 @@ namespace Can
 				}
 				break;
 			case Can::ConstructionMode::Building:
+				switch (m_BuildingConstructionMode)
+				{
+				case Can::BuildingConstructionMode::None:
+					break;
+				case Can::BuildingConstructionMode::Construct:
+					OnUpdate_BuildingConstruction(I, camPos, forward);
+					break;
+				case Can::BuildingConstructionMode::Upgrade:
+					break;
+				case Can::BuildingConstructionMode::Destruct:
+					break;
+				default:
+					break;
+				}
 				break;
 			}
 		}
@@ -77,6 +96,7 @@ namespace Can
 		Prefab* selectedRoad = m_Parent->roads[m_RoadConstructionType][0];
 		float roadPrefabWidth = selectedRoad->boundingBoxM.z - selectedRoad->boundingBoxL.z;
 		float roadPrefabLength = selectedRoad->boundingBoxM.x - selectedRoad->boundingBoxL.x;
+
 		if (b_RoadConstructionStarted == false)
 		{
 			if (roadSnapOptions[4])
@@ -397,7 +417,7 @@ namespace Can
 				}
 				else if (Input::IsKeyPressed(KeyCode::LeftControl))
 				{
-					float angle = glm::degrees(rotationEnd);
+					float angle = std::fmod(glm::degrees(rotationEnd) + 720.0f, 360.0f);
 					float newAngle = angle + 2.5f - std::fmod(angle + 2.5f, 5.0f);
 
 					AB = glm::rotate(AB, -glm::radians(angle - newAngle), { 0.0f, 1.0f, 0.0f });
@@ -429,6 +449,7 @@ namespace Can
 					AB = m_RoadConstructionEndCoordinate - m_RoadConstructionStartCoordinate;
 				}
 			}
+			
 			glm::vec3 normalizedAB = glm::normalize(AB);
 
 			rotationOffset = AB.x < 0.0f ? 180.0f : 0.0f;
@@ -673,6 +694,93 @@ namespace Can
 			}
 		}
 	}
+	void TestScene::OnUpdate_BuildingConstruction(glm::vec3 prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection)
+	{
+		b_ConstructionRestricted = true;
+		m_BuildingConstructionSnappedRoad = nullptr;
+		m_BuildingGuideline->SetTransform(prevLocation);
+
+		Prefab* selectedBuilding = m_BuildingGuideline->type;
+		float buildingWidth = selectedBuilding->boundingBoxM.z - selectedBuilding->boundingBoxL.z;
+		float buildingDepthFromCenter = -selectedBuilding->boundingBoxL.x;
+
+		bool snappedToRoad = false;
+		if (buildingSnapOptions[0])
+		{
+			for (Road* road : m_Roads)
+			{
+				float roadWidth = road->object->prefab->boundingBoxM.z - road->object->prefab->boundingBoxL.z;
+				glm::vec3& roadDir = road->direction;
+				roadDir.y = 0.0f;
+				float snapDistance = buildingDepthFromCenter + (roadWidth / 2.0f);
+
+				glm::vec3 Intersection = Helper::RayPlaneIntersection(
+					cameraPosition,
+					cameraDirection,
+					road->GetStartPosition(),
+					{ 0.0f, 1.0f, 0.0f, }
+				);
+
+				glm::vec3 B = Intersection - road->GetStartPosition();
+				float bLength = glm::length(B);
+
+				float angle = glm::acos(glm::dot(roadDir, B) / bLength);
+				float distance = bLength * glm::sin(angle);
+
+				if (distance < snapDistance)
+				{
+					bool right = (glm::cross(B, roadDir)).y > 0.0f;
+					glm::vec3 shiftDir = glm::normalize(glm::rotate(roadDir, glm::radians(-90.0f), glm::vec3{ 0.0f, 1.0f, 0.0f }));
+					glm::vec3 shiftAmount = (right * 2.0f - 1.0f) * shiftDir * snapDistance;
+
+					float c = bLength * glm::cos(angle);
+					if (c <= 0 || c >= road->length)
+						continue;
+					prevLocation = road->GetStartPosition() + road->direction * c + shiftAmount;
+					m_BuildingConstructionSnappedRoad = road;
+					m_BuildingConstructionCoordinate = prevLocation;
+					m_BuildingConstructionRotation = { 0.0f, right * glm::radians(180.0f) + glm::radians(90.0f) + road->rotation.y ,0.0f };
+					m_BuildingGuideline->SetTransform(m_BuildingConstructionCoordinate, glm::vec3(1.0f), m_BuildingConstructionRotation);
+					snappedToRoad = true;
+					break;
+				}
+			}
+		}
+
+		if (buildingSnapOptions[1])
+		{
+			if (m_BuildingConstructionSnappedRoad)
+			{
+				glm::vec2 boundingSquareL = { m_BuildingGuideline->prefab->boundingBoxL.x, m_BuildingGuideline->prefab->boundingBoxL.z };
+				glm::vec2 boundingSquareM = { m_BuildingGuideline->prefab->boundingBoxM.x, m_BuildingGuideline->prefab->boundingBoxM.z };
+
+				for (Building* building : m_BuildingConstructionSnappedRoad->connectedBuildings)
+				{
+					Object* object = building->object;
+					glm::vec2 mtv = Helper::CheckRotatedRectangleCollision(
+						{ object->prefab->boundingBoxL.x, object->prefab->boundingBoxL.z },
+						{ object->prefab->boundingBoxM.x, object->prefab->boundingBoxM.z },
+						object->rotation.y,
+						{ object->position.x,object->position.z },
+						boundingSquareL,
+						boundingSquareM,
+						m_BuildingConstructionRotation.y,
+						{ m_BuildingConstructionCoordinate.x, m_BuildingConstructionCoordinate.z }
+					);
+					if (mtv.x != 0.0f || mtv.y != 0.0f)
+					{
+						prevLocation += glm::vec3{ mtv.x, 0.0f, mtv.y };
+						m_BuildingConstructionCoordinate = prevLocation;
+						m_BuildingGuideline->SetTransform(m_BuildingConstructionCoordinate, glm::vec3(1.0f), m_BuildingConstructionRotation);
+						break;
+					}
+				}
+			}
+		}
+
+		b_ConstructionRestricted = !snappedToRoad;
+		m_BuildingGuideline->tintColor = b_ConstructionRestricted ? glm::vec4{ 1.0f, 0.3f, 0.2f, 1.0f } : glm::vec4(1.0f);
+	}
 
 	void TestScene::OnEvent(Can::Event::Event& event)
 	{
@@ -724,6 +832,22 @@ namespace Can
 			}
 			break;
 		case Can::ConstructionMode::Building:
+			switch (m_BuildingConstructionMode)
+			{
+			case Can::BuildingConstructionMode::None:
+				break;
+			case Can::BuildingConstructionMode::Construct:
+				if (button != MouseCode::Button0)
+					return false;
+				OnMousePressed_BuildingConstruction();
+				break;
+			case Can::BuildingConstructionMode::Upgrade:
+				break;
+			case Can::BuildingConstructionMode::Destruct:
+				break;
+			default:
+				break;
+			}
 			break;
 		}
 		return false;
@@ -1047,6 +1171,16 @@ namespace Can
 		}
 		return false;
 	}
+	bool TestScene::OnMousePressed_BuildingConstruction()
+	{
+		if (!b_ConstructionRestricted)
+		{
+			m_BuildingConstructionSnappedRoad->connectedBuildings.push_back(new Building(m_BuildingGuideline->type, m_BuildingConstructionSnappedRoad, m_BuildingConstructionCoordinate, m_BuildingConstructionRotation));
+			ResetStates();
+			m_BuildingGuideline->enabled = true;
+		}
+		return false;
+	}
 
 	void TestScene::SetSelectedConstructionRoad(size_t index)
 	{
@@ -1243,6 +1377,9 @@ namespace Can
 		m_RoadConstructionStartCoordinate = { -1.0f, -1.0f, -1.0f };
 		m_RoadConstructionEndCoordinate = { -1.0f, -1.0f, -1.0f };
 
+		m_BuildingConstructionCoordinate = { -1.0f, -1.0f, -1.0f };
+		m_BuildingConstructionRotation = { -1.0f, -1.0f, -1.0f };
+
 		m_RoadConstructionStartSnappedJunction = nullptr;
 		m_RoadConstructionStartSnappedEnd = nullptr;
 		m_RoadConstructionStartSnappedRoad = nullptr;
@@ -1254,6 +1391,8 @@ namespace Can
 		m_RoadDestructionSnappedJunction = nullptr;
 		m_RoadDestructionSnappedEnd = nullptr;
 		m_RoadDestructionSnappedRoad = nullptr;
+
+		m_BuildingConstructionSnappedRoad = nullptr;
 
 		for (Road* road : m_Roads)
 		{
