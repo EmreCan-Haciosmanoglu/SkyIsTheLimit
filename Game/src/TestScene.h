@@ -84,7 +84,7 @@ namespace Can
 		// 3 : Angle
 		// 4 : Grid
 
-		std::array<bool, 2> buildingSnapOptions = { true, false };
+		std::array<bool, 2> buildingSnapOptions = { true, true };
 		// 0 : Roads
 		// 1 : Buildings
 

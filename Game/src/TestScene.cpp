@@ -20,7 +20,7 @@ namespace Can
 			0.1f,
 			1000.0f,
 			glm::vec3{ 16.0f, 15.0f, -15.0f },
-			glm::vec3{ -60.0f, 0.0f, 0.0f }
+			glm::vec3{ -90.0f, 0.0f, 0.0f }
 		)
 	{
 		m_RoadGuidelinesStart = new Object(m_Parent->roads[m_RoadConstructionType][2], m_Parent->roads[m_RoadConstructionType][2], { 0.0f, 0.0f, 0.0f, }, { 1.0f, 1.0f, 1.0f, }, { 0.0f, 0.0f, 0.0f, });
@@ -417,7 +417,7 @@ namespace Can
 				}
 				else if (Input::IsKeyPressed(KeyCode::LeftControl))
 				{
-					float angle = glm::degrees(rotationEnd);
+					float angle = std::fmod(glm::degrees(rotationEnd) + 720.0f, 360.0f);
 					float newAngle = angle + 2.5f - std::fmod(angle + 2.5f, 5.0f);
 
 					AB = glm::rotate(AB, -glm::radians(angle - newAngle), { 0.0f, 1.0f, 0.0f });
@@ -449,6 +449,7 @@ namespace Can
 					AB = m_RoadConstructionEndCoordinate - m_RoadConstructionStartCoordinate;
 				}
 			}
+			
 			glm::vec3 normalizedAB = glm::normalize(AB);
 
 			rotationOffset = AB.x < 0.0f ? 180.0f : 0.0f;
@@ -695,6 +696,8 @@ namespace Can
 	}
 	void TestScene::OnUpdate_BuildingConstruction(glm::vec3 prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection)
 	{
+		b_ConstructionRestricted = true;
+		m_BuildingConstructionSnappedRoad = nullptr;
 		m_BuildingGuideline->SetTransform(prevLocation);
 
 		Prefab* selectedBuilding = m_BuildingGuideline->type;
@@ -717,7 +720,6 @@ namespace Can
 					road->GetStartPosition(),
 					{ 0.0f, 1.0f, 0.0f, }
 				);
-
 
 				glm::vec3 B = Intersection - road->GetStartPosition();
 				float bLength = glm::length(B);
@@ -744,7 +746,40 @@ namespace Can
 				}
 			}
 		}
-		m_BuildingGuideline->tintColor = snappedToRoad ? glm::vec4(1.0f) : glm::vec4{ 1.0f, 0.3f, 0.2f, 1.0f };
+
+		if (buildingSnapOptions[1])
+		{
+			if (m_BuildingConstructionSnappedRoad)
+			{
+				glm::vec2 boundingSquareL = { m_BuildingGuideline->prefab->boundingBoxL.x, m_BuildingGuideline->prefab->boundingBoxL.z };
+				glm::vec2 boundingSquareM = { m_BuildingGuideline->prefab->boundingBoxM.x, m_BuildingGuideline->prefab->boundingBoxM.z };
+
+				for (Building* building : m_BuildingConstructionSnappedRoad->connectedBuildings)
+				{
+					Object* object = building->object;
+					glm::vec2 mtv = Helper::CheckRotatedRectangleCollision(
+						{ object->prefab->boundingBoxL.x, object->prefab->boundingBoxL.z },
+						{ object->prefab->boundingBoxM.x, object->prefab->boundingBoxM.z },
+						object->rotation.y,
+						{ object->position.x,object->position.z },
+						boundingSquareL,
+						boundingSquareM,
+						m_BuildingConstructionRotation.y,
+						{ m_BuildingConstructionCoordinate.x, m_BuildingConstructionCoordinate.z }
+					);
+					if (mtv.x != 0.0f || mtv.y != 0.0f)
+					{
+						prevLocation += glm::vec3{ mtv.x, 0.0f, mtv.y };
+						m_BuildingConstructionCoordinate = prevLocation;
+						m_BuildingGuideline->SetTransform(m_BuildingConstructionCoordinate, glm::vec3(1.0f), m_BuildingConstructionRotation);
+						break;
+					}
+				}
+			}
+		}
+
+		b_ConstructionRestricted = !snappedToRoad;
+		m_BuildingGuideline->tintColor = b_ConstructionRestricted ? glm::vec4{ 1.0f, 0.3f, 0.2f, 1.0f } : glm::vec4(1.0f);
 	}
 
 	void TestScene::OnEvent(Can::Event::Event& event)
@@ -802,6 +837,8 @@ namespace Can
 			case Can::BuildingConstructionMode::None:
 				break;
 			case Can::BuildingConstructionMode::Construct:
+				if (button != MouseCode::Button0)
+					return false;
 				OnMousePressed_BuildingConstruction();
 				break;
 			case Can::BuildingConstructionMode::Upgrade:
@@ -1136,9 +1173,11 @@ namespace Can
 	}
 	bool TestScene::OnMousePressed_BuildingConstruction()
 	{
-		if (m_BuildingConstructionSnappedRoad)
+		if (!b_ConstructionRestricted)
 		{
 			m_BuildingConstructionSnappedRoad->connectedBuildings.push_back(new Building(m_BuildingGuideline->type, m_BuildingConstructionSnappedRoad, m_BuildingConstructionCoordinate, m_BuildingConstructionRotation));
+			ResetStates();
+			m_BuildingGuideline->enabled = true;
 		}
 		return false;
 	}
@@ -1338,6 +1377,9 @@ namespace Can
 		m_RoadConstructionStartCoordinate = { -1.0f, -1.0f, -1.0f };
 		m_RoadConstructionEndCoordinate = { -1.0f, -1.0f, -1.0f };
 
+		m_BuildingConstructionCoordinate = { -1.0f, -1.0f, -1.0f };
+		m_BuildingConstructionRotation = { -1.0f, -1.0f, -1.0f };
+
 		m_RoadConstructionStartSnappedJunction = nullptr;
 		m_RoadConstructionStartSnappedEnd = nullptr;
 		m_RoadConstructionStartSnappedRoad = nullptr;
@@ -1349,6 +1391,8 @@ namespace Can
 		m_RoadDestructionSnappedJunction = nullptr;
 		m_RoadDestructionSnappedEnd = nullptr;
 		m_RoadDestructionSnappedRoad = nullptr;
+
+		m_BuildingConstructionSnappedRoad = nullptr;
 
 		for (Road* road : m_Roads)
 		{
