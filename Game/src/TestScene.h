@@ -53,6 +53,7 @@ namespace Can
 		void OnUpdate_RoadConstruction(glm::vec3 prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection);
 		void OnUpdate_RoadDestruction(glm::vec3 prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection);
 		void OnUpdate_BuildingConstruction(glm::vec3 prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection);
+		void OnUpdate_BuildingDestruction(glm::vec3 prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection);
 
 		virtual void OnEvent(Can::Event::Event& event) override;
 
@@ -60,6 +61,7 @@ namespace Can
 		bool OnMousePressed_RoadConstruction(const glm::vec3& cameraPosition, const glm::vec3& cameraDirection);
 		bool OnMousePressed_RoadDestruction();
 		bool OnMousePressed_BuildingConstruction();
+		bool OnMousePressed_BuildingDestruction();
 
 		void SetSelectedConstructionRoad(size_t index);
 		void DeleteSelectedRoad(Road* road);
@@ -137,6 +139,9 @@ namespace Can
 
 		// Building Construction Snap
 		Road* m_BuildingConstructionSnappedRoad = nullptr;
+
+		// Building Destruction Snap
+		Building* m_BuildingDestructionSnappedBuilding = nullptr;
 
 		std::vector<Road*> m_Roads;
 		std::vector<Junction*> m_Junctions;

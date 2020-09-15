@@ -77,6 +77,7 @@ namespace Can
 				case Can::BuildingConstructionMode::Upgrade:
 					break;
 				case Can::BuildingConstructionMode::Destruct:
+					OnUpdate_BuildingDestruction(I, camPos, forward);
 					break;
 				default:
 					break;
@@ -449,7 +450,7 @@ namespace Can
 					AB = m_RoadConstructionEndCoordinate - m_RoadConstructionStartCoordinate;
 				}
 			}
-			
+
 			glm::vec3 normalizedAB = glm::normalize(AB);
 
 			rotationOffset = AB.x < 0.0f ? 180.0f : 0.0f;
@@ -781,6 +782,26 @@ namespace Can
 		b_ConstructionRestricted = !snappedToRoad;
 		m_BuildingGuideline->tintColor = b_ConstructionRestricted ? glm::vec4{ 1.0f, 0.3f, 0.2f, 1.0f } : glm::vec4(1.0f);
 	}
+	void TestScene::OnUpdate_BuildingDestruction(glm::vec3 prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection)
+	{
+		m_BuildingDestructionSnappedBuilding = nullptr;
+		for (Building* building : m_Buildings)
+		{
+			building->object->tintColor = glm::vec4(1.0f);
+
+			if (Helper::CheckBoundingBoxHit(
+				cameraPosition,
+				cameraDirection,
+				building->object->prefab->boundingBoxL + building->position,
+				building->object->prefab->boundingBoxM + building->position
+			))
+			{
+				m_BuildingDestructionSnappedBuilding = building;
+				building->object->tintColor = glm::vec4{ 1.0f, 0.3f, 0.2f, 1.0f };
+				break;
+			}
+		}
+	}
 
 	void TestScene::OnEvent(Can::Event::Event& event)
 	{
@@ -844,6 +865,9 @@ namespace Can
 			case Can::BuildingConstructionMode::Upgrade:
 				break;
 			case Can::BuildingConstructionMode::Destruct:
+				if (button != MouseCode::Button0)
+					return false;
+				OnMousePressed_BuildingDestruction();
 				break;
 			default:
 				break;
@@ -1175,9 +1199,35 @@ namespace Can
 	{
 		if (!b_ConstructionRestricted)
 		{
-			m_BuildingConstructionSnappedRoad->connectedBuildings.push_back(new Building(m_BuildingGuideline->type, m_BuildingConstructionSnappedRoad, m_BuildingConstructionCoordinate, m_BuildingConstructionRotation));
+			Building* newBuilding = new Building(m_BuildingGuideline->type, m_BuildingConstructionSnappedRoad, m_BuildingConstructionCoordinate, m_BuildingConstructionRotation);
+			m_BuildingConstructionSnappedRoad->connectedBuildings.push_back(newBuilding);
+			m_Buildings.push_back(newBuilding);
 			ResetStates();
 			m_BuildingGuideline->enabled = true;
+		}
+		return false;
+	}
+	bool TestScene::OnMousePressed_BuildingDestruction()
+	{
+		if (m_BuildingDestructionSnappedBuilding)
+		{
+			if (m_BuildingDestructionSnappedBuilding->connectedRoad)
+			{
+				std::vector<Building*> connectedBuildings = m_BuildingDestructionSnappedBuilding->connectedRoad->connectedBuildings;
+				auto it = std::find(connectedBuildings.begin(), connectedBuildings.end(), m_BuildingDestructionSnappedBuilding);
+				if (it != connectedBuildings.end())
+				{
+					connectedBuildings.erase(it);
+				}
+			}
+			{
+				auto it = std::find(m_Buildings.begin(), m_Buildings.end(), m_BuildingDestructionSnappedBuilding);
+				if (it != m_Buildings.end())
+				{
+					m_Buildings.erase(it);
+				}
+			}
+			delete m_BuildingDestructionSnappedBuilding;
 		}
 		return false;
 	}
