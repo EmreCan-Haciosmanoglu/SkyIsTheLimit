@@ -19,8 +19,8 @@ namespace Can
 			1280.0f / 720.0f,
 			0.1f,
 			1000.0f,
-			glm::vec3{ 16.0f, 15.0f, -15.0f },
-			glm::vec3{ -90.0f, 0.0f, 0.0f }
+			glm::vec3{ 11.0f, 15.0f, -10.0f },
+			glm::vec3{ -60.0f, 0.0f, 0.0f }
 		)
 	{
 		m_RoadGuidelinesStart = new Object(m_Parent->roads[m_RoadConstructionType][2], m_Parent->roads[m_RoadConstructionType][2], { 0.0f, 0.0f, 0.0f, }, { 1.0f, 1.0f, 1.0f, }, { 0.0f, 0.0f, 0.0f, });
@@ -761,7 +761,7 @@ namespace Can
 						{ object->prefab->boundingBoxL.x, object->prefab->boundingBoxL.z },
 						{ object->prefab->boundingBoxM.x, object->prefab->boundingBoxM.z },
 						object->rotation.y,
-						{ object->position.x,object->position.z },
+						{ object->position.x, object->position.z },
 						boundingSquareL,
 						boundingSquareM,
 						m_BuildingConstructionRotation.y,
