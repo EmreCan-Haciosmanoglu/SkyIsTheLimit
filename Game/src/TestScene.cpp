@@ -1215,17 +1215,11 @@ namespace Can
 			{
 				std::vector<Building*> connectedBuildings = m_BuildingDestructionSnappedBuilding->connectedRoad->connectedBuildings;
 				auto it = std::find(connectedBuildings.begin(), connectedBuildings.end(), m_BuildingDestructionSnappedBuilding);
-				if (it != connectedBuildings.end())
-				{
-					connectedBuildings.erase(it);
-				}
+				connectedBuildings.erase(it);
 			}
 			{
 				auto it = std::find(m_Buildings.begin(), m_Buildings.end(), m_BuildingDestructionSnappedBuilding);
-				if (it != m_Buildings.end())
-				{
-					m_Buildings.erase(it);
-				}
+				m_Buildings.erase(it);
 			}
 			delete m_BuildingDestructionSnappedBuilding;
 		}
@@ -1295,6 +1289,7 @@ namespace Can
 			else
 				junction->ReconstructObject();
 		}
+
 		if (road->endEnd != nullptr)
 		{
 			auto endPosition = std::find(m_Ends.begin(), m_Ends.end(), road->endEnd);
@@ -1348,6 +1343,13 @@ namespace Can
 		}
 		auto position = std::find(m_Roads.begin(), m_Roads.end(), road);
 		m_Roads.erase(position);
+
+		for (Building* building : road->connectedBuildings)
+		{
+			m_Buildings.erase(std::find(m_Buildings.begin(), m_Buildings.end(), building));
+			delete building;
+		}
+
 		delete road;
 	}
 
