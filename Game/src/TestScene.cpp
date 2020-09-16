@@ -453,9 +453,29 @@ namespace Can
 
 			glm::vec3 normalizedAB = glm::normalize(AB);
 
-			rotationOffset = AB.x < 0.0f ? 180.0f : 0.0f;
+			rotationOffset = (AB.x < 0.0f) * 180.0f;
 			rotationStart = glm::atan(-AB.z / AB.x) + glm::radians(180.0f + rotationOffset);
 			rotationEnd = glm::atan(-AB.z / AB.x) + glm::radians(rotationOffset);
+
+			glm::vec2 least = { -roadPrefabWidth / 2.0f, -roadPrefabWidth / 2.0f };
+			glm::vec2 most = { glm::length(AB) + roadPrefabWidth / 2.0f, roadPrefabWidth / 2.0f };
+
+			for (Building* building : m_Buildings)
+			{
+				glm::vec2 mtv = Helper::CheckRotatedRectangleCollision(
+					least,
+					most,
+					rotationEnd,
+					glm::vec2{ m_RoadConstructionStartCoordinate.x,m_RoadConstructionStartCoordinate.z },
+					glm::vec2{ building->object->prefab->boundingBoxL.x ,building->object->prefab->boundingBoxL.z },
+					glm::vec2{ building->object->prefab->boundingBoxM.x ,building->object->prefab->boundingBoxM.z },
+					building->object->rotation.y,
+					glm::vec2{ building->position.x,building->position.z }
+				);
+				building->object->tintColor = glm::vec4(1.0f);
+				if (mtv.x != 0.0f || mtv.y != 0.0f)
+					building->object->tintColor = glm::vec4{ 1.0f, 0.3f, 0.2f, 1.0f };
+			}
 
 			m_RoadGuidelinesStart->enabled = !b_RoadConstructionStartSnapped;
 			m_RoadGuidelinesEnd->enabled = !b_RoadConstructionEndSnapped;
@@ -1463,6 +1483,9 @@ namespace Can
 			end->object->enabled = true;
 			end->object->SetTransform(end->position);
 		}
+
+		for (Building* building : m_Buildings)
+			building->object->tintColor = glm::vec4(1.0f);
 
 		for (std::vector<Object*>& os : m_RoadGuidelines)
 			for (Object* rg : os)
