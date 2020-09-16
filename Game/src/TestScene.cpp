@@ -459,6 +459,10 @@ namespace Can
 
 			glm::vec2 least = { -roadPrefabWidth / 2.0f, -roadPrefabWidth / 2.0f };
 			glm::vec2 most = { glm::length(AB) + roadPrefabWidth / 2.0f, roadPrefabWidth / 2.0f };
+			if (m_RoadConstructionStartSnappedEnd || m_RoadConstructionStartSnappedJunction || m_RoadConstructionStartSnappedRoad)
+				least.x = 0.0f;
+			if (m_RoadConstructionEndSnappedEnd || m_RoadConstructionEndSnappedJunction || m_RoadConstructionEndSnappedRoad)
+				most.x = glm::length(AB);
 
 			for (Building* building : m_Buildings)
 			{
@@ -982,6 +986,46 @@ namespace Can
 				m_RoadConstructionType
 			);
 			m_Roads.push_back(newRoad);
+
+			float roadPrefabWidth = m_Parent->roads[m_RoadConstructionType][0]->boundingBoxM.z - m_Parent->roads[m_RoadConstructionType][0]->boundingBoxL.z;
+			glm::vec3 AB = m_RoadConstructionEndCoordinate - m_RoadConstructionStartCoordinate;
+			float rotation = glm::atan(-AB.z / AB.x) + glm::radians((AB.x < 0.0f) * 180.0f);
+
+			glm::vec2 least = { -roadPrefabWidth / 2.0f, -roadPrefabWidth / 2.0f };
+			glm::vec2 most = { glm::length(AB) + roadPrefabWidth / 2.0f, roadPrefabWidth / 2.0f };
+			if (m_RoadConstructionStartSnappedEnd || m_RoadConstructionStartSnappedJunction || m_RoadConstructionStartSnappedRoad)
+				least.x = 0.0f;
+			if (m_RoadConstructionEndSnappedEnd || m_RoadConstructionEndSnappedJunction || m_RoadConstructionEndSnappedRoad)
+				most.x = glm::length(AB);
+
+			for (size_t i = 0; i < m_Buildings.size(); i++)
+			{
+				Building* building = m_Buildings[i];
+				glm::vec2 mtv = Helper::CheckRotatedRectangleCollision(
+					least,
+					most,
+					rotation,
+					glm::vec2{ m_RoadConstructionStartCoordinate.x,m_RoadConstructionStartCoordinate.z },
+					glm::vec2{ building->object->prefab->boundingBoxL.x ,building->object->prefab->boundingBoxL.z },
+					glm::vec2{ building->object->prefab->boundingBoxM.x ,building->object->prefab->boundingBoxM.z },
+					building->object->rotation.y,
+					glm::vec2{ building->position.x,building->position.z }
+				);
+				building->object->tintColor = glm::vec4(1.0f);
+				if (mtv.x != 0.0f || mtv.y != 0.0f)
+				{
+					auto it = std::find(
+						building->connectedRoad->connectedBuildings.begin(),
+						building->connectedRoad->connectedBuildings.end(),
+						building
+					);
+					building->connectedRoad->connectedBuildings.erase(it);
+					m_Buildings.erase(m_Buildings.begin() + i);
+					delete building;
+					i--;
+				}
+			}
+
 
 			if (m_RoadConstructionStartSnappedJunction != nullptr)
 			{
