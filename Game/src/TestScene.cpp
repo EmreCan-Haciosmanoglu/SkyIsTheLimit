@@ -1106,6 +1106,29 @@ namespace Can
 				}
 				m_Roads.push_back(r2);
 
+				float roadWidth = r1->object->prefab->boundingBoxM.z - r1->object->prefab->boundingBoxL.z;
+				r1->object->enabled = true;
+
+				for (Building* building : m_RoadConstructionStartSnappedRoad->connectedBuildings)
+				{
+					glm::vec3 B = building->position - r1->GetStartPosition();
+					float bLength = glm::length(B);
+
+					float angle = glm::acos(glm::dot(r1->direction, B) / bLength);
+
+					float c = bLength * glm::cos(angle);
+					if (c <= 0.0f || c >= r1->length)
+					{
+						r2->connectedBuildings.push_back(building);
+						building->connectedRoad = r2;
+					}
+					else
+					{
+						r1->connectedBuildings.push_back(building);
+						building->connectedRoad = r1;
+					}
+				}
+
 				auto it = std::find(m_Roads.begin(), m_Roads.end(), m_RoadConstructionStartSnappedRoad);
 				m_Roads.erase(it);
 				delete m_RoadConstructionStartSnappedRoad;
@@ -1209,6 +1232,26 @@ namespace Can
 					m_RoadConstructionEndSnappedRoad->endEnd->connectedRoad = r2;
 				}
 				m_Roads.push_back(r2);
+
+				for (Building* building : m_RoadConstructionEndSnappedRoad->connectedBuildings)
+				{
+					glm::vec3 B = building->position - r1->GetStartPosition();
+					float bLength = glm::length(B);
+
+					float angle = glm::acos(glm::dot(r1->direction, B) / bLength);
+
+					float c = bLength * glm::cos(angle);
+					if (c <= 0.0f || c >= r1->length)
+					{
+						r2->connectedBuildings.push_back(building);
+						building->connectedRoad = r2;
+					}
+					else
+					{
+						r1->connectedBuildings.push_back(building);
+						building->connectedRoad = r1;
+					}
+				}
 
 				auto it = std::find(m_Roads.begin(), m_Roads.end(), m_RoadConstructionEndSnappedRoad);
 				m_Roads.erase(it);
