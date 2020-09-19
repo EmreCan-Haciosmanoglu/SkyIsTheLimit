@@ -66,11 +66,14 @@ namespace  Can::Helper
 				glm::dot(axis[i], rotated_rect2[2]),
 				glm::dot(axis[i], rotated_rect2[3])
 			};
+			
 			float s1max = *(std::max_element(scalers1, scalers1 + 4));
-			float s2max = *(std::max_element(scalers2, scalers2 + 4));
 			float s1min = *(std::min_element(scalers1, scalers1 + 4));
+
+			float s2max = *(std::max_element(scalers2, scalers2 + 4));
 			float s2min = *(std::min_element(scalers2, scalers2 + 4));
-			if (s1min > s2max || s2min > s2max)
+
+			if (s1min >= s2max || s2min >= s1max)
 				return glm::vec2(0.0f);
 			float overlap = s1max > s2max ? s1min - s2max : s1max - s2min;
 

@@ -11,6 +11,11 @@
 
 namespace Can
 {
+	std::vector<Road*> TestScene::m_Roads = {};
+	std::vector<Junction*> TestScene::m_Junctions = {};
+	std::vector<End*> TestScene::m_Ends = {};
+	std::vector<Building*> TestScene::m_Buildings = {};
+
 	TestScene::TestScene(GameApp* parent)
 		: m_Parent(parent)
 		, m_Terrain(new Object(m_Parent->terrainPrefab, m_Parent->terrainPrefab, { 0.0f, 0.0f, 0.0f, }, { 1.0f, 1.0f, 1.0f, }, { 0.0f, 0.0f, 0.0f, }))
@@ -19,8 +24,8 @@ namespace Can
 			1280.0f / 720.0f,
 			0.1f,
 			1000.0f,
-			glm::vec3{ 16.0f, 15.0f, -15.0f },
-			glm::vec3{ -90.0f, 0.0f, 0.0f }
+			glm::vec3{ 11.0f, 15.0f, -10.0f },
+			glm::vec3{ -60.0f, 0.0f, 0.0f }
 		)
 	{
 		m_RoadGuidelinesStart = new Object(m_Parent->roads[m_RoadConstructionType][2], m_Parent->roads[m_RoadConstructionType][2], { 0.0f, 0.0f, 0.0f, }, { 1.0f, 1.0f, 1.0f, }, { 0.0f, 0.0f, 0.0f, });
@@ -77,6 +82,7 @@ namespace Can
 				case Can::BuildingConstructionMode::Upgrade:
 					break;
 				case Can::BuildingConstructionMode::Destruct:
+					OnUpdate_BuildingDestruction(I, camPos, forward);
 					break;
 				default:
 					break;
@@ -449,12 +455,36 @@ namespace Can
 					AB = m_RoadConstructionEndCoordinate - m_RoadConstructionStartCoordinate;
 				}
 			}
-			
+
 			glm::vec3 normalizedAB = glm::normalize(AB);
 
-			rotationOffset = AB.x < 0.0f ? 180.0f : 0.0f;
+			rotationOffset = (AB.x < 0.0f) * 180.0f;
 			rotationStart = glm::atan(-AB.z / AB.x) + glm::radians(180.0f + rotationOffset);
 			rotationEnd = glm::atan(-AB.z / AB.x) + glm::radians(rotationOffset);
+
+			glm::vec2 least = { -roadPrefabWidth / 2.0f, -roadPrefabWidth / 2.0f };
+			glm::vec2 most = { glm::length(AB) + roadPrefabWidth / 2.0f, roadPrefabWidth / 2.0f };
+			if (m_RoadConstructionStartSnappedEnd || m_RoadConstructionStartSnappedJunction || m_RoadConstructionStartSnappedRoad)
+				least.x = 0.0f;
+			if (m_RoadConstructionEndSnappedEnd || m_RoadConstructionEndSnappedJunction || m_RoadConstructionEndSnappedRoad)
+				most.x = glm::length(AB);
+
+			for (Building* building : m_Buildings)
+			{
+				glm::vec2 mtv = Helper::CheckRotatedRectangleCollision(
+					least,
+					most,
+					rotationEnd,
+					glm::vec2{ m_RoadConstructionStartCoordinate.x,m_RoadConstructionStartCoordinate.z },
+					glm::vec2{ building->object->prefab->boundingBoxL.x ,building->object->prefab->boundingBoxL.z },
+					glm::vec2{ building->object->prefab->boundingBoxM.x ,building->object->prefab->boundingBoxM.z },
+					building->object->rotation.y,
+					glm::vec2{ building->position.x,building->position.z }
+				);
+				building->object->tintColor = glm::vec4(1.0f);
+				if (mtv.x != 0.0f || mtv.y != 0.0f)
+					building->object->tintColor = glm::vec4{ 1.0f, 0.3f, 0.2f, 1.0f };
+			}
 
 			m_RoadGuidelinesStart->enabled = !b_RoadConstructionStartSnapped;
 			m_RoadGuidelinesEnd->enabled = !b_RoadConstructionEndSnapped;
@@ -761,7 +791,7 @@ namespace Can
 						{ object->prefab->boundingBoxL.x, object->prefab->boundingBoxL.z },
 						{ object->prefab->boundingBoxM.x, object->prefab->boundingBoxM.z },
 						object->rotation.y,
-						{ object->position.x,object->position.z },
+						{ object->position.x, object->position.z },
 						boundingSquareL,
 						boundingSquareM,
 						m_BuildingConstructionRotation.y,
@@ -780,6 +810,26 @@ namespace Can
 
 		b_ConstructionRestricted = !snappedToRoad;
 		m_BuildingGuideline->tintColor = b_ConstructionRestricted ? glm::vec4{ 1.0f, 0.3f, 0.2f, 1.0f } : glm::vec4(1.0f);
+	}
+	void TestScene::OnUpdate_BuildingDestruction(glm::vec3 prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection)
+	{
+		m_BuildingDestructionSnappedBuilding = nullptr;
+		for (Building* building : m_Buildings)
+		{
+			building->object->tintColor = glm::vec4(1.0f);
+
+			if (Helper::CheckBoundingBoxHit(
+				cameraPosition,
+				cameraDirection,
+				building->object->prefab->boundingBoxL + building->position,
+				building->object->prefab->boundingBoxM + building->position
+			))
+			{
+				m_BuildingDestructionSnappedBuilding = building;
+				building->object->tintColor = glm::vec4{ 1.0f, 0.3f, 0.2f, 1.0f };
+				break;
+			}
+		}
 	}
 
 	void TestScene::OnEvent(Can::Event::Event& event)
@@ -844,6 +894,9 @@ namespace Can
 			case Can::BuildingConstructionMode::Upgrade:
 				break;
 			case Can::BuildingConstructionMode::Destruct:
+				if (button != MouseCode::Button0)
+					return false;
+				OnMousePressed_BuildingDestruction();
 				break;
 			default:
 				break;
@@ -939,6 +992,46 @@ namespace Can
 			);
 			m_Roads.push_back(newRoad);
 
+			float roadPrefabWidth = m_Parent->roads[m_RoadConstructionType][0]->boundingBoxM.z - m_Parent->roads[m_RoadConstructionType][0]->boundingBoxL.z;
+			glm::vec3 AB = m_RoadConstructionEndCoordinate - m_RoadConstructionStartCoordinate;
+			float rotation = glm::atan(-AB.z / AB.x) + glm::radians((AB.x < 0.0f) * 180.0f);
+
+			glm::vec2 least = { -roadPrefabWidth / 2.0f, -roadPrefabWidth / 2.0f };
+			glm::vec2 most = { glm::length(AB) + roadPrefabWidth / 2.0f, roadPrefabWidth / 2.0f };
+			if (m_RoadConstructionStartSnappedEnd || m_RoadConstructionStartSnappedJunction || m_RoadConstructionStartSnappedRoad)
+				least.x = 0.0f;
+			if (m_RoadConstructionEndSnappedEnd || m_RoadConstructionEndSnappedJunction || m_RoadConstructionEndSnappedRoad)
+				most.x = glm::length(AB);
+
+			for (size_t i = 0; i < m_Buildings.size(); i++)
+			{
+				Building* building = m_Buildings[i];
+				glm::vec2 mtv = Helper::CheckRotatedRectangleCollision(
+					least,
+					most,
+					rotation,
+					glm::vec2{ m_RoadConstructionStartCoordinate.x,m_RoadConstructionStartCoordinate.z },
+					glm::vec2{ building->object->prefab->boundingBoxL.x ,building->object->prefab->boundingBoxL.z },
+					glm::vec2{ building->object->prefab->boundingBoxM.x ,building->object->prefab->boundingBoxM.z },
+					building->object->rotation.y,
+					glm::vec2{ building->position.x,building->position.z }
+				);
+				building->object->tintColor = glm::vec4(1.0f);
+				if (mtv.x != 0.0f || mtv.y != 0.0f)
+				{
+					auto it = std::find(
+						building->connectedRoad->connectedBuildings.begin(),
+						building->connectedRoad->connectedBuildings.end(),
+						building
+					);
+					building->connectedRoad->connectedBuildings.erase(it);
+					m_Buildings.erase(m_Buildings.begin() + i);
+					delete building;
+					i--;
+				}
+			}
+
+
 			if (m_RoadConstructionStartSnappedJunction != nullptr)
 			{
 				newRoad->startJunction = m_RoadConstructionStartSnappedJunction;
@@ -1017,6 +1110,29 @@ namespace Can
 					m_RoadConstructionStartSnappedRoad->endEnd->connectedRoad = r2;
 				}
 				m_Roads.push_back(r2);
+
+				float roadWidth = r1->object->prefab->boundingBoxM.z - r1->object->prefab->boundingBoxL.z;
+				r1->object->enabled = true;
+
+				for (Building* building : m_RoadConstructionStartSnappedRoad->connectedBuildings)
+				{
+					glm::vec3 B = building->position - r1->GetStartPosition();
+					float bLength = glm::length(B);
+
+					float angle = glm::acos(glm::dot(r1->direction, B) / bLength);
+
+					float c = bLength * glm::cos(angle);
+					if (c <= 0.0f || c >= r1->length)
+					{
+						r2->connectedBuildings.push_back(building);
+						building->connectedRoad = r2;
+					}
+					else
+					{
+						r1->connectedBuildings.push_back(building);
+						building->connectedRoad = r1;
+					}
+				}
 
 				auto it = std::find(m_Roads.begin(), m_Roads.end(), m_RoadConstructionStartSnappedRoad);
 				m_Roads.erase(it);
@@ -1122,6 +1238,26 @@ namespace Can
 				}
 				m_Roads.push_back(r2);
 
+				for (Building* building : m_RoadConstructionEndSnappedRoad->connectedBuildings)
+				{
+					glm::vec3 B = building->position - r1->GetStartPosition();
+					float bLength = glm::length(B);
+
+					float angle = glm::acos(glm::dot(r1->direction, B) / bLength);
+
+					float c = bLength * glm::cos(angle);
+					if (c <= 0.0f || c >= r1->length)
+					{
+						r2->connectedBuildings.push_back(building);
+						building->connectedRoad = r2;
+					}
+					else
+					{
+						r1->connectedBuildings.push_back(building);
+						building->connectedRoad = r1;
+					}
+				}
+
 				auto it = std::find(m_Roads.begin(), m_Roads.end(), m_RoadConstructionEndSnappedRoad);
 				m_Roads.erase(it);
 				delete m_RoadConstructionEndSnappedRoad;
@@ -1175,9 +1311,29 @@ namespace Can
 	{
 		if (!b_ConstructionRestricted)
 		{
-			m_BuildingConstructionSnappedRoad->connectedBuildings.push_back(new Building(m_BuildingGuideline->type, m_BuildingConstructionSnappedRoad, m_BuildingConstructionCoordinate, m_BuildingConstructionRotation));
+			Building* newBuilding = new Building(m_BuildingGuideline->type, m_BuildingConstructionSnappedRoad, m_BuildingConstructionCoordinate, m_BuildingConstructionRotation);
+			m_BuildingConstructionSnappedRoad->connectedBuildings.push_back(newBuilding);
+			m_Buildings.push_back(newBuilding);
 			ResetStates();
 			m_BuildingGuideline->enabled = true;
+		}
+		return false;
+	}
+	bool TestScene::OnMousePressed_BuildingDestruction()
+	{
+		if (m_BuildingDestructionSnappedBuilding)
+		{
+			if (m_BuildingDestructionSnappedBuilding->connectedRoad)
+			{
+				std::vector<Building*> connectedBuildings = m_BuildingDestructionSnappedBuilding->connectedRoad->connectedBuildings;
+				auto it = std::find(connectedBuildings.begin(), connectedBuildings.end(), m_BuildingDestructionSnappedBuilding);
+				connectedBuildings.erase(it);
+			}
+			{
+				auto it = std::find(m_Buildings.begin(), m_Buildings.end(), m_BuildingDestructionSnappedBuilding);
+				m_Buildings.erase(it);
+			}
+			delete m_BuildingDestructionSnappedBuilding;
 		}
 		return false;
 	}
@@ -1245,6 +1401,7 @@ namespace Can
 			else
 				junction->ReconstructObject();
 		}
+
 		if (road->endEnd != nullptr)
 		{
 			auto endPosition = std::find(m_Ends.begin(), m_Ends.end(), road->endEnd);
@@ -1298,6 +1455,13 @@ namespace Can
 		}
 		auto position = std::find(m_Roads.begin(), m_Roads.end(), road);
 		m_Roads.erase(position);
+
+		for (Building* building : road->connectedBuildings)
+		{
+			m_Buildings.erase(std::find(m_Buildings.begin(), m_Buildings.end(), building));
+			delete building;
+		}
+
 		delete road;
 	}
 
@@ -1411,6 +1575,9 @@ namespace Can
 			end->object->enabled = true;
 			end->object->SetTransform(end->position);
 		}
+
+		for (Building* building : m_Buildings)
+			building->object->tintColor = glm::vec4(1.0f);
 
 		for (std::vector<Object*>& os : m_RoadGuidelines)
 			for (Object* rg : os)
