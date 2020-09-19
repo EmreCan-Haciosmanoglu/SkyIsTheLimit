@@ -104,6 +104,13 @@ namespace Can
 		size_t m_RoadConstructionType = 0;
 		size_t m_BuildingType = 0;
 
+	public:
+
+		static std::vector<Road*> m_Roads;
+		static std::vector<Junction*> m_Junctions;
+		static std::vector<End*> m_Ends;
+		static std::vector<Building*> m_Buildings;
+
 	private:
 		GameApp* m_Parent;
 		Object* m_Terrain;
@@ -142,11 +149,6 @@ namespace Can
 
 		// Building Destruction Snap
 		Building* m_BuildingDestructionSnappedBuilding = nullptr;
-
-		std::vector<Road*> m_Roads;
-		std::vector<Junction*> m_Junctions;
-		std::vector<End*> m_Ends;
-		std::vector<Building*> m_Buildings;
 
 		std::vector<std::vector<Object*>> m_RoadGuidelines;
 		std::vector<size_t> m_RoadGuidelinesInUse;

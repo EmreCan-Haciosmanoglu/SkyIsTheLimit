@@ -11,6 +11,11 @@
 
 namespace Can
 {
+	std::vector<Road*> TestScene::m_Roads = {};
+	std::vector<Junction*> TestScene::m_Junctions = {};
+	std::vector<End*> TestScene::m_Ends = {};
+	std::vector<Building*> TestScene::m_Buildings = {};
+
 	TestScene::TestScene(GameApp* parent)
 		: m_Parent(parent)
 		, m_Terrain(new Object(m_Parent->terrainPrefab, m_Parent->terrainPrefab, { 0.0f, 0.0f, 0.0f, }, { 1.0f, 1.0f, 1.0f, }, { 0.0f, 0.0f, 0.0f, }))

@@ -8,6 +8,8 @@
 
 #include "Helper.h"
 
+#include "TestScene.h"
+
 namespace Can
 {
 	Road::Road(Road* road, const glm::vec3& startPos, const glm::vec3& endPos)
@@ -133,6 +135,29 @@ namespace Can
 			delete object;
 
 		ConstructObject(prefab);
+
+		for (size_t i = 0; i < connectedBuildings.size(); i++)
+		{
+			Building* building = connectedBuildings[i];
+			glm::vec3 B = building->position - startPosition;
+			float bLength = glm::length(B);
+
+			float angle = glm::acos(glm::dot(direction, B) / bLength);
+
+			float c = bLength * glm::cos(angle);
+			if (c <= 0.0f || c >= length)
+			{
+				auto it = std::find(
+					TestScene::m_Buildings.begin(),
+					TestScene::m_Buildings.end(),
+					building
+				);
+				TestScene::m_Buildings.erase(it);
+				connectedBuildings.erase(connectedBuildings.begin() + i);
+				delete building;
+				i--;
+			}
+		}
 	}
 
 	void Road::SetStartPosition(const glm::vec3& pos)
