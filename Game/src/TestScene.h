@@ -132,7 +132,7 @@ namespace Can
 
 		// Building Construction Transforms
 		glm::vec3 m_BuildingConstructionCoordinate = { -1.0f, -1.0f, -1.0f };
-		glm::vec3 m_BuildingConstructionRotation = { -1.0f, -1.0f, -1.0f };
+		glm::vec3 m_BuildingConstructionRotation = { 0.0f, 0.0f, 0.0f };
 
 		// Road Construction Start Snap
 		Junction* m_RoadConstructionStartSnappedJunction = nullptr;
