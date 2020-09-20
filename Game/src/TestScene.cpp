@@ -809,7 +809,37 @@ namespace Can
 			}
 		}
 
-		b_ConstructionRestricted = (buildingRestrictionOptions[3] && !snappedToRoad);
+		bool collidedWithRoad = false;
+		if (buildingRestrictionOptions[0])
+		{
+			glm::vec2 buildingL = { selectedBuilding->boundingBoxL.x, selectedBuilding->boundingBoxL.z };
+			glm::vec2 buildingM = { selectedBuilding->boundingBoxM.x, selectedBuilding->boundingBoxM.z };
+			for (Road* road : m_Roads)
+			{
+				if (road == m_BuildingConstructionSnappedRoad)
+					continue;
+				float roadHalfWidth = (road->object->prefab->boundingBoxM.z - road->object->prefab->boundingBoxL.z) / 2.0f;
+				glm::vec2 roadL = { 0.0f, -roadHalfWidth };
+				glm::vec2 roadM = { road->length, roadHalfWidth };
+				glm::vec2 mtv = Helper::CheckRotatedRectangleCollision(
+					roadL,
+					roadM,
+					road->rotation.y,
+					glm::vec2{ road->GetStartPosition().x, road->GetStartPosition().z },
+					buildingL,
+					buildingM,
+					m_BuildingConstructionRotation.y,
+					glm::vec2{ m_BuildingConstructionCoordinate.x, m_BuildingConstructionCoordinate.z }
+				);
+				if (mtv.x != 0.0f || mtv.y != 0.0f)
+				{
+					collidedWithRoad = true;
+					break;
+				}
+			}
+		}
+
+		b_ConstructionRestricted = (buildingRestrictionOptions[3] && !snappedToRoad) || collidedWithRoad;
 		m_BuildingGuideline->tintColor = b_ConstructionRestricted ? glm::vec4{ 1.0f, 0.3f, 0.2f, 1.0f } : glm::vec4(1.0f);
 	}
 	void TestScene::OnUpdate_BuildingDestruction(glm::vec3 prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection)
