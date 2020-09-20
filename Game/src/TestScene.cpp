@@ -839,7 +839,13 @@ namespace Can
 			}
 		}
 
-		b_ConstructionRestricted = (buildingRestrictionOptions[3] && !snappedToRoad) || collidedWithRoad;
+		bool collidedWithOtherObjects = false;
+		if (buildingRestrictionOptions[2])
+		{
+
+		}
+
+		b_ConstructionRestricted = (buildingRestrictionOptions[3] && !snappedToRoad) || collidedWithRoad || collidedWithOtherObjects;
 		m_BuildingGuideline->tintColor = b_ConstructionRestricted ? glm::vec4{ 1.0f, 0.3f, 0.2f, 1.0f } : glm::vec4(1.0f);
 	}
 	void TestScene::OnUpdate_BuildingDestruction(glm::vec3 prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection)
