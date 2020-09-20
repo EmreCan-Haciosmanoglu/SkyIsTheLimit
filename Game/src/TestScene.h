@@ -67,7 +67,7 @@ namespace Can
 		void DeleteSelectedRoad(Road* road);
 
 		void SetSelectedConstructionBuilding(size_t index);
-		
+
 		void SetConstructionMode(ConstructionMode mode);
 		void SetRoadConstructionMode(RoadConstructionMode mode);
 		void SetBuildingConstructionMode(BuildingConstructionMode mode);
@@ -97,7 +97,12 @@ namespace Can
 		// 3 : Collision with buildings
 		// 4 : Collision with other objects
 
-		std::array<bool, 3> buildingRestrictionOptions = { false, false, false };
+		std::array<bool, 4> buildingRestrictionOptions = { true, true, true, true };
+		// 0 : Collision with roads
+		// 1 : Collision with other buildings
+		// 2 : Collision with other objects
+		// 3 : Snapping to a road
+
 		RoadConstructionMode m_RoadConstructionMode = RoadConstructionMode::Construct;
 		BuildingConstructionMode m_BuildingConstructionMode = BuildingConstructionMode::Construct;
 		ConstructionMode m_ConstructionMode = ConstructionMode::Road;
