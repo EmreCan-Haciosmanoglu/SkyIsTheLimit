@@ -729,6 +729,7 @@ namespace Can
 		b_ConstructionRestricted = true;
 		m_BuildingConstructionSnappedRoad = nullptr;
 		m_BuildingGuideline->SetTransform(prevLocation);
+		m_BuildingConstructionCoordinate = prevLocation;
 
 		Prefab* selectedBuilding = m_BuildingGuideline->type;
 		float buildingWidth = selectedBuilding->boundingBoxM.z - selectedBuilding->boundingBoxL.z;
@@ -808,7 +809,71 @@ namespace Can
 			}
 		}
 
-		b_ConstructionRestricted = !snappedToRoad;
+		bool collidedWithRoad = false;
+		if (buildingRestrictionOptions[0])
+		{
+			glm::vec2 buildingL = { selectedBuilding->boundingBoxL.x, selectedBuilding->boundingBoxL.z };
+			glm::vec2 buildingM = { selectedBuilding->boundingBoxM.x, selectedBuilding->boundingBoxM.z };
+			for (Road* road : m_Roads)
+			{
+				if (road == m_BuildingConstructionSnappedRoad)
+					continue;
+				float roadHalfWidth = (road->object->prefab->boundingBoxM.z - road->object->prefab->boundingBoxL.z) / 2.0f;
+				glm::vec2 roadL = { 0.0f, -roadHalfWidth };
+				glm::vec2 roadM = { road->length, roadHalfWidth };
+				glm::vec2 mtv = Helper::CheckRotatedRectangleCollision(
+					roadL,
+					roadM,
+					road->rotation.y,
+					glm::vec2{ road->GetStartPosition().x, road->GetStartPosition().z },
+					buildingL,
+					buildingM,
+					m_BuildingConstructionRotation.y,
+					glm::vec2{ m_BuildingConstructionCoordinate.x, m_BuildingConstructionCoordinate.z }
+				);
+				if (mtv.x != 0.0f || mtv.y != 0.0f)
+				{
+					collidedWithRoad = true;
+					break;
+				}
+			}
+		}
+
+		bool collidedWithOtherBuildings = false;
+		if (buildingRestrictionOptions[1])
+		{
+			glm::vec2 buildingL = { selectedBuilding->boundingBoxL.x, selectedBuilding->boundingBoxL.z };
+			glm::vec2 buildingM = { selectedBuilding->boundingBoxM.x, selectedBuilding->boundingBoxM.z };
+			for (Building* building: m_Buildings)
+			{
+				glm::vec2 bL = { building->object->prefab->boundingBoxL.x, building->object->prefab->boundingBoxL.z };
+				glm::vec2 bM = { building->object->prefab->boundingBoxM.x, building->object->prefab->boundingBoxM.z };
+
+				glm::vec2 mtv = Helper::CheckRotatedRectangleCollision(
+					bL,
+					bM,
+					building->object->rotation.y,
+					glm::vec2{ building->position.x, building->position.z },
+					buildingL,
+					buildingM,
+					m_BuildingConstructionRotation.y,
+					glm::vec2{ m_BuildingConstructionCoordinate.x, m_BuildingConstructionCoordinate.z }
+				);
+				if (mtv.x != 0.0f || mtv.y != 0.0f)
+				{
+					collidedWithOtherBuildings = true;
+					break;
+				}
+			}
+		}
+
+		bool collidedWithOtherObjects = false;
+		if (buildingRestrictionOptions[2])
+		{
+
+		}
+
+		b_ConstructionRestricted = (buildingRestrictionOptions[3] && !snappedToRoad) || collidedWithRoad || collidedWithOtherObjects || collidedWithOtherBuildings;
 		m_BuildingGuideline->tintColor = b_ConstructionRestricted ? glm::vec4{ 1.0f, 0.3f, 0.2f, 1.0f } : glm::vec4(1.0f);
 	}
 	void TestScene::OnUpdate_BuildingDestruction(glm::vec3 prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection)
@@ -1019,12 +1084,15 @@ namespace Can
 				building->object->tintColor = glm::vec4(1.0f);
 				if (mtv.x != 0.0f || mtv.y != 0.0f)
 				{
-					auto it = std::find(
-						building->connectedRoad->connectedBuildings.begin(),
-						building->connectedRoad->connectedBuildings.end(),
-						building
-					);
-					building->connectedRoad->connectedBuildings.erase(it);
+					if (building->connectedRoad)
+					{
+						auto it = std::find(
+							building->connectedRoad->connectedBuildings.begin(),
+							building->connectedRoad->connectedBuildings.end(),
+							building
+						);
+						building->connectedRoad->connectedBuildings.erase(it);
+					}
 					m_Buildings.erase(m_Buildings.begin() + i);
 					delete building;
 					i--;
@@ -1312,7 +1380,8 @@ namespace Can
 		if (!b_ConstructionRestricted)
 		{
 			Building* newBuilding = new Building(m_BuildingGuideline->type, m_BuildingConstructionSnappedRoad, m_BuildingConstructionCoordinate, m_BuildingConstructionRotation);
-			m_BuildingConstructionSnappedRoad->connectedBuildings.push_back(newBuilding);
+			if (m_BuildingConstructionSnappedRoad)
+				m_BuildingConstructionSnappedRoad->connectedBuildings.push_back(newBuilding);
 			m_Buildings.push_back(newBuilding);
 			ResetStates();
 			m_BuildingGuideline->enabled = true;
@@ -1542,7 +1611,7 @@ namespace Can
 		m_RoadConstructionEndCoordinate = { -1.0f, -1.0f, -1.0f };
 
 		m_BuildingConstructionCoordinate = { -1.0f, -1.0f, -1.0f };
-		m_BuildingConstructionRotation = { -1.0f, -1.0f, -1.0f };
+		m_BuildingConstructionRotation = { 0.0f, 0.0f, 0.0f };
 
 		m_RoadConstructionStartSnappedJunction = nullptr;
 		m_RoadConstructionStartSnappedEnd = nullptr;
