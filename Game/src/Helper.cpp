@@ -24,6 +24,72 @@ namespace  Can::Helper
 			(farPlaneCollisionPoint.x >= least.x && farPlaneCollisionPoint.x <= most.x && farPlaneCollisionPoint.y >= least.y && farPlaneCollisionPoint.y <= most.y);
 	}
 
+	//delete later
+	std::array<glm::vec2, 4> getAxis(const std::array<glm::vec2, 4>& c1, const std::array<glm::vec2, 4>& c2)
+	{
+		return std::array<glm::vec2, 4>{
+			glm::normalize(c1[1] - c1[0]),
+				glm::normalize(c1[3] - c1[0]),
+				glm::normalize(c2[1] - c2[0]),
+				glm::normalize(c2[3] - c2[0])
+		};
+	}
+
+	glm::vec2 CheckRotatedRectangleCollision(const glm::vec2& r1l, const glm::vec2& r1m, float rot1, const glm::vec2& pos1, const glm::vec2& r2l, const glm::vec2& r2m, float rot2, const glm::vec2& pos2)
+	{
+		std::array<glm::vec2, 4> rotated_rect1 = {
+			RotateAPointAroundAPoint(glm::vec2{ r1l.x, r1l.y }, -rot1) + pos1,
+			RotateAPointAroundAPoint(glm::vec2{ r1l.x, r1m.y }, -rot1) + pos1,
+			RotateAPointAroundAPoint(glm::vec2{ r1m.x, r1m.y }, -rot1) + pos1,
+			RotateAPointAroundAPoint(glm::vec2{ r1m.x, r1l.y }, -rot1) + pos1
+		};
+		std::array<glm::vec2, 4> rotated_rect2 = {
+			RotateAPointAroundAPoint(glm::vec2{ r2l.x, r2l.y }, -rot2) + pos2,
+			RotateAPointAroundAPoint(glm::vec2{ r2l.x, r2m.y }, -rot2) + pos2,
+			RotateAPointAroundAPoint(glm::vec2{ r2m.x, r2m.y }, -rot2) + pos2,
+			RotateAPointAroundAPoint(glm::vec2{ r2m.x, r2l.y }, -rot2) + pos2
+		};
+
+		std::array<glm::vec2, 4> axis = getAxis(rotated_rect1, rotated_rect2);
+		std::array<glm::vec2, 4> mtvs;
+		for (size_t i = 0; i < 4; i++)
+		{
+			float scalers1[] = {
+				glm::dot(axis[i], rotated_rect1[0]),
+				glm::dot(axis[i], rotated_rect1[1]),
+				glm::dot(axis[i], rotated_rect1[2]),
+				glm::dot(axis[i], rotated_rect1[3])
+			};
+			float scalers2[] = {
+				glm::dot(axis[i], rotated_rect2[0]),
+				glm::dot(axis[i], rotated_rect2[1]),
+				glm::dot(axis[i], rotated_rect2[2]),
+				glm::dot(axis[i], rotated_rect2[3])
+			};
+			
+			float s1max = *(std::max_element(scalers1, scalers1 + 4));
+			float s1min = *(std::min_element(scalers1, scalers1 + 4));
+
+			float s2max = *(std::max_element(scalers2, scalers2 + 4));
+			float s2min = *(std::min_element(scalers2, scalers2 + 4));
+
+			if (s1min >= s2max || s2min >= s1max)
+				return glm::vec2(0.0f);
+			float overlap = s1max > s2max ? s1min - s2max : s1max - s2min;
+
+			mtvs[i] = axis[i] * overlap;
+		}
+		struct less_than_key
+		{
+			inline bool operator() (const glm::vec2& v1, const glm::vec2& v2)
+			{
+				return (glm::length(v1) < glm::length(v2));
+			}
+		};
+		std::sort(mtvs.begin(), mtvs.end(), less_than_key());
+		return mtvs[0];
+	}
+
 	glm::vec3 RayPlaneIntersection(const glm::vec3& X, const glm::vec3& v, const glm::vec3& C, const glm::vec3& n)
 	{
 		glm::vec3 w = C - X;
