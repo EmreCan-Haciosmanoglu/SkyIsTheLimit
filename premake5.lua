@@ -19,7 +19,8 @@ project "Game"
         "$(SolutionDir)Can/vendor/spdlog/include",
         "$(SolutionDir)Can/src",
         "$(SolutionDir)%{IncludeDir.imgui}",
-        "$(SolutionDir)%{IncludeDir.glm}"
+        "$(SolutionDir)%{IncludeDir.glm}",
+        "$(SolutionDir)%{IncludeDir.EnTT}"
     }
     
     links

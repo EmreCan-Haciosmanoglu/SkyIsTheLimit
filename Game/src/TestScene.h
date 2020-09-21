@@ -3,91 +3,43 @@
 
 namespace Can
 {
+	class GameApp;
+
 	class Road;
 	class Junction;
 	class End;
 
-	struct Road {
-		glm::vec3 startPos;
-		glm::vec3 endPos;
-		Can::Object* object = nullptr;
-		Junction* startJunction = nullptr;
-		Junction* endJunction = nullptr;
-		End* startEnd = nullptr;
-		End* endEnd = nullptr;
-	};
+	class Building;
 
-	struct sort_with_angle
+	enum class RoadConstructionMode
 	{
-		inline bool operator() (const Road* road1, const Road* road2)
-		{
-			glm::vec3 R0R1_1;
-			glm::vec3 R0R1_2;
-			if (
-				road1->endJunction != nullptr &&
-				road2->endJunction != nullptr &&
-				road1->endJunction == road2->endJunction
-				)
-			{
-				R0R1_1 = road1->startPos - road1->endPos;
-				R0R1_2 = road2->startPos - road2->endPos;
-			}
-			else if (
-				road1->endJunction != nullptr &&
-				road2->startJunction != nullptr &&
-				road1->endJunction == road2->startJunction
-				)
-			{
-				R0R1_1 = road1->startPos - road1->endPos;
-				R0R1_2 = road2->endPos - road2->startPos;
-			}
-			else if (
-				road1->startJunction != nullptr &&
-				road2->endJunction != nullptr &&
-				road1->startJunction == road2->endJunction
-				)
-			{
-				R0R1_1 = road1->endPos - road1->startPos;
-				R0R1_2 = road2->startPos - road2->endPos;
-			}
-			else if (
-				road1->startJunction != nullptr &&
-				road2->startJunction != nullptr &&
-				road1->startJunction == road2->startJunction
-				)
-			{
-				R0R1_1 = road1->endPos - road1->startPos;
-				R0R1_2 = road2->endPos - road2->startPos;
-			}
-			else
-			{
-				R0R1_1 = { 0.01f, 1.0f, 0.01f };
-				R0R1_2 = { 0.01f, 1.0f, 0.01f };
-			}
-
-			float ed1 = R0R1_1.x <= 0.0f ? 180.0f : 0.0f;
-			float ed2 = R0R1_2.x <= 0.0f ? 180.0f : 0.0f;
-
-			float angleR0R1_1 = std::fmod(glm::degrees(glm::atan(-R0R1_1.z / R0R1_1.x)) + ed1 + 360.0f, 360.0f);
-			float angleR0R1_2 = std::fmod(glm::degrees(glm::atan(-R0R1_2.z / R0R1_2.x)) + ed2 + 360.0f, 360.0f);
-
-			return (angleR0R1_1 < angleR0R1_2);
-		}
+		None,
+		Construct,
+		Upgrade,
+		Destruct
+	};
+	enum class BuildingConstructionMode
+	{
+		None,
+		Construct,
+		Upgrade,
+		Destruct
+	};
+	enum class ConstructionMode
+	{
+		Road,
+		Building
 	};
 
-	struct Junction {
-		glm::vec3 position;
-		Can::Object* object = nullptr;
-		std::vector<Road*> connectedRoads;
-	};
-	struct End {
-		glm::vec3 position;
-		glm::vec2 rotation;
-		Can::Object* object = nullptr;
-		Road* connectedRoad = nullptr;
+	struct RoadSnapInformation
+	{
+		bool snapped;
+		glm::vec3 snapLocation;
+		Junction* snappedJunction = nullptr;
+		End* snappedEnd = nullptr;
+		Road* snappedRoad = nullptr;
 	};
 
-	class GameApp;
 	class TestScene : public Can::Layer::Layer
 	{
 	public:
@@ -98,53 +50,118 @@ namespace Can
 		virtual void OnDetach() override {}
 
 		virtual void OnUpdate(Can::TimeStep ts) override;
+		void OnUpdate_RoadConstruction(glm::vec3 prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection);
+		void OnUpdate_RoadDestruction(glm::vec3 prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection);
+		void OnUpdate_BuildingConstruction(glm::vec3 prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection);
+		void OnUpdate_BuildingDestruction(glm::vec3 prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection);
+
 		virtual void OnEvent(Can::Event::Event& event) override;
 
 		bool OnMousePressed(Can::Event::MouseButtonPressedEvent& event);
-	private:
+		bool OnMousePressed_RoadConstruction(const glm::vec3& cameraPosition, const glm::vec3& cameraDirection);
+		bool OnMousePressed_RoadDestruction();
+		bool OnMousePressed_BuildingConstruction();
+		bool OnMousePressed_BuildingDestruction();
 
+		void SetSelectedConstructionRoad(size_t index);
+		void DeleteSelectedRoad(Road* road);
+
+		void SetSelectedConstructionBuilding(size_t index);
+
+		void SetConstructionMode(ConstructionMode mode);
+		void SetRoadConstructionMode(RoadConstructionMode mode);
+		void SetBuildingConstructionMode(BuildingConstructionMode mode);
+
+		void ResetStates();
+
+	private:
 		glm::vec3 GetRayCastedFromScreen();
+		RoadSnapInformation DidRoadSnapped(const glm::vec3& cameraPosition, const glm::vec3& cameraDirection);
+
+	public:
+		std::array<bool, 5> roadSnapOptions = { true, true, false, true, false };
+		// 0 : Roads
+		// 1 : Length
+		// 2 : Height
+		// 3 : Angle
+		// 4 : Grid
+
+		std::array<bool, 2> buildingSnapOptions = { true, true };
+		// 0 : Roads
+		// 1 : Buildings
+
+		std::array<bool, 5> roadRestrictionOptions = { true, true, true, true, true };
+		// 0 : Small Angle
+		// 1 : Short Length
+		// 2 : Collision with other roads
+		// 3 : Collision with buildings
+		// 4 : Collision with other objects
+
+		std::array<bool, 4> buildingRestrictionOptions = { true, true, true, true };
+		// 0 : Collision with roads
+		// 1 : Collision with other buildings
+		// 2 : Collision with other objects
+		// 3 : Snapping to a road
+
+		RoadConstructionMode m_RoadConstructionMode = RoadConstructionMode::Construct;
+		BuildingConstructionMode m_BuildingConstructionMode = BuildingConstructionMode::Construct;
+		ConstructionMode m_ConstructionMode = ConstructionMode::Road;
+		size_t m_RoadConstructionType = 0;
+		size_t m_BuildingType = 0;
+
+	public:
+
+		static std::vector<Road*> m_Roads;
+		static std::vector<Junction*> m_Junctions;
+		static std::vector<End*> m_Ends;
+		static std::vector<Building*> m_Buildings;
 
 	private:
 		GameApp* m_Parent;
-		Can::Camera::Controller::Perspective m_MainCameraController;
+		Object* m_Terrain;
+		Camera::Controller::Perspective m_MainCameraController;
 
 		bool b_RoadConstructionStarted = false;
 		bool b_RoadConstructionEnded = false;
 		bool b_RoadConstructionStartSnapped = false;
 		bool b_RoadConstructionEndSnapped = false;
 
+		// Road Construction Transforms
 		glm::vec3 m_RoadConstructionStartCoordinate = { -1.0f, -1.0f, -1.0f };
 		glm::vec3 m_RoadConstructionEndCoordinate = { -1.0f, -1.0f, -1.0f };
 
+		// Building Construction Transforms
+		glm::vec3 m_BuildingConstructionCoordinate = { -1.0f, -1.0f, -1.0f };
+		glm::vec3 m_BuildingConstructionRotation = { 0.0f, 0.0f, 0.0f };
+
+		// Road Construction Start Snap
 		Junction* m_RoadConstructionStartSnappedJunction = nullptr;
 		End* m_RoadConstructionStartSnappedEnd = nullptr;
 		Road* m_RoadConstructionStartSnappedRoad = nullptr;
 
+		// Road Construction End Snap
 		Junction* m_RoadConstructionEndSnappedJunction = nullptr;
 		End* m_RoadConstructionEndSnappedEnd = nullptr;
 		Road* m_RoadConstructionEndSnappedRoad = nullptr;
 
-		int m_RoadConstructionStartSnappedType = -1;
-		int m_RoadConstructionEndSnappedType = -1;
+		// Road Destruction Snap
+		Junction* m_RoadDestructionSnappedJunction = nullptr;
+		End* m_RoadDestructionSnappedEnd = nullptr;
+		Road* m_RoadDestructionSnappedRoad = nullptr;
 
+		// Building Construction Snap
+		Road* m_BuildingConstructionSnappedRoad = nullptr;
 
-		std::vector<Road*> m_Roads;
-		std::vector<Junction*> m_Junctions;
-		std::vector<End*> m_Ends;
+		// Building Destruction Snap
+		Building* m_BuildingDestructionSnappedBuilding = nullptr;
 
-		std::vector<Can::Object*> m_RoadGuidelines;
-		std::vector<Can::Object*> m_JunctionGuidelines;
-		Can::Object* m_RoadGuidelinesStart = nullptr;
-		Can::Object* m_RoadGuidelinesEnd = nullptr;
+		std::vector<std::vector<Object*>> m_RoadGuidelines;
+		std::vector<size_t> m_RoadGuidelinesInUse;
+		Object* m_RoadGuidelinesStart = nullptr; // End /? Object
+		Object* m_RoadGuidelinesEnd = nullptr;
 
+		Object* m_BuildingGuideline = nullptr;
 
-
-	public:
-		Can::Object* roadPrefab;
-		Can::Object* endPrefab;
-		Can::Object* JunctionPrefab;
-		float roadPrefabWidth = 0.0f;
-		float roadPrefabLength = 0.0f;
+		bool b_ConstructionRestricted = false;
 	};
 }
