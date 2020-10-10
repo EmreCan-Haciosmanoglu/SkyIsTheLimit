@@ -34,11 +34,12 @@ in vec3 v_FragPos;
 void main()
 {
 	vec3 norm = normalize(v_Normal);
-	vec3 lightDir = normalize(u_LightPos - v_FragPos);
+	//vec3 lightDir = normalize(u_LightPos - v_FragPos);
+	vec3 lightDir = normalize(u_LightPos);
 
 	float diff = max(dot(norm, lightDir), 0.0);
 
-	vec3 diffuse = (diff) * vec3(1.0, 1.0, 1.0);
+	vec3 diffuse = (diff) * vec3(0.8, 0.8, 0.8);
 
 	vec3 result = vec3(diffuse.x + 0.1, diffuse.y + 0.1, diffuse.z + 0.1);
 
