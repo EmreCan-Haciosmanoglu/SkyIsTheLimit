@@ -40,6 +40,8 @@ namespace Can
 		}
 	}
 
+	
+
 	void TestScene::OnUpdate(Can::TimeStep ts)
 	{
 		m_MainCameraController.OnUpdate(ts);
@@ -92,8 +94,11 @@ namespace Can
 		}
 
 		Can::Renderer3D::BeginScene(m_MainCameraController.GetCamera());
-
-		Can::Renderer3D::DrawObjects();
+		
+		if(Input::IsKeyPressed(KeyCode::RightControl))
+			Renderer3D::Test();
+		else
+			Renderer3D::DrawObjects();
 
 		Can::Renderer3D::EndScene();
 	}
