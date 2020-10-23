@@ -109,10 +109,8 @@ namespace Can
 
 		Can::Renderer3D::BeginScene(m_MainCameraController.GetCamera());
 
-		if (Input::IsKeyPressed(KeyCode::RightControl))
-			Renderer3D::Test(m_CameraController.GetCamera());
-		else
-			Renderer3D::DrawObjects();
+		OutputTest outputTest = Renderer3D::Test(m_CameraController.GetCamera());
+		Renderer3D::DrawObjects(outputTest, m_MainCameraController.GetCamera());
 
 		Can::Renderer3D::EndScene();
 		//m_Framebuffer->Unbind();
