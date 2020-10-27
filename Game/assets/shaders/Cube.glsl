@@ -17,7 +17,7 @@ out vec4 v_FragPosLightSpace;
 void main()
 {
 	v_Color = a_Color;
-	v_FragPosLightSpace = u_LightSpace* vec4(a_Position, 1.0);
+	v_FragPosLightSpace = u_LightSpace * u_Transform * vec4(a_Position, 1.0);
 	gl_Position = u_ViewProjection * u_Transform * vec4(a_Position,1.0);
     v_FragPos = vec3(u_Transform * vec4(a_Position,1.0));
 	v_Normal = a_Normal;
@@ -38,13 +38,17 @@ in vec3 v_Normal;
 in vec3 v_FragPos;
 in vec4 v_FragPosLightSpace;
 
-float shadowCalc()
+float shadowCalc(float dotLightNormal)
 {
 	// transform from [-1, 1] range to [0, 1] range
 	vec3 pos = v_FragPosLightSpace.xyz * 0.5 + 0.5;
-	float depth = texture(u_ShadowMap, pos.xy).r;
-	depth = texture(u_Textures[15], pos.xy).r;
-	return depth < pos.z ? 0.0 : 1.0;
+	if(pos.z > 1.0)
+	{
+		pos.z = 1.0;
+	}
+	float depth = texture(u_Textures[15], pos.xy).r;
+	float bias = max(0.05 * (1.0 - dotLightNormal), 0.005);
+	return (depth + bias) < pos.z ? 0.0 : 1.0;
 }
 
 void main()
@@ -89,7 +93,7 @@ void main()
 	vec3 specular = spec * lightColor;
 
 	// calculate shadow
-	float shadow = shadowCalc();
+	float shadow = shadowCalc(dotLightNormal);
 	vec3 lighting = (shadow * (diffuse + specular) + ambient) * color;
 
 	o_color = vec4(lighting, 1.0);

@@ -108,9 +108,11 @@ namespace Can
 		}
 
 		Can::Renderer3D::BeginScene(m_MainCameraController.GetCamera());
+		static glm::vec3 lightPos{ 3.0f, 5.0f, 0.0f };
+		//lightPos = glm::rotate(lightPos, glm::radians(0.05f), glm::vec3{ 0.0f, 0.0f, 1.0f });
 
-		OutputTest outputTest = Renderer3D::Test(m_CameraController.GetCamera());
-		Renderer3D::DrawObjects(outputTest, m_MainCameraController.GetCamera());
+		OutputTest outputTest = Renderer3D::Test(m_CameraController.GetCamera(), lightPos);
+		Renderer3D::DrawObjects(outputTest, m_MainCameraController.GetCamera(), lightPos);
 
 		Can::Renderer3D::EndScene();
 		//m_Framebuffer->Unbind();
