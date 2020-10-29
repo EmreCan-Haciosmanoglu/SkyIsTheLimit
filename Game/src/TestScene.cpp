@@ -1794,14 +1794,5 @@ namespace Can
 		return results;
 	}
 
-	void TestScene::OnImGuiRender()
-	{
-		ImGui::Begin("Test Framebuffer Panel");
-
-		uint32_t textureID = m_Framebuffer->GetColorAttachmentRendererID();
-		//ImGui::Image((void*)textureID, ImVec2(320.0f, 180.0f), ImVec2(0, 1), ImVec2(1, 0));
-
-		ImGui::End();
-	}
 
 }
