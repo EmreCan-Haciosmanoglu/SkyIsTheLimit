@@ -27,6 +27,13 @@ namespace Can
 			glm::vec3{ 11.0f, 15.0f, -10.0f },
 			glm::vec3{ -60.0f, 0.0f, 0.0f }
 		)
+		, m_ZoomLevel(1.0f)
+		, m_AspectRatio(1280.0f / 720.0f)
+		, m_CameraController(
+			m_AspectRatio,
+			m_ZoomLevel,
+			false
+		)
 	{
 		m_RoadGuidelinesStart = new Object(m_Parent->roads[m_RoadConstructionType][2], m_Parent->roads[m_RoadConstructionType][2], { 0.0f, 0.0f, 0.0f, }, { 1.0f, 1.0f, 1.0f, }, { 0.0f, 0.0f, 0.0f, });
 		m_RoadGuidelinesEnd = new Object(m_Parent->roads[m_RoadConstructionType][2], m_Parent->roads[m_RoadConstructionType][2], { 0.0f, 0.0f, 0.0f, }, { 1.0f, 1.0f, 1.0f, }, { 0.0f, 0.0f, 0.0f, });
@@ -38,12 +45,21 @@ namespace Can
 			m_RoadGuidelines.push_back({});
 			m_RoadGuidelines[i].push_back(new Object(m_Parent->roads[i][0], m_Parent->roads[i][0], { 0.0f, 0.0f, 0.0f }, { 1.0f, 1.0f, 1.0f }, { 0.0f, 0.0f, 0.0f }, false));
 		}
+
+		FramebufferSpecification fbSpec;
+		fbSpec.Width = 1280;
+		fbSpec.Height = 720;
+		m_Framebuffer = Framebuffer::Create(fbSpec);
 	}
+
+
 
 	void TestScene::OnUpdate(Can::TimeStep ts)
 	{
 		m_MainCameraController.OnUpdate(ts);
+		//m_CameraController.OnUpdate(ts);
 
+		//m_Framebuffer->Bind();
 		Can::RenderCommand::SetClearColor({ 0.9f, 0.9f, 0.9f, 1.0f });
 		Can::RenderCommand::Clear();
 
@@ -92,10 +108,14 @@ namespace Can
 		}
 
 		Can::Renderer3D::BeginScene(m_MainCameraController.GetCamera());
+		static glm::vec3 lightPos{ 3.0f, 5.0f, 0.0f };
+		//lightPos = glm::rotate(lightPos, glm::radians(0.05f), glm::vec3{ 0.0f, 0.0f, 1.0f });
 
-		Can::Renderer3D::DrawObjects();
+		OutputTest outputTest = Renderer3D::Test(m_CameraController.GetCamera(), lightPos);
+		Renderer3D::DrawObjects(outputTest, m_MainCameraController.GetCamera(), lightPos);
 
 		Can::Renderer3D::EndScene();
+		//m_Framebuffer->Unbind();
 	}
 	void TestScene::OnUpdate_RoadConstruction(glm::vec3 prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection)
 	{
@@ -844,7 +864,7 @@ namespace Can
 		{
 			glm::vec2 buildingL = { selectedBuilding->boundingBoxL.x, selectedBuilding->boundingBoxL.z };
 			glm::vec2 buildingM = { selectedBuilding->boundingBoxM.x, selectedBuilding->boundingBoxM.z };
-			for (Building* building: m_Buildings)
+			for (Building* building : m_Buildings)
 			{
 				glm::vec2 bL = { building->object->prefab->boundingBoxL.x, building->object->prefab->boundingBoxL.z };
 				glm::vec2 bM = { building->object->prefab->boundingBoxM.x, building->object->prefab->boundingBoxM.z };
@@ -1773,4 +1793,6 @@ namespace Can
 		}
 		return results;
 	}
+
+
 }

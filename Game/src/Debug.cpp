@@ -25,6 +25,7 @@ namespace Can
 		static TestScene* testScene = m_Parent->testScene;
 		if (!is_open)
 			return;
+
 		ImGui::Begin("Debug");
 
 		ImGui::Text("Construction Type");

@@ -48,6 +48,8 @@ namespace Can
 
 		virtual void OnAttach() override {}
 		virtual void OnDetach() override {}
+		virtual void OnImGuiRender() override {}
+
 
 		virtual void OnUpdate(Can::TimeStep ts) override;
 		void OnUpdate_RoadConstruction(glm::vec3 prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection);
@@ -121,6 +123,12 @@ namespace Can
 		Object* m_Terrain;
 		Camera::Controller::Perspective m_MainCameraController;
 
+		// Delete later I guess ///////////////////////////////////////
+		float m_ZoomLevel;											///
+		float m_AspectRatio;										///
+		Camera::OrthographicCameraController m_CameraController; 	///
+		///////////////////////////////////////////////////////////////
+
 		bool b_RoadConstructionStarted = false;
 		bool b_RoadConstructionEnded = false;
 		bool b_RoadConstructionStartSnapped = false;
@@ -163,5 +171,8 @@ namespace Can
 		Object* m_BuildingGuideline = nullptr;
 
 		bool b_ConstructionRestricted = false;
+
+		// Temp
+		Ref<Framebuffer> m_Framebuffer;
 	};
 }
