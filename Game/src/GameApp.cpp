@@ -20,6 +20,7 @@ namespace Can
 
 		LoadRoads();
 		LoadBuildings();
+		LoadTrees();
 
 		testScene = new TestScene(this);
 		PushLayer(testScene);
@@ -49,6 +50,11 @@ namespace Can
 	void GameApp::LoadBuildings()
 	{
 		buildings = LoadPrefabs("\\assets\\objects\\houses", "House_");
+	}
+
+	void GameApp::LoadTrees()
+	{
+		trees = LoadPrefabs("\\assets\\objects\\trees", "Tree_");
 	}
 
 	std::vector<Prefab*> GameApp::LoadPrefabs(const std::string& folder, const std::string& filter)
