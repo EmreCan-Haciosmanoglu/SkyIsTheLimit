@@ -83,9 +83,9 @@ void main()
 */
 	vec3 color = texture(u_Textures[int(v_TextureIndex+0.1)], v_UV).rgb;
 	vec3 normal = normalize(v_Normal);
-	vec3 lightColor = vec3(0.3);
+	vec3 lightColor = vec3(1.0);
 	// ambient
-	vec3 ambient = 0.3 * color;
+	vec3 ambient = 0.4 * color;
 	// diffuse
 	vec3 lightDir = normalize(u_LightPos);
 	float dotLightNormal = dot(lightDir, normal);
