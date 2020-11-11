@@ -15,6 +15,7 @@ namespace Can
 	std::vector<Junction*> TestScene::m_Junctions = {};
 	std::vector<End*> TestScene::m_Ends = {};
 	std::vector<Building*> TestScene::m_Buildings = {};
+	std::vector<Object*> TestScene::m_Trees = {};
 
 	TestScene::TestScene(GameApp* parent)
 		: m_Parent(parent)
@@ -46,13 +47,34 @@ namespace Can
 			m_RoadGuidelines[i].push_back(new Object(m_Parent->roads[i][0], m_Parent->roads[i][0], { 0.0f, 0.0f, 0.0f }, { 1.0f, 1.0f, 1.0f }, { 0.0f, 0.0f, 0.0f }, false));
 		}
 
+		const float* noise = m_Perlin2DNoise.GenerateNoise(7);
+
+		for (size_t y = 0; y < NOISE_HEIGHT; y += 8)
+		{
+			for (size_t x = 0; x < NOISE_WIDTH; x += 8)
+			{
+				float n = noise[y * NOISE_WIDTH + x];
+				Object* tree = nullptr;
+				if (n > 0.66f)
+					tree = new Object(
+						m_Parent->trees[1],
+						m_Parent->trees[1],
+						glm::vec3{ (float)x / TERRAIN_SCALE_DOWN,0.0f,-((float)y / TERRAIN_SCALE_DOWN) });
+				else if (n > 0.33f)
+					tree = new Object(
+						m_Parent->trees[0],
+						m_Parent->trees[0],
+						glm::vec3{ (float)x / TERRAIN_SCALE_DOWN,0.0f,-((float)y / TERRAIN_SCALE_DOWN) });
+				m_Trees.push_back(tree);
+			}
+		}
+		std::cout << m_Trees.size() << std::endl;
+
 		FramebufferSpecification fbSpec;
 		fbSpec.Width = 1280;
 		fbSpec.Height = 720;
 		m_Framebuffer = Framebuffer::Create(fbSpec);
 	}
-
-
 
 	void TestScene::OnUpdate(Can::TimeStep ts)
 	{

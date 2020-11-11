@@ -1,8 +1,11 @@
 #pragma once
 #include "Can.h"
+#include "Can/Noise/Perlin.h"
 
 namespace Can
 {
+#define NOISE_WIDTH 500
+#define NOISE_HEIGHT 500
 	class GameApp;
 
 	class Road;
@@ -117,6 +120,7 @@ namespace Can
 		static std::vector<Junction*> m_Junctions;
 		static std::vector<End*> m_Ends;
 		static std::vector<Building*> m_Buildings;
+		static std::vector<Object*> m_Trees;
 
 	private:
 		GameApp* m_Parent;
@@ -174,5 +178,7 @@ namespace Can
 
 		// Temp
 		Ref<Framebuffer> m_Framebuffer;
+
+		Noise::Perlin2D<256, NOISE_WIDTH, NOISE_HEIGHT> m_Perlin2DNoise = Noise::Perlin2D<256, NOISE_WIDTH, NOISE_HEIGHT>();
 	};
 }
