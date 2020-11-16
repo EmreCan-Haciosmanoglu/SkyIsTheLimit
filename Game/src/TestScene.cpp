@@ -47,24 +47,30 @@ namespace Can
 			m_RoadGuidelines[i].push_back(new Object(m_Parent->roads[i][0], m_Parent->roads[i][0], { 0.0f, 0.0f, 0.0f }, { 1.0f, 1.0f, 1.0f }, { 0.0f, 0.0f, 0.0f }, false));
 		}
 
-		const float* noise = m_Perlin2DNoise.GenerateNoise(7);
+		const float* noise = m_Perlin2DNoise.GenerateNoise(6);
 
-		for (size_t y = 0; y < NOISE_HEIGHT; y += 8)
+		for (size_t y = 1; y < NOISE_HEIGHT; y += 4)
 		{
-			for (size_t x = 0; x < NOISE_WIDTH; x += 8)
+			for (size_t x = 1; x < NOISE_WIDTH; x += 4)
 			{
 				float n = noise[y * NOISE_WIDTH + x];
 				Object* tree = nullptr;
-				if (n > 0.66f)
+				if (n > 0.86f)
 					tree = new Object(
 						m_Parent->trees[1],
 						m_Parent->trees[1],
-						glm::vec3{ (float)x / TERRAIN_SCALE_DOWN,0.0f,-((float)y / TERRAIN_SCALE_DOWN) });
-				else if (n > 0.33f)
+						glm::vec3{ (float)x / TERRAIN_SCALE_DOWN, 0.0f, -((float)y / TERRAIN_SCALE_DOWN) },
+						glm::vec3{ 1.0f, 1.0f, 1.0f },
+						glm::vec3{ 0.0f, 0.0f, 0.0f }
+				);
+				else if (n > 0.63f)
 					tree = new Object(
 						m_Parent->trees[0],
 						m_Parent->trees[0],
-						glm::vec3{ (float)x / TERRAIN_SCALE_DOWN,0.0f,-((float)y / TERRAIN_SCALE_DOWN) });
+						glm::vec3{ (float)x / TERRAIN_SCALE_DOWN, 0.0f, -((float)y / TERRAIN_SCALE_DOWN) },
+						glm::vec3{ 1.0f, 1.0f, 1.0f },
+						glm::vec3{ 0.0f, 0.0f, 0.0f }
+				);
 				m_Trees.push_back(tree);
 			}
 		}
@@ -130,7 +136,7 @@ namespace Can
 		}
 
 		Can::Renderer3D::BeginScene(m_MainCameraController.GetCamera());
-		static glm::vec3 lightPos{ 3.0f, 5.0f, 0.0f };
+		static glm::vec3 lightPos{ 3.0f, 10.0f, 0.0f };
 		//lightPos = glm::rotate(lightPos, glm::radians(0.05f), glm::vec3{ 0.0f, 0.0f, 1.0f });
 
 		OutputTest outputTest = Renderer3D::Test(m_CameraController.GetCamera(), lightPos);

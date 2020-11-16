@@ -50,7 +50,7 @@ float shadowCalc(float dotLightNormal)
 	vec3 pos = v_FragPosLightSpace.xyz * 0.5 + 0.5;
 	if(pos.z > 1.0)
 	{
-		pos.z = 1.0;
+		pos.z = 0.999;
 	}
 	float depth = texture(u_Textures[15], pos.xy).r;
 	float bias = max(0.05 * (1.0 - dotLightNormal), 0.005);
@@ -85,7 +85,7 @@ void main()
 	vec3 normal = normalize(v_Normal);
 	vec3 lightColor = vec3(1.0);
 	// ambient
-	vec3 ambient = 0.4 * color;
+	vec3 ambient = 0.3 * color;
 	// diffuse
 	vec3 lightDir = normalize(u_LightPos);
 	float dotLightNormal = dot(lightDir, normal);
@@ -99,7 +99,8 @@ void main()
 
 	// calculate shadow
 	float shadow = shadowCalc(dotLightNormal);
-	vec3 lighting = (shadow * (diffuse + specular) + ambient) * color;
+	//vec3 lighting = (shadow * (diffuse + specular) + ambient) * color;
+	vec3 lighting = shadow * color + ambient;
 
 	o_color = vec4(lighting, 1.0);
 	//o_color = vec4(vec3(shadow), 1.0);
