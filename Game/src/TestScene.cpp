@@ -25,17 +25,13 @@ namespace Can
 			1280.0f / 720.0f,
 			0.1f,
 			1000.0f,
-			glm::vec3{ 11.0f, 15.0f, -10.0f },
+			glm::vec3{ 10.0f, 5.0f, -5.0f },
 			glm::vec3{ -60.0f, 0.0f, 0.0f }
 		)
-		, m_ZoomLevel(1.0f)
-		, m_AspectRatio(1280.0f / 720.0f)
-		, m_CameraController(
-			m_AspectRatio,
-			m_ZoomLevel,
-			false
-		)
 	{
+		m_LightDirection = glm::normalize(m_LightDirection);
+		m_ShadowMapMasterRenderer = new ShadowMapMasterRenderer(&m_MainCameraController);
+
 		m_RoadGuidelinesStart = new Object(m_Parent->roads[m_RoadConstructionType][2], m_Parent->roads[m_RoadConstructionType][2], { 0.0f, 0.0f, 0.0f, }, { 1.0f, 1.0f, 1.0f, }, { 0.0f, 0.0f, 0.0f, });
 		m_RoadGuidelinesEnd = new Object(m_Parent->roads[m_RoadConstructionType][2], m_Parent->roads[m_RoadConstructionType][2], { 0.0f, 0.0f, 0.0f, }, { 1.0f, 1.0f, 1.0f, }, { 0.0f, 0.0f, 0.0f, });
 		m_BuildingGuideline = new Object(m_Parent->buildings[m_BuildingType], m_Parent->buildings[m_BuildingType], { 0.0f, 0.0f, 0.0f, }, { 1.0f, 1.0f, 1.0f, }, { 0.0f, 0.0f, 0.0f, }, false);
@@ -49,37 +45,40 @@ namespace Can
 
 		const float* noise = m_Perlin2DNoise.GenerateNoise(6);
 
-		for (size_t y = 1; y < NOISE_HEIGHT; y += 4)
+		for (size_t y = 1; y < NOISE_HEIGHT; y += 8)
 		{
-			for (size_t x = 1; x < NOISE_WIDTH; x += 4)
+			for (size_t x = 1; x < NOISE_WIDTH; x += 8)
 			{
 				float n = noise[y * NOISE_WIDTH + x];
 				Object* tree = nullptr;
-				if (n > 0.86f)
+				CAN_ASSERT(n < 1.0f, "we have a problem");
+
+				if (n > 0.66f)
+				{
 					tree = new Object(
 						m_Parent->trees[1],
 						m_Parent->trees[1],
 						glm::vec3{ (float)x / TERRAIN_SCALE_DOWN, 0.0f, -((float)y / TERRAIN_SCALE_DOWN) },
 						glm::vec3{ 1.0f, 1.0f, 1.0f },
 						glm::vec3{ 0.0f, 0.0f, 0.0f }
-				);
-				else if (n > 0.63f)
+					);
+					m_Trees.push_back(tree);
+				}
+				else if (n > 0.15f)
+				{
 					tree = new Object(
 						m_Parent->trees[0],
 						m_Parent->trees[0],
 						glm::vec3{ (float)x / TERRAIN_SCALE_DOWN, 0.0f, -((float)y / TERRAIN_SCALE_DOWN) },
 						glm::vec3{ 1.0f, 1.0f, 1.0f },
 						glm::vec3{ 0.0f, 0.0f, 0.0f }
-				);
-				m_Trees.push_back(tree);
+					);
+					m_Trees.push_back(tree);
+				}
 			}
 		}
 		std::cout << m_Trees.size() << std::endl;
 
-		FramebufferSpecification fbSpec;
-		fbSpec.Width = 1280;
-		fbSpec.Height = 720;
-		m_Framebuffer = Framebuffer::Create(fbSpec);
 	}
 
 	void TestScene::OnUpdate(Can::TimeStep ts)
@@ -136,11 +135,16 @@ namespace Can
 		}
 
 		Can::Renderer3D::BeginScene(m_MainCameraController.GetCamera());
-		static glm::vec3 lightPos{ 3.0f, 10.0f, 0.0f };
-		//lightPos = glm::rotate(lightPos, glm::radians(0.05f), glm::vec3{ 0.0f, 0.0f, 1.0f });
 
-		OutputTest outputTest = Renderer3D::Test(m_CameraController.GetCamera(), lightPos);
-		Renderer3D::DrawObjects(outputTest, m_MainCameraController.GetCamera(), lightPos);
+
+		m_ShadowMapMasterRenderer->Render(m_LightDirection);
+
+		Renderer3D::DrawObjects(
+			m_ShadowMapMasterRenderer->GetLS(), 
+			m_ShadowMapMasterRenderer->GetShadowMap(), 
+			m_MainCameraController.GetCamera(), 
+			m_LightPosition
+		);
 
 		Can::Renderer3D::EndScene();
 		//m_Framebuffer->Unbind();
