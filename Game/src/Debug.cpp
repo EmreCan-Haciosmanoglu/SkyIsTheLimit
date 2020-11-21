@@ -111,7 +111,7 @@ namespace Can
 					if (ImGui::Selectable(text.c_str(), is_selected, 0, ImVec2(0, 25)))
 					{
 						text.copy(current_building_item.data(), text.size(), 0);
-						testScene->m_BuildingType = i;
+						testScene->SetSelectedConstructionBuilding(i);
 					}
 					if (is_selected)
 						ImGui::SetItemDefaultFocus();
@@ -129,7 +129,7 @@ namespace Can
 					if (ImGui::Selectable(text.c_str(), is_selected, 0, ImVec2(0, 25)))
 					{
 						text.copy(current_tree_item.data(), text.size(), 0);
-						testScene->m_TreeType = i;
+						testScene->SetSelectedTree(i);
 					}
 					if (is_selected)
 						ImGui::SetItemDefaultFocus();
