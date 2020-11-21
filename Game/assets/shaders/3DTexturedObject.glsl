@@ -18,13 +18,13 @@ out vec4 v_FragPosLightSpace;
 
 void main()
 {
+	v_FragPosLightSpace = u_LightSpace * u_Transform * vec4(a_Position, 1.0);
+	gl_Position = u_ViewProjection * u_Transform * vec4(a_Position,1.0);
     v_FragPosition = vec3(u_Transform * vec4(a_Position, 1.0));
 	v_UV = a_UV;
 	v_Normal = a_Normal;
 	v_TextureIndex = a_TextureIndex;
-	v_FragPosLightSpace = u_LightSpace * u_Transform * vec4(a_Position, 1.0);
 
-	gl_Position = u_ViewProjection * u_Transform * vec4(a_Position,1.0);
 }
 
 #type fragment
@@ -83,7 +83,7 @@ void main()
 */
 	vec3 color = texture(u_Textures[int(v_TextureIndex+0.1)], v_UV).rgb;
 	vec3 normal = normalize(v_Normal);
-	vec3 lightColor = vec3(0.3);
+	vec3 lightColor = vec3(1.0);
 	// ambient
 	vec3 ambient = 0.3 * color;
 	// diffuse
@@ -99,9 +99,12 @@ void main()
 
 	// calculate shadow
 	float shadow = shadowCalc(dotLightNormal);
-	vec3 lighting = (shadow * (diffuse + specular) + ambient) * color;
+	//vec3 lighting = (shadow * (diffuse + specular) + ambient) * color;
+	vec3 lighting = shadow * color + ambient;
 
 	o_color = vec4(lighting, 1.0);
 	//o_color = vec4(vec3(shadow), 1.0);
+	o_color = vec4(((diffuse + specular) + ambient) * color, 1.0);
+	o_color = vec4(color,1.0);
 }
 

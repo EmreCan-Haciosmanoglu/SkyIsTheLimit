@@ -18,9 +18,11 @@ namespace Can
 
 		void LoadRoads();
 		void LoadBuildings();
+		void LoadTrees();
 
 	public:
 		Prefab* terrainPrefab;
+		Ref<Texture2D> treeMap;
 
 		std::vector<std::array<Prefab*, 3>> roads;
 		// 0 => Road
@@ -28,6 +30,7 @@ namespace Can
 		// 2 => End
 
 		std::vector<Prefab*> buildings;
+		std::vector<Prefab*> trees;
 		
 		TestScene* testScene = nullptr; 
 		UIScene* uiScene = nullptr;

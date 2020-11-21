@@ -1,8 +1,12 @@
 #pragma once
 #include "Can.h"
+#include "Can/Noise/Perlin.h"
+#include "Can/Shadow/ShadowMapMasterRenderer.h"
 
 namespace Can
 {
+#define NOISE_WIDTH 500
+#define NOISE_HEIGHT 500
 	class GameApp;
 
 	class Road;
@@ -117,17 +121,16 @@ namespace Can
 		static std::vector<Junction*> m_Junctions;
 		static std::vector<End*> m_Ends;
 		static std::vector<Building*> m_Buildings;
+		static std::vector<Object*> m_Trees;
 
 	private:
 		GameApp* m_Parent;
 		Object* m_Terrain;
 		Camera::Controller::Perspective m_MainCameraController;
 
-		// Delete later I guess ///////////////////////////////////////
-		float m_ZoomLevel;											///
-		float m_AspectRatio;										///
-		Camera::OrthographicCameraController m_CameraController; 	///
-		///////////////////////////////////////////////////////////////
+		ShadowMapMasterRenderer* m_ShadowMapMasterRenderer = nullptr;
+		glm::vec3 m_LightPosition{ +0.0f, 1.0f, 0.0f };
+		glm::vec3 m_LightDirection{ +1.0f, -1.0f, -1.0f };
 
 		bool b_RoadConstructionStarted = false;
 		bool b_RoadConstructionEnded = false;
@@ -172,7 +175,7 @@ namespace Can
 
 		bool b_ConstructionRestricted = false;
 
-		// Temp
-		Ref<Framebuffer> m_Framebuffer;
+
+		Noise::Perlin2D<512, NOISE_WIDTH, NOISE_HEIGHT> m_Perlin2DNoise = Noise::Perlin2D<512, NOISE_WIDTH, NOISE_HEIGHT>();
 	};
 }
