@@ -29,10 +29,18 @@ namespace Can
 		Upgrade,
 		Destruct
 	};
+	enum class TreeConstructionMode
+	{
+		None,
+		Adding,
+		Removing
+	};
+	
 	enum class ConstructionMode
 	{
 		Road,
-		Building
+		Building,
+		Tree
 	};
 
 	struct RoadSnapInformation
@@ -77,6 +85,7 @@ namespace Can
 		void SetConstructionMode(ConstructionMode mode);
 		void SetRoadConstructionMode(RoadConstructionMode mode);
 		void SetBuildingConstructionMode(BuildingConstructionMode mode);
+		void SetTreeConstructionMode(TreeConstructionMode mode);
 
 		void ResetStates();
 
@@ -109,11 +118,14 @@ namespace Can
 		// 2 : Collision with other objects
 		// 3 : Snapping to a road
 
+		TreeConstructionMode m_TreeConstructionMode = TreeConstructionMode::None;
 		RoadConstructionMode m_RoadConstructionMode = RoadConstructionMode::Construct;
 		BuildingConstructionMode m_BuildingConstructionMode = BuildingConstructionMode::Construct;
+		
 		ConstructionMode m_ConstructionMode = ConstructionMode::Road;
 		size_t m_RoadConstructionType = 0;
 		size_t m_BuildingType = 0;
+		size_t m_TreeType = 0;
 
 	public:
 
@@ -137,13 +149,16 @@ namespace Can
 		bool b_RoadConstructionStartSnapped = false;
 		bool b_RoadConstructionEndSnapped = false;
 
+		// Tree Adding Transforms
+		glm::vec3 m_TreeAddingCoordinate = glm::vec3(-1.0f);
+
 		// Road Construction Transforms
-		glm::vec3 m_RoadConstructionStartCoordinate = { -1.0f, -1.0f, -1.0f };
-		glm::vec3 m_RoadConstructionEndCoordinate = { -1.0f, -1.0f, -1.0f };
+		glm::vec3 m_RoadConstructionStartCoordinate = glm::vec3(-1.0f);
+		glm::vec3 m_RoadConstructionEndCoordinate = glm::vec3(-1.0f);
 
 		// Building Construction Transforms
-		glm::vec3 m_BuildingConstructionCoordinate = { -1.0f, -1.0f, -1.0f };
-		glm::vec3 m_BuildingConstructionRotation = { 0.0f, 0.0f, 0.0f };
+		glm::vec3 m_BuildingConstructionCoordinate = glm::vec3(-1.0f);
+		glm::vec3 m_BuildingConstructionRotation = glm::vec3(0.0f);
 
 		// Road Construction Start Snap
 		Junction* m_RoadConstructionStartSnappedJunction = nullptr;
@@ -172,6 +187,7 @@ namespace Can
 		Object* m_RoadGuidelinesEnd = nullptr;
 
 		Object* m_BuildingGuideline = nullptr;
+		Object* m_TreeGuideline = nullptr;
 
 		bool b_ConstructionRestricted = false;
 
