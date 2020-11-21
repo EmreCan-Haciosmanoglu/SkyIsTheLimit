@@ -131,38 +131,51 @@ namespace Can
 		{
 			switch (m_ConstructionMode)
 			{
-			case Can::ConstructionMode::Road:
+			case ConstructionMode::Road:
 				switch (m_RoadConstructionMode)
 				{
-				case Can::RoadConstructionMode::None:
+				case RoadConstructionMode::None:
 					break;
-				case Can::RoadConstructionMode::Construct:
+				case RoadConstructionMode::Construct:
 					OnUpdate_RoadConstruction(I, camPos, forward);
 					break;
-				case Can::RoadConstructionMode::Upgrade:
+				case  RoadConstructionMode::Upgrade:
 					break;
-				case Can::RoadConstructionMode::Destruct:
+				case  RoadConstructionMode::Destruct:
 					OnUpdate_RoadDestruction(I, camPos, forward);
 					break;
 				}
 				break;
-			case Can::ConstructionMode::Building:
+			case ConstructionMode::Building:
 				switch (m_BuildingConstructionMode)
 				{
-				case Can::BuildingConstructionMode::None:
+				case BuildingConstructionMode::None:
 					break;
-				case Can::BuildingConstructionMode::Construct:
+				case BuildingConstructionMode::Construct:
 					OnUpdate_BuildingConstruction(I, camPos, forward);
 					break;
-				case Can::BuildingConstructionMode::Upgrade:
+				case BuildingConstructionMode::Upgrade:
 					break;
-				case Can::BuildingConstructionMode::Destruct:
+				case BuildingConstructionMode::Destruct:
 					OnUpdate_BuildingDestruction(I, camPos, forward);
 					break;
 				default:
 					break;
 				}
 				break;
+			case ConstructionMode::Tree:
+				switch (m_TreeConstructionMode)
+				{
+				case Can::TreeConstructionMode::None:
+					break;
+				case Can::TreeConstructionMode::Adding:
+					OnUpdate_TreeAdding(I, camPos, forward);
+					break;
+				case Can::TreeConstructionMode::Removing:
+					break;
+				default:
+					break;
+				}
 			}
 		}
 
@@ -981,6 +994,14 @@ namespace Can
 		}
 	}
 
+	void TestScene::OnUpdate_TreeAdding(glm::vec3 prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection)
+	{
+		m_TreeGuideline->SetTransform(prevLocation);
+		m_TreeAddingCoordinate = prevLocation;
+
+		m_BuildingGuideline->tintColor = b_TreeRestricted ? glm::vec4{ 1.0f, 0.3f, 0.2f, 1.0f } : glm::vec4(1.0f);
+	}
+
 	void TestScene::OnEvent(Can::Event::Event& event)
 	{
 		m_MainCameraController.OnEvent(event);
@@ -1496,8 +1517,8 @@ namespace Can
 		m_RoadConstructionType = index;
 		delete m_RoadGuidelinesEnd;
 		delete m_RoadGuidelinesStart;
-		m_RoadGuidelinesStart = new Object(m_Parent->roads[m_RoadConstructionType][2], m_Parent->roads[m_RoadConstructionType][2], { 0.0f, 0.0f, 0.0f, }, { 1.0f, 1.0f, 1.0f, }, { 0.0f, 0.0f, 0.0f, });
-		m_RoadGuidelinesEnd = new Object(m_Parent->roads[m_RoadConstructionType][2], m_Parent->roads[m_RoadConstructionType][2], { 0.0f, 0.0f, 0.0f, }, { 1.0f, 1.0f, 1.0f, }, { 0.0f, 0.0f, 0.0f, });
+		m_RoadGuidelinesStart = new Object(m_Parent->roads[m_RoadConstructionType][2], m_Parent->roads[m_RoadConstructionType][2], glm::vec3(0.0f), glm::vec3(1.0f), glm::vec3(0.0f));
+		m_RoadGuidelinesEnd = new Object(m_Parent->roads[m_RoadConstructionType][2], m_Parent->roads[m_RoadConstructionType][2], glm::vec3(0.0f), glm::vec3(1.0f), glm::vec3(0.0f));
 
 	}
 
@@ -1622,7 +1643,14 @@ namespace Can
 	{
 		m_BuildingType = index;
 		delete m_BuildingGuideline;
-		m_BuildingGuideline = new Object(m_Parent->buildings[m_BuildingType], m_Parent->buildings[m_BuildingType], { 0.0f, 0.0f, 0.0f, }, { 1.0f, 1.0f, 1.0f, }, { 0.0f, 0.0f, 0.0f, });
+		m_BuildingGuideline = new Object(m_Parent->buildings[m_BuildingType], m_Parent->buildings[m_BuildingType], glm::vec3(0.0f), glm::vec3(1.0f), glm::vec3(0.0f));
+	}
+
+	void TestScene::SetSelectedTree(size_t index)
+	{
+		m_TreeType = index;
+		delete m_TreeGuideline;
+		m_TreeGuideline = new Object(m_Parent->trees[m_TreeType], m_Parent->trees[m_TreeType], glm::vec3(0.0f), glm::vec3(1.0f), glm::vec3(0.0f));
 	}
 
 	void TestScene::SetConstructionMode(ConstructionMode mode)
