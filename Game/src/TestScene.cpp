@@ -8,7 +8,7 @@
 #include "Building.h"
 
 #include "Helper.h"
-
+#include <gl/GL.h>
 namespace Can
 {
 	std::vector<Road*> TestScene::m_Roads = {};
@@ -45,35 +45,67 @@ namespace Can
 
 		const float* noise = m_Perlin2DNoise.GenerateNoise(6);
 
-		for (size_t y = 1; y < NOISE_HEIGHT; y += 8)
-		{
-			for (size_t x = 1; x < NOISE_WIDTH; x += 8)
-			{
-				float n = noise[y * NOISE_WIDTH + x];
-				Object* tree = nullptr;
-				CAN_ASSERT(n < 1.0f, "we have a problem");
+		Ref<Texture2D> treeMap = m_Parent->treeMap;
+		treeMap->Bind();
+		GLubyte* pixels = new GLubyte[(size_t)treeMap->GetWidth() * (size_t)treeMap->GeHeight() * 4];
+		glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
 
-				if (n > 0.66f)
+		int r, g, b, a; // or GLubyte r, g, b, a;
+		size_t elmes_per_line = (size_t)treeMap->GetWidth() * 4; // elements per line = 256 * "RGBA"
+
+		size_t jump = 6;
+		float halfOffset = jump / (TERRAIN_SCALE_DOWN * 2.0f);
+
+		for (size_t y = jump/2; y < treeMap->GeHeight(); y += jump)
+		{
+			for (size_t x = jump/2; x < treeMap->GetWidth(); x += jump)
+			{
+				size_t row = y * elmes_per_line;
+				size_t col = x * 4;
+
+				r = (int)pixels[row + col];
+				g = (int)pixels[row + col + 1U];
+				b = (int)pixels[row + col + 2U];
+				a = (int)pixels[row + col + 3U];
+
+				int n = Utility::Random::Integer(256);
+				if (n < a)
 				{
-					tree = new Object(
-						m_Parent->trees[1],
-						m_Parent->trees[1],
-						glm::vec3{ (float)x / TERRAIN_SCALE_DOWN, 0.0f, -((float)y / TERRAIN_SCALE_DOWN) },
-						glm::vec3{ 1.0f, 1.0f, 1.0f },
-						glm::vec3{ 0.0f, 0.0f, 0.0f }
-					);
-					m_Trees.push_back(tree);
-				}
-				else if (n > 0.15f)
-				{
-					tree = new Object(
-						m_Parent->trees[0],
-						m_Parent->trees[0],
-						glm::vec3{ (float)x / TERRAIN_SCALE_DOWN, 0.0f, -((float)y / TERRAIN_SCALE_DOWN) },
-						glm::vec3{ 1.0f, 1.0f, 1.0f },
-						glm::vec3{ 0.0f, 0.0f, 0.0f }
-					);
-					m_Trees.push_back(tree);
+					using namespace Can::Utility;
+					std::vector<int> colors = {};
+					if (r > 128)
+						colors.push_back(0);
+					if (g > 128)
+						colors.push_back(1);
+					if (b > 128)
+						colors.push_back(2);
+
+					int type = colors[Random::Integer((int)colors.size())];
+					glm::vec3 offsetPos{ Random::Float(halfOffset), 0.0f, Random::Float(halfOffset) };
+					glm::vec3 randomRot{ 0.0f, Random::Float(-glm::radians(90.0f),glm::radians(90.0f)), 0.0f };
+					glm::vec3 randomScale{ Random::Float(-0.1, 0.1),  Random::Float(-0.1, 0.1),  Random::Float(-0.1, 0.1) };
+					if (type == 0)
+					{
+						Object* tree = new Object(
+							m_Parent->trees[0],
+							m_Parent->trees[0],
+							offsetPos + glm::vec3{ (float)x / TERRAIN_SCALE_DOWN, 0.0f, -((float)y / TERRAIN_SCALE_DOWN) },
+							randomScale + glm::vec3{ 1.0f, 1.0f, 1.0f },
+							randomRot + glm::vec3{ 0.0f, 0.0f, 0.0f }
+						);
+						m_Trees.push_back(tree);
+					}
+					else if (type == 1)
+					{
+						Object* tree = new Object(
+							m_Parent->trees[1],
+							m_Parent->trees[1],
+							offsetPos + glm::vec3{ (float)x / TERRAIN_SCALE_DOWN, 0.0f, -((float)y / TERRAIN_SCALE_DOWN) },
+							randomScale + glm::vec3{ 1.0f, 1.0f, 1.0f },
+							randomRot + glm::vec3{ 0.0f, 0.0f, 0.0f }
+						);
+						m_Trees.push_back(tree);
+					}
 				}
 			}
 		}
@@ -140,9 +172,9 @@ namespace Can
 		m_ShadowMapMasterRenderer->Render(m_LightDirection);
 
 		Renderer3D::DrawObjects(
-			m_ShadowMapMasterRenderer->GetLS(), 
-			m_ShadowMapMasterRenderer->GetShadowMap(), 
-			m_MainCameraController.GetCamera(), 
+			m_ShadowMapMasterRenderer->GetLS(),
+			m_ShadowMapMasterRenderer->GetShadowMap(),
+			m_MainCameraController.GetCamera(),
 			m_LightPosition
 		);
 

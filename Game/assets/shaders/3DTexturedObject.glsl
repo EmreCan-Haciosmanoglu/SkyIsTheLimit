@@ -105,5 +105,6 @@ void main()
 	o_color = vec4(lighting, 1.0);
 	//o_color = vec4(vec3(shadow), 1.0);
 	o_color = vec4(((diffuse + specular) + ambient) * color, 1.0);
+	o_color = vec4(color,1.0);
 }
 

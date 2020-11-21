@@ -18,6 +18,9 @@ namespace Can
 		//terrainPrefab = Helper::GetPrefabForTerrain("assets/objects/heightmap_smallest.png");
 		//terrainPrefab = Helper::GetPrefabForTerrain("assets/objects/heightmap.png");
 
+		treeMap = Texture2D::Create("assets/textures/treeMap.png");
+
+
 		LoadRoads();
 		LoadBuildings();
 		LoadTrees();

@@ -22,6 +22,7 @@ namespace Can
 
 	public:
 		Prefab* terrainPrefab;
+		Ref<Texture2D> treeMap;
 
 		std::vector<std::array<Prefab*, 3>> roads;
 		// 0 => Road
