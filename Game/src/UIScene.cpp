@@ -27,18 +27,21 @@ namespace Can
 			glm::vec4{ 221.0f / 255.0f, 255.0f / 255.0f, 247.0f / 255.0f, 1.0f },
 			nullptr,
 			[this, height]() {
-
 				entt::registry& mainRegistry = this->m_Scene->m_Registry;
 
 				entt::entity panelRoadsID = this->m_PanelRoads->entityID;
 				entt::entity panelBuildingsID = this->m_PanelBuildings->entityID;
+				entt::entity panelTreesID = this->m_PanelTrees->entityID;
 
-				if (mainRegistry.has<HiddenComponent>(panelBuildingsID))
+				if (mainRegistry.has<HiddenComponent>(panelBuildingsID) && mainRegistry.has<HiddenComponent>(panelTreesID))
 				{
 					entt::entity buttonRoadsID = this->m_ButtonRoads->entityID;
 					entt::entity buttonBuildingsID = this->m_ButtonBuildings->entityID;
+					entt::entity buttonTreesID = this->m_ButtonTrees->entityID;
+
 					TransformComponent& transformR = mainRegistry.get<TransformComponent>(buttonRoadsID);
 					TransformComponent& transformB = mainRegistry.get<TransformComponent>(buttonBuildingsID);
+					TransformComponent& transformT = mainRegistry.get<TransformComponent>(buttonTreesID);
 
 					glm::vec3 movement = { 0.0f, height / 5.0f, 0.0f };
 
@@ -47,12 +50,14 @@ namespace Can
 						mainRegistry.remove<HiddenComponent>(panelRoadsID);
 						transformR.Transform = glm::translate(transformR.Transform, -movement);
 						transformB.Transform = glm::translate(transformB.Transform, -movement);
+						transformT.Transform = glm::translate(transformT.Transform, -movement);
 					}
 					else
 					{
 						mainRegistry.emplace<HiddenComponent>(panelRoadsID);
 						transformR.Transform = glm::translate(transformR.Transform, movement);
 						transformB.Transform = glm::translate(transformB.Transform, movement);
+						transformT.Transform = glm::translate(transformT.Transform, movement);
 					}
 				}
 				else
@@ -61,6 +66,7 @@ namespace Can
 					{
 						mainRegistry.remove<HiddenComponent>(panelRoadsID);
 						mainRegistry.emplace_or_replace<HiddenComponent>(panelBuildingsID);
+						mainRegistry.emplace_or_replace<HiddenComponent>(panelTreesID);
 					}
 					else
 					{
@@ -69,7 +75,6 @@ namespace Can
 				}
 			}
 			});
-
 		m_ButtonBuildings = new Button(ButtonConstructorParameters{
 			m_Scene->m_Registry,
 			m_Scene->entityID,
@@ -78,18 +83,21 @@ namespace Can
 			glm::vec4{ 255.0f / 255.0f, 166.0f / 255.0f, 158.0f / 255.0f, 1.0f },
 			nullptr,
 			[this, height]() {
-
 				entt::registry& mainRegistry = this->m_Scene->m_Registry;
 
 				entt::entity panelRoadsID = this->m_PanelRoads->entityID;
 				entt::entity panelBuildingsID = this->m_PanelBuildings->entityID;
+				entt::entity panelTreesID = this->m_PanelTrees->entityID;
 
-				if (mainRegistry.has<HiddenComponent>(panelRoadsID))
+				if (mainRegistry.has<HiddenComponent>(panelRoadsID) && mainRegistry.has<HiddenComponent>(panelTreesID))
 				{
 					entt::entity buttonRoadsID = this->m_ButtonRoads->entityID;
 					entt::entity buttonBuildingsID = this->m_ButtonBuildings->entityID;
+					entt::entity buttonTreesID = this->m_ButtonTrees->entityID;
+
 					TransformComponent& transformR = mainRegistry.get<TransformComponent>(buttonRoadsID);
 					TransformComponent& transformB = mainRegistry.get<TransformComponent>(buttonBuildingsID);
+					TransformComponent& transformT = mainRegistry.get<TransformComponent>(buttonTreesID);
 
 					glm::vec3 movement = { 0.0f, height / 5.0f, 0.0f };
 
@@ -98,12 +106,14 @@ namespace Can
 						mainRegistry.remove<HiddenComponent>(panelBuildingsID);
 						transformR.Transform = glm::translate(transformR.Transform, -movement);
 						transformB.Transform = glm::translate(transformB.Transform, -movement);
+						transformT.Transform = glm::translate(transformT.Transform, -movement);
 					}
 					else
 					{
 						mainRegistry.emplace<HiddenComponent>(panelBuildingsID);
 						transformR.Transform = glm::translate(transformR.Transform, movement);
 						transformB.Transform = glm::translate(transformB.Transform, movement);
+						transformT.Transform = glm::translate(transformT.Transform, movement);
 					}
 				}
 				else
@@ -112,6 +122,7 @@ namespace Can
 					{
 						mainRegistry.remove<HiddenComponent>(panelBuildingsID);
 						mainRegistry.emplace_or_replace<HiddenComponent>(panelRoadsID);
+						mainRegistry.emplace_or_replace<HiddenComponent>(panelTreesID);
 					}
 					else
 					{
@@ -120,6 +131,61 @@ namespace Can
 				}
 			}
 			});
+		m_ButtonTrees = new Button(ButtonConstructorParameters{
+			m_Scene->m_Registry,
+			m_Scene->entityID,
+			glm::vec3{ 9.0f, height * (4.0f / 5.0f) - 1.7f, 0.0011f },
+			glm::vec3{ 3.0f, 1.0f, 1.0f },
+			glm::vec4{ 69.0f / 255.0f, 123.0f / 255.0f, 157.0f / 255.0f, 1.0f },
+			nullptr,
+			[this, height]() {
+				entt::registry& mainRegistry = this->m_Scene->m_Registry;
+
+				entt::entity panelRoadsID = this->m_PanelRoads->entityID;
+				entt::entity panelBuildingsID = this->m_PanelBuildings->entityID;
+				entt::entity panelTreesID = this->m_PanelTrees->entityID;
+
+				if (mainRegistry.has<HiddenComponent>(panelRoadsID) && mainRegistry.has<HiddenComponent>(panelBuildingsID))
+				{
+					entt::entity buttonRoadsID = this->m_ButtonRoads->entityID;
+					entt::entity buttonBuildingsID = this->m_ButtonBuildings->entityID;
+					entt::entity buttonTreesID = this->m_ButtonTrees->entityID;
+
+					TransformComponent& transformR = mainRegistry.get<TransformComponent>(buttonRoadsID);
+					TransformComponent& transformB = mainRegistry.get<TransformComponent>(buttonBuildingsID);
+					TransformComponent& transformT = mainRegistry.get<TransformComponent>(buttonTreesID);
+
+					glm::vec3 movement = { 0.0f, height / 5.0f, 0.0f };
+
+					if (mainRegistry.has<HiddenComponent>(panelTreesID))
+					{
+						mainRegistry.remove<HiddenComponent>(panelTreesID);
+						transformR.Transform = glm::translate(transformR.Transform, -movement);
+						transformB.Transform = glm::translate(transformB.Transform, -movement);
+						transformT.Transform = glm::translate(transformT.Transform, -movement);
+					}
+					else
+					{
+						mainRegistry.emplace<HiddenComponent>(panelTreesID);
+						transformR.Transform = glm::translate(transformR.Transform, movement);
+						transformB.Transform = glm::translate(transformB.Transform, movement);
+						transformT.Transform = glm::translate(transformT.Transform, movement);
+					}
+				}
+				else
+				{
+					if (mainRegistry.has<HiddenComponent>(panelTreesID))
+					{
+						mainRegistry.remove<HiddenComponent>(panelTreesID);
+						mainRegistry.emplace_or_replace<HiddenComponent>(panelRoadsID);
+						mainRegistry.emplace_or_replace<HiddenComponent>(panelBuildingsID);
+					}
+					else
+					{
+						mainRegistry.emplace<HiddenComponent>(panelTreesID);
+					}
+				}
+			}});
 
 		m_ButtonNeeds = new Button(ButtonConstructorParameters{
 			m_Scene->m_Registry,
@@ -146,7 +212,6 @@ namespace Can
 				}
 			}
 			});
-
 		m_ButtonTools = new Button(ButtonConstructorParameters{
 			m_Scene->m_Registry,
 			m_Scene->entityID,
@@ -176,6 +241,7 @@ namespace Can
 		std::vector<entt::entity> buttonList = {
 			 m_ButtonRoads->entityID,
 			 m_ButtonBuildings->entityID,
+			 m_ButtonTrees->entityID,
 			 m_ButtonNeeds->entityID,
 			 m_ButtonTools->entityID
 		};
@@ -203,6 +269,17 @@ namespace Can
 		);
 		m_Scene->m_Registry.emplace<HiddenComponent>(m_PanelBuildings->entityID);
 		m_Scene->m_Registry.emplace<ChildrenComponent>(m_ButtonBuildings->entityID, std::vector<entt::entity>{ m_PanelBuildings->entityID });
+
+		m_PanelTrees = new Panel(
+			m_Scene->m_Registry,
+			m_ButtonTrees->entityID,
+			glm::vec3{ 0.5f, height - 4.5f, 0.001f },
+			glm::vec3{ width - 1.0f, 4.0f, 1.0f },
+			glm::vec4{ 69.0f / 255.0f, 123.0f / 255.0f, 157.0f / 255.0f, 1.0f },
+			[]() {std::cout << "You clicked the panel that is for Trees!" << std::endl; }
+		);
+		m_Scene->m_Registry.emplace<HiddenComponent>(m_PanelTrees->entityID);
+		m_Scene->m_Registry.emplace<ChildrenComponent>(m_ButtonTrees->entityID, std::vector<entt::entity>{ m_PanelTrees->entityID });
 
 		m_PanelNeeds = new Panel(
 			m_Scene->m_Registry,
@@ -365,6 +442,10 @@ namespace Can
 
 		std::vector<std::string> buildingtumbnailimagefiles = Helper::GetFiles(pathh, "Thumbnail_", ".png");
 
+		std::string patht = s + "\\assets\\objects\\Trees";
+
+		std::vector<std::string> treetumbnailimagefiles = Helper::GetFiles(patht, "Thumbnail_", ".png");
+
 		/*Buttons in the Roads panel*/ {
 			size_t roadCount = m_Parent->roads.size();
 			ChildrenComponent& children = m_Scene->m_Registry.emplace<ChildrenComponent>(m_PanelRoads->entityID, std::vector<entt::entity>{});
@@ -411,19 +492,44 @@ namespace Can
 				m_BuildingPanelButtonList.push_back(buildingPanelbutton);
 			}
 		}
-	}
+		/*BUttons in the Tree panel*/ {
+			size_t treeCount = m_Parent->trees.size();
+			ChildrenComponent& children = m_Scene->m_Registry.emplace<ChildrenComponent>(m_PanelTrees->entityID, std::vector<entt::entity>{});
+			for (size_t i = 0; i < treeCount; i++)
+			{
+				Button* treePanelbutton = new Button(ButtonConstructorParameters{
+					m_Scene->m_Registry,
+					m_PanelTrees->entityID,
+					glm::vec3{ 1.0f + i * 4.0f, height - 4.0f, 0.0011f },
+					glm::vec3{ 3.0f, 3.0f, 1.0f },
+					glm::vec4{ 1.0f, 1.0f, 1.0f, 1.0f },
+					Texture2D::Create(treetumbnailimagefiles[i]),
+					[i, this]() {
+						std::cout << "You clicked the " << (i + 1) << "th Button inside the Tree panel!" << std::endl;
+						this->m_Parent->testScene->SetConstructionMode(ConstructionMode::Tree);
+						this->m_Parent->testScene->SetTreeConstructionMode(TreeConstructionMode::Adding);
+						this->m_Parent->testScene->SetSelectedTree(i);
+					}
+					});
+				children.Children.push_back(treePanelbutton->entityID);
+				m_TreePanelButtonList.push_back(treePanelbutton);
+			}
+		}
+}
 
 	UIScene::~UIScene()
 	{
 		delete m_Scene;
 
 		delete m_ButtonRoads;
-		delete  m_ButtonBuildings;
-		delete  m_ButtonNeeds;
-		delete  m_ButtonTools;
+		delete m_ButtonBuildings;
+		delete m_ButtonTrees;
+		delete m_ButtonNeeds;
+		delete m_ButtonTools;
 
 		delete m_PanelRoads;
 		delete m_PanelBuildings;
+		delete m_PanelTrees;
 		delete m_PanelNeeds;
 		delete m_PanelTools;
 
@@ -457,6 +563,11 @@ namespace Can
 		delete m_ButtonNeeds_13;
 		delete m_ButtonNeeds_14;
 
+
+		//Delete lists??
+		// delete[] m_RoadPanelButtonList;
+		// delete[] m_BuildingPanelButtonList;
+		// delete[] m_TreePanelButtonList;
 	}
 
 	void UIScene::OnAttach()
