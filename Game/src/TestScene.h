@@ -69,6 +69,7 @@ namespace Can
 		void OnUpdate_BuildingConstruction(glm::vec3 prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection);
 		void OnUpdate_BuildingDestruction(glm::vec3 prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection);
 		void OnUpdate_TreeAdding(glm::vec3 prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection);
+		void OnUpdate_TreeRemoving(glm::vec3 prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection);
 
 		virtual void OnEvent(Can::Event::Event& event) override;
 		bool OnMousePressed(Can::Event::MouseButtonPressedEvent& event);
@@ -77,13 +78,13 @@ namespace Can
 		bool OnMousePressed_BuildingConstruction();
 		bool OnMousePressed_BuildingDestruction();
 		bool OnMousePressed_TreeAdding();
+		bool OnMousePressed_TreeRemoving();
 
 		void SetSelectedConstructionRoad(size_t index);
-		void DeleteSelectedRoad(Road* road);
-
 		void SetSelectedConstructionBuilding(size_t index);
-
 		void SetSelectedTree(size_t index);
+
+		void DeleteSelectedRoad(Road* road);
 
 		void SetConstructionMode(ConstructionMode mode);
 		void SetRoadConstructionMode(RoadConstructionMode mode);
@@ -183,6 +184,10 @@ namespace Can
 
 		// Building Destruction Snap
 		Building* m_BuildingDestructionSnappedBuilding = nullptr;
+
+		// Tree Removing Snap
+		Object* m_TreeRemovingSnappedTree = nullptr;
+
 
 		std::vector<std::vector<Object*>> m_RoadGuidelines;
 		std::vector<size_t> m_RoadGuidelinesInUse;
