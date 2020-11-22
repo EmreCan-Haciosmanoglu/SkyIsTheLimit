@@ -176,6 +176,7 @@ namespace Can
 				default:
 					break;
 				}
+				break;
 			}
 		}
 
@@ -996,10 +997,11 @@ namespace Can
 
 	void TestScene::OnUpdate_TreeAdding(glm::vec3 prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection)
 	{
+		b_ConstructionRestricted = false;
 		m_TreeGuideline->SetTransform(prevLocation);
 		m_TreeAddingCoordinate = prevLocation;
 
-		m_BuildingGuideline->tintColor = b_TreeRestricted ? glm::vec4{ 1.0f, 0.3f, 0.2f, 1.0f } : glm::vec4(1.0f);
+		m_BuildingGuideline->tintColor = b_ConstructionRestricted ? glm::vec4{ 1.0f, 0.3f, 0.2f, 1.0f } : glm::vec4(1.0f);
 	}
 
 	void TestScene::OnEvent(Can::Event::Event& event)
@@ -1027,12 +1029,12 @@ namespace Can
 
 		switch (m_ConstructionMode)
 		{
-		case Can::ConstructionMode::Road:
+		case ConstructionMode::Road:
 			switch (m_RoadConstructionMode)
 			{
-			case Can::RoadConstructionMode::None:
+			case RoadConstructionMode::None:
 				break;
-			case Can::RoadConstructionMode::Construct:
+			case RoadConstructionMode::Construct:
 				if (button == MouseCode::Button1)
 				{
 					ResetStates();
@@ -1044,29 +1046,43 @@ namespace Can
 					return false;
 				OnMousePressed_RoadConstruction(camPos, forward);
 				break;
-			case Can::RoadConstructionMode::Upgrade:
+			case RoadConstructionMode::Upgrade:
 				break;
-			case Can::RoadConstructionMode::Destruct:
+			case RoadConstructionMode::Destruct:
 				OnMousePressed_RoadDestruction();
 				break;
 			}
 			break;
-		case Can::ConstructionMode::Building:
+		case ConstructionMode::Building:
 			switch (m_BuildingConstructionMode)
 			{
-			case Can::BuildingConstructionMode::None:
+			case BuildingConstructionMode::None:
 				break;
-			case Can::BuildingConstructionMode::Construct:
+			case BuildingConstructionMode::Construct:
 				if (button != MouseCode::Button0)
 					return false;
 				OnMousePressed_BuildingConstruction();
 				break;
-			case Can::BuildingConstructionMode::Upgrade:
+			case BuildingConstructionMode::Upgrade:
 				break;
-			case Can::BuildingConstructionMode::Destruct:
+			case BuildingConstructionMode::Destruct:
 				if (button != MouseCode::Button0)
 					return false;
 				OnMousePressed_BuildingDestruction();
+				break;
+			default:
+				break;
+			}
+			break;
+		case ConstructionMode::Tree:
+			switch (m_TreeConstructionMode)
+			{
+			case Can::TreeConstructionMode::None:
+				break;
+			case Can::TreeConstructionMode::Adding:
+				OnMousePressed_TreeAdding();
+				break;
+			case Can::TreeConstructionMode::Removing:
 				break;
 			default:
 				break;
@@ -1508,6 +1524,26 @@ namespace Can
 				m_Buildings.erase(it);
 			}
 			delete m_BuildingDestructionSnappedBuilding;
+		}
+		return false;
+	}
+	bool TestScene::OnMousePressed_TreeAdding()
+	{
+		if (!b_ConstructionRestricted)
+		{
+			using namespace Utility;
+			glm::vec3 randomRot{ 0.0f, Random::Float(-glm::radians(90.0f),glm::radians(90.0f)), 0.0f };
+			glm::vec3 randomScale{ Random::Float(-0.2, 0.2),  Random::Float(-0.2, 0.2),  Random::Float(-0.2, 0.2) };
+			Object* tree = new Object(
+				m_Parent->trees[m_TreeType],
+				m_Parent->trees[m_TreeType],
+				m_TreeAddingCoordinate,
+				randomScale + glm::vec3{ 1.0f, 1.0f, 1.0f },
+				randomRot + glm::vec3{ 0.0f, 0.0f, 0.0f }
+			);
+			m_Trees.push_back(tree);
+			ResetStates();
+			m_TreeGuideline->enabled = true;
 		}
 		return false;
 	}

@@ -76,6 +76,7 @@ namespace Can
 		bool OnMousePressed_RoadDestruction();
 		bool OnMousePressed_BuildingConstruction();
 		bool OnMousePressed_BuildingDestruction();
+		bool OnMousePressed_TreeAdding();
 
 		void SetSelectedConstructionRoad(size_t index);
 		void DeleteSelectedRoad(Road* road);
@@ -192,7 +193,6 @@ namespace Can
 		Object* m_TreeGuideline = nullptr;
 
 		bool b_ConstructionRestricted = false;
-		bool b_TreeRestricted = false;
 
 		Noise::Perlin2D<512, NOISE_WIDTH, NOISE_HEIGHT> m_Perlin2DNoise = Noise::Perlin2D<512, NOISE_WIDTH, NOISE_HEIGHT>();
 	};
