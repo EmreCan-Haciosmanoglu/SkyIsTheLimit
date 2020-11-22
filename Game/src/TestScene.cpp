@@ -1536,7 +1536,7 @@ namespace Can
 		{
 			if (m_BuildingDestructionSnappedBuilding->connectedRoad)
 			{
-				std::vector<Building*> connectedBuildings = m_BuildingDestructionSnappedBuilding->connectedRoad->connectedBuildings;
+				std::vector<Building*>& connectedBuildings = m_BuildingDestructionSnappedBuilding->connectedRoad->connectedBuildings;
 				auto it = std::find(connectedBuildings.begin(), connectedBuildings.end(), m_BuildingDestructionSnappedBuilding);
 				connectedBuildings.erase(it);
 			}
