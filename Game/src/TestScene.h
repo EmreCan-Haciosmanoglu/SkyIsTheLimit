@@ -29,10 +29,18 @@ namespace Can
 		Upgrade,
 		Destruct
 	};
+	enum class TreeConstructionMode
+	{
+		None,
+		Adding,
+		Removing
+	};
+	
 	enum class ConstructionMode
 	{
 		Road,
-		Building
+		Building,
+		Tree
 	};
 
 	struct RoadSnapInformation
@@ -60,23 +68,28 @@ namespace Can
 		void OnUpdate_RoadDestruction(glm::vec3 prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection);
 		void OnUpdate_BuildingConstruction(glm::vec3 prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection);
 		void OnUpdate_BuildingDestruction(glm::vec3 prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection);
+		void OnUpdate_TreeAdding(glm::vec3 prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection);
+		void OnUpdate_TreeRemoving(glm::vec3 prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection);
 
 		virtual void OnEvent(Can::Event::Event& event) override;
-
 		bool OnMousePressed(Can::Event::MouseButtonPressedEvent& event);
 		bool OnMousePressed_RoadConstruction(const glm::vec3& cameraPosition, const glm::vec3& cameraDirection);
 		bool OnMousePressed_RoadDestruction();
 		bool OnMousePressed_BuildingConstruction();
 		bool OnMousePressed_BuildingDestruction();
+		bool OnMousePressed_TreeAdding();
+		bool OnMousePressed_TreeRemoving();
 
 		void SetSelectedConstructionRoad(size_t index);
-		void DeleteSelectedRoad(Road* road);
-
 		void SetSelectedConstructionBuilding(size_t index);
+		void SetSelectedTree(size_t index);
+
+		void DeleteSelectedRoad(Road* road);
 
 		void SetConstructionMode(ConstructionMode mode);
 		void SetRoadConstructionMode(RoadConstructionMode mode);
 		void SetBuildingConstructionMode(BuildingConstructionMode mode);
+		void SetTreeConstructionMode(TreeConstructionMode mode);
 
 		void ResetStates();
 
@@ -109,11 +122,14 @@ namespace Can
 		// 2 : Collision with other objects
 		// 3 : Snapping to a road
 
+		TreeConstructionMode m_TreeConstructionMode = TreeConstructionMode::None;
 		RoadConstructionMode m_RoadConstructionMode = RoadConstructionMode::Construct;
 		BuildingConstructionMode m_BuildingConstructionMode = BuildingConstructionMode::Construct;
+		
 		ConstructionMode m_ConstructionMode = ConstructionMode::Road;
 		size_t m_RoadConstructionType = 0;
 		size_t m_BuildingType = 0;
+		size_t m_TreeType = 0;
 
 	public:
 
@@ -137,13 +153,16 @@ namespace Can
 		bool b_RoadConstructionStartSnapped = false;
 		bool b_RoadConstructionEndSnapped = false;
 
+		// Tree Adding Transforms
+		glm::vec3 m_TreeAddingCoordinate = glm::vec3(-1.0f);
+
 		// Road Construction Transforms
-		glm::vec3 m_RoadConstructionStartCoordinate = { -1.0f, -1.0f, -1.0f };
-		glm::vec3 m_RoadConstructionEndCoordinate = { -1.0f, -1.0f, -1.0f };
+		glm::vec3 m_RoadConstructionStartCoordinate = glm::vec3(-1.0f);
+		glm::vec3 m_RoadConstructionEndCoordinate = glm::vec3(-1.0f);
 
 		// Building Construction Transforms
-		glm::vec3 m_BuildingConstructionCoordinate = { -1.0f, -1.0f, -1.0f };
-		glm::vec3 m_BuildingConstructionRotation = { 0.0f, 0.0f, 0.0f };
+		glm::vec3 m_BuildingConstructionCoordinate = glm::vec3(-1.0f);
+		glm::vec3 m_BuildingConstructionRotation = glm::vec3(0.0f);
 
 		// Road Construction Start Snap
 		Junction* m_RoadConstructionStartSnappedJunction = nullptr;
@@ -166,15 +185,19 @@ namespace Can
 		// Building Destruction Snap
 		Building* m_BuildingDestructionSnappedBuilding = nullptr;
 
+		// Tree Removing Snap
+		Object* m_TreeRemovingSnappedTree = nullptr;
+
+
 		std::vector<std::vector<Object*>> m_RoadGuidelines;
 		std::vector<size_t> m_RoadGuidelinesInUse;
 		Object* m_RoadGuidelinesStart = nullptr; // End /? Object
 		Object* m_RoadGuidelinesEnd = nullptr;
 
 		Object* m_BuildingGuideline = nullptr;
+		Object* m_TreeGuideline = nullptr;
 
 		bool b_ConstructionRestricted = false;
-
 
 		Noise::Perlin2D<512, NOISE_WIDTH, NOISE_HEIGHT> m_Perlin2DNoise = Noise::Perlin2D<512, NOISE_WIDTH, NOISE_HEIGHT>();
 	};
