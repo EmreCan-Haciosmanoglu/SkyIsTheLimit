@@ -986,7 +986,7 @@ namespace Can
 			}
 		}
 
-		b_ConstructionRestricted = (buildingRestrictionOptions[3] && !snappedToRoad) || collidedWithRoad  || collidedWithOtherBuildings;
+		b_ConstructionRestricted = (buildingRestrictionOptions[1] && !snappedToRoad) || collidedWithRoad || collidedWithOtherBuildings;
 		m_BuildingGuideline->tintColor = b_ConstructionRestricted ? glm::vec4{ 1.0f, 0.3f, 0.2f, 1.0f } : glm::vec4(1.0f);
 	}
 	void TestScene::OnUpdate_BuildingDestruction(glm::vec3 prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection)
@@ -1224,36 +1224,60 @@ namespace Can
 			if (m_RoadConstructionEndSnappedEnd || m_RoadConstructionEndSnappedJunction || m_RoadConstructionEndSnappedRoad)
 				most.x = glm::length(AB);
 
-			for (size_t i = 0; i < m_Buildings.size(); i++)
-			{
-				Building* building = m_Buildings[i];
-				glm::vec2 mtv = Helper::CheckRotatedRectangleCollision(
-					least,
-					most,
-					rotation,
-					glm::vec2{ m_RoadConstructionStartCoordinate.x,m_RoadConstructionStartCoordinate.z },
-					glm::vec2{ building->object->prefab->boundingBoxL.x ,building->object->prefab->boundingBoxL.z },
-					glm::vec2{ building->object->prefab->boundingBoxM.x ,building->object->prefab->boundingBoxM.z },
-					building->object->rotation.y,
-					glm::vec2{ building->position.x,building->position.z }
-				);
-				building->object->tintColor = glm::vec4(1.0f);
-				if (mtv.x != 0.0f || mtv.y != 0.0f)
+			if (buildingRestrictionOptions[0] && roadRestrictionOptions[2])
+				for (size_t i = 0; i < m_Buildings.size(); i++)
 				{
-					if (building->connectedRoad)
+					Building* building = m_Buildings[i];
+					glm::vec2 mtv = Helper::CheckRotatedRectangleCollision(
+						least,
+						most,
+						rotation,
+						glm::vec2{ m_RoadConstructionStartCoordinate.x,m_RoadConstructionStartCoordinate.z },
+						glm::vec2{ building->object->prefab->boundingBoxL.x ,building->object->prefab->boundingBoxL.z },
+						glm::vec2{ building->object->prefab->boundingBoxM.x ,building->object->prefab->boundingBoxM.z },
+						building->object->rotation.y,
+						glm::vec2{ building->position.x,building->position.z }
+					);
+
+					if (mtv.x != 0.0f || mtv.y != 0.0f)
 					{
-						auto it = std::find(
-							building->connectedRoad->connectedBuildings.begin(),
-							building->connectedRoad->connectedBuildings.end(),
-							building
-						);
-						building->connectedRoad->connectedBuildings.erase(it);
+						if (building->connectedRoad)
+						{
+							auto it = std::find(
+								building->connectedRoad->connectedBuildings.begin(),
+								building->connectedRoad->connectedBuildings.end(),
+								building
+							);
+							building->connectedRoad->connectedBuildings.erase(it);
+						}
+						m_Buildings.erase(m_Buildings.begin() + i);
+						delete building;
+						i--;
 					}
-					m_Buildings.erase(m_Buildings.begin() + i);
-					delete building;
-					i--;
 				}
-			}
+
+			if (treeRestrictionOptions[0] && roadRestrictionOptions[2])
+				for (size_t i = 0; i < m_Trees.size(); i++)
+				{
+					Object* tree = m_Trees[i];
+					glm::vec2 mtv = Helper::CheckRotatedRectangleCollision(
+						least,
+						most,
+						rotation,
+						glm::vec2{ m_RoadConstructionStartCoordinate.x,m_RoadConstructionStartCoordinate.z },
+						glm::vec2{ tree->prefab->boundingBoxL.x ,tree->prefab->boundingBoxL.z },
+						glm::vec2{ tree->prefab->boundingBoxM.x ,tree->prefab->boundingBoxM.z },
+						tree->rotation.y,
+						glm::vec2{ tree->position.x, tree->position.z }
+					);
+
+					if (mtv.x != 0.0f || mtv.y != 0.0f)
+					{
+						m_Trees.erase(m_Trees.begin() + i);
+						delete tree;
+						i--;
+					}
+				}
 
 
 			if (m_RoadConstructionStartSnappedJunction != nullptr)
@@ -1863,7 +1887,7 @@ namespace Can
 		for (Building* building : m_Buildings)
 			building->object->tintColor = glm::vec4(1.0f);
 
-		for(Object* tree : m_Trees)
+		for (Object* tree : m_Trees)
 			tree->tintColor = glm::vec4(1.0f);
 
 		for (std::vector<Object*>& os : m_RoadGuidelines)
