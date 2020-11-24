@@ -122,6 +122,9 @@ namespace Can
 		// 2 : Collision with other objects
 		// 3 : Snapping to a road
 
+		std::array<bool, 1> treeRestrictionOptions = { true };
+		// 0 : Collision
+
 		TreeConstructionMode m_TreeConstructionMode = TreeConstructionMode::None;
 		RoadConstructionMode m_RoadConstructionMode = RoadConstructionMode::Construct;
 		BuildingConstructionMode m_BuildingConstructionMode = BuildingConstructionMode::Construct;

@@ -398,33 +398,6 @@ namespace Can
 				}
 			}
 
-			bool collisionWitBuildingIsRestricted = false;
-			if (roadRestrictionOptions[3])
-			{
-				/*
-				glm::vec3 SE = m_RoadConstructionEndCoordinate - m_RoadConstructionStartCoordinate;
-				glm::vec3 ray = glm::normalize(SE);
-				float length = glm::length(SE);
-				for (Object* building : m_Buildings)
-				{
-					glm::vec3 least = building->prefab->boundingBoxL;
-					glm::vec3 most = building->prefab->boundingBoxM;
-					if (Helper::CheckBoundingRectangleHit(m_RoadConstructionStartCoordinate, ray, length, least, most))
-					{
-						m_CollidedBuilding = building;
-						collisionWitBuildingIsRestricted = true;
-						continue;
-					}
-				}
-				*/
-			}
-
-			bool collisionWithOtherObjectsIsRestricted = false;
-			if (roadRestrictionOptions[4])
-			{
-				// Future checks
-			}
-
 			glm::vec3 AB = m_RoadConstructionEndCoordinate - m_RoadConstructionStartCoordinate;
 
 			float rotationOffset = AB.x < 0.0f ? 180.0f : 0.0f;
@@ -568,21 +541,44 @@ namespace Can
 			if (m_RoadConstructionEndSnappedEnd || m_RoadConstructionEndSnappedJunction || m_RoadConstructionEndSnappedRoad)
 				most.x = glm::length(AB);
 
-			for (Building* building : m_Buildings)
+			if (buildingRestrictionOptions[0] && roadRestrictionOptions[2])
 			{
-				glm::vec2 mtv = Helper::CheckRotatedRectangleCollision(
-					least,
-					most,
-					rotationEnd,
-					glm::vec2{ m_RoadConstructionStartCoordinate.x,m_RoadConstructionStartCoordinate.z },
-					glm::vec2{ building->object->prefab->boundingBoxL.x ,building->object->prefab->boundingBoxL.z },
-					glm::vec2{ building->object->prefab->boundingBoxM.x ,building->object->prefab->boundingBoxM.z },
-					building->object->rotation.y,
-					glm::vec2{ building->position.x,building->position.z }
-				);
-				building->object->tintColor = glm::vec4(1.0f);
-				if (mtv.x != 0.0f || mtv.y != 0.0f)
-					building->object->tintColor = glm::vec4{ 1.0f, 0.3f, 0.2f, 1.0f };
+				for (Building* building : m_Buildings)
+				{
+					glm::vec2 mtv = Helper::CheckRotatedRectangleCollision(
+						least,
+						most,
+						rotationEnd,
+						glm::vec2{ m_RoadConstructionStartCoordinate.x,m_RoadConstructionStartCoordinate.z },
+						glm::vec2{ building->object->prefab->boundingBoxL.x ,building->object->prefab->boundingBoxL.z },
+						glm::vec2{ building->object->prefab->boundingBoxM.x ,building->object->prefab->boundingBoxM.z },
+						building->object->rotation.y,
+						glm::vec2{ building->position.x,building->position.z }
+					);
+					building->object->tintColor = glm::vec4(1.0f);
+					if (mtv.x != 0.0f || mtv.y != 0.0f)
+						building->object->tintColor = glm::vec4{ 1.0f, 0.3f, 0.2f, 1.0f };
+				}
+			}
+
+			if (treeRestrictionOptions[0] && roadRestrictionOptions[2])
+			{
+				for (Object* tree : m_Trees)
+				{
+					glm::vec2 mtv = Helper::CheckRotatedRectangleCollision(
+						least,
+						most,
+						rotationEnd,
+						glm::vec2{ m_RoadConstructionStartCoordinate.x,m_RoadConstructionStartCoordinate.z },
+						glm::vec2{ tree->prefab->boundingBoxL.x * tree->scale.x ,tree->prefab->boundingBoxL.z * tree->scale.z },
+						glm::vec2{ tree->prefab->boundingBoxM.x * tree->scale.x ,tree->prefab->boundingBoxM.z * tree->scale.z },
+						tree->rotation.y,
+						glm::vec2{ tree->position.x, tree->position.z }
+					);
+					tree->tintColor = glm::vec4(1.0f);
+					if (mtv.x != 0.0f || mtv.y != 0.0f)
+						tree->tintColor = glm::vec4{ 1.0f, 0.3f, 0.2f, 1.0f };
+				}
 			}
 
 			m_RoadGuidelinesStart->enabled = !b_RoadConstructionStartSnapped;
@@ -760,8 +756,6 @@ namespace Can
 			b_ConstructionRestricted |= angleIsRestricted;
 			b_ConstructionRestricted |= lengthIsRestricted;
 			b_ConstructionRestricted |= collisionIsRestricted;
-			b_ConstructionRestricted |= collisionWitBuildingIsRestricted;
-			b_ConstructionRestricted |= collisionWithOtherObjectsIsRestricted;
 
 			m_RoadGuidelinesStart->tintColor = b_ConstructionRestricted ? glm::vec4{ 1.0f, 0.3f, 0.2f, 1.0f } : glm::vec4(1.0f);
 			m_RoadGuidelinesEnd->tintColor = b_ConstructionRestricted ? glm::vec4{ 1.0f, 0.3f, 0.2f, 1.0f } : glm::vec4(1.0f);
@@ -909,7 +903,7 @@ namespace Can
 		}
 
 		bool collidedWithRoad = false;
-		if (buildingRestrictionOptions[0])
+		if (buildingRestrictionOptions[0] && roadRestrictionOptions[2])
 		{
 			glm::vec2 buildingL = { selectedBuilding->boundingBoxL.x, selectedBuilding->boundingBoxL.z };
 			glm::vec2 buildingM = { selectedBuilding->boundingBoxM.x, selectedBuilding->boundingBoxM.z };
@@ -938,8 +932,34 @@ namespace Can
 			}
 		}
 
+		if (buildingRestrictionOptions[0] && treeRestrictionOptions[0])
+		{
+			glm::vec2 buildingL = { selectedBuilding->boundingBoxL.x, selectedBuilding->boundingBoxL.z };
+			glm::vec2 buildingM = { selectedBuilding->boundingBoxM.x, selectedBuilding->boundingBoxM.z };
+			glm::vec2 buildingP = { m_BuildingConstructionCoordinate.x, m_BuildingConstructionCoordinate.z };
+			for (Object* tree : m_Trees)
+			{
+				glm::vec2 treeL = { tree->prefab->boundingBoxL.x, tree->prefab->boundingBoxL.z };
+				glm::vec2 treeM = { tree->prefab->boundingBoxM.x, tree->prefab->boundingBoxM.z };
+				glm::vec2 treeP = { tree->position.x, tree->position.z };
+				glm::vec2 mtv = Helper::CheckRotatedRectangleCollision(
+					treeL,
+					treeM,
+					tree->rotation.y,
+					treeP,
+					buildingL,
+					buildingM,
+					m_BuildingConstructionRotation.y,
+					buildingP
+				);
+				tree->tintColor = glm::vec4(1.0f);
+				if (mtv.x != 0.0f || mtv.y != 0.0f)
+					tree->tintColor = glm::vec4{ 1.0f, 0.3f, 0.2f, 1.0f };
+			}
+		}
+
 		bool collidedWithOtherBuildings = false;
-		if (buildingRestrictionOptions[1])
+		if (buildingRestrictionOptions[0])
 		{
 			glm::vec2 buildingL = { selectedBuilding->boundingBoxL.x, selectedBuilding->boundingBoxL.z };
 			glm::vec2 buildingM = { selectedBuilding->boundingBoxM.x, selectedBuilding->boundingBoxM.z };
@@ -966,13 +986,7 @@ namespace Can
 			}
 		}
 
-		bool collidedWithOtherObjects = false;
-		if (buildingRestrictionOptions[2])
-		{
-
-		}
-
-		b_ConstructionRestricted = (buildingRestrictionOptions[3] && !snappedToRoad) || collidedWithRoad || collidedWithOtherObjects || collidedWithOtherBuildings;
+		b_ConstructionRestricted = (buildingRestrictionOptions[3] && !snappedToRoad) || collidedWithRoad  || collidedWithOtherBuildings;
 		m_BuildingGuideline->tintColor = b_ConstructionRestricted ? glm::vec4{ 1.0f, 0.3f, 0.2f, 1.0f } : glm::vec4(1.0f);
 	}
 	void TestScene::OnUpdate_BuildingDestruction(glm::vec3 prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection)
@@ -1848,6 +1862,9 @@ namespace Can
 
 		for (Building* building : m_Buildings)
 			building->object->tintColor = glm::vec4(1.0f);
+
+		for(Object* tree : m_Trees)
+			tree->tintColor = glm::vec4(1.0f);
 
 		for (std::vector<Object*>& os : m_RoadGuidelines)
 			for (Object* rg : os)
