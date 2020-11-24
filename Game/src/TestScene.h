@@ -182,8 +182,9 @@ namespace Can
 		Road* m_BuildingConstructionSnappedRoad = nullptr;
 
 		// Building Destruction Snap
-		Building* m_BuildingDestructionSnappedBuilding = nullptr;
-
+		//Building* m_BuildingDestructionSnappedBuilding = nullptr;
+		std::vector<Building*>::iterator& m_BuildingDestructionSnappedBuilding = m_Buildings.end();
+		
 		// Tree Removing Snap
 		Object* m_TreeRemovingSnappedTree = nullptr;
 

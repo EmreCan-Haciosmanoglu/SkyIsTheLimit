@@ -997,9 +997,11 @@ namespace Can
 	}
 	void TestScene::OnUpdate_BuildingDestruction(glm::vec3 prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection)
 	{
-		m_BuildingDestructionSnappedBuilding = nullptr;
-		for (Building* building : m_Buildings)
+		m_BuildingDestructionSnappedBuilding = m_Buildings.end();
+		//for (Building* building : m_Buildings)
+		for (auto& it = m_Buildings.begin(); it != m_Buildings.end(); ++it)
 		{
+			Building* building = *it;
 			building->object->tintColor = glm::vec4(1.0f);
 
 			if (Helper::CheckBoundingBoxHit(
@@ -1009,7 +1011,7 @@ namespace Can
 				building->object->prefab->boundingBoxM + building->position
 			))
 			{
-				m_BuildingDestructionSnappedBuilding = building;
+				m_BuildingDestructionSnappedBuilding = it;
 				building->object->tintColor = glm::vec4{ 1.0f, 0.3f, 0.2f, 1.0f };
 				break;
 			}
@@ -1020,7 +1022,69 @@ namespace Can
 		b_ConstructionRestricted = false;
 		m_TreeGuideline->SetTransform(prevLocation);
 		m_TreeAddingCoordinate = prevLocation;
+		m_TreeGuideline->tintColor = glm::vec4(1.0f);
 
+		bool collidedWithRoad = false;
+		if (roadRestrictionOptions[2] && treeRestrictionOptions[0])
+		{
+			glm::vec2 treeL = { m_TreeGuideline->prefab->boundingBoxL.x, m_TreeGuideline->prefab->boundingBoxL.z };
+			glm::vec2 treeM = { m_TreeGuideline->prefab->boundingBoxM.x, m_TreeGuideline->prefab->boundingBoxM.z };
+			for (Road* road : m_Roads)
+			{
+				float roadHalfWidth = (road->object->prefab->boundingBoxM.z - road->object->prefab->boundingBoxL.z) / 2.0f;
+				glm::vec2 roadL = { 0.0f, -roadHalfWidth };
+				glm::vec2 roadM = { road->length, roadHalfWidth };
+				glm::vec2 mtv = Helper::CheckRotatedRectangleCollision(
+					roadL,
+					roadM,
+					road->rotation.y,
+					glm::vec2{ road->GetStartPosition().x, road->GetStartPosition().z },
+					treeL,
+					treeM,
+					0.0f,
+					glm::vec2{ m_TreeAddingCoordinate.x, m_TreeAddingCoordinate.z }
+				);
+				if (mtv.x != 0.0f || mtv.y != 0.0f)
+				{
+					collidedWithRoad = true;
+					m_TreeGuideline->tintColor = glm::vec4{ 1.0f, 0.3f, 0.2f, 1.0f };
+					break;
+				}
+			}
+		}
+
+		bool collidedWithBuilding = false;
+		if (buildingRestrictionOptions[0] && treeRestrictionOptions[0])
+		{
+
+			glm::vec2 treeL = { m_TreeGuideline->prefab->boundingBoxL.x, m_TreeGuideline->prefab->boundingBoxL.z };
+			glm::vec2 treeM = { m_TreeGuideline->prefab->boundingBoxM.x, m_TreeGuideline->prefab->boundingBoxM.z };
+			glm::vec2 treeP = { m_TreeGuideline->position.x, m_TreeGuideline->position.z };
+			for (Building* building : m_Buildings)
+			{
+				glm::vec2 buildingL = { building->object->prefab->boundingBoxL.x, building->object->prefab->boundingBoxL.z };
+				glm::vec2 buildingM = { building->object->prefab->boundingBoxM.x, building->object->prefab->boundingBoxM.z };
+				glm::vec2 buildingP = { building->object->position.x, building->object->position.z };
+				glm::vec2 mtv = Helper::CheckRotatedRectangleCollision(
+					treeL,
+					treeM,
+					0.0f,
+					treeP,
+					buildingL,
+					buildingM,
+					building->object->rotation.y,
+					buildingP
+				);
+				if (mtv.x != 0.0f || mtv.y != 0.0f)
+				{
+					collidedWithBuilding = true;
+					m_TreeGuideline->tintColor = glm::vec4{ 1.0f, 0.3f, 0.2f, 1.0f };
+					break;
+				}
+			}
+		}
+
+		b_ConstructionRestricted = collidedWithRoad | collidedWithBuilding;
 		m_BuildingGuideline->tintColor = b_ConstructionRestricted ? glm::vec4{ 1.0f, 0.3f, 0.2f, 1.0f } : glm::vec4(1.0f);
 	}
 	void TestScene::OnUpdate_TreeRemoving(glm::vec3 prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection)
@@ -1605,19 +1669,19 @@ namespace Can
 	}
 	bool TestScene::OnMousePressed_BuildingDestruction()
 	{
-		if (m_BuildingDestructionSnappedBuilding)
+		if (m_BuildingDestructionSnappedBuilding != m_Buildings.end())
 		{
-			if (m_BuildingDestructionSnappedBuilding->connectedRoad)
+			Building* building = *m_BuildingDestructionSnappedBuilding;
+			if (building->connectedRoad)
 			{
-				std::vector<Building*>& connectedBuildings = m_BuildingDestructionSnappedBuilding->connectedRoad->connectedBuildings;
-				auto it = std::find(connectedBuildings.begin(), connectedBuildings.end(), m_BuildingDestructionSnappedBuilding);
+				std::vector<Building*>& connectedBuildings = building->connectedRoad->connectedBuildings;
+				auto it = std::find(connectedBuildings.begin(), connectedBuildings.end(), building);
 				connectedBuildings.erase(it);
 			}
 			{
-				auto it = std::find(m_Buildings.begin(), m_Buildings.end(), m_BuildingDestructionSnappedBuilding);
-				m_Buildings.erase(it);
+				m_Buildings.erase(m_BuildingDestructionSnappedBuilding);
 			}
-			delete m_BuildingDestructionSnappedBuilding;
+			delete building;
 		}
 		return false;
 	}
@@ -1898,7 +1962,7 @@ namespace Can
 
 		m_BuildingConstructionSnappedRoad = nullptr;
 
-		m_BuildingDestructionSnappedBuilding = nullptr;
+		m_BuildingDestructionSnappedBuilding = m_Buildings.end();
 
 
 		for (Road* road : m_Roads)
