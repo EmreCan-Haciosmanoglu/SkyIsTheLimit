@@ -162,22 +162,25 @@ namespace Can
 		if (testScene->m_ConstructionMode == ConstructionMode::Road)
 		{
 			ImGui::Text("Road Construction Restriction Options");
-			ImGui::BeginChild("Road Construction Restriction Options", ImVec2(0, 135), true);
+			ImGui::BeginChild("Road Construction Restriction Options", ImVec2(0, 85), true);
 			ImGui::Checkbox("Small angles", &testScene->roadRestrictionOptions[0]);
 			ImGui::Checkbox("Short lengths", &testScene->roadRestrictionOptions[1]);
-			ImGui::Checkbox("Collisions with other roads", &testScene->roadRestrictionOptions[2]);
-			ImGui::Checkbox("Collisions with buildings", &testScene->roadRestrictionOptions[3]);
-			ImGui::Checkbox("Collisions with other objects", &testScene->roadRestrictionOptions[4]);
+			ImGui::Checkbox("Collisions", &testScene->roadRestrictionOptions[2]);
 			ImGui::EndChild();
 		}
 		else if (testScene->m_ConstructionMode == ConstructionMode::Building)
 		{
 			ImGui::Text("Building Construction Restriction Options");
-			ImGui::BeginChild("Building Construction Restriction Options", ImVec2(0, 110), true);
-			ImGui::Checkbox("Collisions with roads", &testScene->buildingRestrictionOptions[0]);
-			ImGui::Checkbox("Collisions with other buildings", &testScene->buildingRestrictionOptions[1]);
-			ImGui::Checkbox("Collisions with other objects", &testScene->buildingRestrictionOptions[2]);
-			ImGui::Checkbox("Snapping to a road", &testScene->buildingRestrictionOptions[3]);
+			ImGui::BeginChild("Building Construction Restriction Options", ImVec2(0, 60), true);
+			ImGui::Checkbox("Collisions", &testScene->buildingRestrictionOptions[0]);
+			ImGui::Checkbox("Snapping to a road", &testScene->buildingRestrictionOptions[1]);
+			ImGui::EndChild();
+		}
+		else if (testScene->m_ConstructionMode == ConstructionMode::Tree)
+		{
+			ImGui::Text("Tree Construction Restriction Options");
+			ImGui::BeginChild("Tree Construction Restriction Options", ImVec2(0, 35), true);
+			ImGui::Checkbox("Collisions", &testScene->treeRestrictionOptions[0]);
 			ImGui::EndChild();
 		}
 		ImGui::End();

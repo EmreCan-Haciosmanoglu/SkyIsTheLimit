@@ -35,7 +35,7 @@ namespace Can
 		Adding,
 		Removing
 	};
-	
+
 	enum class ConstructionMode
 	{
 		Road,
@@ -109,18 +109,14 @@ namespace Can
 		// 0 : Roads
 		// 1 : Buildings
 
-		std::array<bool, 5> roadRestrictionOptions = { true, true, true, true, true };
+		std::array<bool, 3> roadRestrictionOptions = { true, true, true };
 		// 0 : Small Angle
 		// 1 : Short Length
-		// 2 : Collision with other roads
-		// 3 : Collision with buildings
-		// 4 : Collision with other objects
+		// 2 : Collision
 
-		std::array<bool, 4> buildingRestrictionOptions = { true, true, true, true };
-		// 0 : Collision with roads
-		// 1 : Collision with other buildings
-		// 2 : Collision with other objects
-		// 3 : Snapping to a road
+		std::array<bool, 2> buildingRestrictionOptions = { true, true };
+		// 0 : Collision
+		// 1 : Snapping to a road
 
 		std::array<bool, 1> treeRestrictionOptions = { true };
 		// 0 : Collision
@@ -128,7 +124,7 @@ namespace Can
 		TreeConstructionMode m_TreeConstructionMode = TreeConstructionMode::None;
 		RoadConstructionMode m_RoadConstructionMode = RoadConstructionMode::Construct;
 		BuildingConstructionMode m_BuildingConstructionMode = BuildingConstructionMode::Construct;
-		
+
 		ConstructionMode m_ConstructionMode = ConstructionMode::Road;
 		size_t m_RoadConstructionType = 0;
 		size_t m_BuildingType = 0;
