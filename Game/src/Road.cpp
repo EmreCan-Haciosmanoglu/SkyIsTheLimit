@@ -152,8 +152,10 @@ namespace Can
 					TestScene::m_Buildings.end(),
 					building
 				);
-				TestScene::m_Buildings.erase(it);
 				connectedBuildings.erase(connectedBuildings.begin() + i);
+				building->connectedRoad = nullptr;
+				if(TestScene::buildingSnapOptions[0])
+					TestScene::m_Buildings.erase(it);
 				delete building;
 				i--;
 			}

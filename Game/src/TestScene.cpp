@@ -18,6 +18,12 @@ namespace Can
 	std::vector<Building*> TestScene::m_Buildings = {};
 	std::vector<Object*> TestScene::m_Trees = {};
 
+	std::array<bool, 5> TestScene::roadSnapOptions = { true, true, false, true, false };
+	std::array<bool, 2> TestScene::buildingSnapOptions = { true, true };
+	std::array<bool, 3> TestScene::roadRestrictionOptions = { true, true, true };
+	std::array<bool, 2> TestScene::buildingRestrictionOptions = { true, true };
+	std::array<bool, 1> TestScene::treeRestrictionOptions = { true };
+
 	TestScene::TestScene(GameApp* parent)
 		: m_Parent(parent)
 		, m_Terrain(new Object(m_Parent->terrainPrefab, m_Parent->terrainPrefab, { 0.0f, 0.0f, 0.0f, }, { 1.0f, 1.0f, 1.0f, }, { 0.0f, 0.0f, 0.0f, }))
@@ -1565,6 +1571,35 @@ namespace Can
 			m_Buildings.push_back(newBuilding);
 			ResetStates();
 			m_BuildingGuideline->enabled = true;
+
+			if (buildingRestrictionOptions[0] && treeRestrictionOptions[0])
+			{
+				glm::vec2 buildingL = { newBuilding->object->prefab->boundingBoxL.x, newBuilding->object->prefab->boundingBoxL.z };
+				glm::vec2 buildingM = { newBuilding->object->prefab->boundingBoxM.x, newBuilding->object->prefab->boundingBoxM.z };
+				glm::vec2 buildingP = { newBuilding->object->position.x, newBuilding->object->position.z };
+
+				for (size_t i = 0; i < m_Trees.size(); i++)
+				{
+					Object* tree = m_Trees[i];
+					glm::vec2 mtv = Helper::CheckRotatedRectangleCollision(
+						buildingL,
+						buildingM,
+						newBuilding->object->rotation.y,
+						buildingP,
+						glm::vec2{ tree->prefab->boundingBoxL.x ,tree->prefab->boundingBoxL.z },
+						glm::vec2{ tree->prefab->boundingBoxM.x ,tree->prefab->boundingBoxM.z },
+						tree->rotation.y,
+						glm::vec2{ tree->position.x, tree->position.z }
+					);
+
+					if (mtv.x != 0.0f || mtv.y != 0.0f)
+					{
+						m_Trees.erase(m_Trees.begin() + i);
+						delete tree;
+						i--;
+					}
+				}
+			}
 		}
 		return false;
 	}

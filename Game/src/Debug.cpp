@@ -143,19 +143,19 @@ namespace Can
 		{
 			ImGui::Text("Road Construction Snap Options");
 			ImGui::BeginChild("Road Construction Snap Options", ImVec2(0, 135), true);
-			ImGui::Checkbox("Road", &testScene->roadSnapOptions[0]);
-			ImGui::Checkbox("Length", &testScene->roadSnapOptions[1]);
-			ImGui::Checkbox("Height", &testScene->roadSnapOptions[2]);
-			ImGui::Checkbox("Angle", &testScene->roadSnapOptions[3]);
-			ImGui::Checkbox("Grid", &testScene->roadSnapOptions[4]);
+			ImGui::Checkbox("Road", &TestScene::roadSnapOptions[0]);
+			ImGui::Checkbox("Length", &TestScene::roadSnapOptions[1]);
+			ImGui::Checkbox("Height", &TestScene::roadSnapOptions[2]);
+			ImGui::Checkbox("Angle", &TestScene::roadSnapOptions[3]);
+			ImGui::Checkbox("Grid", &TestScene::roadSnapOptions[4]);
 			ImGui::EndChild();
 		}
 		else if (testScene->m_ConstructionMode == ConstructionMode::Building)
 		{
 			ImGui::Text("Building Construction Snap Options");
 			ImGui::BeginChild("Building Construction Snap Options", ImVec2(0, 60), true);
-			ImGui::Checkbox("Road", &testScene->buildingSnapOptions[0]);
-			ImGui::Checkbox("Building", &testScene->buildingSnapOptions[1]);
+			ImGui::Checkbox("Road", &TestScene::buildingSnapOptions[0]);
+			ImGui::Checkbox("Building", &TestScene::buildingSnapOptions[1]);
 			ImGui::EndChild();
 		}
 
@@ -163,24 +163,24 @@ namespace Can
 		{
 			ImGui::Text("Road Construction Restriction Options");
 			ImGui::BeginChild("Road Construction Restriction Options", ImVec2(0, 85), true);
-			ImGui::Checkbox("Small angles", &testScene->roadRestrictionOptions[0]);
-			ImGui::Checkbox("Short lengths", &testScene->roadRestrictionOptions[1]);
-			ImGui::Checkbox("Collisions", &testScene->roadRestrictionOptions[2]);
+			ImGui::Checkbox("Small angles", &TestScene::roadRestrictionOptions[0]);
+			ImGui::Checkbox("Short lengths", &TestScene::roadRestrictionOptions[1]);
+			ImGui::Checkbox("Collisions", &TestScene::roadRestrictionOptions[2]);
 			ImGui::EndChild();
 		}
 		else if (testScene->m_ConstructionMode == ConstructionMode::Building)
 		{
 			ImGui::Text("Building Construction Restriction Options");
 			ImGui::BeginChild("Building Construction Restriction Options", ImVec2(0, 60), true);
-			ImGui::Checkbox("Collisions", &testScene->buildingRestrictionOptions[0]);
-			ImGui::Checkbox("Snapping to a road", &testScene->buildingRestrictionOptions[1]);
+			ImGui::Checkbox("Collisions", &TestScene::buildingRestrictionOptions[0]);
+			ImGui::Checkbox("Snapping to a road", &TestScene::buildingRestrictionOptions[1]);
 			ImGui::EndChild();
 		}
 		else if (testScene->m_ConstructionMode == ConstructionMode::Tree)
 		{
 			ImGui::Text("Tree Construction Restriction Options");
 			ImGui::BeginChild("Tree Construction Restriction Options", ImVec2(0, 35), true);
-			ImGui::Checkbox("Collisions", &testScene->treeRestrictionOptions[0]);
+			ImGui::Checkbox("Collisions", &TestScene::treeRestrictionOptions[0]);
 			ImGui::EndChild();
 		}
 		ImGui::End();
