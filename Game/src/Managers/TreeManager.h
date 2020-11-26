@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Can/Renderer/Object.h"
+
 namespace Can
 {
 	enum class TreeConstructionMode
@@ -25,6 +27,9 @@ namespace Can
 		void SetSelectedTree(size_t index);
 
 		void SetConstructionMode(TreeConstructionMode mode);
+
+		inline const TreeConstructionMode GetConstructionMode() const { return m_ConstructionMode; }
+		inline TreeConstructionMode GetConstructionMode() { return m_ConstructionMode; }
 
 		void ResetStates();
 

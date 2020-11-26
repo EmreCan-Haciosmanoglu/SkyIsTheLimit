@@ -64,7 +64,7 @@ namespace Can
 		// 2 : Collision
 
 	private:
-		RoadConstructionMode m_ConstructionMode = RoadConstructionMode::Construct;
+		RoadConstructionMode m_ConstructionMode = RoadConstructionMode::None;
 
 		std::vector<Road*> m_Roads;
 		std::vector<Junction*> m_Junctions;
