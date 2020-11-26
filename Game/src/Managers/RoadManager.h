@@ -45,6 +45,9 @@ namespace Can
 		inline const RoadConstructionMode GetConstructionMode() const { return m_ConstructionMode; }
 		inline RoadConstructionMode GetConstructionMode() { return m_ConstructionMode; }
 
+		inline const std::vector<Road*>& GetRoads() const { return m_Roads; }
+		inline std::vector<Road*>& GetRoads() { return m_Roads; }
+
 		void Remove(Road* road);
 
 		SnapInformation CheckSnapping(const glm::vec3& cameraPosition, const glm::vec3& cameraDirection);

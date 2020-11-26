@@ -4,6 +4,8 @@
 
 namespace Can
 {
+	class GameScene;
+
 	enum class TreeConstructionMode
 	{
 		Adding,
@@ -11,11 +13,10 @@ namespace Can
 		None
 	};
 
-
 	class TreeManager
 	{
 	public:
-		TreeManager();
+		TreeManager(GameScene* scene);
 		~TreeManager();
 
 		void OnUpdate_Adding(glm::vec3 prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection);
@@ -42,12 +43,13 @@ namespace Can
 		// 0 : Collision
 
 	private:
+		GameScene* m_Scene = nullptr;
 
 		TreeConstructionMode m_ConstructionMode = TreeConstructionMode::None;
 
 		size_t m_Type = 0;
 
-		std::vector<Object*> m_Trees;
+		std::vector<Object*> m_Trees = {};
 
 		glm::vec3 m_GuidelinePosition = glm::vec3(0.0f);
 
