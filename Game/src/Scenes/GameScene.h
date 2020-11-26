@@ -36,9 +36,9 @@ namespace Can
 	public:
 		static GameScene* ActiveGameInstance;
 
-		RoadManager* m_RoadBuilder;
-		TreeManager* m_TreeBuilder;
-		BuildingManager* m_BuildingManager;
+		RoadManager* m_RoadBuilder = nullptr;
+		TreeManager* m_TreeBuilder = nullptr;
+		BuildingManager* m_BuildingManager = nullptr;
 
 	private:
 		GameApp* MainApplication = nullptr;
