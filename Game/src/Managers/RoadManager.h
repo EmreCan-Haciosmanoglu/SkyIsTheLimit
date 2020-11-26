@@ -4,6 +4,7 @@
 
 namespace Can
 {
+	class GameScene;
 	class Road;
 	class Junction;
 	class End;
@@ -28,7 +29,7 @@ namespace Can
 	class RoadManager
 	{
 	public:
-		RoadManager();
+		RoadManager(GameScene* scene);
 		~RoadManager();
 
 		void OnUpdate_Construction(glm::vec3 prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection);
@@ -51,24 +52,25 @@ namespace Can
 		void ResetStates();
 	public:
 
-		std::array<bool, 5> snapOptions;
+		std::array<bool, 5> snapOptions = { true, true, true, true, true };
 		// 0 : Roads
 		// 1 : Length
 		// 2 : Height
 		// 3 : Angle
 		// 4 : Grid
 
-		std::array<bool, 3> restrictions;
+		std::array<bool, 3> restrictions = { true, true, true};
 		// 0 : Small Angle
 		// 1 : Short Length
 		// 2 : Collision
 
 	private:
+		GameScene* m_Scene = nullptr;
 		RoadConstructionMode m_ConstructionMode = RoadConstructionMode::None;
 
-		std::vector<Road*> m_Roads;
-		std::vector<Junction*> m_Junctions;
-		std::vector<End*> m_Ends;
+		std::vector<Road*> m_Roads{};
+		std::vector<Junction*> m_Junctions{};
+		std::vector<End*> m_Ends{};
 
 		bool b_ConstructionStarted = false;
 		bool b_ConstructionEnded = false;
@@ -94,11 +96,13 @@ namespace Can
 		End* m_DestructionSnappedEnd = nullptr;
 		Road* m_DestructionSnappedRoad = nullptr;
 
-		std::vector<std::vector<Object*>> m_Guidelines;
-		std::vector<size_t> m_GuidelinesInUse;
+		std::vector<std::vector<Object*>> m_Guidelines{};
+		std::vector<size_t> m_GuidelinesInUse{};
 		Object* m_GuidelinesStart = nullptr; // End /? Object
 		Object* m_GuidelinesEnd = nullptr;
 
 		bool b_ConstructionRestricted = false;
+
+		size_t m_Type = 0;
 	};
 }

@@ -33,6 +33,9 @@ namespace Can
 		inline const BuildingConstructionMode GetConstructionMode() const { return m_ConstructionMode; }
 		inline BuildingConstructionMode GetConstructionMode() { return m_ConstructionMode; }
 
+		inline const std::vector<Building*>& GetBuildings() const { return m_Buildings; }
+		inline std::vector<Building*>& GetBuildings() { return m_Buildings; }
+
 		void ResetStates();
 	public:
 
@@ -40,7 +43,7 @@ namespace Can
 		// 0 : Roads
 		// 1 : Buildings
 
-		std::array<bool, 2> restriction;
+		std::array<bool, 2> restrictions;
 		// 0 : Collision
 		// 1 : Snapping to a road
 

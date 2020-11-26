@@ -31,6 +31,9 @@ namespace Can
 		inline const TreeConstructionMode GetConstructionMode() const { return m_ConstructionMode; }
 		inline TreeConstructionMode GetConstructionMode() { return m_ConstructionMode; }
 
+		inline const std::vector<Object*>& GetTrees() const { return m_Trees; }
+		inline std::vector<Object*>& GetTrees() { return m_Trees; }
+
 		void ResetStates();
 
 	public:

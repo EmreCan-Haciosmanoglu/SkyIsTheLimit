@@ -1,6 +1,7 @@
 #pragma once
 #include "Can/Layers/Layer.h"
 #include "Can/Events/Event.h"
+#include "Can/Shadow/ShadowMapMasterRenderer.h"
 
 namespace Can
 {
@@ -34,15 +35,13 @@ namespace Can
 		bool OnMousePressed(Event::MouseButtonPressedEvent& event);
 
 	public:
-		static GameScene* ActiveGameInstance;
+		GameApp* MainApplication = nullptr;
 
-		RoadManager* m_RoadBuilder = nullptr;
-		TreeManager* m_TreeBuilder = nullptr;
+		RoadManager* m_RoadManager = nullptr;
+		TreeManager* m_TreeManager = nullptr;
 		BuildingManager* m_BuildingManager = nullptr;
 
 	private:
-		GameApp* MainApplication = nullptr;
-
 		Camera::Controller::Perspective m_MainCameraController;
 
 		ConstructionMode e_ConstructionMode = ConstructionMode::None;
