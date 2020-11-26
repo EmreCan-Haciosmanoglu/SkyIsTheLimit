@@ -16,7 +16,7 @@ namespace Can
 		Destruct
 	};
 
-	struct RoadSnapInformation
+	struct SnapInformation
 	{
 		bool snapped;
 		glm::vec3 snapLocation;
@@ -37,28 +37,28 @@ namespace Can
 		bool OnMousePressed_Construction(const glm::vec3& cameraPosition, const glm::vec3& cameraDirection);
 		bool OnMousePressed_Destruction();
 
-		void SetSelectedConstructionRoad(size_t index);
+		void SetType(size_t type);
 
 		void SetConstructionMode(RoadConstructionMode mode);
 
 		inline const RoadConstructionMode GetConstructionMode() const { return m_ConstructionMode; }
 		inline RoadConstructionMode GetConstructionMode() { return m_ConstructionMode; }
 
-		void DeleteSelectedRoad(Road* road);
+		void Remove(Road* road);
 
-		RoadSnapInformation DidRoadSnapped(const glm::vec3& cameraPosition, const glm::vec3& cameraDirection);
+		SnapInformation CheckSnapping(const glm::vec3& cameraPosition, const glm::vec3& cameraDirection);
 
 		void ResetStates();
 	public:
 
-		static std::array<bool, 5> snapOptions;
+		std::array<bool, 5> snapOptions;
 		// 0 : Roads
 		// 1 : Length
 		// 2 : Height
 		// 3 : Angle
 		// 4 : Grid
 
-		static std::array<bool, 3> restrictions;
+		std::array<bool, 3> restrictions;
 		// 0 : Small Angle
 		// 1 : Short Length
 		// 2 : Collision
@@ -70,34 +70,34 @@ namespace Can
 		std::vector<Junction*> m_Junctions;
 		std::vector<End*> m_Ends;
 
-		bool b_RoadConstructionStarted = false;
-		bool b_RoadConstructionEnded = false;
-		bool b_RoadConstructionStartSnapped = false;
-		bool b_RoadConstructionEndSnapped = false;
+		bool b_ConstructionStarted = false;
+		bool b_ConstructionEnded = false;
+		bool b_ConstructionStartSnapped = false;
+		bool b_ConstructionEndSnapped = false;
 
-		// Road Construction Transforms
-		glm::vec3 m_RoadConstructionStartCoordinate = glm::vec3(-1.0f);
-		glm::vec3 m_RoadConstructionEndCoordinate = glm::vec3(-1.0f);
+		// Transforms
+		glm::vec3 m_StartPosition = glm::vec3(0.0f);
+		glm::vec3 m_EndPosition = glm::vec3(0.0f);
 
-		// Road Construction Start Snap
-		Junction* m_RoadConstructionStartSnappedJunction = nullptr;
-		End* m_RoadConstructionStartSnappedEnd = nullptr;
-		Road* m_RoadConstructionStartSnappedRoad = nullptr;
+		// Start Snap
+		Junction* m_StartSnappedJunction = nullptr;
+		End* m_StartSnappedEnd = nullptr;
+		Road* m_StartSnappedRoad = nullptr;
 
-		// Road Construction End Snap
-		Junction* m_RoadConstructionEndSnappedJunction = nullptr;
-		End* m_RoadConstructionEndSnappedEnd = nullptr;
-		Road* m_RoadConstructionEndSnappedRoad = nullptr;
+		// End Snap
+		Junction* m_EndSnappedJunction = nullptr;
+		End* m_EndSnappedEnd = nullptr;
+		Road* m_EndSnappedRoad = nullptr;
 
-		// Road Destruction Snap
-		Junction* m_RoadDestructionSnappedJunction = nullptr;
-		End* m_RoadDestructionSnappedEnd = nullptr;
-		Road* m_RoadDestructionSnappedRoad = nullptr;
+		// Destruction Snap
+		Junction* m_DestructionSnappedJunction = nullptr;
+		End* m_DestructionSnappedEnd = nullptr;
+		Road* m_DestructionSnappedRoad = nullptr;
 
-		std::vector<std::vector<Object*>> m_RoadGuidelines;
-		std::vector<size_t> m_RoadGuidelinesInUse;
-		Object* m_RoadGuidelinesStart = nullptr; // End /? Object
-		Object* m_RoadGuidelinesEnd = nullptr;
+		std::vector<std::vector<Object*>> m_Guidelines;
+		std::vector<size_t> m_GuidelinesInUse;
+		Object* m_GuidelinesStart = nullptr; // End /? Object
+		Object* m_GuidelinesEnd = nullptr;
 
 		bool b_ConstructionRestricted = false;
 	};

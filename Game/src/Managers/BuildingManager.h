@@ -8,10 +8,10 @@ namespace Can
 
 	enum class BuildingConstructionMode
 	{
-		None,
 		Construct,
 		Upgrade,
-		Destruct
+		Destruct,
+		None
 	};
 
 	class BuildingManager
@@ -26,7 +26,7 @@ namespace Can
 		bool OnMousePressed_Construction();
 		bool OnMousePressed_Destruction();
 
-		void SetSelectedConstructionBuilding(size_t index);
+		void SetType(size_t type);
 
 		void SetConstructionMode(BuildingConstructionMode mode);
 		
@@ -36,34 +36,30 @@ namespace Can
 		void ResetStates();
 	public:
 
-		static std::array<bool, 2> snapOptions;
+		std::array<bool, 2> snapOptions;
 		// 0 : Roads
 		// 1 : Buildings
 
-		static std::array<bool, 2> restriction;
+		std::array<bool, 2> restriction;
 		// 0 : Collision
 		// 1 : Snapping to a road
+
+	private:
 
 		BuildingConstructionMode m_ConstructionMode = BuildingConstructionMode::None;
 
 		size_t m_BuildingType = 0;
 
-		static std::vector<Building*> m_Buildings;
+		std::vector<Building*> m_Buildings;
 
-	private:
+		glm::vec3 m_GuidelinePosition = glm::vec3(0.0f);
+		glm::vec3 m_GuidelineRotation = glm::vec3(0.0f);
 
-		// Building Construction Transforms
-		glm::vec3 m_BuildingConstructionCoordinate = glm::vec3(-1.0f);
-		glm::vec3 m_BuildingConstructionRotation = glm::vec3(0.0f);
+		Road* m_SnappedRoad = nullptr;
 
-		// Building Construction Snap
-		Road* m_BuildingConstructionSnappedRoad = nullptr;
+		std::vector<Building*>::iterator& m_SelectedBuildingToDestruct = m_Buildings.end();
 
-		// Building Destruction Snap
-		//Building* m_BuildingDestructionSnappedBuilding = nullptr;
-		std::vector<Building*>::iterator& m_BuildingDestructionSnappedBuilding = m_Buildings.end();
-
-		Object* m_BuildingGuideline = nullptr;
+		Object* m_Guideline = nullptr;
 
 		bool b_ConstructionRestricted = false;
 	};

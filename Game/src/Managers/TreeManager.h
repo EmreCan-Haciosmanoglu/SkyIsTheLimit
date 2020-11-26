@@ -24,7 +24,7 @@ namespace Can
 		bool OnMousePressed_Adding();
 		bool OnMousePressed_Removing();
 
-		void SetSelectedTree(size_t index);
+		void SetType(size_t type);
 
 		void SetConstructionMode(TreeConstructionMode mode);
 
@@ -35,25 +35,23 @@ namespace Can
 
 	public:
 
-		static std::array<bool, 1> treeRestrictionOptions;
+		std::array<bool, 1> restrictions = { true };
 		// 0 : Collision
-
-		TreeConstructionMode m_ConstructionMode = TreeConstructionMode::None;
-
-		size_t m_TreeType = 0;
-
-		static std::vector<Object*> m_Trees;
 
 	private:
 
-		// Tree Adding Transforms
-		glm::vec3 m_TreeAddingCoordinate = glm::vec3(-1.0f);
+		TreeConstructionMode m_ConstructionMode = TreeConstructionMode::None;
 
-		// Tree Removing Snap
-		Object* m_TreeRemovingSnappedTree = nullptr;
+		size_t m_Type = 0;
 
-		Object* m_TreeGuideline = nullptr;
+		std::vector<Object*> m_Trees;
 
-		bool b_ConstructionRestricted = false;
+		glm::vec3 m_GuidelinePosition = glm::vec3(0.0f);
+
+		std::vector<Object*>::iterator& m_SelectedTreeToRemove = m_Trees.end();
+
+		Object* m_Guideline = nullptr;
+
+		bool b_AddingRestricted = false;
 	};
 }
