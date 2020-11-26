@@ -79,7 +79,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>CAN_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir)Can\vendor\spdlog\include;$(SolutionDir)Can\src;$(SolutionDir)Can\vendor\imgui;$(SolutionDir)Can\vendor\glm;$(SolutionDir)Can\vendor\entt\single_include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)src;$(SolutionDir)Can\vendor\spdlog\include;$(SolutionDir)Can\src;$(SolutionDir)Can\vendor\imgui;$(SolutionDir)Can\vendor\glm;$(SolutionDir)Can\vendor\entt\single_include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
       <MinimalRebuild>false</MinimalRebuild>
@@ -97,7 +97,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>CAN_RELEASE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir)Can\vendor\spdlog\include;$(SolutionDir)Can\src;$(SolutionDir)Can\vendor\imgui;$(SolutionDir)Can\vendor\glm;$(SolutionDir)Can\vendor\entt\single_include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)src;$(SolutionDir)Can\vendor\spdlog\include;$(SolutionDir)Can\src;$(SolutionDir)Can\vendor\imgui;$(SolutionDir)Can\vendor\glm;$(SolutionDir)Can\vendor\entt\single_include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -118,7 +118,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>CAN_DIST;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir)Can\vendor\spdlog\include;$(SolutionDir)Can\src;$(SolutionDir)Can\vendor\imgui;$(SolutionDir)Can\vendor\glm;$(SolutionDir)Can\vendor\entt\single_include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)src;$(SolutionDir)Can\vendor\spdlog\include;$(SolutionDir)Can\src;$(SolutionDir)Can\vendor\imgui;$(SolutionDir)Can\vendor\glm;$(SolutionDir)Can\vendor\entt\single_include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -142,17 +142,19 @@
     <ClInclude Include="src\Helper.h" />
     <ClInclude Include="src\Junction.h" />
     <ClInclude Include="src\Road.h" />
+    <ClInclude Include="src\Scenes\GameScene.h" />
     <ClInclude Include="src\TestScene.h" />
     <ClInclude Include="src\UIScene.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\Building.cpp" />
     <ClCompile Include="src\Debug.cpp" />
     <ClCompile Include="src\End.cpp" />
     <ClCompile Include="src\GameApp.cpp" />
     <ClCompile Include="src\Helper.cpp" />
-    <ClCompile Include="src\Building.cpp" />
     <ClCompile Include="src\Junction.cpp" />
     <ClCompile Include="src\Road.cpp" />
+    <ClCompile Include="src\Scenes\GameScene.cpp" />
     <ClCompile Include="src\TestScene.cpp" />
     <ClCompile Include="src\UIScene.cpp" />
   </ItemGroup>
