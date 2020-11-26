@@ -141,6 +141,8 @@
     <ClInclude Include="src\GameApp.h" />
     <ClInclude Include="src\Helper.h" />
     <ClInclude Include="src\Junction.h" />
+    <ClInclude Include="src\Managers\RoadManager.h" />
+    <ClInclude Include="src\Managers\TreeManager.h" />
     <ClInclude Include="src\Road.h" />
     <ClInclude Include="src\Scenes\GameScene.h" />
     <ClInclude Include="src\TestScene.h" />
@@ -153,6 +155,8 @@
     <ClCompile Include="src\GameApp.cpp" />
     <ClCompile Include="src\Helper.cpp" />
     <ClCompile Include="src\Junction.cpp" />
+    <ClCompile Include="src\Managers\RoadManager.cpp" />
+    <ClCompile Include="src\Managers\TreeManager.cpp" />
     <ClCompile Include="src\Road.cpp" />
     <ClCompile Include="src\Scenes\GameScene.cpp" />
     <ClCompile Include="src\TestScene.cpp" />
