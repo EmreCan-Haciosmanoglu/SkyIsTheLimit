@@ -12,16 +12,102 @@
 #include "BuildingManager.h"
 #include "Helper.h"
 
+#include <gl/GL.h>
+
 namespace Can
 {
 	TreeManager::TreeManager(GameScene* scene)
 		: m_Scene(scene)
 	{
+		m_Guideline = new Object(m_Scene->MainApplication->trees[m_Type], m_Scene->MainApplication->trees[m_Type], glm::vec3(0.0f), glm::vec3(1.0f), glm::vec3(0.0f), false);
+
+
+		Ref<Texture2D> treeMap = m_Scene->MainApplication->treeMap;
+		treeMap->Bind();
+		GLubyte* pixels = new GLubyte[(size_t)treeMap->GetWidth() * (size_t)treeMap->GeHeight() * 4];
+		glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+
+		int r, g, b, a; // or GLubyte r, g, b, a;
+		size_t elmes_per_line = (size_t)treeMap->GetWidth() * 4; // elements per line = 256 * "RGBA"
+
+		size_t jump = 6;
+		float halfOffset = jump / (TERRAIN_SCALE_DOWN * 2.0f);
+
+		for (size_t y = jump / 2; y < treeMap->GeHeight(); y += jump)
+		{
+			for (size_t x = jump / 2; x < treeMap->GetWidth(); x += jump)
+			{
+				size_t row = y * elmes_per_line;
+				size_t col = x * 4;
+
+				r = (int)pixels[row + col];
+				g = (int)pixels[row + col + 1U];
+				b = (int)pixels[row + col + 2U];
+				a = (int)pixels[row + col + 3U];
+
+				int n = Utility::Random::Integer(256);
+				if (n < a)
+				{
+					using namespace Can::Utility;
+					std::vector<int> colors = {};
+					if (r > 128)
+						colors.push_back(0);
+					if (g > 128)
+						colors.push_back(1);
+					if (b > 128)
+						colors.push_back(2);
+
+					int type = colors[Random::Integer((int)colors.size())];
+					glm::vec3 offsetPos{ Random::Float(halfOffset), 0.0f, Random::Float(halfOffset) };
+					glm::vec3 randomRot{ 0.0f, Random::Float(-glm::radians(90.0f),glm::radians(90.0f)), 0.0f };
+					glm::vec3 randomScale{ Random::Float(-0.2, 0.2),  Random::Float(-0.2, 0.2),  Random::Float(-0.2, 0.2) };
+					if (type == 0)
+					{
+						Object* tree = new Object(
+							m_Scene->MainApplication->trees[0],
+							m_Scene->MainApplication->trees[0],
+							offsetPos + glm::vec3{ (float)x / TERRAIN_SCALE_DOWN, 0.0f, -((float)y / TERRAIN_SCALE_DOWN) },
+							randomScale + glm::vec3{ 1.0f, 1.0f, 1.0f },
+							randomRot + glm::vec3{ 0.0f, 0.0f, 0.0f }
+						);
+						m_Trees.push_back(tree);
+					}
+					else if (type == 1)
+					{
+						Object* tree = new Object(
+							m_Scene->MainApplication->trees[1],
+							m_Scene->MainApplication->trees[1],
+							offsetPos + glm::vec3{ (float)x / TERRAIN_SCALE_DOWN, 0.0f, -((float)y / TERRAIN_SCALE_DOWN) },
+							randomScale + glm::vec3{ 1.0f, 1.0f, 1.0f },
+							randomRot + glm::vec3{ 0.0f, 0.0f, 0.0f }
+						);
+						m_Trees.push_back(tree);
+					}
+				}
+			}
+		}
+		std::cout << m_Trees.size() << std::endl;
 	}
 	TreeManager::~TreeManager()
 	{
 	}
 
+	void TreeManager::OnUpdate(glm::vec3 prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection)
+	{
+		switch (m_ConstructionMode)
+		{
+		case TreeConstructionMode::None:
+			break;
+		case TreeConstructionMode::Adding:
+			OnUpdate_Adding(prevLocation, cameraPosition, cameraDirection);
+			break;
+		case TreeConstructionMode::Removing:
+			OnUpdate_Removing(prevLocation, cameraPosition, cameraDirection);
+			break;
+		default:
+			break;
+		}
+	}
 	void TreeManager::OnUpdate_Adding(glm::vec3 prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection)
 	{
 		b_AddingRestricted = false;
@@ -30,11 +116,11 @@ namespace Can
 		m_Guideline->tintColor = glm::vec4(1.0f);
 
 		bool collidedWithRoad = false;
-		if (m_Scene->m_RoadManager->restrictions[2] && restrictions[0])
+		if (m_Scene->m_RoadManager.restrictions[2] && restrictions[0])
 		{
 			glm::vec2 treeL = { m_Guideline->prefab->boundingBoxL.x, m_Guideline->prefab->boundingBoxL.z };
 			glm::vec2 treeM = { m_Guideline->prefab->boundingBoxM.x, m_Guideline->prefab->boundingBoxM.z };
-			for (Road* road : m_Scene->m_RoadManager->GetRoads())
+			for (Road* road : m_Scene->m_RoadManager.GetRoads())
 			{
 				float roadHalfWidth = (road->object->prefab->boundingBoxM.z - road->object->prefab->boundingBoxL.z) / 2.0f;
 				glm::vec2 roadL = { 0.0f, -roadHalfWidth };
@@ -59,13 +145,13 @@ namespace Can
 		}
 
 		bool collidedWithBuilding = false;
-		if (m_Scene->m_BuildingManager->restrictions[0] && restrictions[0])
+		if (m_Scene->m_BuildingManager.restrictions[0] && restrictions[0])
 		{
 
 			glm::vec2 treeL = { m_Guideline->prefab->boundingBoxL.x, m_Guideline->prefab->boundingBoxL.z };
 			glm::vec2 treeM = { m_Guideline->prefab->boundingBoxM.x, m_Guideline->prefab->boundingBoxM.z };
 			glm::vec2 treeP = { m_Guideline->position.x, m_Guideline->position.z };
-			for (Building* building : m_Scene->m_BuildingManager->GetBuildings())
+			for (Building* building : m_Scene->m_BuildingManager.GetBuildings())
 			{
 				glm::vec2 buildingL = { building->object->prefab->boundingBoxL.x, building->object->prefab->boundingBoxL.z };
 				glm::vec2 buildingM = { building->object->prefab->boundingBoxM.x, building->object->prefab->boundingBoxM.z };
@@ -115,6 +201,10 @@ namespace Can
 		}
 	}
 
+	bool TreeManager::OnMousePressed(MouseCode button)
+	{
+		return false;
+	}
 	bool TreeManager::OnMousePressed_Adding()
 	{
 		if (!b_AddingRestricted)

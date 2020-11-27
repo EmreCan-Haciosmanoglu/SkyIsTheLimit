@@ -17,11 +17,37 @@ namespace Can
 	RoadManager::RoadManager(GameScene* scene)
 		: m_Scene(scene)
 	{
+		m_GuidelinesStart = new Object(m_Scene->MainApplication->roads[m_Type][2], m_Scene->MainApplication->roads[m_Type][2], glm::vec3(0.0f), glm::vec3(1.0f), glm::vec3(0.0f), false);
+		m_GuidelinesEnd = new Object(m_Scene->MainApplication->roads[m_Type][2], m_Scene->MainApplication->roads[m_Type][2], glm::vec3(0.0f), glm::vec3(1.0f), glm::vec3(0.0f), false);
+
+		size_t roadTypeCount = m_Scene->MainApplication->roads.size();
+		for (size_t i = 0; i < roadTypeCount; i++)
+		{
+			m_GuidelinesInUse.push_back(0);
+			m_Guidelines.push_back({});
+			m_Guidelines[i].push_back(new Object(m_Scene->MainApplication->roads[i][0], m_Scene->MainApplication->roads[i][0], glm::vec3(0.0f), glm::vec3(1.0f), glm::vec3(0.0f), false));
+		}
 	}
 	RoadManager::~RoadManager()
 	{
 	}
 
+	void RoadManager::OnUpdate(glm::vec3 prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection)
+	{
+		switch (m_ConstructionMode)
+		{
+		case RoadConstructionMode::None:
+			break;
+		case RoadConstructionMode::Construct:
+			OnUpdate_Construction(prevLocation, cameraPosition, cameraDirection);
+			break;
+		case  RoadConstructionMode::Upgrade:
+			break;
+		case  RoadConstructionMode::Destruct:
+			OnUpdate_Destruction(prevLocation, cameraPosition, cameraDirection);
+			break;
+		}
+	}
 	void RoadManager::OnUpdate_Construction(glm::vec3 prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection)
 	{
 		Prefab* selectedRoad = m_Scene->MainApplication->roads[m_Type][0];
@@ -367,9 +393,9 @@ namespace Can
 			if (m_EndSnappedEnd || m_EndSnappedJunction || m_EndSnappedRoad)
 				most.x = glm::length(AB);
 
-			if (m_Scene->m_BuildingManager->restrictions[0] && restrictions[2])
+			if (m_Scene->m_BuildingManager.restrictions[0] && restrictions[2])
 			{
-				for (Building* building : m_Scene->m_BuildingManager->GetBuildings())
+				for (Building* building : m_Scene->m_BuildingManager.GetBuildings())
 				{
 					glm::vec2 mtv = Helper::CheckRotatedRectangleCollision(
 						least,
@@ -387,9 +413,9 @@ namespace Can
 				}
 			}
 
-			if (m_Scene->m_TreeManager->restrictions[0] && restrictions[2])
+			if (m_Scene->m_TreeManager.restrictions[0] && restrictions[2])
 			{
-				for (Object* tree : m_Scene->m_TreeManager->GetTrees())
+				for (Object* tree : m_Scene->m_TreeManager.GetTrees())
 				{
 					glm::vec2 mtv = Helper::CheckRotatedRectangleCollision(
 						least,
@@ -644,6 +670,31 @@ namespace Can
 		}
 	}
 
+	bool RoadManager::OnMousePressed(MouseCode button, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection)
+	{
+		switch (m_ConstructionMode)
+		{
+		case RoadConstructionMode::None:
+			break;
+		case RoadConstructionMode::Construct:
+			if (button == MouseCode::Button1)
+			{
+				ResetStates();
+				m_GuidelinesStart->enabled = true;
+				m_GuidelinesEnd->enabled = true;
+				return false;
+			}
+			else if (button != MouseCode::Button0)
+				return false;
+			OnMousePressed_Construction(cameraPosition, cameraDirection);
+			break;
+		case RoadConstructionMode::Upgrade:
+			break;
+		case RoadConstructionMode::Destruct:
+			OnMousePressed_Destruction();
+			break;
+		}
+	}
 	bool RoadManager::OnMousePressed_Construction(const glm::vec3& cameraPosition, const glm::vec3& cameraDirection)
 	{
 		float* data = nullptr;// m_Terrain->prefab->vertices;
@@ -742,8 +793,8 @@ namespace Can
 			if (m_EndSnappedEnd || m_EndSnappedJunction || m_EndSnappedRoad)
 				most.x = glm::length(AB);
 
-			auto buildings = m_Scene->m_BuildingManager->GetBuildings();
-			if (m_Scene->m_BuildingManager->restrictions[0] && restrictions[2])
+			auto buildings = m_Scene->m_BuildingManager.GetBuildings();
+			if (m_Scene->m_BuildingManager.restrictions[0] && restrictions[2])
 				for (size_t i = 0; i < buildings.size(); i++)
 				{
 					Building* building = buildings[i];
@@ -775,8 +826,8 @@ namespace Can
 					}
 				}
 
-			auto trees = m_Scene->m_TreeManager->GetTrees();
-			if (m_Scene->m_TreeManager->restrictions[0] && restrictions[2])
+			auto trees = m_Scene->m_TreeManager.GetTrees();
+			if (m_Scene->m_TreeManager.restrictions[0] && restrictions[2])
 				for (size_t i = 0; i < trees.size(); i++)
 				{
 					Object* tree = trees[i];
@@ -1217,7 +1268,7 @@ namespace Can
 
 		for (Building* building : road->connectedBuildings)
 		{
-			m_Scene->m_BuildingManager->GetBuildings().erase(std::find(m_Scene->m_BuildingManager->GetBuildings().begin(), m_Scene->m_BuildingManager->GetBuildings().end(), building));
+			m_Scene->m_BuildingManager.GetBuildings().erase(std::find(m_Scene->m_BuildingManager.GetBuildings().begin(), m_Scene->m_BuildingManager.GetBuildings().end(), building));
 			delete building;
 		}
 

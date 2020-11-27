@@ -22,7 +22,10 @@ namespace Can
 
 	void Debug::OnImGuiRender()
 	{
-		static TestScene* testScene = m_Parent->testScene;
+		GameScene* gameScene = m_Parent->gameScene;
+		RoadManager* roadManager = &(gameScene->m_RoadManager);
+		TreeManager* treeManager = &(gameScene->m_TreeManager);
+		BuildingManager* buildingManager= &(gameScene->m_BuildingManager);
 		if (!is_open)
 			return;
 
@@ -30,12 +33,14 @@ namespace Can
 
 		ImGui::Text("Construction Type");
 		ImGui::BeginChild("Construction Type", ImVec2(0, 85), true);
-		if (ImGui::RadioButton("Road", testScene->m_ConstructionMode == ConstructionMode::Road))
-			testScene->SetConstructionMode(ConstructionMode::Road);
-		if (ImGui::RadioButton("Building", testScene->m_ConstructionMode == ConstructionMode::Building))
-			testScene->SetConstructionMode(ConstructionMode::Building);
-		if (ImGui::RadioButton("Tree", testScene->m_ConstructionMode == ConstructionMode::Tree))
-			testScene->SetConstructionMode(ConstructionMode::Tree);
+		if (ImGui::RadioButton("Road", gameScene->e_ConstructionMode == ConstructionMode::Road))
+			gameScene->SetConstructionMode(ConstructionMode::Road);
+		if (ImGui::RadioButton("Building", gameScene->e_ConstructionMode == ConstructionMode::Building))
+			gameScene->SetConstructionMode(ConstructionMode::Building);
+		if (ImGui::RadioButton("Tree", gameScene->e_ConstructionMode == ConstructionMode::Tree))
+			gameScene->SetConstructionMode(ConstructionMode::Tree);
+		if (ImGui::RadioButton("None", gameScene->e_ConstructionMode == ConstructionMode::None))
+			gameScene->SetConstructionMode(ConstructionMode::None);
 		ImGui::EndChild();
 
 		if (testScene->m_ConstructionMode == ConstructionMode::Road)

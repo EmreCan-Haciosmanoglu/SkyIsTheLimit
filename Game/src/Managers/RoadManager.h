@@ -32,9 +32,11 @@ namespace Can
 		RoadManager(GameScene* scene);
 		~RoadManager();
 
+		void OnUpdate(glm::vec3 prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection);
 		void OnUpdate_Construction(glm::vec3 prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection);
 		void OnUpdate_Destruction(glm::vec3 prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection);
 
+		bool OnMousePressed(MouseCode button, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection);
 		bool OnMousePressed_Construction(const glm::vec3& cameraPosition, const glm::vec3& cameraDirection);
 		bool OnMousePressed_Destruction();
 
@@ -62,7 +64,7 @@ namespace Can
 		// 3 : Angle
 		// 4 : Grid
 
-		std::array<bool, 3> restrictions = { true, true, true};
+		std::array<bool, 3> restrictions = { true, true, true };
 		// 0 : Small Angle
 		// 1 : Short Length
 		// 2 : Collision

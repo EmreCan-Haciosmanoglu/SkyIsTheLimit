@@ -3,6 +3,10 @@
 #include "Can/Events/Event.h"
 #include "Can/Shadow/ShadowMapMasterRenderer.h"
 
+#include "Managers/RoadManager.h"
+#include "Managers/TreeManager.h"
+#include "Managers/BuildingManager.h"
+
 namespace Can
 {
 	class GameApp;
@@ -34,17 +38,24 @@ namespace Can
 
 		bool OnMousePressed(Event::MouseButtonPressedEvent& event);
 
+		void SetConstructionMode(ConstructionMode mode);
+
+	private:
+		glm::vec3 GetRayCastedFromScreen();
+
 	public:
 		GameApp* MainApplication = nullptr;
+		Object* m_Terrain = nullptr;
 
-		RoadManager* m_RoadManager = nullptr;
-		TreeManager* m_TreeManager = nullptr;
-		BuildingManager* m_BuildingManager = nullptr;
+		RoadManager m_RoadManager;
+		TreeManager m_TreeManager;
+		BuildingManager m_BuildingManager;
+
+		ConstructionMode e_ConstructionMode = ConstructionMode::None;
 
 	private:
 		Camera::Controller::Perspective m_MainCameraController;
 
-		ConstructionMode e_ConstructionMode = ConstructionMode::None;
 
 		ShadowMapMasterRenderer* m_ShadowMapMasterRenderer = nullptr;
 		glm::vec3 m_LightPosition{ +0.0f, 1.0f, 0.0f };

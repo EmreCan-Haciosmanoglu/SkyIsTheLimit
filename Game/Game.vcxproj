@@ -146,7 +146,6 @@
     <ClInclude Include="src\Managers\TreeManager.h" />
     <ClInclude Include="src\Road.h" />
     <ClInclude Include="src\Scenes\GameScene.h" />
-    <ClInclude Include="src\TestScene.h" />
     <ClInclude Include="src\UIScene.h" />
   </ItemGroup>
   <ItemGroup>
@@ -161,7 +160,6 @@
     <ClCompile Include="src\Managers\TreeManager.cpp" />
     <ClCompile Include="src\Road.cpp" />
     <ClCompile Include="src\Scenes\GameScene.cpp" />
-    <ClCompile Include="src\TestScene.cpp" />
     <ClCompile Include="src\UIScene.cpp" />
   </ItemGroup>
   <ItemGroup>

@@ -17,11 +17,30 @@ namespace Can
 	BuildingManager::BuildingManager(GameScene* scene)
 		: m_Scene(scene)
 	{
+		m_Guideline = new Object(m_Scene->MainApplication->buildings[m_Type], m_Scene->MainApplication->buildings[m_Type], glm::vec3(0.0f), glm::vec3(1.0f), glm::vec3(0.0f), false);
 	}
 	BuildingManager::~BuildingManager()
 	{
 	}
 
+	void BuildingManager::OnUpdate(glm::vec3 prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection)
+	{
+		switch (m_ConstructionMode)
+		{
+		case BuildingConstructionMode::None:
+			break;
+		case BuildingConstructionMode::Construct:
+			OnUpdate_Construction(prevLocation, cameraPosition, cameraDirection);
+			break;
+		case BuildingConstructionMode::Upgrade:
+			break;
+		case BuildingConstructionMode::Destruct:
+			OnUpdate_Destruction(prevLocation, cameraPosition, cameraDirection);
+			break;
+		default:
+			break;
+		}
+	}
 	void BuildingManager::OnUpdate_Construction(glm::vec3 prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection)
 	{
 		b_ConstructionRestricted = true;
@@ -36,7 +55,7 @@ namespace Can
 		bool snappedToRoad = false;
 		if (snapOptions[0])
 		{
-			for (Road* road : m_Scene->m_RoadManager->GetRoads())
+			for (Road* road : m_Scene->m_RoadManager.GetRoads())
 			{
 				float roadWidth = road->object->prefab->boundingBoxM.z - road->object->prefab->boundingBoxL.z;
 				glm::vec3& roadDir = road->direction;
@@ -108,11 +127,11 @@ namespace Can
 		}
 
 		bool collidedWithRoad = false;
-		if (restrictions[0] && m_Scene->m_RoadManager->restrictions[2])
+		if (restrictions[0] && m_Scene->m_RoadManager.restrictions[2])
 		{
 			glm::vec2 buildingL = { selectedBuilding->boundingBoxL.x, selectedBuilding->boundingBoxL.z };
 			glm::vec2 buildingM = { selectedBuilding->boundingBoxM.x, selectedBuilding->boundingBoxM.z };
-			for (Road* road : m_Scene->m_RoadManager->GetRoads())
+			for (Road* road : m_Scene->m_RoadManager.GetRoads())
 			{
 				if (road == m_SnappedRoad)
 					continue;
@@ -137,12 +156,12 @@ namespace Can
 			}
 		}
 
-		if (restrictions[0] && m_Scene->m_TreeManager->restrictions[0])
+		if (restrictions[0] && m_Scene->m_TreeManager.restrictions[0])
 		{
 			glm::vec2 buildingL = { selectedBuilding->boundingBoxL.x, selectedBuilding->boundingBoxL.z };
 			glm::vec2 buildingM = { selectedBuilding->boundingBoxM.x, selectedBuilding->boundingBoxM.z };
 			glm::vec2 buildingP = { m_GuidelinePosition.x, m_GuidelinePosition.z };
-			for (Object* tree : m_Scene->m_TreeManager->GetTrees())
+			for (Object* tree : m_Scene->m_TreeManager.GetTrees())
 			{
 				glm::vec2 treeL = { tree->prefab->boundingBoxL.x, tree->prefab->boundingBoxL.z };
 				glm::vec2 treeM = { tree->prefab->boundingBoxM.x, tree->prefab->boundingBoxM.z };
@@ -216,6 +235,28 @@ namespace Can
 		}
 	}
 
+	bool BuildingManager::OnMousePressed(MouseCode button)
+	{
+		switch (m_ConstructionMode)
+		{
+		case BuildingConstructionMode::None:
+			break;
+		case BuildingConstructionMode::Construct:
+			if (button != MouseCode::Button0)
+				return false;
+			OnMousePressed_Construction();
+			break;
+		case BuildingConstructionMode::Upgrade:
+			break;
+		case BuildingConstructionMode::Destruct:
+			if (button != MouseCode::Button0)
+				return false;
+			OnMousePressed_Destruction();
+			break;
+		default:
+			break;
+		}
+	}
 	bool BuildingManager::OnMousePressed_Construction()
 	{
 		if (!b_ConstructionRestricted)
@@ -227,13 +268,13 @@ namespace Can
 			ResetStates();
 			m_Guideline->enabled = true;
 
-			if (restrictions[0] && m_Scene->m_TreeManager->restrictions[0])
+			if (restrictions[0] && m_Scene->m_TreeManager.restrictions[0])
 			{
 				glm::vec2 buildingL = { newBuilding->object->prefab->boundingBoxL.x, newBuilding->object->prefab->boundingBoxL.z };
 				glm::vec2 buildingM = { newBuilding->object->prefab->boundingBoxM.x, newBuilding->object->prefab->boundingBoxM.z };
 				glm::vec2 buildingP = { newBuilding->object->position.x, newBuilding->object->position.z };
 
-				auto trees = m_Scene->m_TreeManager->GetTrees();
+				auto trees = m_Scene->m_TreeManager.GetTrees();
 				for (size_t i = 0; i < trees.size(); i++)
 				{
 					Object* tree = trees[i];

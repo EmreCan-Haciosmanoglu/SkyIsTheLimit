@@ -16,7 +16,6 @@
     <ClInclude Include="src\Scenes\GameScene.h">
       <Filter>Scenes</Filter>
     </ClInclude>
-    <ClInclude Include="src\TestScene.h" />
     <ClInclude Include="src\UIScene.h" />
     <ClInclude Include="src\Managers\RoadManager.h" />
     <ClInclude Include="src\Managers\TreeManager.h" />
@@ -33,7 +32,6 @@
     <ClCompile Include="src\Scenes\GameScene.cpp">
       <Filter>Scenes</Filter>
     </ClCompile>
-    <ClCompile Include="src\TestScene.cpp" />
     <ClCompile Include="src\UIScene.cpp" />
     <ClCompile Include="src\Managers\RoadManager.cpp" />
     <ClCompile Include="src\Managers\TreeManager.cpp" />
