@@ -41,6 +41,7 @@ namespace Can
 		bool OnMousePressed_Destruction();
 
 		void SetType(size_t type);
+		inline size_t GetType() { return m_Type; }
 
 		void SetConstructionMode(RoadConstructionMode mode);
 

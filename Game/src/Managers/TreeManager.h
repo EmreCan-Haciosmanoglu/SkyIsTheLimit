@@ -28,6 +28,7 @@ namespace Can
 		bool OnMousePressed_Removing();
 
 		void SetType(size_t type);
+		inline size_t GetType() { return m_Type; }
 
 		void SetConstructionMode(TreeConstructionMode mode);
 
