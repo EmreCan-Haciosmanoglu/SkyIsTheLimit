@@ -998,7 +998,6 @@ namespace Can
 	void TestScene::OnUpdate_BuildingDestruction(glm::vec3 prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection)
 	{
 		m_BuildingDestructionSnappedBuilding = m_Buildings.end();
-		//for (Building* building : m_Buildings)
 		for (auto& it = m_Buildings.begin(); it != m_Buildings.end(); ++it)
 		{
 			Building* building = *it;

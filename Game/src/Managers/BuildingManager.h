@@ -4,6 +4,7 @@
 
 namespace Can
 {
+	class GameScene;
 	class Building;
 
 	enum class BuildingConstructionMode
@@ -17,7 +18,7 @@ namespace Can
 	class BuildingManager
 	{
 	public:
-		BuildingManager();
+		BuildingManager(GameScene* scene);
 		~BuildingManager();
 
 		void OnUpdate_Construction(glm::vec3 prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection);
@@ -48,10 +49,11 @@ namespace Can
 		// 1 : Snapping to a road
 
 	private:
+		GameScene* m_Scene = nullptr;
 
 		BuildingConstructionMode m_ConstructionMode = BuildingConstructionMode::None;
 
-		size_t m_BuildingType = 0;
+		size_t m_Type = 0;
 
 		std::vector<Building*> m_Buildings;
 
