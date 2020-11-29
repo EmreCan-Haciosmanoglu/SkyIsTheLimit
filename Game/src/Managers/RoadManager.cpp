@@ -697,15 +697,15 @@ namespace Can
 	}
 	bool RoadManager::OnMousePressed_Construction(const glm::vec3& cameraPosition, const glm::vec3& cameraDirection)
 	{
-		float* data = nullptr;// m_Terrain->prefab->vertices;
+		float* data = m_Scene->m_Terrain->prefab->vertices;
 		glm::vec3 bottomPlaneCollisionPoint = Helper::RayPlaneIntersection(cameraPosition, cameraDirection, { 0.0f, 0.0f, 0.0f }, { 0.0f, 1.0f, 0.0f });
 		glm::vec3 topPlaneCollisionPoint = Helper::RayPlaneIntersection(cameraPosition, cameraDirection, { 0.0f, 1.0f * COLOR_COUNT, 0.0f }, { 0.0f, 1.0f, 0.0f });
 
 		bottomPlaneCollisionPoint.z *= -1;
 		topPlaneCollisionPoint.z *= -1;
 
-		float terrainW = 0.0f; //m_Terrain->prefab->boundingBoxM.x * TERRAIN_SCALE_DOWN;
-		float terrainH = 0.0f; //-m_Terrain->prefab->boundingBoxL.z * TERRAIN_SCALE_DOWN;
+		float terrainW = m_Scene->m_Terrain->prefab->boundingBoxM.x * TERRAIN_SCALE_DOWN;
+		float terrainH = -m_Scene->m_Terrain->prefab->boundingBoxL.z * TERRAIN_SCALE_DOWN;
 
 		glm::vec2 minCoord = {
 			std::max(0.0f, TERRAIN_SCALE_DOWN * (std::min(bottomPlaneCollisionPoint.x, topPlaneCollisionPoint.x) - 0.0f/*m_Terrain->position.x*/) - 1),
@@ -719,10 +719,8 @@ namespace Can
 
 
 		for (size_t y = (size_t)(minCoord.y); y < maxCoord.y; y++)
-			//for (size_t y = 0; y < terrainH; y++)
 		{
 			for (size_t x = (size_t)(minCoord.x); x < maxCoord.x; x++)
-				//for (size_t x = 0; x < terrainW; x++)
 			{
 				for (size_t z = 0; z < 2; z++)
 				{
@@ -793,7 +791,7 @@ namespace Can
 			if (m_EndSnappedEnd || m_EndSnappedJunction || m_EndSnappedRoad)
 				most.x = glm::length(AB);
 
-			auto buildings = m_Scene->m_BuildingManager.GetBuildings();
+			auto& buildings = m_Scene->m_BuildingManager.GetBuildings();
 			if (m_Scene->m_BuildingManager.restrictions[0] && restrictions[2])
 				for (size_t i = 0; i < buildings.size(); i++)
 				{
@@ -826,7 +824,7 @@ namespace Can
 					}
 				}
 
-			auto trees = m_Scene->m_TreeManager.GetTrees();
+			auto& trees = m_Scene->m_TreeManager.GetTrees();
 			if (m_Scene->m_TreeManager.restrictions[0] && restrictions[2])
 				for (size_t i = 0; i < trees.size(); i++)
 				{

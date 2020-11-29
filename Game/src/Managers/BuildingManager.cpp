@@ -256,6 +256,7 @@ namespace Can
 		default:
 			break;
 		}
+		return false;
 	}
 	bool BuildingManager::OnMousePressed_Construction()
 	{
@@ -274,7 +275,7 @@ namespace Can
 				glm::vec2 buildingM = { newBuilding->object->prefab->boundingBoxM.x, newBuilding->object->prefab->boundingBoxM.z };
 				glm::vec2 buildingP = { newBuilding->object->position.x, newBuilding->object->position.z };
 
-				auto trees = m_Scene->m_TreeManager.GetTrees();
+				auto& trees = m_Scene->m_TreeManager.GetTrees();
 				for (size_t i = 0; i < trees.size(); i++)
 				{
 					Object* tree = trees[i];

@@ -6,6 +6,7 @@ namespace Can
 {
 	class GameScene;
 	class Building;
+	class Road;
 
 	enum class BuildingConstructionMode
 	{

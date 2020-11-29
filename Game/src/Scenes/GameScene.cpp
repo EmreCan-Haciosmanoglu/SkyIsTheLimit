@@ -6,6 +6,8 @@
 
 namespace Can
 {
+	GameScene* GameScene::ActiveGameScene = nullptr;
+
 	GameScene::GameScene(GameApp* application)
 		: MainApplication(application)
 		, m_Terrain(new Object(MainApplication->terrainPrefab, MainApplication->terrainPrefab, { 0.0f, 0.0f, 0.0f, }, { 1.0f, 1.0f, 1.0f, }, { 0.0f, 0.0f, 0.0f, }))
@@ -29,6 +31,7 @@ namespace Can
 	}
 	void GameScene::OnAttach()
 	{
+		ActiveGameScene = this;
 	}
 	void GameScene::OnDetach()
 	{

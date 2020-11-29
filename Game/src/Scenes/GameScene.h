@@ -45,6 +45,7 @@ namespace Can
 
 	public:
 		GameApp* MainApplication = nullptr;
+		static GameScene* ActiveGameScene;
 		Object* m_Terrain = nullptr;
 
 		RoadManager m_RoadManager;

@@ -460,9 +460,9 @@ namespace Can
 					Texture2D::Create(roadtumbnailimagefiles[i]),
 					[i, this]() {
 						std::cout << "You clicked the " << (i + 1) << "th Button inside the Road panel!" << std::endl;
-						this->m_Parent->testScene->SetConstructionMode(ConstructionMode::Road);
-						this->m_Parent->testScene->SetRoadConstructionMode(RoadConstructionMode::Construct);
-						this->m_Parent->testScene->SetSelectedConstructionRoad(i);
+						this->m_Parent->gameScene->SetConstructionMode(ConstructionMode::Road);
+						this->m_Parent->gameScene->m_RoadManager.SetConstructionMode(RoadConstructionMode::Construct);
+						this->m_Parent->gameScene->m_RoadManager.SetType(i);
 					}
 					});
 				children.Children.push_back(roadPanelbutton->entityID);
@@ -483,9 +483,9 @@ namespace Can
 					Texture2D::Create(buildingtumbnailimagefiles[i]),
 					[i, this]() {
 						std::cout << "You clicked the " << (i + 1) << "th Button inside the Building panel!" << std::endl;
-						this->m_Parent->testScene->SetConstructionMode(ConstructionMode::Building);
-						this->m_Parent->testScene->SetBuildingConstructionMode(BuildingConstructionMode::Construct);
-						this->m_Parent->testScene->SetSelectedConstructionBuilding(i);
+						this->m_Parent->gameScene->SetConstructionMode(ConstructionMode::Building);
+						this->m_Parent->gameScene->m_BuildingManager.SetConstructionMode(BuildingConstructionMode::Construct);
+						this->m_Parent->gameScene->m_BuildingManager.SetType(i);
 					}
 					});
 				children.Children.push_back(buildingPanelbutton->entityID);
@@ -506,9 +506,9 @@ namespace Can
 					Texture2D::Create(treetumbnailimagefiles[i]),
 					[i, this]() {
 						std::cout << "You clicked the " << (i + 1) << "th Button inside the Tree panel!" << std::endl;
-						this->m_Parent->testScene->SetConstructionMode(ConstructionMode::Tree);
-						this->m_Parent->testScene->SetTreeConstructionMode(TreeConstructionMode::Adding);
-						this->m_Parent->testScene->SetSelectedTree(i);
+						this->m_Parent->gameScene->SetConstructionMode(ConstructionMode::Tree);
+						this->m_Parent->gameScene->m_TreeManager.SetConstructionMode(TreeConstructionMode::Adding);
+						this->m_Parent->gameScene->m_TreeManager.SetType(i);
 					}
 					});
 				children.Children.push_back(treePanelbutton->entityID);

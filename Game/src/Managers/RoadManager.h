@@ -58,7 +58,7 @@ namespace Can
 		void ResetStates();
 	public:
 
-		std::array<bool, 5> snapOptions = { true, true, true, true, true };
+		std::array<bool, 5> snapOptions = { true, true, false, true, false };
 		// 0 : Roads
 		// 1 : Length
 		// 2 : Height

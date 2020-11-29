@@ -203,6 +203,19 @@ namespace Can
 
 	bool TreeManager::OnMousePressed(MouseCode button)
 	{
+		switch (m_ConstructionMode)
+		{
+		case TreeConstructionMode::None:
+			break;
+		case TreeConstructionMode::Adding:
+			OnMousePressed_Adding();
+			break;
+		case TreeConstructionMode::Removing:
+			OnMousePressed_Removing();
+			break;
+		default:
+			break;
+		}
 		return false;
 	}
 	bool TreeManager::OnMousePressed_Adding()
