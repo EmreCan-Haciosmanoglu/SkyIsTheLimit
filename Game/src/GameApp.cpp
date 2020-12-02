@@ -25,8 +25,8 @@ namespace Can
 		LoadBuildings();
 		LoadTrees();
 
-		testScene = new TestScene(this);
-		PushLayer(testScene);
+		gameScene = new GameScene(this);
+		PushLayer(gameScene);
 
 		uiScene = new UIScene(this);
 		PushOverlay(uiScene);

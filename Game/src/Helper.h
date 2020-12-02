@@ -9,6 +9,7 @@ namespace Can::Helper
 {
 #define TERRAIN_SCALE_DOWN 10.0f
 #define COLOR_COUNT 5
+
 	bool CheckBoundingBoxHit(const glm::vec3& rayStartPoint, const glm::vec3& ray, const glm::vec3& least, const glm::vec3& most);
 
 	glm::vec2 CheckRotatedRectangleCollision(
@@ -21,6 +22,8 @@ namespace Can::Helper
 		float rot2,
 		const glm::vec2& pos2
 	);
+
+	glm::vec3 GetRayHitPointOnTerrain(void* s, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection);
 
 	glm::vec3 RayPlaneIntersection(const glm::vec3& X, const glm::vec3& v, const glm::vec3& C, const glm::vec3& n);
 
