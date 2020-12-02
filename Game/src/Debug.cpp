@@ -32,7 +32,7 @@ namespace Can
 		ImGui::Begin("Debug");
 
 		ImGui::Text("Construction Type");
-		ImGui::BeginChild("Construction Type", ImVec2(0, 85), true);
+		ImGui::BeginChild("Construction Type", ImVec2(0, 110), true);
 		if (ImGui::RadioButton("Road", gameScene->e_ConstructionMode == ConstructionMode::Road))
 			gameScene->SetConstructionMode(ConstructionMode::Road);
 		if (ImGui::RadioButton("Building", gameScene->e_ConstructionMode == ConstructionMode::Building))
@@ -46,9 +46,11 @@ namespace Can
 		if (gameScene->e_ConstructionMode == ConstructionMode::Road)
 		{
 			ImGui::Text("Road Construction Mode");
-			ImGui::BeginChild("Road Construction Mode", ImVec2(0, 110), true);
-			if (ImGui::RadioButton("Construct", roadManager->GetConstructionMode() == RoadConstructionMode::Construct))
-				roadManager->SetConstructionMode(RoadConstructionMode::Construct);
+			ImGui::BeginChild("Road Construction Mode", ImVec2(0, 135), true);
+			if (ImGui::RadioButton("Straight", roadManager->GetConstructionMode() == RoadConstructionMode::Straight))
+				roadManager->SetConstructionMode(RoadConstructionMode::Straight);
+			if (ImGui::RadioButton("CubicCurve", roadManager->GetConstructionMode() == RoadConstructionMode::CubicCurve))
+				roadManager->SetConstructionMode(RoadConstructionMode::CubicCurve);
 			if (ImGui::RadioButton("Upgrade", roadManager->GetConstructionMode() == RoadConstructionMode::Upgrade))
 				roadManager->SetConstructionMode(RoadConstructionMode::Upgrade);
 			if (ImGui::RadioButton("Destruction", roadManager->GetConstructionMode() == RoadConstructionMode::Destruct))

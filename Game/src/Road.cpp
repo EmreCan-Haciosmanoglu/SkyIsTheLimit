@@ -94,6 +94,7 @@ namespace Can
 	{
 		delete object;
 	}
+	
 	void Road::ConstructObject(Prefab* prefab)
 	{
 		float lengthRoad = prefab->boundingBoxM.x - prefab->boundingBoxL.x;

@@ -122,6 +122,7 @@ namespace Can
 	void GameScene::SetConstructionMode(ConstructionMode mode)
 	{
 		e_ConstructionMode = mode;
+		ResetStates();
 		switch (e_ConstructionMode)
 		{
 		case ConstructionMode::Road:
@@ -138,6 +139,12 @@ namespace Can
 		default:
 			break;
 		}
+	}
+	void GameScene::ResetStates()
+	{
+		m_RoadManager.ResetStates();
+		m_TreeManager.ResetStates();
+		m_BuildingManager.ResetStates();
 	}
 	glm::vec3 GameScene::GetRayCastedFromScreen()
 	{

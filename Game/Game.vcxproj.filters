@@ -20,6 +20,7 @@
     <ClInclude Include="src\Managers\RoadManager.h" />
     <ClInclude Include="src\Managers\TreeManager.h" />
     <ClInclude Include="src\Managers\BuildingManager.h" />
+    <ClInclude Include="src\Types\RoadSegment.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Building.cpp" />
@@ -36,5 +37,6 @@
     <ClCompile Include="src\Managers\RoadManager.cpp" />
     <ClCompile Include="src\Managers\TreeManager.cpp" />
     <ClCompile Include="src\Managers\BuildingManager.cpp" />
+    <ClCompile Include="src\Types\RoadSegment.cpp" />
   </ItemGroup>
 </Project>

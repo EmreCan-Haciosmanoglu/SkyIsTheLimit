@@ -6,13 +6,15 @@ namespace Can
 {
 	class GameScene;
 	class Road;
+	class RoadSegment;
 	class Junction;
 	class End;
 
 	enum class RoadConstructionMode
 	{
 		None,
-		Construct,
+		Straight,
+		CubicCurve,
 		Upgrade,
 		Destruct
 	};
@@ -33,11 +35,13 @@ namespace Can
 		~RoadManager();
 
 		void OnUpdate(glm::vec3 prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection);
-		void OnUpdate_Construction(glm::vec3 prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection);
+		void OnUpdate_Straight(glm::vec3 prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection);
+		void OnUpdate_CubicCurve(glm::vec3 prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection);
 		void OnUpdate_Destruction(glm::vec3 prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection);
 
 		bool OnMousePressed(MouseCode button, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection);
-		bool OnMousePressed_Construction(const glm::vec3& cameraPosition, const glm::vec3& cameraDirection);
+		bool OnMousePressed_Straight(const glm::vec3& cameraPosition, const glm::vec3& cameraDirection);
+		bool OnMousePressed_CubicCurve(const glm::vec3& cameraPosition, const glm::vec3& cameraDirection);
 		bool OnMousePressed_Destruction();
 
 		void SetType(size_t type);
@@ -75,17 +79,22 @@ namespace Can
 		RoadConstructionMode m_ConstructionMode = RoadConstructionMode::None;
 
 		std::vector<Road*> m_Roads{};
+		std::vector<RoadSegment*> m_RoadSegments{};
 		std::vector<Junction*> m_Junctions{};
 		std::vector<End*> m_Ends{};
 
+		int m_ConstructionPhase = 0;
 		bool b_ConstructionStarted = false;
 		bool b_ConstructionEnded = false;
 		bool b_ConstructionStartSnapped = false;
 		bool b_ConstructionEndSnapped = false;
 
 		// Transforms
-		glm::vec3 m_StartPosition = glm::vec3(0.0f);
-		glm::vec3 m_EndPosition = glm::vec3(0.0f);
+		std::array<glm::vec3, 3> m_ConstructionPositions = { 
+			glm::vec3(0.0f), 
+			glm::vec3(0.0f), 
+			glm::vec3(0.0f) 
+		};
 
 		// Start Snap
 		Junction* m_StartSnappedJunction = nullptr;

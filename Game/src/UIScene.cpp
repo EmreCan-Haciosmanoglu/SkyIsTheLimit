@@ -461,7 +461,7 @@ namespace Can
 					[i, this]() {
 						std::cout << "You clicked the " << (i + 1) << "th Button inside the Road panel!" << std::endl;
 						this->m_Parent->gameScene->SetConstructionMode(ConstructionMode::Road);
-						this->m_Parent->gameScene->m_RoadManager.SetConstructionMode(RoadConstructionMode::Construct);
+						this->m_Parent->gameScene->m_RoadManager.SetConstructionMode(RoadConstructionMode::Straight);
 						this->m_Parent->gameScene->m_RoadManager.SetType(i);
 					}
 					});
