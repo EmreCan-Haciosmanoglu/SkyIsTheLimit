@@ -721,6 +721,13 @@ namespace Can
 			OnMousePressed_Straight(cameraPosition, cameraDirection);
 			break;
 		case RoadConstructionMode::CubicCurve:
+			if (button == MouseCode::Button1)
+			{
+				ResetStates();
+				m_GuidelinesStart->enabled = true;
+				m_GuidelinesEnd->enabled = true;
+				return false;
+			}
 			if (button != MouseCode::Button0)
 				return false;
 			OnMousePressed_CubicCurve(cameraPosition, cameraDirection);

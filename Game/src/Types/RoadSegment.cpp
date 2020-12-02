@@ -66,12 +66,19 @@ namespace Can
 		for (int c = 0; c < count; c++)
 		{
 			glm::vec3 p2 = Math::CubicCurve<float>(CurvePoints, (c + 1.0f) / count);
-			glm::vec3 vec = p2 - p1;
-			float length = glm::length(vec);
-			glm::vec3 dir = vec / length;
+			glm::vec3 vec1 = p2 - p1;
+			float length = glm::length(vec1);
+			glm::vec3 dir1 = vec1 / length;
 
 			float scale = length / lengthRoad;
-			float rot = glm::acos(dir.x) * ((float)(dir.z < 0.0f) * 2.0f - 1.0f);
+			float rot1 = glm::acos(dir1.x) * ((float)(dir1.z < 0.0f) * 2.0f - 1.0f);
+			float rot2 = rot1;
+			if (c < count - 1)
+			{
+				glm::vec3 p3 = Math::CubicCurve<float>(CurvePoints, (c + 2.0f) / count);
+				glm::vec3 dir2 = glm::normalize(p3 - p2);
+				rot2 = glm::acos(dir2.x) * ((float)(dir2.z < 0.0f) * 2.0f - 1.0f);
+			}
 
 			for (int i = 0; i < prefabIndexCount; i++)
 			{
@@ -83,7 +90,18 @@ namespace Can
 					Type[0]->vertices[index + 2]
 				};
 
-				point = Helper::RotateAPointAroundAPoint(point, -rot);
+				glm::vec2 point2{
+					Type[0]->vertices[index + 0] * scale,
+					0.0f
+				};
+
+				float t = point.x / (lengthRoad * scale);
+				t = t < 0.001f ? 0.0f : t > 0.99f ? 1.0f : 0.0f;
+					
+
+				point = Helper::RotateAPointAroundAPoint(point, -rot1);
+				point2 = Helper::RotateAPointAroundAPoint(point2, -rot1);
+				point = Helper::RotateAPointAroundAPoint(point, -Math::Lerp(0.0f, rot2 - rot1, t), point2);
 
 				TOVertices[offset].Position.x = point.x + p1.x - CurvePoints[0].x;
 				TOVertices[offset].Position.y = Type[0]->vertices[index + 1] + p1.y - CurvePoints[0].y;
