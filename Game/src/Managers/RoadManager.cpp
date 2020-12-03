@@ -865,7 +865,6 @@ namespace Can
 			bool lengthIsRestricted = restrictions[1] && countAB < 1;
 
 
-
 			for (size_t& inUse : m_GuidelinesInUse)
 				inUse = 0;
 
@@ -963,18 +962,21 @@ namespace Can
 		}
 		else if (m_ConstructionPhase == 2)
 		{
-
 			b_ConstructionRestricted = false;
 
 			m_ConstructionPositions[cubicCurveOrder[2]] = prevLocation;
 			m_ConstructionPositions[cubicCurveOrder[3]] = prevLocation;
 
-			float l = glm::length(m_ConstructionPositions[3] - m_ConstructionPositions[0]);
+			float l = glm::length(m_ConstructionPositions[2] - m_ConstructionPositions[0]);
 			size_t count = 1;
 			while (l > roadPrefabLength)
 			{
 				count *= 2;
-				glm::vec3 p = Math::CubicCurve<float>(m_ConstructionPositions, 1.0f / count);
+				glm::vec3 p = Math::QuadraticCurve<float>({ 
+					m_ConstructionPositions[cubicCurveOrder[0]],
+					m_ConstructionPositions[cubicCurveOrder[1]],
+					m_ConstructionPositions[cubicCurveOrder[2]]
+					}, 1.0f / count);
 				l = glm::length(p - m_ConstructionPositions[0]);
 			}
 			if (count > 1) count /= 2;
@@ -982,13 +984,17 @@ namespace Can
 			while (l > roadPrefabLength)
 			{
 				count++;
-				glm::vec3 p = Math::CubicCurve<float>(m_ConstructionPositions, 1.0f / count);
+				glm::vec3 p = Math::QuadraticCurve<float>({
+					m_ConstructionPositions[cubicCurveOrder[0]],
+					m_ConstructionPositions[cubicCurveOrder[1]],
+					m_ConstructionPositions[cubicCurveOrder[2]]
+					}, 1.0f / count);
 				l = glm::length(p - m_ConstructionPositions[0]);
 			}
 			if (count > 1) count--;
 
 			glm::vec3 AB1 = m_ConstructionPositions[1] - m_ConstructionPositions[0];
-			glm::vec3 AB2 = m_ConstructionPositions[2] - m_ConstructionPositions[3];
+			glm::vec3 AB2 = m_ConstructionPositions[1] - m_ConstructionPositions[2];
 
 			float rotationOffset1 = AB1.x < 0.0f ? 180.0f : 0.0f;
 			float rotationOffset2 = AB2.x < 0.0f ? 180.0f : 0.0f;
@@ -1014,7 +1020,11 @@ namespace Can
 			glm::vec3 p1 = m_ConstructionPositions[0];
 			for (int c = 0; c < count; c++)
 			{
-				glm::vec3 p2 = Math::CubicCurve<float>(m_ConstructionPositions, (c + 1.0f) / count);
+				glm::vec3 p2 = Math::QuadraticCurve<float>({
+					m_ConstructionPositions[cubicCurveOrder[0]],
+					m_ConstructionPositions[cubicCurveOrder[1]],
+					m_ConstructionPositions[cubicCurveOrder[2]]
+					}, (c + 1.0f) / count);
 				glm::vec3 vec1 = p2 - p1;
 				float length = glm::length(vec1);
 				glm::vec3 dir1 = vec1 / length;
