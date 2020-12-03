@@ -14,6 +14,7 @@ namespace Can
 	{
 		None,
 		Straight,
+		QuadraticCurve,
 		CubicCurve,
 		Upgrade,
 		Destruct
@@ -36,11 +37,13 @@ namespace Can
 
 		void OnUpdate(glm::vec3 prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection);
 		void OnUpdate_Straight(glm::vec3 prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection);
+		void OnUpdate_QuadraticCurve(glm::vec3 prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection);
 		void OnUpdate_CubicCurve(glm::vec3 prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection);
 		void OnUpdate_Destruction(glm::vec3 prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection);
 
 		bool OnMousePressed(MouseCode button, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection);
 		bool OnMousePressed_Straight(const glm::vec3& cameraPosition, const glm::vec3& cameraDirection);
+		bool OnMousePressed_QuadraticCurve(const glm::vec3& cameraPosition, const glm::vec3& cameraDirection);
 		bool OnMousePressed_CubicCurve(const glm::vec3& cameraPosition, const glm::vec3& cameraDirection);
 		bool OnMousePressed_Destruction();
 
@@ -74,6 +77,8 @@ namespace Can
 		// 1 : Short Length
 		// 2 : Collision
 
+		std::array<uint8_t, 4> cubicCurveOrder = { 0, 1, 2, 3 };
+
 	private:
 		GameScene* m_Scene = nullptr;
 		RoadConstructionMode m_ConstructionMode = RoadConstructionMode::None;
@@ -90,10 +95,11 @@ namespace Can
 		bool b_ConstructionEndSnapped = false;
 
 		// Transforms
-		std::array<glm::vec3, 3> m_ConstructionPositions = { 
+		std::array<glm::vec3, 4> m_ConstructionPositions = { 
 			glm::vec3(0.0f), 
-			glm::vec3(0.0f), 
-			glm::vec3(0.0f) 
+			glm::vec3(0.0f),
+			glm::vec3(0.0f),
+			glm::vec3(0.0f)
 		};
 
 		// Start Snap
