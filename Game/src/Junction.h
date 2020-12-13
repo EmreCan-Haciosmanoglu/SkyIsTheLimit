@@ -3,13 +3,13 @@
 
 namespace Can
 {
-	class Road;
+	class RoadSegment;
 
 	class Junction
 	{
 	public:
 		Junction(const glm::vec3& position = { 0.0f, 0.0f, 0.0f });
-		Junction(const std::vector<Road*>& connectedRoads, const glm::vec3& position = { 0.0f, 0.0f, 0.0f });
+		Junction(const std::vector<RoadSegment*>& connectedRoadSegments, const glm::vec3& position = { 0.0f, 0.0f, 0.0f });
 		Junction(Object* object, const glm::vec3& position = { 0.0f, 0.0f, 0.0f });
 		~Junction();
 
@@ -22,7 +22,7 @@ namespace Can
 		glm::vec3 position;
 
 		Object* object = nullptr;
-		std::vector<Road*> connectedRoads;
+		std::vector<RoadSegment*> connectedRoadSegments;
 
 	};
 }

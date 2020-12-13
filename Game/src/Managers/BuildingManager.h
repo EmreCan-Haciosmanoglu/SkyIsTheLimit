@@ -6,7 +6,7 @@ namespace Can
 {
 	class GameScene;
 	class Building;
-	class Road;
+	class RoadSegment;
 
 	enum class BuildingConstructionMode
 	{
@@ -64,7 +64,7 @@ namespace Can
 		glm::vec3 m_GuidelinePosition = glm::vec3(0.0f);
 		glm::vec3 m_GuidelineRotation = glm::vec3(0.0f);
 
-		Road* m_SnappedRoad = nullptr;
+		RoadSegment* m_SnappedRoadSegment = nullptr;
 
 		std::vector<Building*>::iterator& m_SelectedBuildingToDestruct = m_Buildings.end();
 

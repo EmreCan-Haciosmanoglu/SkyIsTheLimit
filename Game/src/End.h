@@ -3,16 +3,13 @@
 
 namespace Can
 {
-	class Road;
+	class RoadSegment;
 
 	class End
 	{
 	public:
-		End(Road* connectedRoad, Prefab* prefab);
-		End(Road* connectedRoad, Prefab* prefab, const glm::vec3& position);
-		End(Road* connectedRoad, Prefab* prefab, const glm::vec3& position, const glm::vec3& scale);
-		End(Road* connectedRoad, Prefab* prefab, const glm::vec3& position, const glm::vec3& scale, const glm::vec3& rotation);
-		End(Road* connectedRoad, Object* object);
+		End(RoadSegment* connectedRoadSegment, Prefab* prefab, const glm::vec3& position = glm::vec3(0.0f), const glm::vec3& scale = glm::vec3(1.0f), const glm::vec3& rotation = glm::vec3(0.0f));
+		End(RoadSegment* connectedRoadSegment, Object* object);
 		~End();
 
 	public:
@@ -20,6 +17,6 @@ namespace Can
 		glm::vec3 position;
 
 		Can::Object* object;
-		Road* connectedRoad;
+		RoadSegment* connectedRoadSegment;
 	};
 }

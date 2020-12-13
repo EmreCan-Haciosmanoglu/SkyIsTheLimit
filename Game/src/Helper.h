@@ -1,7 +1,7 @@
 #pragma once
 #include "Can.h"
 
-#include "Road.h"
+#include "Types/RoadSegment.h"
 #include "Junction.h"
 #include "End.h"
 
@@ -43,54 +43,54 @@ namespace Can::Helper
 
 	struct sort_with_angle
 	{
-		inline bool operator() (const Road* road1, const Road* road2)
+		inline bool operator() (const RoadSegment* roadSegment1, const RoadSegment* roadSegment2)
 		{
-			float roadR1;
-			float roadR2;
+			float roadSegmentR1;
+			float roadSegmentR2;
 			if (
-				road1->endJunction != nullptr &&
-				road2->endJunction != nullptr &&
-				road1->endJunction == road2->endJunction
+				roadSegment1->ConnectedObjectAtEnd.junction != nullptr &&
+				roadSegment2->ConnectedObjectAtEnd.junction != nullptr &&
+				roadSegment1->ConnectedObjectAtEnd.junction == roadSegment2->ConnectedObjectAtEnd.junction
 				)
 			{
-				roadR1 = road1->rotation.y + glm::radians(180.0f);
-				roadR2 = road2->rotation.y + glm::radians(180.0f);
+				roadSegmentR1 = roadSegment1->GetEndRotation().y;
+				roadSegmentR2 = roadSegment2->GetEndRotation().y;
 			}
 			else if (
-				road1->endJunction != nullptr &&
-				road2->startJunction != nullptr &&
-				road1->endJunction == road2->startJunction
+				roadSegment1->ConnectedObjectAtEnd.junction != nullptr &&
+				roadSegment2->ConnectedObjectAtStart.junction != nullptr &&
+				roadSegment1->ConnectedObjectAtEnd.junction == roadSegment2->ConnectedObjectAtStart.junction
 				)
 			{
-				roadR1 = road1->rotation.y + glm::radians(180.0f);
-				roadR2 = road2->rotation.y;
+				roadSegmentR1 = roadSegment1->GetEndRotation().y;
+				roadSegmentR2 = roadSegment2->GetStartRotation().y;
 			}
 			else if (
-				road1->startJunction != nullptr &&
-				road2->endJunction != nullptr &&
-				road1->startJunction == road2->endJunction
+				roadSegment1->ConnectedObjectAtStart.junction != nullptr &&
+				roadSegment2->ConnectedObjectAtEnd.junction != nullptr &&
+				roadSegment1->ConnectedObjectAtStart.junction == roadSegment2->ConnectedObjectAtEnd.junction
 				)
 			{
-				roadR1 = road1->rotation.y;
-				roadR2 = road2->rotation.y + glm::radians(180.0f);
+				roadSegmentR1 = roadSegment1->GetStartRotation().y;
+				roadSegmentR2 = roadSegment2->GetEndRotation().y;
 			}
 			else if (
-				road1->startJunction != nullptr &&
-				road2->startJunction != nullptr &&
-				road1->startJunction == road2->startJunction
+				roadSegment1->ConnectedObjectAtStart.junction != nullptr &&
+				roadSegment2->ConnectedObjectAtStart.junction != nullptr &&
+				roadSegment1->ConnectedObjectAtStart.junction == roadSegment2->ConnectedObjectAtStart.junction
 				)
 			{
-				roadR1 = road1->rotation.y;
-				roadR2 = road2->rotation.y;
+				roadSegmentR1 = roadSegment1->GetStartRotation().y;
+				roadSegmentR2 = roadSegment2->GetStartRotation().y;
 			}
 			else
 			{
-				roadR1 = 0.001f;
-				roadR2 = 0.002f;
+				roadSegmentR1 = 0.001f;
+				roadSegmentR2 = 0.002f;
 			}
-			roadR1 = std::fmod(roadR1 + glm::radians(360.0f), glm::radians(360.0f));
-			roadR2 = std::fmod(roadR2 + glm::radians(360.0f), glm::radians(360.0f));
-			return (roadR1 > roadR2);
+			roadSegmentR1 = std::fmod(roadSegmentR1 + glm::radians(360.0f), glm::radians(360.0f));
+			roadSegmentR2 = std::fmod(roadSegmentR2 + glm::radians(360.0f), glm::radians(360.0f));
+			return (roadSegmentR1 > roadSegmentR2);
 		}
 	};
 }

@@ -5,7 +5,6 @@
 namespace Can
 {
 	class GameScene;
-	class Road;
 	class RoadSegment;
 	class Junction;
 	class End;
@@ -23,10 +22,12 @@ namespace Can
 	struct SnapInformation
 	{
 		bool snapped;
-		glm::vec3 snapLocation;
-		Junction* snappedJunction = nullptr;
-		End* snappedEnd = nullptr;
-		Road* snappedRoad = nullptr;
+		glm::vec3 location;
+		Junction* junction = nullptr;
+		End* end = nullptr;
+		RoadSegment* roadSegment = nullptr;
+		float roadT = 0.0f;
+		float roadTDelta = 0.0f;
 	};
 
 	class RoadManager
@@ -55,10 +56,10 @@ namespace Can
 		inline const RoadConstructionMode GetConstructionMode() const { return m_ConstructionMode; }
 		inline RoadConstructionMode GetConstructionMode() { return m_ConstructionMode; }
 
-		inline const std::vector<Road*>& GetRoads() const { return m_Roads; }
-		inline std::vector<Road*>& GetRoads() { return m_Roads; }
+		inline const std::vector<RoadSegment*>& GetRoadSegments() const { return m_RoadSegments; }
+		inline std::vector<RoadSegment*>& GetRoadSegments() { return m_RoadSegments; }
 
-		void Remove(Road* road);
+		void Remove(RoadSegment* roadSegment);
 
 		SnapInformation CheckSnapping(const glm::vec3& cameraPosition, const glm::vec3& cameraDirection);
 
@@ -83,14 +84,11 @@ namespace Can
 		GameScene* m_Scene = nullptr;
 		RoadConstructionMode m_ConstructionMode = RoadConstructionMode::None;
 
-		std::vector<Road*> m_Roads{};
 		std::vector<RoadSegment*> m_RoadSegments{};
 		std::vector<Junction*> m_Junctions{};
 		std::vector<End*> m_Ends{};
 
 		int m_ConstructionPhase = 0;
-		bool b_ConstructionStarted = false;
-		bool b_ConstructionEnded = false;
 		bool b_ConstructionStartSnapped = false;
 		bool b_ConstructionEndSnapped = false;
 
@@ -105,17 +103,21 @@ namespace Can
 		// Start Snap
 		Junction* m_StartSnappedJunction = nullptr;
 		End* m_StartSnappedEnd = nullptr;
-		Road* m_StartSnappedRoad = nullptr;
+		RoadSegment* m_StartSnappedRoadSegment = nullptr;
+		float m_StartSnappedRoadSegmentT = 0.0f;
+		float m_StartSnappedRoadSegmentTDelta = 0.0f;
 
 		// End Snap
 		Junction* m_EndSnappedJunction = nullptr;
 		End* m_EndSnappedEnd = nullptr;
-		Road* m_EndSnappedRoad = nullptr;
+		RoadSegment* m_EndSnappedRoadSegment = nullptr;
+		float m_EndSnappedRoadSegmentT = 0.0f;
+		float m_EndSnappedRoadSegmentTDelta = 0.0f;
 
 		// Destruction Snap
 		Junction* m_DestructionSnappedJunction = nullptr;
 		End* m_DestructionSnappedEnd = nullptr;
-		Road* m_DestructionSnappedRoad = nullptr;
+		RoadSegment* m_DestructionSnappedRoadSegment = nullptr;
 
 		std::vector<std::vector<Object*>> m_Guidelines{};
 		std::vector<size_t> m_GuidelinesInUse{};
