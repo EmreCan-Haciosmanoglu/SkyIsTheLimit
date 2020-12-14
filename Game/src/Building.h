@@ -3,17 +3,17 @@
 
 namespace Can
 {
-	class Road;
+	class RoadSegment;
 	class Building
 	{
 	public:
-		Building(Prefab* prefab, Road* connectedRoad, const glm::vec3& position, const glm::vec3& rotation);
-		Building(Object* object, Road* connectedRoad, const glm::vec3& position, const glm::vec3& rotation);
+		Building(Prefab* prefab, RoadSegment* connectedRoadSegment, const glm::vec3& position, const glm::vec3& rotation);
+		Building(Object* object, RoadSegment* connectedRoadSegment, const glm::vec3& position, const glm::vec3& rotation);
 		~Building();
 
 	public:
 
-		Road* connectedRoad;
+		RoadSegment* connectedRoadSegment;
 
 		Object* object;
 		glm::vec3 position;

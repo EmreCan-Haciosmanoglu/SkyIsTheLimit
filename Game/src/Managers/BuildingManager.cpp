@@ -1,7 +1,7 @@
 #include "canpch.h"
 #include "BuildingManager.h"
 
-#include "Road.h"
+#include "Types/RoadSegment.h"
 #include "Junction.h"
 #include "Building.h"
 #include "End.h"
@@ -44,7 +44,7 @@ namespace Can
 	void BuildingManager::OnUpdate_Construction(glm::vec3 prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection)
 	{
 		b_ConstructionRestricted = true;
-		m_SnappedRoad = nullptr;
+		m_SnappedRoadSegment = nullptr;
 		m_Guideline->SetTransform(prevLocation);
 		m_GuidelinePosition = prevLocation;
 
@@ -53,6 +53,7 @@ namespace Can
 		float buildingDepthFromCenter = -selectedBuilding->boundingBoxL.x;
 
 		bool snappedToRoad = false;
+		/* Update Later
 		if (snapOptions[0])
 		{
 			for (Road* road : m_Scene->m_RoadManager.GetRoads())
@@ -94,15 +95,16 @@ namespace Can
 				}
 			}
 		}
+		*/
 
 		if (snapOptions[1])
 		{
-			if (m_SnappedRoad)
+			if (m_SnappedRoadSegment)
 			{
 				glm::vec2 boundingSquareL = { m_Guideline->prefab->boundingBoxL.x, m_Guideline->prefab->boundingBoxL.z };
 				glm::vec2 boundingSquareM = { m_Guideline->prefab->boundingBoxM.x, m_Guideline->prefab->boundingBoxM.z };
 
-				for (Building* building : m_SnappedRoad->connectedBuildings)
+				for (Building* building : m_SnappedRoadSegment->Buildings)
 				{
 					Object* object = building->object;
 					glm::vec2 mtv = Helper::CheckRotatedRectangleCollision(
@@ -127,6 +129,7 @@ namespace Can
 		}
 
 		bool collidedWithRoad = false;
+		/* Update Later
 		if (restrictions[0] && m_Scene->m_RoadManager.restrictions[2])
 		{
 			glm::vec2 buildingL = { selectedBuilding->boundingBoxL.x, selectedBuilding->boundingBoxL.z };
@@ -155,6 +158,7 @@ namespace Can
 				}
 			}
 		}
+		*/
 
 		if (restrictions[0] && m_Scene->m_TreeManager.restrictions[0])
 		{
@@ -262,9 +266,9 @@ namespace Can
 	{
 		if (!b_ConstructionRestricted)
 		{
-			Building* newBuilding = new Building(m_Guideline->type, m_SnappedRoad, m_GuidelinePosition, m_GuidelineRotation);
-			if (m_SnappedRoad)
-				m_SnappedRoad->connectedBuildings.push_back(newBuilding);
+			Building* newBuilding = new Building(m_Guideline->type, m_SnappedRoadSegment, m_GuidelinePosition, m_GuidelineRotation);
+			if (m_SnappedRoadSegment)
+				m_SnappedRoadSegment->Buildings.push_back(newBuilding);
 			m_Buildings.push_back(newBuilding);
 			ResetStates();
 			m_Guideline->enabled = true;
@@ -306,9 +310,9 @@ namespace Can
 		if (m_SelectedBuildingToDestruct != m_Buildings.end())
 		{
 			Building* building = *m_SelectedBuildingToDestruct;
-			if (building->connectedRoad)
+			if (building->connectedRoadSegment)
 			{
-				std::vector<Building*>& connectedBuildings = building->connectedRoad->connectedBuildings;
+				std::vector<Building*>& connectedBuildings = building->connectedRoadSegment->Buildings;
 				auto it = std::find(connectedBuildings.begin(), connectedBuildings.end(), building);
 				connectedBuildings.erase(it);
 			}
@@ -350,7 +354,7 @@ namespace Can
 		m_GuidelinePosition = glm::vec3(-1.0f);
 		m_GuidelineRotation = glm::vec3(0.0f);
 
-		m_SnappedRoad = nullptr;
+		m_SnappedRoadSegment = nullptr;
 
 		m_SelectedBuildingToDestruct = m_Buildings.end();
 

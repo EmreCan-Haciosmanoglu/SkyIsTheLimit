@@ -144,7 +144,6 @@
     <ClInclude Include="src\Managers\BuildingManager.h" />
     <ClInclude Include="src\Managers\RoadManager.h" />
     <ClInclude Include="src\Managers\TreeManager.h" />
-    <ClInclude Include="src\Road.h" />
     <ClInclude Include="src\Scenes\GameScene.h" />
     <ClInclude Include="src\Types\RoadSegment.h" />
     <ClInclude Include="src\UIScene.h" />
@@ -159,7 +158,6 @@
     <ClCompile Include="src\Managers\BuildingManager.cpp" />
     <ClCompile Include="src\Managers\RoadManager.cpp" />
     <ClCompile Include="src\Managers\TreeManager.cpp" />
-    <ClCompile Include="src\Road.cpp" />
     <ClCompile Include="src\Scenes\GameScene.cpp" />
     <ClCompile Include="src\Types\RoadSegment.cpp" />
     <ClCompile Include="src\UIScene.cpp" />

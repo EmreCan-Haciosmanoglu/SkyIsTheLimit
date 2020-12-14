@@ -30,10 +30,10 @@ namespace  Can::Helper
 	std::array<glm::vec2, 4> getAxis(const std::array<glm::vec2, 4>& c1, const std::array<glm::vec2, 4>& c2)
 	{
 		return std::array<glm::vec2, 4>{
-			glm::normalize(c1[1] - c1[0]),
-				glm::normalize(c1[3] - c1[0]),
-				glm::normalize(c2[1] - c2[0]),
-				glm::normalize(c2[3] - c2[0])
+			glm::normalize(c1[1] - c1[0]) ,
+			glm::normalize(c1[3] - c1[0]) ,
+			glm::normalize(c2[1] - c2[0]) ,
+			glm::normalize(c2[3] - c2[0])
 		};
 	}
 

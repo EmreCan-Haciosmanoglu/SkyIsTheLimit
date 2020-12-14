@@ -185,7 +185,7 @@ namespace Can
 						mainRegistry.emplace<HiddenComponent>(panelTreesID);
 					}
 				}
-			}});
+			} });
 
 		m_ButtonNeeds = new Button(ButtonConstructorParameters{
 			m_Scene->m_Registry,
@@ -461,7 +461,9 @@ namespace Can
 					[i, this]() {
 						std::cout << "You clicked the " << (i + 1) << "th Button inside the Road panel!" << std::endl;
 						this->m_Parent->gameScene->SetConstructionMode(ConstructionMode::Road);
-						this->m_Parent->gameScene->m_RoadManager.SetConstructionMode(RoadConstructionMode::Straight);
+						auto mode = this->m_Parent->gameScene->m_RoadManager.GetConstructionMode();
+						if (mode == RoadConstructionMode::None || mode == RoadConstructionMode::Destruct)
+							this->m_Parent->gameScene->m_RoadManager.SetConstructionMode(RoadConstructionMode::Straight);
 						this->m_Parent->gameScene->m_RoadManager.SetType(i);
 					}
 					});
@@ -484,7 +486,9 @@ namespace Can
 					[i, this]() {
 						std::cout << "You clicked the " << (i + 1) << "th Button inside the Building panel!" << std::endl;
 						this->m_Parent->gameScene->SetConstructionMode(ConstructionMode::Building);
-						this->m_Parent->gameScene->m_BuildingManager.SetConstructionMode(BuildingConstructionMode::Construct);
+						auto mode = this->m_Parent->gameScene->m_BuildingManager.GetConstructionMode();
+						if (mode == BuildingConstructionMode::None || mode == BuildingConstructionMode::Destruct)
+							this->m_Parent->gameScene->m_BuildingManager.SetConstructionMode(BuildingConstructionMode::Construct);
 						this->m_Parent->gameScene->m_BuildingManager.SetType(i);
 					}
 					});
@@ -507,7 +511,9 @@ namespace Can
 					[i, this]() {
 						std::cout << "You clicked the " << (i + 1) << "th Button inside the Tree panel!" << std::endl;
 						this->m_Parent->gameScene->SetConstructionMode(ConstructionMode::Tree);
-						this->m_Parent->gameScene->m_TreeManager.SetConstructionMode(TreeConstructionMode::Adding);
+						auto mode = this->m_Parent->gameScene->m_TreeManager.GetConstructionMode();
+						if (mode == TreeConstructionMode::None || mode == TreeConstructionMode::Removing)
+							this->m_Parent->gameScene->m_TreeManager.SetConstructionMode(TreeConstructionMode::Adding);
 						this->m_Parent->gameScene->m_TreeManager.SetType(i);
 					}
 					});
@@ -515,7 +521,7 @@ namespace Can
 				m_TreePanelButtonList.push_back(treePanelbutton);
 			}
 		}
-}
+	}
 
 	UIScene::~UIScene()
 	{

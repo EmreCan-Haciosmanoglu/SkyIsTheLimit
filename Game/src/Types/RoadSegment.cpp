@@ -16,13 +16,13 @@ namespace Can
 			})
 	{
 		glm::vec2 dir = glm::normalize(glm::vec2{ Directions[0].x, Directions[0].z });
-		Rotations[0].y = glm::acos(dir.x) * ((float)(dir.y > 0.0f) * 2.0f - 1.0f);
+		Rotations[0].y = glm::acos(dir.x) * ((float)(dir.y < 0.0f) * 2.0f - 1.0f);
 		glm::vec3 dirR = glm::rotate(Directions[0], -Rotations[0].y, glm::vec3{ 0.0f, 1.0f, 0.0f });
 		dir = glm::normalize(glm::vec2{ dirR.x, dirR.y });
 		Rotations[0].x = glm::acos(dir.x) * ((float)(dir.y < 0.0f) * 2.0f - 1.0f);
 
 		dir = glm::normalize(glm::vec2{ Directions[1].x, Directions[1].z });
-		Rotations[1].y = glm::acos(dir.x) * ((float)(dir.y > 0.0f) * 2.0f - 1.0f);
+		Rotations[1].y = glm::acos(dir.x) * ((float)(dir.y < 0.0f) * 2.0f - 1.0f);
 		dirR = glm::rotate(Directions[1], -Rotations[1].y, glm::vec3{ 0.0f, 1.0f, 0.0f });
 		dir = glm::normalize(glm::vec2{ dirR.x, dirR.y });
 		Rotations[1].x = glm::acos(dir.x) * ((float)(dir.y < 0.0f) * 2.0f - 1.0f);
@@ -73,10 +73,16 @@ namespace Can
 			float scale = length / lengthRoad;
 			float rot1 = glm::acos(dir1.x) * ((float)(dir1.z < 0.0f) * 2.0f - 1.0f);
 			float rot2 = rot1;
+
 			if (c < count - 1)
 			{
 				glm::vec3 p3 = Math::CubicCurve<float>(CurvePoints, (c + 2.0f) / count);
 				glm::vec3 dir2 = glm::normalize(p3 - p2);
+				rot2 = glm::acos(dir2.x) * ((float)(dir2.z < 0.0f) * 2.0f - 1.0f);
+			}
+			else
+			{
+				glm::vec3 dir2 = -Directions[1];
 				rot2 = glm::acos(dir2.x) * ((float)(dir2.z < 0.0f) * 2.0f - 1.0f);
 			}
 
@@ -96,8 +102,8 @@ namespace Can
 				};
 
 				float t = point.x / (lengthRoad * scale);
-				t = t < 0.001f ? 0.0f : t > 0.99f ? 1.0f : 0.0f;
-					
+				t = t < 0.01f ? 0.0f : (t > 0.99f ? 1.0f : t);
+
 
 				point = Helper::RotateAPointAroundAPoint(point, -rot1);
 				point2 = Helper::RotateAPointAroundAPoint(point2, -rot1);
@@ -140,17 +146,65 @@ namespace Can
 
 		object = new Object(newPrefab, Type[0], CurvePoints[0], glm::vec3(1.0f), glm::vec3(0.0f));
 	}
+
 	void RoadSegment::ReConstruct()
 	{
+		delete object;
+
+		Construct();
+
+		/* Update Later
+		for (size_t i = 0; i < connectedBuildings.size(); i++)
+		{
+			Building* building = connectedBuildings[i];
+			glm::vec3 B = building->position - startPosition;
+			float bLength = glm::length(B);
+
+			float angle = glm::acos(glm::dot(direction, B) / bLength);
+
+			float c = bLength * glm::cos(angle);
+			if (c <= 0.0f || c >= length)
+			{
+				auto man = &(GameScene::ActiveGameScene->m_BuildingManager);
+				auto it = std::find(
+					man->GetBuildings().begin(),
+					man->GetBuildings().end(),
+					building
+				);
+				connectedBuildings.erase(connectedBuildings.begin() + i);
+				building->connectedRoad = nullptr;
+				if (man->snapOptions[0])
+					man->GetBuildings().erase(it);
+				delete building;
+				i--;
+			}
+		}
+		*/
 	}
-	void RoadSegment::ChangeType(Prefab* type)
+	void RoadSegment::ChangeType(const std::array<Prefab*, 3>& type)
 	{
+		Type = type;
+		ReConstruct();
 	}
 
 	void RoadSegment::SetStartPosition(const glm::vec3& position)
 	{
+		CurvePoints[0] = position;
+		ReConstruct();
 	}
 	void RoadSegment::SetEndPosition(const glm::vec3& position)
 	{
+		CurvePoints[3] = position;
+		ReConstruct();
+	}
+	void RoadSegment::SetCurvePoints(const std::array<glm::vec3, 4>& curvePoints)
+	{
+		CurvePoints = curvePoints;
+		ReConstruct();
+	}
+	void RoadSegment::SetCurvePoint(size_t index, const glm::vec3& curvePoint)
+	{
+		CurvePoints[index] = curvePoint;
+		ReConstruct();
 	}
 }

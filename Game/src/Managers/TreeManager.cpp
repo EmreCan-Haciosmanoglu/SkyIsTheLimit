@@ -1,7 +1,7 @@
 #include "canpch.h"
 #include "TreeManager.h"
 
-#include "Road.h"
+#include "Types/RoadSegment.h"
 #include "Junction.h"
 #include "Building.h"
 #include "End.h"
@@ -116,6 +116,7 @@ namespace Can
 		m_Guideline->tintColor = glm::vec4(1.0f);
 
 		bool collidedWithRoad = false;
+		/* Update Later
 		if (m_Scene->m_RoadManager.restrictions[2] && restrictions[0])
 		{
 			glm::vec2 treeL = { m_Guideline->prefab->boundingBoxL.x, m_Guideline->prefab->boundingBoxL.z };
@@ -143,6 +144,7 @@ namespace Can
 				}
 			}
 		}
+		*/
 
 		bool collidedWithBuilding = false;
 		if (m_Scene->m_BuildingManager.restrictions[0] && restrictions[0])

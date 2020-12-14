@@ -46,9 +46,11 @@ namespace Can
 		if (gameScene->e_ConstructionMode == ConstructionMode::Road)
 		{
 			ImGui::Text("Road Construction Mode");
-			ImGui::BeginChild("Road Construction Mode", ImVec2(0, 135), true);
+			ImGui::BeginChild("Road Construction Mode", ImVec2(0, 160), true);
 			if (ImGui::RadioButton("Straight", roadManager->GetConstructionMode() == RoadConstructionMode::Straight))
 				roadManager->SetConstructionMode(RoadConstructionMode::Straight);
+			if (ImGui::RadioButton("QuadraticCurve", roadManager->GetConstructionMode() == RoadConstructionMode::QuadraticCurve))
+				roadManager->SetConstructionMode(RoadConstructionMode::QuadraticCurve);
 			if (ImGui::RadioButton("CubicCurve", roadManager->GetConstructionMode() == RoadConstructionMode::CubicCurve))
 				roadManager->SetConstructionMode(RoadConstructionMode::CubicCurve);
 			if (ImGui::RadioButton("Upgrade", roadManager->GetConstructionMode() == RoadConstructionMode::Upgrade))
