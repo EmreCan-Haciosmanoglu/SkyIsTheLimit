@@ -28,7 +28,7 @@ namespace Can
 		~RoadSegment();
 
 		void ReConstruct();
-		void ChangeType(Prefab* type);
+		void ChangeType(const std::array<Prefab*, 3>& type);
 
 		inline const std::array<glm::vec3, 4>& GetCurvePoints() const { return CurvePoints; }
 		inline const glm::vec3& GetCurvePoint(size_t index) const { return CurvePoints[index]; }
@@ -39,6 +39,8 @@ namespace Can
 
 		void SetStartPosition(const glm::vec3& position);
 		void SetEndPosition(const glm::vec3& position);
+		void SetCurvePoints(const std::array<glm::vec3, 4>& curvePoints);
+		void SetCurvePoint(size_t index, const glm::vec3& curvePoint);
 
 		inline const glm::vec2& GetStartRotation() const { return Rotations[0]; }
 		inline const glm::vec2& GetEndRotation() const { return Rotations[1]; }
