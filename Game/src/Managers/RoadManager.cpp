@@ -104,10 +104,12 @@ namespace Can
 				m_EndSnappedRoadSegmentT = snapInformation.roadT;
 				m_EndSnappedRoadSegmentTDelta = snapInformation.roadTDelta;
 			}
+			m_ConstructionPositions[1] = prevLocation;
+			m_ConstructionPositions[2] = prevLocation;
 			m_ConstructionPositions[3] = prevLocation;
 
 			bool angleIsRestricted = false;
-			 if (restrictions[0])
+			if (restrictions[0])
 			{
 				if (m_StartSnappedJunction)
 				{
@@ -218,53 +220,71 @@ namespace Can
 				}
 
 			}
-			
+
 
 			bool collisionIsRestricted = false;
-			/*if (restrictions[2])
+			if (restrictions[2])
 			{
-				glm::vec2 p0 = { m_ConstructionPositions[0].x, m_ConstructionPositions[0].z };
-				glm::vec2 p1 = { m_ConstructionPositions[3].x, m_ConstructionPositions[3].z };
-				for (Road* road : m_Roads)
+				glm::vec2 A1 = glm::vec2{ m_ConstructionPositions[0].x, m_ConstructionPositions[0].z };
+				glm::vec2 B1 = glm::vec2{ m_ConstructionPositions[1].x, m_ConstructionPositions[1].z };
+				glm::vec2 C1 = glm::vec2{ m_ConstructionPositions[2].x, m_ConstructionPositions[2].z };
+				glm::vec2 D1 = glm::vec2{ m_ConstructionPositions[3].x, m_ConstructionPositions[3].z };
+
+				std::array<std::array<glm::vec2, 3>, 2> newRoadPolygon = {
+					std::array<glm::vec2,3>{ A1, B1, glm::vec2(0.0f)},
+					std::array<glm::vec2,3>{ A1, C1, D1}
+				};
+
+				if (Math::CheckLineSegmentLineSegmentCollision(std::array<glm::vec2, 2>{ A1, D1 }, std::array<glm::vec2, 2>{ B1, C1 }))
+					newRoadPolygon[0][2] = D1;
+				else
+					newRoadPolygon[0][2] = C1;
+				
+				for (RoadSegment* roadSegment : m_RoadSegments)
 				{
-					if (road == m_EndSnappedRoad || road == m_StartSnappedRoad)
+					if (roadSegment == m_EndSnappedRoadSegment || roadSegment == m_StartSnappedRoadSegment)
 						continue;
-					if (m_StartSnappedEnd && road == m_StartSnappedEnd->connectedRoad)
+					if (m_StartSnappedEnd && roadSegment == m_StartSnappedEnd->connectedRoadSegment)
 						continue;
-					if (m_EndSnappedEnd && road == m_EndSnappedEnd->connectedRoad)
+					if (m_EndSnappedEnd && roadSegment == m_EndSnappedEnd->connectedRoadSegment)
 						continue;
 					if (m_StartSnappedJunction)
 					{
-						auto it = std::find(m_StartSnappedJunction->connectedRoads.begin(), m_StartSnappedJunction->connectedRoads.end(), road);
-						if (it != m_StartSnappedJunction->connectedRoads.end())
+						auto it = std::find(m_StartSnappedJunction->connectedRoadSegments.begin(), m_StartSnappedJunction->connectedRoadSegments.end(), roadSegment);
+						if (it != m_StartSnappedJunction->connectedRoadSegments.end())
 							continue;
 					}
 					if (m_EndSnappedJunction)
 					{
-						auto it = std::find(m_EndSnappedJunction->connectedRoads.begin(), m_EndSnappedJunction->connectedRoads.end(), road);
-						if (it != m_EndSnappedJunction->connectedRoads.end())
+						auto it = std::find(m_EndSnappedJunction->connectedRoadSegments.begin(), m_EndSnappedJunction->connectedRoadSegments.end(), roadSegment);
+						if (it != m_EndSnappedJunction->connectedRoadSegments.end())
 							continue;
 					}
-					glm::vec3 roadStart = road->startEnd ? road->GetStartPosition() : road->startJunction->position;
-					glm::vec3 roadEnd = road->endEnd ? road->GetEndPosition() : road->endJunction->position;
 
-					glm::vec2 p2 = { roadStart.x, roadStart.z };
-					glm::vec2 p3 = { roadEnd.x, roadEnd.z };
+					auto cp = roadSegment->GetCurvePoints();
+					glm::vec2 A2 = glm::vec2{ cp[0].x, cp[0].z };
+					glm::vec2 B2 = glm::vec2{ cp[1].x, cp[1].z };
+					glm::vec2 C2 = glm::vec2{ cp[2].x, cp[2].z };
+					glm::vec2 D2 = glm::vec2{ cp[3].x, cp[3].z };
 
-					if (Helper::LineSLineSIntersection(p0, p1, p2, p3, nullptr))
-					{
-						collisionIsRestricted = true;
-						break;
-					}
-					float width = road->object->prefab->boundingBoxM.z - road->object->prefab->boundingBoxL.z;
-					if (Helper::DistanceBetweenLineSLineS(p0, p1, p2, p3) < width)
+					std::array<std::array<glm::vec2, 3>, 2> oldRoadPolygon = {
+						std::array<glm::vec2,3>{ A2, B2, glm::vec2(0.0f)},
+						std::array<glm::vec2,3>{ A2, C2, D2}
+					};
+
+					if (Math::CheckLineSegmentLineSegmentCollision(std::array<glm::vec2, 2>{ A2, D2 }, std::array<glm::vec2, 2>{ B2, C2 }))
+						oldRoadPolygon[0][2] = D2;
+					else
+						oldRoadPolygon[0][2] = C2;
+
+					if (Math::CheckPolygonCollision(newRoadPolygon, oldRoadPolygon))
 					{
 						collisionIsRestricted = true;
 						break;
 					}
 				}
 			}
-			*/
+
 
 			glm::vec3 AB = m_ConstructionPositions[3] - m_ConstructionPositions[0];
 
@@ -1419,6 +1439,67 @@ namespace Can
 			b_ConstructionRestricted = false;
 			m_ConstructionPositions[cubicCurveOrder[3]] = prevLocation;
 
+			bool collisionIsRestricted = false;
+			if (restrictions[2])
+			{
+				glm::vec2 A1 = glm::vec2{ m_ConstructionPositions[0].x, m_ConstructionPositions[0].z };
+				glm::vec2 B1 = glm::vec2{ m_ConstructionPositions[1].x, m_ConstructionPositions[1].z };
+				glm::vec2 C1 = glm::vec2{ m_ConstructionPositions[2].x, m_ConstructionPositions[2].z };
+				glm::vec2 D1 = glm::vec2{ m_ConstructionPositions[3].x, m_ConstructionPositions[3].z };
+
+				std::array<std::array<glm::vec2, 3>, 2> newRoadPolygon = {
+					std::array<glm::vec2,3>{ A1, B1, glm::vec2(0.0f)},
+					std::array<glm::vec2,3>{ A1, C1, D1}
+				};
+
+				if (Math::CheckLineSegmentLineSegmentCollision(std::array<glm::vec2, 2>{ A1, D1 }, std::array<glm::vec2, 2>{ B1, C1 }))
+					newRoadPolygon[0][2] = D1;
+				else
+					newRoadPolygon[0][2] = C1;
+
+				for (RoadSegment* roadSegment : m_RoadSegments)
+				{
+					if (roadSegment == m_EndSnappedRoadSegment || roadSegment == m_StartSnappedRoadSegment)
+						continue;
+					if (m_StartSnappedEnd && roadSegment == m_StartSnappedEnd->connectedRoadSegment)
+						continue;
+					if (m_EndSnappedEnd && roadSegment == m_EndSnappedEnd->connectedRoadSegment)
+						continue;
+					if (m_StartSnappedJunction)
+					{
+						auto it = std::find(m_StartSnappedJunction->connectedRoadSegments.begin(), m_StartSnappedJunction->connectedRoadSegments.end(), roadSegment);
+						if (it != m_StartSnappedJunction->connectedRoadSegments.end())
+							continue;
+					}
+					if (m_EndSnappedJunction)
+					{
+						auto it = std::find(m_EndSnappedJunction->connectedRoadSegments.begin(), m_EndSnappedJunction->connectedRoadSegments.end(), roadSegment);
+						if (it != m_EndSnappedJunction->connectedRoadSegments.end())
+							continue;
+					}
+					auto cp = roadSegment->GetCurvePoints();
+					glm::vec2 A2 = glm::vec2{ cp[0].x, cp[0].z };
+					glm::vec2 B2 = glm::vec2{ cp[1].x, cp[1].z };
+					glm::vec2 C2 = glm::vec2{ cp[2].x, cp[2].z };
+					glm::vec2 D2 = glm::vec2{ cp[3].x, cp[3].z };
+
+					std::array<std::array<glm::vec2, 3>, 2> oldRoadPolygon = {
+						std::array<glm::vec2,3>{ A2, B2, glm::vec2(0.0f)},
+						std::array<glm::vec2,3>{ A2, C2, D2}
+					};
+
+					if (Math::CheckLineSegmentLineSegmentCollision(std::array<glm::vec2, 2>{ A2, D2 }, std::array<glm::vec2, 2>{ B2, C2 }))
+						oldRoadPolygon[0][2] = D2;
+					else
+						oldRoadPolygon[0][2] = C2;
+
+					if (Math::CheckPolygonCollision(newRoadPolygon, oldRoadPolygon))
+					{
+						collisionIsRestricted = true;
+						break;
+					}
+				}
+			}
 			float l = glm::length(m_ConstructionPositions[3] - m_ConstructionPositions[0]);
 			size_t count = 1;
 			while (l > roadPrefabLength)
@@ -1482,6 +1563,16 @@ namespace Can
 
 				p1 = p2;
 			}
+
+			b_ConstructionRestricted |= collisionIsRestricted;
+
+			m_GuidelinesStart->tintColor = b_ConstructionRestricted ? glm::vec4{ 1.0f, 0.3f, 0.2f, 1.0f } : glm::vec4(1.0f);
+			m_GuidelinesEnd->tintColor = b_ConstructionRestricted ? glm::vec4{ 1.0f, 0.3f, 0.2f, 1.0f } : glm::vec4(1.0f);
+
+			for (std::vector<Object*>& os : m_Guidelines)
+				for (Object* rg : os)
+					rg->tintColor = b_ConstructionRestricted ? glm::vec4{ 1.0f, 0.3f, 0.2f, 1.0f } : glm::vec4(1.0f);
+
 		}
 	}
 	void RoadManager::OnUpdate_Destruction(glm::vec3 prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection)
@@ -1530,7 +1621,7 @@ namespace Can
 				if (m_DestructionSnappedRoadSegment->ConnectedObjectAtStart.end != nullptr)
 					m_DestructionSnappedRoadSegment->ConnectedObjectAtStart.end->object->SetTransform(m_DestructionSnappedRoadSegment->ConnectedObjectAtStart.end->position + glm::vec3{ 0.0f, 0.1f, 0.0f });
 				if (m_DestructionSnappedRoadSegment->ConnectedObjectAtEnd.end != nullptr)
-					m_DestructionSnappedRoadSegment->ConnectedObjectAtEnd.end->object->SetTransform(m_DestructionSnappedRoadSegment->ConnectedObjectAtEnd.end ->position + glm::vec3{ 0.0f, 0.1f, 0.0f });
+					m_DestructionSnappedRoadSegment->ConnectedObjectAtEnd.end->object->SetTransform(m_DestructionSnappedRoadSegment->ConnectedObjectAtEnd.end->position + glm::vec3{ 0.0f, 0.1f, 0.0f });
 				m_DestructionSnappedRoadSegment->object->SetTransform(m_DestructionSnappedRoadSegment->GetStartPosition() + glm::vec3{ 0.0f, 0.1f, 0.0f });
 			}
 		}
@@ -1606,7 +1697,7 @@ namespace Can
 		}
 
 		// take this put it into else part of the prev if else
-		if (m_ConstructionPhase > 1) 
+		if (m_ConstructionPhase > 1)
 		{
 			for (std::vector<Object*>& os : m_Guidelines)
 				for (Object* rg : os)
@@ -2161,7 +2252,7 @@ namespace Can
 						otherRoadSegment->Type[2],
 						junction->position,
 						glm::vec3{ 1.0f, 1.0f, 1.0f },
-						glm::vec3{ 0.0f, otherRoadSegment->GetStartRotation().y, otherRoadSegment->GetStartRotation().x}
+						glm::vec3{ 0.0f, otherRoadSegment->GetStartRotation().y, otherRoadSegment->GetStartRotation().x }
 					);
 					otherRoadSegment->ConnectedObjectAtStart.end = newEnd;
 					otherRoadSegment->ConnectedObjectAtStart.junction = nullptr;
@@ -2175,7 +2266,7 @@ namespace Can
 						otherRoadSegment->Type[2],
 						junction->position,
 						glm::vec3{ 1.0f, 1.0f, 1.0f },
-						glm::vec3{ 0.0f, otherRoadSegment->GetEndRotation().y, otherRoadSegment->GetEndRotation().x}
+						glm::vec3{ 0.0f, otherRoadSegment->GetEndRotation().y, otherRoadSegment->GetEndRotation().x }
 					);
 					otherRoadSegment->ConnectedObjectAtEnd.end = newEnd;
 					otherRoadSegment->ConnectedObjectAtEnd.junction = nullptr;
@@ -2246,7 +2337,7 @@ namespace Can
 			else
 				junction->ReconstructObject();
 		}
-		
+
 		auto position = std::find(m_RoadSegments.begin(), m_RoadSegments.end(), roadSegment);
 		m_RoadSegments.erase(position);
 
