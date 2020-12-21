@@ -28,6 +28,7 @@ namespace Can
 		RoadSegment* roadSegment = nullptr;
 		float roadT = 0.0f;
 		float roadTDelta = 0.0f;
+
 	};
 
 	class RoadManager
@@ -41,6 +42,8 @@ namespace Can
 		void OnUpdate_QuadraticCurve(glm::vec3 prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection);
 		void OnUpdate_CubicCurve(glm::vec3 prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection);
 		void OnUpdate_Destruction(glm::vec3 prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection);
+
+		void DrawStraightGuidelines(const glm::vec3& pointA, const glm::vec3& pointB);
 
 		bool OnMousePressed(MouseCode button, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection);
 		bool OnMousePressed_Straight(const glm::vec3& cameraPosition, const glm::vec3& cameraDirection);
@@ -67,7 +70,7 @@ namespace Can
 		void ResetStates();
 	public:
 
-		std::array<bool, 5> snapOptions = { true, true, false, true, false };
+		std::array<bool, 5> snapOptions = { true, false, false, true, false };
 		// 0 : Roads
 		// 1 : Length
 		// 2 : Height
