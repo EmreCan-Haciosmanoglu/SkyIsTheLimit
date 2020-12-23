@@ -228,24 +228,29 @@ namespace Can
 
 			}
 
-
 			bool collisionIsRestricted = false;
 			if (restrictions[2])
 			{
-				glm::vec2 A1 = glm::vec2{ m_ConstructionPositions[0].x, m_ConstructionPositions[0].z };
-				glm::vec2 B1 = glm::vec2{ m_ConstructionPositions[1].x, m_ConstructionPositions[1].z };
-				glm::vec2 C1 = glm::vec2{ m_ConstructionPositions[2].x, m_ConstructionPositions[2].z };
-				glm::vec2 D1 = glm::vec2{ m_ConstructionPositions[3].x, m_ConstructionPositions[3].z };
+				glm::vec2 A = glm::vec2{ m_ConstructionPositions[0].x, m_ConstructionPositions[0].z };
+				glm::vec2 D = glm::vec2{ m_ConstructionPositions[3].x, m_ConstructionPositions[3].z };
 
-				std::array<std::array<glm::vec2, 3>, 2> newRoadPolygon = {
-					std::array<glm::vec2,3>{ A1, B1, glm::vec2(0.0f)},
-					std::array<glm::vec2,3>{ A1, C1, D1}
+				glm::vec2 AD = roadPrefabWidth * 0.5f * glm::normalize(D - A);
+
+				AD = glm::vec2{ -AD.y , AD.x };
+
+				glm::vec2 P1 = A + AD;
+				glm::vec2 P2 = A - AD;
+				glm::vec2 P3 = (A + D) * 0.5f + AD;
+				glm::vec2 P4 = (A + D) * 0.5f - AD;
+				glm::vec2 P5 = D + AD;
+				glm::vec2 P6 = D - AD;
+
+				std::array<std::array<glm::vec2, 3>, 4> newRoadPolygon = {
+						std::array<glm::vec2,3>{ P1, P2, P3},
+						std::array<glm::vec2,3>{ P2, P3, P4},
+						std::array<glm::vec2,3>{ P3, P4, P5},
+						std::array<glm::vec2,3>{ P4, P5, P6}
 				};
-
-				if (Math::CheckLineSegmentLineSegmentCollision(std::array<glm::vec2, 2>{ A1, D1 }, std::array<glm::vec2, 2>{ B1, C1 }))
-					newRoadPolygon[0][2] = D1;
-				else
-					newRoadPolygon[0][2] = C1;
 
 				for (RoadSegment* roadSegment : m_RoadSegments)
 				{
@@ -268,26 +273,18 @@ namespace Can
 							continue;
 					}
 
-					auto cp = roadSegment->GetCurvePoints();
-					glm::vec2 A2 = glm::vec2{ cp[0].x, cp[0].z };
-					glm::vec2 B2 = glm::vec2{ cp[1].x, cp[1].z };
-					glm::vec2 C2 = glm::vec2{ cp[2].x, cp[2].z };
-					glm::vec2 D2 = glm::vec2{ cp[3].x, cp[3].z };
+					float halfWidth = roadSegment->Type[0]->boundingBoxM.z - roadSegment->Type[0]->boundingBoxL.z;
 
-					std::array<std::array<glm::vec2, 3>, 2> oldRoadPolygon = {
-						std::array<glm::vec2,3>{ A2, B2, glm::vec2(0.0f)},
-						std::array<glm::vec2,3>{ A2, C2, D2}
-					};
-
-					if (Math::CheckLineSegmentLineSegmentCollision(std::array<glm::vec2, 2>{ A2, D2 }, std::array<glm::vec2, 2>{ B2, C2 }))
-						oldRoadPolygon[0][2] = D2;
-					else
-						oldRoadPolygon[0][2] = C2;
+					std::array<std::array<glm::vec2, 3>, 2> oldRoadPolygon = Math::GetBoundingBoxOfBezierCurve(roadSegment->GetCurvePoints(), halfWidth);
 
 					if (Math::CheckPolygonCollision(newRoadPolygon, oldRoadPolygon))
 					{
-						collisionIsRestricted = true;
-						break;
+						std::array<std::array<glm::vec2, 3>, (10 - 1) * 2> result = Math::GetBoundingPolygonOfBezierCurve<10, 10>(roadSegment->GetCurvePoints(), halfWidth);
+						if (Math::CheckPolygonCollision(result, newRoadPolygon))
+						{
+							collisionIsRestricted = true;
+							break;
+						}
 					}
 				}
 			}
@@ -443,17 +440,17 @@ namespace Can
 				for (Building* building : m_Scene->m_BuildingManager.GetBuildings())
 				{
 					Prefab* prefab = building->object->prefab;
-					glm::vec2 A = { prefab->boundingBoxL.x, prefab->boundingBoxL.z};
-					glm::vec2 B = { prefab->boundingBoxL.x, prefab->boundingBoxM.z};
-					glm::vec2 C = { prefab->boundingBoxM.x, prefab->boundingBoxL.z};
-					glm::vec2 D = { prefab->boundingBoxM.x, prefab->boundingBoxM.z};
+					glm::vec2 A = { prefab->boundingBoxL.x, prefab->boundingBoxL.z };
+					glm::vec2 B = { prefab->boundingBoxL.x, prefab->boundingBoxM.z };
+					glm::vec2 C = { prefab->boundingBoxM.x, prefab->boundingBoxL.z };
+					glm::vec2 D = { prefab->boundingBoxM.x, prefab->boundingBoxM.z };
 
 					float rot = building->object->rotation.y;
 					A = Math::RotatePoint(A, rot);
 					B = Math::RotatePoint(B, rot);
 					C = Math::RotatePoint(C, rot);
 					D = Math::RotatePoint(D, rot);
-					
+
 					std::array<std::array<glm::vec2, 3>, 2> polygonBuilding = {
 						std::array<glm::vec2,3>{A, B, D},
 						std::array<glm::vec2,3>{A, C, D}
