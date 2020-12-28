@@ -830,11 +830,9 @@ namespace Can
 			glm::vec2 A = glm::vec2{ m_ConstructionPositions[0].x, m_ConstructionPositions[0].z };
 			glm::vec2 D = glm::vec2{ m_ConstructionPositions[3].x, m_ConstructionPositions[3].z };
 			glm::vec2 AD = roadPrefabWidth * 0.5f * glm::normalize(D - A);
-
+			D += AD;
 			if (!(m_StartSnappedEnd || m_StartSnappedJunction || m_StartSnappedRoadSegment))
 				A -= AD;
-			if (!(m_EndSnappedEnd || m_EndSnappedJunction || m_EndSnappedRoadSegment))
-				D += AD;
 
 			AD = glm::vec2{ -AD.y , AD.x };
 
