@@ -62,7 +62,7 @@ namespace Can
 		inline const std::vector<RoadSegment*>& GetRoadSegments() const { return m_RoadSegments; }
 		inline std::vector<RoadSegment*>& GetRoadSegments() { return m_RoadSegments; }
 
-		void AddRoadSegment();
+		void AddRoadSegment(const std::array<glm::vec3, 4>& curvePoints);
 		void RemoveRoadSegment(RoadSegment* roadSegment);
 
 		SnapInformation CheckSnapping(const glm::vec3& cameraPosition, const glm::vec3& cameraDirection);
