@@ -106,7 +106,7 @@ namespace Can
 		switch (e_ConstructionMode)
 		{
 		case ConstructionMode::Road:
-			m_RoadManager.OnMousePressed(button, camPos, forward);
+			m_RoadManager.OnMousePressed(button);
 			break;
 		case ConstructionMode::Building:
 			m_BuildingManager.OnMousePressed(button);

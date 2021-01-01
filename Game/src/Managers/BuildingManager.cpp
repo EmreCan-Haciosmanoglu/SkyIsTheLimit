@@ -12,6 +12,8 @@
 #include "TreeManager.h"
 #include "Helper.h"
 
+#include "Can/Math.h"
+
 namespace Can
 {
 	BuildingManager::BuildingManager(GameScene* scene)
@@ -129,36 +131,44 @@ namespace Can
 		}
 
 		bool collidedWithRoad = false;
-		/* Update Later
 		if (restrictions[0] && m_Scene->m_RoadManager.restrictions[2])
 		{
-			glm::vec2 buildingL = { selectedBuilding->boundingBoxL.x, selectedBuilding->boundingBoxL.z };
-			glm::vec2 buildingM = { selectedBuilding->boundingBoxM.x, selectedBuilding->boundingBoxM.z };
-			for (Road* road : m_Scene->m_RoadManager.GetRoads())
+			glm::vec2 pos{ m_Guideline->position.x, m_Guideline->position.z };
+			glm::vec2 A{ m_Guideline->prefab->boundingBoxL.x, m_Guideline->prefab->boundingBoxL.z };
+			glm::vec2 D{ m_Guideline->prefab->boundingBoxM.x, m_Guideline->prefab->boundingBoxM.z };
+			glm::vec2 B{ A.x, D.y }; // this is faster right???
+			glm::vec2 C{ D.x, A.y }; // this is faster right???
+
+			float rot = m_Guideline->rotation.y;
+			A = Math::RotatePoint(A, rot) + pos;
+			B = Math::RotatePoint(B, rot) + pos;
+			C = Math::RotatePoint(C, rot) + pos;
+			D = Math::RotatePoint(D, rot) + pos;
+
+			std::array<std::array<glm::vec2, 3>, 2> polygonBuilding = {
+				std::array<glm::vec2,3>{A, B, D},
+				std::array<glm::vec2,3>{A, C, D}
+			};
+
+			for (RoadSegment* roadSegment : m_Scene->m_RoadManager.GetRoadSegments())
 			{
-				if (road == m_SnappedRoad)
+				if (roadSegment == m_SnappedRoadSegment)
 					continue;
-				float roadHalfWidth = (road->object->prefab->boundingBoxM.z - road->object->prefab->boundingBoxL.z) / 2.0f;
-				glm::vec2 roadL = { 0.0f, -roadHalfWidth };
-				glm::vec2 roadM = { road->length, roadHalfWidth };
-				glm::vec2 mtv = Helper::CheckRotatedRectangleCollision(
-					roadL,
-					roadM,
-					road->rotation.y,
-					glm::vec2{ road->GetStartPosition().x, road->GetStartPosition().z },
-					buildingL,
-					buildingM,
-					m_GuidelineRotation.y,
-					glm::vec2{ m_GuidelinePosition.x, m_GuidelinePosition.z }
-				);
-				if (mtv.x != 0.0f || mtv.y != 0.0f)
+				float roadPrefabWidth = roadSegment->Type[0]->boundingBoxM.z - roadSegment->Type[0]->boundingBoxL.z;
+				const std::array<glm::vec3, 4>& cps = roadSegment->GetCurvePoints();
+				std::array<std::array<glm::vec2, 3>, 2> newRoadBoundingBox = Math::GetBoundingBoxOfBezierCurve(cps, roadPrefabWidth * 0.5f);
+
+				if (Math::CheckPolygonCollision(newRoadBoundingBox, polygonBuilding))
 				{
-					collidedWithRoad = true;
-					break;
+					std::array<std::array<glm::vec2, 3>, (10 - 1) * 2> newRoadBoundingPolygon = Math::GetBoundingPolygonOfBezierCurve<10, 10>(cps, roadPrefabWidth * 0.5f);
+					if (Math::CheckPolygonCollision(newRoadBoundingPolygon, polygonBuilding))
+					{
+						collidedWithRoad = true;
+						break;
+					}
 				}
 			}
 		}
-		*/
 
 		if (restrictions[0] && m_Scene->m_TreeManager.restrictions[0])
 		{

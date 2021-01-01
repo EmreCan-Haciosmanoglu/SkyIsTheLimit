@@ -152,36 +152,6 @@ namespace  Can::Helper
 		return X + k * v;
 	}
 
-	bool LineSLineSIntersection(glm::vec2 p0, glm::vec2 p1, glm::vec2 p2, glm::vec2 p3, glm::vec2* intersection)
-	{
-		float s_numer, t_numer, denom, t;
-		glm::vec2 s10 = p1 - p0;
-		glm::vec2 s32 = p3 - p2;
-
-		denom = s10.x * s32.y - s32.x * s10.y;
-		if (denom == 0)
-			return false; // Collinear
-		bool denomPositive = denom > 0;
-
-		glm::vec2 s02 = p0 - p2;
-
-		s_numer = s10.x * s02.y - s10.y * s02.x;
-		if ((s_numer < 0) == denomPositive)
-			return false; // No collision
-
-		t_numer = s32.x * s02.y - s32.y * s02.x;
-		if ((t_numer < 0) == denomPositive)
-			return false; // No collision
-
-		if (((s_numer > denom) == denomPositive) || ((t_numer > denom) == denomPositive))
-			return false; // No collision
-		// Collision detected
-		t = t_numer / denom;
-		if (intersection)
-			(*intersection) = p0 + (t * s10);
-		return true;
-	}
-
 	float DistanceBetweenLineSLineS(glm::vec2 p1, glm::vec2 p2, glm::vec2 p3, glm::vec2 p4)
 	{
 		glm::vec2 u = p1 - p2;

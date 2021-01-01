@@ -36,60 +36,36 @@ namespace Can
 
 	void RoadSegment::Construct()
 	{
+		constexpr int count = 20;
 		float lengthRoad = Type[0]->boundingBoxM.x - Type[0]->boundingBoxL.x;
 
-		float l = glm::length(CurvePoints[3] - CurvePoints[0]);
-		size_t count = 1;
-		while (l > lengthRoad)
-		{
-			count *= 2;
-			glm::vec3 p = Math::CubicCurve<float>(CurvePoints, 1.0f / count);
-			l = glm::length(p - CurvePoints[0]);
-		}
-		if (count > 1) count /= 2;
-
-		while (l > lengthRoad)
-		{
-			count++;
-			glm::vec3 p = Math::CubicCurve<float>(CurvePoints, 1.0f / count);
-			l = glm::length(p - CurvePoints[0]);
-		}
-		if (count > 1) count--;
 
 
 		size_t prefabIndexCount = Type[0]->indexCount;
 		size_t indexCount = prefabIndexCount * count;
 		size_t vertexCount = indexCount * (3 + 2 + 3);
-		glm::vec3 p1 = CurvePoints[0];
 		TexturedObjectVertex* TOVertices = new TexturedObjectVertex[indexCount];
 
-		for (int c = 0; c < count; c++)
+		std::array<float, count> samples = Math::GetCubicCurveSampleTs<count, 10>(CurvePoints);
+
+		glm::vec3 p1 = CurvePoints[0];
+		for (int c = 1; c < count; c++)
 		{
-			glm::vec3 p2 = Math::CubicCurve<float>(CurvePoints, (c + 1.0f) / count);
+			glm::vec3 p2 = Math::CubicCurve<float>(CurvePoints, samples[c]);
 			glm::vec3 vec1 = p2 - p1;
 			float length = glm::length(vec1);
-			glm::vec3 dir1 = vec1 / length;
-
 			float scale = length / lengthRoad;
-			float rot1 = glm::acos(dir1.x) * ((float)(dir1.z < 0.0f) * 2.0f - 1.0f);
-			float rot2 = rot1;
 
-			if (c < count - 1)
-			{
-				glm::vec3 p3 = Math::CubicCurve<float>(CurvePoints, (c + 2.0f) / count);
-				glm::vec3 dir2 = glm::normalize(p3 - p2);
-				rot2 = glm::acos(dir2.x) * ((float)(dir2.z < 0.0f) * 2.0f - 1.0f);
-			}
-			else
-			{
-				glm::vec3 dir2 = -Directions[1];
-				rot2 = glm::acos(dir2.x) * ((float)(dir2.z < 0.0f) * 2.0f - 1.0f);
-			}
+			glm::vec3 dir1 = vec1 / length;
+			glm::vec3 dir2 = (c < count - 1) ? glm::normalize((glm::vec3)Math::CubicCurve<float>(CurvePoints, samples[c + 1]) - p2) : -Directions[1];
+
+			float rot1 = (dir1.z < 0.0f) ? glm::acos(-dir1.x) + glm::radians(180.f) : glm::acos(dir1.x);
+			float rot2 = (dir2.z < 0.0f) ? glm::acos(-dir2.x) + glm::radians(180.f) : glm::acos(dir2.x);
 
 			for (int i = 0; i < prefabIndexCount; i++)
 			{
 				size_t offset = c * prefabIndexCount + i;
-				size_t index = i * 9;
+				size_t index = (size_t)i * 9;
 
 				glm::vec2 point{
 					Type[0]->vertices[index + 0] * scale,
@@ -105,9 +81,9 @@ namespace Can
 				t = t < 0.01f ? 0.0f : (t > 0.99f ? 1.0f : t);
 
 
-				point = Helper::RotateAPointAroundAPoint(point, -rot1);
-				point2 = Helper::RotateAPointAroundAPoint(point2, -rot1);
-				point = Helper::RotateAPointAroundAPoint(point, -Math::Lerp(0.0f, rot2 - rot1, t), point2);
+				point = Helper::RotateAPointAroundAPoint(point, rot1);
+				point2 = Helper::RotateAPointAroundAPoint(point2, rot1);
+				point = Helper::RotateAPointAroundAPoint(point, Math::Lerp(0.0f, rot2 - rot1, t), point2);
 
 				TOVertices[offset].Position.x = point.x + p1.x - CurvePoints[0].x;
 				TOVertices[offset].Position.y = Type[0]->vertices[index + 1] + p1.y - CurvePoints[0].y;

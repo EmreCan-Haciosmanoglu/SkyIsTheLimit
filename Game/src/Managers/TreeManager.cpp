@@ -14,6 +14,8 @@
 
 #include <gl/GL.h>
 
+#include "Can/Math.h"
+
 namespace Can
 {
 	TreeManager::TreeManager(GameScene* scene)
@@ -86,7 +88,7 @@ namespace Can
 				}
 			}
 		}
-		std::cout << m_Trees.size() << std::endl;
+		std::cout << m_Trees.size() << " trees are generated!" << std::endl;
 	}
 	TreeManager::~TreeManager()
 	{
@@ -116,35 +118,42 @@ namespace Can
 		m_Guideline->tintColor = glm::vec4(1.0f);
 
 		bool collidedWithRoad = false;
-		/* Update Later
 		if (m_Scene->m_RoadManager.restrictions[2] && restrictions[0])
 		{
-			glm::vec2 treeL = { m_Guideline->prefab->boundingBoxL.x, m_Guideline->prefab->boundingBoxL.z };
-			glm::vec2 treeM = { m_Guideline->prefab->boundingBoxM.x, m_Guideline->prefab->boundingBoxM.z };
-			for (Road* road : m_Scene->m_RoadManager.GetRoads())
+			glm::vec2 pos{ m_Guideline->position.x, m_Guideline->position.z };
+			glm::vec2 A{ m_Guideline->prefab->boundingBoxL.x, m_Guideline->prefab->boundingBoxL.z };
+			glm::vec2 D{ m_Guideline->prefab->boundingBoxM.x, m_Guideline->prefab->boundingBoxM.z };
+			glm::vec2 B{ A.x, D.y }; // this is faster right???
+			glm::vec2 C{ D.x, A.y }; // this is faster right???
+
+			float rot = m_Guideline->rotation.y;
+			A = Math::RotatePoint(A, rot) + pos;
+			B = Math::RotatePoint(B, rot) + pos;
+			C = Math::RotatePoint(C, rot) + pos;
+			D = Math::RotatePoint(D, rot) + pos;
+
+			std::array<std::array<glm::vec2, 3>, 2> polygonTree = {
+				std::array<glm::vec2,3>{A, B, D},
+				std::array<glm::vec2,3>{A, C, D}
+			};
+
+			for (RoadSegment* roadSegment : m_Scene->m_RoadManager.GetRoadSegments())
 			{
-				float roadHalfWidth = (road->object->prefab->boundingBoxM.z - road->object->prefab->boundingBoxL.z) / 2.0f;
-				glm::vec2 roadL = { 0.0f, -roadHalfWidth };
-				glm::vec2 roadM = { road->length, roadHalfWidth };
-				glm::vec2 mtv = Helper::CheckRotatedRectangleCollision(
-					roadL,
-					roadM,
-					road->rotation.y,
-					glm::vec2{ road->GetStartPosition().x, road->GetStartPosition().z },
-					treeL,
-					treeM,
-					0.0f,
-					glm::vec2{ m_GuidelinePosition.x, m_GuidelinePosition.z }
-				);
-				if (mtv.x != 0.0f || mtv.y != 0.0f)
+				float roadPrefabWidth = roadSegment->Type[0]->boundingBoxM.z - roadSegment->Type[0]->boundingBoxL.z;
+				const std::array<glm::vec3, 4>& cps = roadSegment->GetCurvePoints();
+				std::array<std::array<glm::vec2, 3>, 2> newRoadBoundingBox = Math::GetBoundingBoxOfBezierCurve(cps, roadPrefabWidth * 0.5f);
+
+				if (Math::CheckPolygonCollision(newRoadBoundingBox, polygonTree))
 				{
-					collidedWithRoad = true;
-					m_Guideline->tintColor = glm::vec4{ 1.0f, 0.3f, 0.2f, 1.0f };
-					break;
+					std::array<std::array<glm::vec2, 3>, (10 - 1) * 2> newRoadBoundingPolygon = Math::GetBoundingPolygonOfBezierCurve<10, 10>(cps, roadPrefabWidth * 0.5f);
+					if (Math::CheckPolygonCollision(newRoadBoundingPolygon, polygonTree))
+					{
+						collidedWithRoad = true;
+						break;
+					}
 				}
 			}
 		}
-		*/
 
 		bool collidedWithBuilding = false;
 		if (m_Scene->m_BuildingManager.restrictions[0] && restrictions[0])

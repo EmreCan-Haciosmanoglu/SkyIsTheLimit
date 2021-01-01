@@ -28,6 +28,7 @@ namespace Can
 		RoadSegment* roadSegment = nullptr;
 		float roadT = 0.0f;
 		float roadTDelta = 0.0f;
+
 	};
 
 	class RoadManager
@@ -42,10 +43,12 @@ namespace Can
 		void OnUpdate_CubicCurve(glm::vec3 prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection);
 		void OnUpdate_Destruction(glm::vec3 prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection);
 
-		bool OnMousePressed(MouseCode button, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection);
-		bool OnMousePressed_Straight(const glm::vec3& cameraPosition, const glm::vec3& cameraDirection);
-		bool OnMousePressed_QuadraticCurve(const glm::vec3& cameraPosition, const glm::vec3& cameraDirection);
-		bool OnMousePressed_CubicCurve(const glm::vec3& cameraPosition, const glm::vec3& cameraDirection);
+		void DrawStraightGuidelines(const glm::vec3& pointA, const glm::vec3& pointB);
+
+		bool OnMousePressed(MouseCode button);
+		bool OnMousePressed_Straight();
+		bool OnMousePressed_QuadraticCurve();
+		bool OnMousePressed_CubicCurve();
 		bool OnMousePressed_Destruction();
 
 		void SetType(size_t type);
@@ -59,14 +62,15 @@ namespace Can
 		inline const std::vector<RoadSegment*>& GetRoadSegments() const { return m_RoadSegments; }
 		inline std::vector<RoadSegment*>& GetRoadSegments() { return m_RoadSegments; }
 
-		void Remove(RoadSegment* roadSegment);
+		void AddRoadSegment(const std::array<glm::vec3, 4>& curvePoints);
+		void RemoveRoadSegment(RoadSegment* roadSegment);
 
 		SnapInformation CheckSnapping(const glm::vec3& cameraPosition, const glm::vec3& cameraDirection);
 
 		void ResetStates();
 	public:
 
-		std::array<bool, 5> snapOptions = { true, true, false, true, false };
+		std::array<bool, 5> snapOptions = { true, false, false, true, false };
 		// 0 : Roads
 		// 1 : Length
 		// 2 : Height
