@@ -45,10 +45,10 @@ namespace Can
 
 		void DrawStraightGuidelines(const glm::vec3& pointA, const glm::vec3& pointB);
 
-		bool OnMousePressed(MouseCode button, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection);
-		bool OnMousePressed_Straight(const glm::vec3& cameraPosition, const glm::vec3& cameraDirection);
-		bool OnMousePressed_QuadraticCurve(const glm::vec3& cameraPosition, const glm::vec3& cameraDirection);
-		bool OnMousePressed_CubicCurve(const glm::vec3& cameraPosition, const glm::vec3& cameraDirection);
+		bool OnMousePressed(MouseCode button);
+		bool OnMousePressed_Straight();
+		bool OnMousePressed_QuadraticCurve();
+		bool OnMousePressed_CubicCurve();
 		bool OnMousePressed_Destruction();
 
 		void SetType(size_t type);

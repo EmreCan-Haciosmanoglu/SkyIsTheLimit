@@ -86,7 +86,7 @@ namespace Can
 				}
 			}
 		}
-		std::cout << m_Trees.size() << std::endl;
+		std::cout << m_Trees.size() << " trees are generated!" << std::endl;
 	}
 	TreeManager::~TreeManager()
 	{

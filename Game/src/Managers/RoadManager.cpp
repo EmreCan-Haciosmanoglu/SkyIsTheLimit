@@ -731,7 +731,6 @@ namespace Can
 				m_ConstructionPositions[2] = m_ConstructionPositions[0] + AB;
 				m_ConstructionPositions[3] = m_ConstructionPositions[0] + AB;
 			}
-
 			if (snapOptions[2] && glm::length(AB) > 0.5f)
 			{
 				if (
@@ -745,7 +744,6 @@ namespace Can
 					m_ConstructionPositions[3].y = m_ConstructionPositions[0].y;
 				}
 			}
-
 			if (snapOptions[3] && glm::length(AB) > 0.5f)
 			{
 				if (m_StartSnappedEnd)
@@ -1164,11 +1162,11 @@ namespace Can
 			glm::vec3 AB1 = m_ConstructionPositions[1] - m_ConstructionPositions[0];
 			glm::vec3 AB2 = m_ConstructionPositions[2] - m_ConstructionPositions[3];
 
-			float rotationOffset1 = AB1.x < 0.0f ? 180.0f : 0.0f;
-			float rotationOffset2 = AB2.x < 0.0f ? 180.0f : 0.0f;
+			float rotationOffset1 = AB1.x < 0.0f ? glm::radians(180.0f) : 0.0f;
+			float rotationOffset2 = AB2.x < 0.0f ? glm::radians(180.0f) : 0.0f;
 
-			float rotationStart = glm::atan(-AB1.z / AB1.x) + glm::radians(rotationOffset1 + 180.0f);
-			float rotationEnd = glm::atan(-AB2.z / AB2.x) + glm::radians(rotationOffset2 + 180.0f);
+			float rotationStart = glm::atan(-AB1.z / AB1.x) + rotationOffset1 + glm::radians(180.0f);
+			float rotationEnd = glm::atan(-AB2.z / AB2.x) + rotationOffset2 + glm::radians(180.0f);
 
 			m_GuidelinesStart->enabled = !b_ConstructionStartSnapped;
 			m_GuidelinesEnd->enabled = !b_ConstructionEndSnapped;
@@ -1212,6 +1210,9 @@ namespace Can
 				p1 = p2;
 			}
 
+			m_GuidelinesStart->tintColor = b_ConstructionRestricted ? glm::vec4{ 1.0f, 0.3f, 0.2f, 1.0f } : glm::vec4(1.0f);
+			m_GuidelinesEnd->tintColor = b_ConstructionRestricted ? glm::vec4{ 1.0f, 0.3f, 0.2f, 1.0f } : glm::vec4(1.0f);
+
 			for (std::vector<Object*>& os : m_Guidelines)
 				for (Object* rg : os)
 					rg->tintColor = b_ConstructionRestricted ? glm::vec4{ 1.0f, 0.3f, 0.2f, 1.0f } : glm::vec4(1.0f);
@@ -1246,29 +1247,109 @@ namespace Can
 				m_StartSnappedRoadSegmentTDelta = snapInformation.roadTDelta;
 			}
 			m_ConstructionPositions[cubicCurveOrder[0]] = prevLocation;
+			m_ConstructionPositions[cubicCurveOrder[1]] = prevLocation;
+			m_ConstructionPositions[cubicCurveOrder[2]] = prevLocation;
+			m_ConstructionPositions[cubicCurveOrder[3]] = prevLocation;
 
 			m_GuidelinesStart->SetTransform(prevLocation + glm::vec3{ 0.0f, 0.15f, 0.0f }, { 1.0f, 1.0f, 1.0f }, { 0.0f, glm::radians(180.0f), 0.0f });
 			m_GuidelinesEnd->SetTransform(prevLocation + glm::vec3{ 0.0f, 0.15f, 0.0f }, { 1.0f, 1.0f, 1.0f }, { 0.0f, 0.0f, 0.0f });
 		}
 		else if (m_ConstructionPhase == 1)
 		{
+			for (std::vector<Object*>& os : m_Guidelines)
+				for (Object* rsg : os)
+					rsg->enabled = false;
+
+			for (size_t& inUse : m_GuidelinesInUse)
+				inUse = 0;
+
 			b_ConstructionRestricted = false;
 			if (snapOptions[4])
 			{
 				prevLocation.x = prevLocation.x - std::fmod(prevLocation.x + 0.25f, 0.5f) + 0.25f;
 				prevLocation.z = prevLocation.z - std::fmod(prevLocation.z + 0.25f, 0.5f) + 0.25f;
 			}
+			if (cubicCurveOrder[1] == 3 && snapOptions[0])
+			{
+				SnapInformation snapInformation = CheckSnapping(cameraPosition, cameraDirection);
+				prevLocation = snapInformation.snapped ? snapInformation.location : prevLocation;
+				b_ConstructionEndSnapped = snapInformation.snapped;
+				m_EndSnappedJunction = snapInformation.junction;
+				m_EndSnappedEnd = snapInformation.end;
+				m_EndSnappedRoadSegment = snapInformation.roadSegment;
+				m_EndSnappedRoadSegmentT = snapInformation.roadT;
+				m_EndSnappedRoadSegmentTDelta = snapInformation.roadTDelta;
+			}
 
 			m_ConstructionPositions[cubicCurveOrder[1]] = prevLocation;
+			m_ConstructionPositions[cubicCurveOrder[2]] = prevLocation;
+			m_ConstructionPositions[cubicCurveOrder[3]] = prevLocation;
 
-			bool collisionIsRestricted = false;
+			bool angleIsRestricted = false;
+			if (cubicCurveOrder[1] != 3 && restrictions[0])
+			{
+				if (m_StartSnappedJunction)
+				{
+					for (RoadSegment* roadSegment : m_StartSnappedJunction->connectedRoadSegments)
+					{
+						glm::vec3 directionOldRoadSegment = roadSegment->ConnectedObjectAtStart.junction == m_StartSnappedJunction ? roadSegment->GetStartDirection() : roadSegment->GetEndDirection();
+						directionOldRoadSegment.y = 0;
+						directionOldRoadSegment = glm::normalize(directionOldRoadSegment);
 
-			glm::vec3 AB = m_ConstructionPositions[cubicCurveOrder[1]] - m_ConstructionPositions[0];
+						glm::vec3 directionNewRoadSegment = prevLocation - m_ConstructionPositions[0];
+						directionNewRoadSegment.y = 0;
+						directionNewRoadSegment = glm::normalize(directionNewRoadSegment);
+
+						float angle = glm::acos(glm::dot(directionOldRoadSegment, directionNewRoadSegment));
+
+						if (angle < 0.5f)
+						{
+							angleIsRestricted = true;
+							break;
+						}
+					}
+				}
+				else if (m_StartSnappedEnd)
+				{
+					RoadSegment* roadSegment = m_StartSnappedEnd->connectedRoadSegment;
+
+					glm::vec3 directionOldRoadSegment = roadSegment->ConnectedObjectAtStart.end == m_StartSnappedEnd ? roadSegment->GetStartDirection() : roadSegment->GetEndDirection();
+					directionOldRoadSegment.y = 0;
+					directionOldRoadSegment = glm::normalize(directionOldRoadSegment);
+
+					glm::vec3 directionNewRoadSegment = prevLocation - m_ConstructionPositions[0];
+					directionNewRoadSegment.y = 0;
+					directionNewRoadSegment = glm::normalize(directionNewRoadSegment);
+
+					float angle = glm::acos(glm::dot(directionOldRoadSegment, directionNewRoadSegment));
+
+					angleIsRestricted = angle < 0.5f;
+				}
+				else if (m_StartSnappedRoadSegment)
+				{
+					glm::vec3 prevPoint = Math::CubicCurve(m_StartSnappedRoadSegment->GetCurvePoints(), m_StartSnappedRoadSegmentT - m_StartSnappedRoadSegmentTDelta);
+					glm::vec3 directionOldRoadSegment = prevLocation - prevPoint;
+
+					directionOldRoadSegment.y = 0;
+					directionOldRoadSegment = glm::normalize(directionOldRoadSegment);
+
+					glm::vec3 directionNewRoadSegment = prevLocation - m_ConstructionPositions[0];
+					directionNewRoadSegment.y = 0;
+					directionNewRoadSegment = glm::normalize(directionNewRoadSegment);
+
+					float angle = glm::acos(glm::dot(directionOldRoadSegment, directionNewRoadSegment));
+
+					angleIsRestricted = angle < 0.5f || angle > 2.63f;
+				}
+			}
+
+			glm::vec3 AB = m_ConstructionPositions[cubicCurveOrder[1]] - m_ConstructionPositions[cubicCurveOrder[0]];
 
 			float rotationOffset = AB.x < 0.0f ? 180.0f : 0.0f;
 			float rotationStart = glm::atan(-AB.z / AB.x) + glm::radians(180.0f + rotationOffset);
 			float rotationEnd = glm::atan(-AB.z / AB.x) + glm::radians(rotationOffset);
 
+			// if end of the road segment snap to another road segment ????
 			if (snapOptions[1] && glm::length(AB) > 0.5f)
 			{
 				float length = glm::length(AB);
@@ -1276,7 +1357,6 @@ namespace Can
 				AB = length * glm::normalize(AB);
 				m_ConstructionPositions[cubicCurveOrder[1]] = m_ConstructionPositions[cubicCurveOrder[0]] + AB;
 			}
-
 			if (snapOptions[2] && glm::length(AB) > 0.5f)
 			{
 				if (
@@ -1285,9 +1365,10 @@ namespace Can
 					!m_EndSnappedEnd
 					)
 					m_ConstructionPositions[cubicCurveOrder[1]].y = m_ConstructionPositions[cubicCurveOrder[0]].y;
+				m_ConstructionPositions[cubicCurveOrder[2]].y = m_ConstructionPositions[cubicCurveOrder[0]].y;
+				m_ConstructionPositions[cubicCurveOrder[3]].y = m_ConstructionPositions[cubicCurveOrder[0]].y;
 			}
-
-			if (snapOptions[3] && glm::length(AB) > 0.5f)
+			if (cubicCurveOrder[1] != 3 && snapOptions[3] && glm::length(AB) > 0.5f)
 			{
 				if (m_StartSnappedEnd)
 				{
@@ -1367,9 +1448,9 @@ namespace Can
 					m_ConstructionPositions[cubicCurveOrder[1]] = m_ConstructionPositions[cubicCurveOrder[0]] + AB;
 				}
 			}
-
-			if (glm::length(AB) > 0.5f)
+			if (cubicCurveOrder[1] == 3 && glm::length(AB) > 0.5f)
 			{
+				// Do we care about AB ???
 				if (m_EndSnappedRoadSegment)
 				{
 					glm::vec3 n = { -m_EndSnappedRoadSegment->GetStartDirection().z, 0.0f, m_EndSnappedRoadSegment->GetStartDirection().x };
@@ -1393,59 +1474,113 @@ namespace Can
 				}
 			}
 
-			glm::vec3 normalizedAB = glm::normalize(AB);
+			glm::vec2 A = glm::vec2{ m_ConstructionPositions[cubicCurveOrder[0]].x, m_ConstructionPositions[cubicCurveOrder[0]].z };
+			glm::vec2 D = glm::vec2{ m_ConstructionPositions[cubicCurveOrder[1]].x, m_ConstructionPositions[cubicCurveOrder[1]].z };
+			glm::vec2 AD = roadPrefabWidth * 0.5f * glm::normalize(D - A);
+			D += AD;
+			if (!(m_StartSnappedEnd || m_StartSnappedJunction || m_StartSnappedRoadSegment))
+				A -= AD;
 
-			rotationOffset = (AB.x < 0.0f) * 180.0f;
-			rotationStart = glm::atan(-AB.z / AB.x) + glm::radians(180.0f + rotationOffset);
-			rotationEnd = glm::atan(-AB.z / AB.x) + glm::radians(rotationOffset);
+			AD = glm::vec2{ -AD.y , AD.x };
 
-			glm::vec2 least = { -roadPrefabWidth / 2.0f, -roadPrefabWidth / 2.0f };
-			glm::vec2 most = { glm::length(AB) + roadPrefabWidth / 2.0f, roadPrefabWidth / 2.0f };
-			if (m_StartSnappedEnd || m_StartSnappedJunction || m_StartSnappedRoadSegment)
-				least.x = 0.0f;
-			if (m_EndSnappedEnd || m_EndSnappedJunction || m_EndSnappedRoadSegment)
-				most.x = glm::length(AB);
+			glm::vec2 P1 = A + AD;
+			glm::vec2 P2 = A - AD;
+			glm::vec2 P3 = D + AD;
+			glm::vec2 P4 = D - AD;
 
-			m_GuidelinesStart->enabled = !b_ConstructionStartSnapped;
-			m_GuidelinesEnd->enabled = !b_ConstructionEndSnapped;
+			std::array<std::array<glm::vec2, 3>, 2> newRoadPolygon = {
+					std::array<glm::vec2,3>{ P1, P2, P3},
+					std::array<glm::vec2,3>{ P2, P3, P4}
+			};
 
-			m_GuidelinesStart->SetTransform(m_ConstructionPositions[cubicCurveOrder[0]] + glm::vec3{ 0.0f, 0.15f, 0.0f }, { 1.0f, 1.0f, 1.0f }, { 0.0f, rotationStart, 0.0f });
-			m_GuidelinesEnd->SetTransform(m_ConstructionPositions[cubicCurveOrder[1]] + glm::vec3{ 0.0f, 0.15f, 0.0f }, { 1.0f, 1.0f, 1.0f }, { 0.0f, rotationEnd, 0.0f });
-
-			float availableABLength = (
-				glm::length(AB)
-				- (b_ConstructionStartSnapped ? roadPrefabLength : 0.0f)
-				- (b_ConstructionEndSnapped ? roadPrefabLength : 0.0f)
-				);
-			availableABLength = std::max(availableABLength, 0.0f);
-
-			int countAB = (int)(availableABLength / roadPrefabLength);
-			float scaleAB = (availableABLength / roadPrefabLength) / countAB;
-			float scaledRoadLength = availableABLength / countAB;
-
-			bool lengthIsRestricted = restrictions[1] && countAB < 1;
-
-
-			for (size_t& inUse : m_GuidelinesInUse)
-				inUse = 0;
-
-			int discountStart = (b_ConstructionStartSnapped ? 1 : 0);
-
-			m_GuidelinesInUse[m_Type] += countAB;
-			if (m_GuidelinesInUse[m_Type] > m_Guidelines[m_Type].size())
-				for (size_t j = m_Guidelines[m_Type].size(); j < m_GuidelinesInUse[m_Type]; j++)
-					m_Guidelines[m_Type].push_back(new Object(m_Scene->MainApplication->roads[m_Type][0], m_Scene->MainApplication->roads[m_Type][0]));
-
-			for (size_t j = 0; j < countAB; j++)
+			bool collisionIsRestricted = false;
+			if (restrictions[2])
 			{
-				Object* roadG = m_Guidelines[m_Type][j];
-				roadG->enabled = true;
-				roadG->SetTransform(
-					m_ConstructionPositions[0] + (normalizedAB * ((j + discountStart) * scaledRoadLength)) + glm::vec3{ 0.0f, 0.15f, 0.0f },
-					glm::vec3{ 1.0f * scaleAB, 1.0f, 1.0f },
-					glm::vec3{ 0.0f, rotationEnd, 0.0f }
-				);
+				for (RoadSegment* roadSegment : m_RoadSegments)
+				{
+					if (roadSegment == m_StartSnappedRoadSegment)
+						continue;
+					if (m_StartSnappedEnd && roadSegment == m_StartSnappedEnd->connectedRoadSegment)
+						continue;
+					if (m_StartSnappedJunction)
+					{
+						auto it = std::find(m_StartSnappedJunction->connectedRoadSegments.begin(), m_StartSnappedJunction->connectedRoadSegments.end(), roadSegment);
+						if (it != m_StartSnappedJunction->connectedRoadSegments.end())
+							continue;
+					}
+
+					float halfWidth = 0.5f * (roadSegment->Type[0]->boundingBoxM.z - roadSegment->Type[0]->boundingBoxL.z);
+
+					std::array<std::array<glm::vec2, 3>, 2> oldRoadPolygon = Math::GetBoundingBoxOfBezierCurve(roadSegment->GetCurvePoints(), halfWidth);
+
+					if (Math::CheckPolygonCollision(newRoadPolygon, oldRoadPolygon))
+					{
+						std::array<std::array<glm::vec2, 3>, (10 - 1) * 2> result = Math::GetBoundingPolygonOfBezierCurve<10, 10>(roadSegment->GetCurvePoints(), halfWidth);
+						if (Math::CheckPolygonCollision(result, newRoadPolygon))
+						{
+							collisionIsRestricted = true;
+							break;
+						}
+					}
+				}
 			}
+			if (m_Scene->m_BuildingManager.restrictions[0] && restrictions[2])
+			{
+				for (Building* building : m_Scene->m_BuildingManager.GetBuildings())
+				{
+					Prefab* prefab = building->object->prefab;
+					glm::vec2 pos{ building->object->position.x, building->object->position.z };
+					glm::vec2 A = { prefab->boundingBoxL.x, prefab->boundingBoxL.z };
+					glm::vec2 B = { prefab->boundingBoxL.x, prefab->boundingBoxM.z };
+					glm::vec2 C = { prefab->boundingBoxM.x, prefab->boundingBoxL.z };
+					glm::vec2 D = { prefab->boundingBoxM.x, prefab->boundingBoxM.z };
+
+					float rot = building->object->rotation.y;
+					A = Math::RotatePoint(A, rot) + pos;
+					B = Math::RotatePoint(B, rot) + pos;
+					C = Math::RotatePoint(C, rot) + pos;
+					D = Math::RotatePoint(D, rot) + pos;
+
+					std::array<std::array<glm::vec2, 3>, 2> polygonBuilding = {
+						std::array<glm::vec2,3>{A, B, D},
+						std::array<glm::vec2,3>{A, C, D}
+					};
+					building->object->tintColor = glm::vec4(1.0f);
+					if (Math::CheckPolygonCollision(newRoadPolygon, polygonBuilding))
+						building->object->tintColor = glm::vec4{ 1.0f, 0.3f, 0.2f, 1.0f };
+				}
+			}
+			if (m_Scene->m_TreeManager.restrictions[0] && restrictions[2])
+			{
+				for (Object* tree : m_Scene->m_TreeManager.GetTrees())
+				{
+					Prefab* prefab = tree->prefab;
+					glm::vec2 pos{ tree->position.x, tree->position.z };
+					glm::vec2 A = { prefab->boundingBoxL.x * tree->scale.x, prefab->boundingBoxL.z * tree->scale.z };
+					glm::vec2 B = { prefab->boundingBoxL.x * tree->scale.x, prefab->boundingBoxM.z * tree->scale.z };
+					glm::vec2 C = { prefab->boundingBoxM.x * tree->scale.x, prefab->boundingBoxL.z * tree->scale.z };
+					glm::vec2 D = { prefab->boundingBoxM.x * tree->scale.x, prefab->boundingBoxM.z * tree->scale.z };
+
+					float rot = tree->rotation.y;
+					A = Math::RotatePoint(A, rot) + pos;
+					B = Math::RotatePoint(B, rot) + pos;
+					C = Math::RotatePoint(C, rot) + pos;
+					D = Math::RotatePoint(D, rot) + pos;
+
+					std::array<std::array<glm::vec2, 3>, 2> polygonTree = {
+						std::array<glm::vec2,3>{A, B, D},
+						std::array<glm::vec2,3>{A, C, D}
+					};
+
+					tree->tintColor = glm::vec4(1.0f);
+					if (Math::CheckPolygonCollision(newRoadPolygon, polygonTree))
+						tree->tintColor = glm::vec4{ 1.0f, 0.3f, 0.2f, 1.0f };
+				}
+			}
+
+			b_ConstructionRestricted |= angleIsRestricted;
+			b_ConstructionRestricted |= collisionIsRestricted;
+			DrawStraightGuidelines(m_ConstructionPositions[0], m_ConstructionPositions[3]);
 
 			// Do Something about this
 			/*if (m_StartSnappedRoadSegment != nullptr)
@@ -1512,124 +1647,56 @@ namespace Can
 			}
 			*/
 
-			b_ConstructionRestricted |= lengthIsRestricted;
-			b_ConstructionRestricted |= collisionIsRestricted;
-
-			m_GuidelinesStart->tintColor = b_ConstructionRestricted ? glm::vec4{ 1.0f, 0.3f, 0.2f, 1.0f } : glm::vec4(1.0f);
-			m_GuidelinesEnd->tintColor = b_ConstructionRestricted ? glm::vec4{ 1.0f, 0.3f, 0.2f, 1.0f } : glm::vec4(1.0f);
-
-			for (std::vector<Object*>& os : m_Guidelines)
-				for (Object* rg : os)
-					rg->tintColor = b_ConstructionRestricted ? glm::vec4{ 1.0f, 0.3f, 0.2f, 1.0f } : glm::vec4(1.0f);
-
 		}
 		else if (m_ConstructionPhase == 2)
 		{
+			for (std::vector<Object*>& os : m_Guidelines)
+				for (Object* rsg : os)
+					rsg->enabled = false;
+
+			for (size_t& inUse : m_GuidelinesInUse)
+				inUse = 0;
+
 			b_ConstructionRestricted = false;
-
 			m_ConstructionPositions[cubicCurveOrder[2]] = prevLocation;
+			m_ConstructionPositions[cubicCurveOrder[3]] = prevLocation;
 
-			float l = glm::length(m_ConstructionPositions[cubicCurveOrder[2]] - m_ConstructionPositions[cubicCurveOrder[0]]);
+			float l = glm::length(m_ConstructionPositions[cubicCurveOrder[2]] - m_ConstructionPositions[0]);
 			size_t count = 1;
 			while (l > roadPrefabLength)
 			{
 				count *= 2;
-				glm::vec3 p = Math::QuadraticCurve<float>({
-					m_ConstructionPositions[cubicCurveOrder[0]],
-					m_ConstructionPositions[cubicCurveOrder[1]],
-					m_ConstructionPositions[cubicCurveOrder[2]]
-					}, 1.0f / count);
-				l = glm::length(p - m_ConstructionPositions[cubicCurveOrder[0]]);
+				glm::vec3 p = Math::CubicCurve<float>(m_ConstructionPositions, 1.0f / count);
+				l = glm::length(p - m_ConstructionPositions[0]);
 			}
 			if (count > 1) count /= 2;
-
 			while (l > roadPrefabLength)
 			{
 				count++;
-				glm::vec3 p = Math::QuadraticCurve<float>({
-					m_ConstructionPositions[cubicCurveOrder[0]],
-					m_ConstructionPositions[cubicCurveOrder[1]],
-					m_ConstructionPositions[cubicCurveOrder[2]]
-					}, 1.0f / count);
-				l = glm::length(p - m_ConstructionPositions[cubicCurveOrder[0]]);
+				glm::vec3 p = Math::CubicCurve<float>(m_ConstructionPositions, 1.0f / count);
+				l = glm::length(p - m_ConstructionPositions[0]);
 			}
 			if (count > 1) count--;
 
+			int lastIndex = cubicCurveOrder[3];
 
-			glm::vec3 AB1 = m_ConstructionPositions[cubicCurveOrder[1]] - m_ConstructionPositions[cubicCurveOrder[0]];
-			glm::vec3 AB2 = m_ConstructionPositions[cubicCurveOrder[1]] - m_ConstructionPositions[cubicCurveOrder[2]];
-
-			float rotationOffset1 = AB1.x < 0.0f ? 180.0f : 0.0f;
-			float rotationOffset2 = AB2.x < 0.0f ? 180.0f : 0.0f;
-
-			float rotationStart = glm::atan(-AB1.z / AB1.x) + glm::radians(rotationOffset1 + 180.0f);
-			float rotationEnd = glm::atan(-AB2.z / AB2.x) + glm::radians(rotationOffset2 + 180.0f);
-
-			m_GuidelinesStart->enabled = !b_ConstructionStartSnapped;
-			m_GuidelinesEnd->enabled = !b_ConstructionEndSnapped;
-
-			m_GuidelinesStart->SetTransform(m_ConstructionPositions[cubicCurveOrder[0]] + glm::vec3{ 0.0f, 0.15f, 0.0f }, { 1.0f, 1.0f, 1.0f }, { 0.0f, rotationStart, 0.0f });
-			m_GuidelinesEnd->SetTransform(m_ConstructionPositions[cubicCurveOrder[2]] + glm::vec3{ 0.0f, 0.15f, 0.0f }, { 1.0f, 1.0f, 1.0f }, { 0.0f, rotationEnd, 0.0f });
-
-			for (size_t& inUse : m_GuidelinesInUse)
-				inUse = 0;
-			m_GuidelinesInUse[m_Type] += count;
-
-			if (m_GuidelinesInUse[m_Type] > m_Guidelines[m_Type].size())
-				for (size_t j = m_Guidelines[m_Type].size(); j < m_GuidelinesInUse[m_Type]; j++)
-					m_Guidelines[m_Type].push_back(new Object(m_Scene->MainApplication->roads[m_Type][0], m_Scene->MainApplication->roads[m_Type][0]));
+			// needs tons of attentions
+			// * need some more
+			std::array<glm::vec3, 4> cps{
+				m_ConstructionPositions[0],
+				(m_ConstructionPositions[(lastIndex == 1) ? 2 : 1] + m_ConstructionPositions[0]) * 0.5f,
+				(m_ConstructionPositions[(lastIndex == 1) ? 2 : 1] + m_ConstructionPositions[3]) * 0.5f,
+				m_ConstructionPositions[3]
+			};
 
 
-			glm::vec3 p1 = m_ConstructionPositions[0];
-			for (int c = 0; c < count; c++)
-			{
-				glm::vec3 p2 = Math::QuadraticCurve<float>({
-					m_ConstructionPositions[cubicCurveOrder[0]],
-					m_ConstructionPositions[cubicCurveOrder[1]],
-					m_ConstructionPositions[cubicCurveOrder[2]]
-					}, (c + 1.0f) / count);
-				glm::vec3 vec1 = p2 - p1;
-				float length = glm::length(vec1);
-				glm::vec3 dir1 = vec1 / length;
+			std::array<std::array<glm::vec2, 3>, 2> newRoadBoundingBox = Math::GetBoundingBoxOfBezierCurve(cps, roadPrefabWidth * 0.5f);
+			std::array<std::array<glm::vec2, 3>, (10 - 1) * 2> newRoadBoundingPolygon = Math::GetBoundingPolygonOfBezierCurve<10, 10>(cps, roadPrefabWidth * 0.5f);
 
-				float scale = length / roadPrefabLength;
-				float rot1 = glm::acos(dir1.x) * ((float)(dir1.z < 0.0f) * 2.0f - 1.0f);
-
-				Object* roadG = m_Guidelines[m_Type][c];
-				roadG->enabled = true;
-				roadG->SetTransform(
-					p1 + glm::vec3{ 0.0f, 0.15f, 0.0f },
-					glm::vec3{ scale, 1.0f, 1.0f },
-					glm::vec3{ 0.0f, rot1, 0.0f }
-				);
-
-				p1 = p2;
-			}
-		}
-		else if (m_ConstructionPhase == 3)
-		{
-
-			b_ConstructionRestricted = false;
-			m_ConstructionPositions[cubicCurveOrder[3]] = prevLocation;
-
+			// move to its own function - too many copy -
 			bool collisionIsRestricted = false;
 			if (restrictions[2])
 			{
-				glm::vec2 A1 = glm::vec2{ m_ConstructionPositions[0].x, m_ConstructionPositions[0].z };
-				glm::vec2 B1 = glm::vec2{ m_ConstructionPositions[1].x, m_ConstructionPositions[1].z };
-				glm::vec2 C1 = glm::vec2{ m_ConstructionPositions[2].x, m_ConstructionPositions[2].z };
-				glm::vec2 D1 = glm::vec2{ m_ConstructionPositions[3].x, m_ConstructionPositions[3].z };
-
-				std::array<std::array<glm::vec2, 3>, 2> newRoadPolygon = {
-					std::array<glm::vec2,3>{ A1, B1, glm::vec2(0.0f)},
-					std::array<glm::vec2,3>{ A1, C1, D1}
-				};
-
-				if (Math::CheckLineSegmentLineSegmentCollision(std::array<glm::vec2, 2>{ A1, D1 }, std::array<glm::vec2, 2>{ B1, C1 }))
-					newRoadPolygon[0][2] = D1;
-				else
-					newRoadPolygon[0][2] = C1;
-
 				for (RoadSegment* roadSegment : m_RoadSegments)
 				{
 					if (roadSegment == m_EndSnappedRoadSegment || roadSegment == m_StartSnappedRoadSegment)
@@ -1650,61 +1717,101 @@ namespace Can
 						if (it != m_EndSnappedJunction->connectedRoadSegments.end())
 							continue;
 					}
-					auto cp = roadSegment->GetCurvePoints();
-					glm::vec2 A2 = glm::vec2{ cp[0].x, cp[0].z };
-					glm::vec2 B2 = glm::vec2{ cp[1].x, cp[1].z };
-					glm::vec2 C2 = glm::vec2{ cp[2].x, cp[2].z };
-					glm::vec2 D2 = glm::vec2{ cp[3].x, cp[3].z };
 
-					std::array<std::array<glm::vec2, 3>, 2> oldRoadPolygon = {
-						std::array<glm::vec2,3>{ A2, B2, glm::vec2(0.0f)},
-						std::array<glm::vec2,3>{ A2, C2, D2}
-					};
+					float halfWidth = 0.5f * (roadSegment->Type[0]->boundingBoxM.z - roadSegment->Type[0]->boundingBoxL.z);
 
-					if (Math::CheckLineSegmentLineSegmentCollision(std::array<glm::vec2, 2>{ A2, D2 }, std::array<glm::vec2, 2>{ B2, C2 }))
-						oldRoadPolygon[0][2] = D2;
-					else
-						oldRoadPolygon[0][2] = C2;
+					std::array<std::array<glm::vec2, 3>, 2> oldRoadBoundingBox = Math::GetBoundingBoxOfBezierCurve(roadSegment->GetCurvePoints(), halfWidth);
 
-					if (Math::CheckPolygonCollision(newRoadPolygon, oldRoadPolygon))
+					if (Math::CheckPolygonCollision(newRoadBoundingBox, oldRoadBoundingBox))
 					{
-						collisionIsRestricted = true;
-						break;
+						if (Math::CheckPolygonCollision(newRoadBoundingPolygon, oldRoadBoundingBox))
+						{
+							std::array<std::array<glm::vec2, 3>, (10 - 1) * 2> oldRoadBoundingPolygon = Math::GetBoundingPolygonOfBezierCurve<10, 10>(roadSegment->GetCurvePoints(), halfWidth);
+							if (Math::CheckPolygonCollision(newRoadBoundingBox, oldRoadBoundingPolygon))
+							{
+								if (Math::CheckPolygonCollision(newRoadBoundingPolygon, oldRoadBoundingPolygon))
+								{
+									collisionIsRestricted = true;
+									break;
+								}
+							}
+						}
 					}
 				}
 			}
-			float l = glm::length(m_ConstructionPositions[3] - m_ConstructionPositions[0]);
-			size_t count = 1;
-			while (l > roadPrefabLength)
+			if (m_Scene->m_BuildingManager.restrictions[0] && restrictions[2])
 			{
-				count *= 2;
-				glm::vec3 p = Math::CubicCurve<float>(m_ConstructionPositions, 1.0f / count);
-				l = glm::length(p - m_ConstructionPositions[0]);
-			}
-			if (count > 1) count /= 2;
+				for (Building* building : m_Scene->m_BuildingManager.GetBuildings())
+				{
+					Prefab* prefab = building->object->prefab;
+					glm::vec2 pos{ building->object->position.x, building->object->position.z };
+					glm::vec2 A = { prefab->boundingBoxL.x, prefab->boundingBoxL.z };
+					glm::vec2 B = { prefab->boundingBoxL.x, prefab->boundingBoxM.z };
+					glm::vec2 C = { prefab->boundingBoxM.x, prefab->boundingBoxL.z };
+					glm::vec2 D = { prefab->boundingBoxM.x, prefab->boundingBoxM.z };
 
-			while (l > roadPrefabLength)
+					float rot = building->object->rotation.y;
+					A = Math::RotatePoint(A, rot) + pos;
+					B = Math::RotatePoint(B, rot) + pos;
+					C = Math::RotatePoint(C, rot) + pos;
+					D = Math::RotatePoint(D, rot) + pos;
+
+					std::array<std::array<glm::vec2, 3>, 2> polygonBuilding = {
+						std::array<glm::vec2,3>{A, B, D},
+						std::array<glm::vec2,3>{A, C, D}
+					};
+					building->object->tintColor = glm::vec4(1.0f);
+					if (Math::CheckPolygonCollision(newRoadBoundingBox, polygonBuilding))
+						if (Math::CheckPolygonCollision(newRoadBoundingPolygon, polygonBuilding))
+							building->object->tintColor = glm::vec4{ 1.0f, 0.3f, 0.2f, 1.0f };
+				}
+			}
+			if (m_Scene->m_TreeManager.restrictions[0] && restrictions[2])
 			{
-				count++;
-				glm::vec3 p = Math::CubicCurve<float>(m_ConstructionPositions, 1.0f / count);
-				l = glm::length(p - m_ConstructionPositions[0]);
+				for (Object* tree : m_Scene->m_TreeManager.GetTrees())
+				{
+					Prefab* prefab = tree->prefab;
+					glm::vec2 pos{ tree->position.x, tree->position.z };
+					glm::vec2 A = { prefab->boundingBoxL.x * tree->scale.x, prefab->boundingBoxL.z * tree->scale.z };
+					glm::vec2 B = { prefab->boundingBoxL.x * tree->scale.x, prefab->boundingBoxM.z * tree->scale.z };
+					glm::vec2 C = { prefab->boundingBoxM.x * tree->scale.x, prefab->boundingBoxL.z * tree->scale.z };
+					glm::vec2 D = { prefab->boundingBoxM.x * tree->scale.x, prefab->boundingBoxM.z * tree->scale.z };
+
+					float rot = tree->rotation.y;
+					A = Math::RotatePoint(A, rot) + pos;
+					B = Math::RotatePoint(B, rot) + pos;
+					C = Math::RotatePoint(C, rot) + pos;
+					D = Math::RotatePoint(D, rot) + pos;
+
+					std::array<std::array<glm::vec2, 3>, 2> polygonTree = {
+						std::array<glm::vec2,3>{A, B, D},
+						std::array<glm::vec2,3>{A, C, D}
+					};
+
+					tree->tintColor = glm::vec4(1.0f);
+					if (Math::CheckPolygonCollision(newRoadBoundingBox, polygonTree))
+						if (Math::CheckPolygonCollision(newRoadBoundingPolygon, polygonTree))
+							tree->tintColor = glm::vec4{ 1.0f, 0.3f, 0.2f, 1.0f };
+				}
 			}
-			if (count > 1) count--;
+			b_ConstructionRestricted |= collisionIsRestricted;
 
-			glm::vec3 AB1 = m_ConstructionPositions[cubicCurveOrder[1]] - m_ConstructionPositions[cubicCurveOrder[0]];
-			glm::vec3 AB2 = m_ConstructionPositions[cubicCurveOrder[2]] - m_ConstructionPositions[cubicCurveOrder[3]];
 
-			float rotationOffset1 = AB1.x < 0.0f ? 180.0f : 0.0f;
-			float rotationOffset2 = AB2.x < 0.0f ? 180.0f : 0.0f;
+			glm::vec3 AB1 = m_ConstructionPositions[cubicCurveOrder[(lastIndex == 1) ? 2 : 1]] - m_ConstructionPositions[0];
+			glm::vec3 AB2 = m_ConstructionPositions[cubicCurveOrder[(lastIndex == 1) ? 2 : 1]] - m_ConstructionPositions[3];
 
-			float rotationStart = glm::atan(-AB1.z / AB1.x) + glm::radians(rotationOffset1 + 180.0f);
-			float rotationEnd = glm::atan(-AB2.z / AB2.x) + glm::radians(rotationOffset2 + 180.0f);
+			//optimize it
+			float rotationOffset1 = AB1.x < 0.0f ? glm::radians(180.0f) : 0.0f;
+			float rotationOffset2 = AB2.x < 0.0f ? glm::radians(180.0f) : 0.0f;
+
+			float rotationStart = glm::atan(-AB1.z / AB1.x) + rotationOffset1 + glm::radians(180.0f);
+			float rotationEnd = glm::atan(-AB2.z / AB2.x) + rotationOffset2 + glm::radians(180.0f);
 
 			m_GuidelinesStart->enabled = !b_ConstructionStartSnapped;
 			m_GuidelinesEnd->enabled = !b_ConstructionEndSnapped;
 
-			m_GuidelinesStart->SetTransform(m_ConstructionPositions[cubicCurveOrder[0]] + glm::vec3{ 0.0f, 0.15f, 0.0f }, { 1.0f, 1.0f, 1.0f }, { 0.0f, rotationStart, 0.0f });
-			m_GuidelinesEnd->SetTransform(m_ConstructionPositions[cubicCurveOrder[2]] + glm::vec3{ 0.0f, 0.15f, 0.0f }, { 1.0f, 1.0f, 1.0f }, { 0.0f, rotationEnd, 0.0f });
+			m_GuidelinesStart->SetTransform(m_ConstructionPositions[0] + glm::vec3{ 0.0f, 0.15f, 0.0f }, { 1.0f, 1.0f, 1.0f }, { 0.0f, rotationStart, 0.0f });
+			m_GuidelinesEnd->SetTransform(m_ConstructionPositions[3] + glm::vec3{ 0.0f, 0.15f, 0.0f }, { 1.0f, 1.0f, 1.0f }, { 0.0f, rotationEnd, 0.0f });
 
 			for (size_t& inUse : m_GuidelinesInUse)
 				inUse = 0;
@@ -1715,6 +1822,195 @@ namespace Can
 					m_Guidelines[m_Type].push_back(new Object(m_Scene->MainApplication->roads[m_Type][0], m_Scene->MainApplication->roads[m_Type][0]));
 
 
+			// Move this into its own function
+			glm::vec3 p1 = m_ConstructionPositions[0];
+			for (int c = 0; c < count; c++)
+			{
+				glm::vec3 p2 = Math::CubicCurve<float>(cps, (c + 1.0f) / count);
+				glm::vec3 vec1 = p2 - p1;
+				float length = glm::length(vec1);
+				glm::vec3 dir1 = vec1 / length;
+
+				float scale = length / roadPrefabLength;
+				float rot1 = glm::acos(dir1.x) * ((float)(dir1.z < 0.0f) * 2.0f - 1.0f);
+
+				Object* roadG = m_Guidelines[m_Type][c];
+				roadG->enabled = true;
+				roadG->SetTransform(
+					p1 + glm::vec3{ 0.0f, 0.15f, 0.0f },
+					glm::vec3{ scale, 1.0f, 1.0f },
+					glm::vec3{ 0.0f, rot1, 0.0f }
+				);
+
+				p1 = p2;
+			}
+
+			m_GuidelinesStart->tintColor = b_ConstructionRestricted ? glm::vec4{ 1.0f, 0.3f, 0.2f, 1.0f } : glm::vec4(1.0f);
+			m_GuidelinesEnd->tintColor = b_ConstructionRestricted ? glm::vec4{ 1.0f, 0.3f, 0.2f, 1.0f } : glm::vec4(1.0f);
+
+			for (std::vector<Object*>& os : m_Guidelines)
+				for (Object* rg : os)
+					rg->tintColor = b_ConstructionRestricted ? glm::vec4{ 1.0f, 0.3f, 0.2f, 1.0f } : glm::vec4(1.0f);
+		}
+		else if (m_ConstructionPhase == 3)
+		{
+			for (std::vector<Object*>& os : m_Guidelines)
+				for (Object* rsg : os)
+					rsg->enabled = false;
+
+			for (size_t& inUse : m_GuidelinesInUse)
+				inUse = 0;
+			b_ConstructionRestricted = false;
+			m_ConstructionPositions[cubicCurveOrder[3]] = prevLocation;
+
+			float l = glm::length(m_ConstructionPositions[3] - m_ConstructionPositions[0]);
+			size_t count = 1;
+			while (l > roadPrefabLength)
+			{
+				count *= 2;
+				glm::vec3 p = Math::CubicCurve<float>(m_ConstructionPositions, 1.0f / count);
+				l = glm::length(p - m_ConstructionPositions[0]);
+			}
+			if (count > 1) count /= 2;
+			while (l > roadPrefabLength)
+			{
+				count++;
+				glm::vec3 p = Math::CubicCurve<float>(m_ConstructionPositions, 1.0f / count);
+				l = glm::length(p - m_ConstructionPositions[0]);
+			}
+			if (count > 1) count--;
+
+			std::array<std::array<glm::vec2, 3>, 2> newRoadBoundingBox = Math::GetBoundingBoxOfBezierCurve(m_ConstructionPositions, roadPrefabWidth * 0.5f);
+			std::array<std::array<glm::vec2, 3>, (10 - 1) * 2> newRoadBoundingPolygon = Math::GetBoundingPolygonOfBezierCurve<10, 10>(m_ConstructionPositions, roadPrefabWidth * 0.5f);
+
+			bool collisionIsRestricted = false;
+			if (restrictions[2])
+			{
+				for (RoadSegment* roadSegment : m_RoadSegments)
+				{
+					if (roadSegment == m_EndSnappedRoadSegment || roadSegment == m_StartSnappedRoadSegment)
+						continue;
+					if (m_StartSnappedEnd && roadSegment == m_StartSnappedEnd->connectedRoadSegment)
+						continue;
+					if (m_EndSnappedEnd && roadSegment == m_EndSnappedEnd->connectedRoadSegment)
+						continue;
+					if (m_StartSnappedJunction)
+					{
+						auto it = std::find(m_StartSnappedJunction->connectedRoadSegments.begin(), m_StartSnappedJunction->connectedRoadSegments.end(), roadSegment);
+						if (it != m_StartSnappedJunction->connectedRoadSegments.end())
+							continue;
+					}
+					if (m_EndSnappedJunction)
+					{
+						auto it = std::find(m_EndSnappedJunction->connectedRoadSegments.begin(), m_EndSnappedJunction->connectedRoadSegments.end(), roadSegment);
+						if (it != m_EndSnappedJunction->connectedRoadSegments.end())
+							continue;
+					}
+
+					float halfWidth = 0.5f * (roadSegment->Type[0]->boundingBoxM.z - roadSegment->Type[0]->boundingBoxL.z);
+
+					std::array<std::array<glm::vec2, 3>, 2> oldRoadBoundingBox = Math::GetBoundingBoxOfBezierCurve(roadSegment->GetCurvePoints(), halfWidth);
+
+					if (Math::CheckPolygonCollision(newRoadBoundingBox, oldRoadBoundingBox))
+					{
+						if (Math::CheckPolygonCollision(newRoadBoundingPolygon, oldRoadBoundingBox))
+						{
+							std::array<std::array<glm::vec2, 3>, (10 - 1) * 2> oldRoadBoundingPolygon = Math::GetBoundingPolygonOfBezierCurve<10, 10>(roadSegment->GetCurvePoints(), halfWidth);
+							if (Math::CheckPolygonCollision(newRoadBoundingBox, oldRoadBoundingPolygon))
+							{
+								if (Math::CheckPolygonCollision(newRoadBoundingPolygon, oldRoadBoundingPolygon))
+								{
+									collisionIsRestricted = true;
+									break;
+								}
+							}
+						}
+					}
+				}
+			}
+			if (m_Scene->m_BuildingManager.restrictions[0] && restrictions[2])
+			{
+				for (Building* building : m_Scene->m_BuildingManager.GetBuildings())
+				{
+					Prefab* prefab = building->object->prefab;
+					glm::vec2 pos{ building->object->position.x, building->object->position.z };
+					glm::vec2 A = { prefab->boundingBoxL.x, prefab->boundingBoxL.z };
+					glm::vec2 B = { prefab->boundingBoxL.x, prefab->boundingBoxM.z };
+					glm::vec2 C = { prefab->boundingBoxM.x, prefab->boundingBoxL.z };
+					glm::vec2 D = { prefab->boundingBoxM.x, prefab->boundingBoxM.z };
+
+					float rot = building->object->rotation.y;
+					A = Math::RotatePoint(A, rot) + pos;
+					B = Math::RotatePoint(B, rot) + pos;
+					C = Math::RotatePoint(C, rot) + pos;
+					D = Math::RotatePoint(D, rot) + pos;
+
+					std::array<std::array<glm::vec2, 3>, 2> polygonBuilding = {
+						std::array<glm::vec2,3>{A, B, D},
+						std::array<glm::vec2,3>{A, C, D}
+					};
+					building->object->tintColor = glm::vec4(1.0f);
+					if (Math::CheckPolygonCollision(newRoadBoundingBox, polygonBuilding))
+						if (Math::CheckPolygonCollision(newRoadBoundingPolygon, polygonBuilding))
+							building->object->tintColor = glm::vec4{ 1.0f, 0.3f, 0.2f, 1.0f };
+				}
+			}
+			if (m_Scene->m_TreeManager.restrictions[0] && restrictions[2])
+			{
+				for (Object* tree : m_Scene->m_TreeManager.GetTrees())
+				{
+					Prefab* prefab = tree->prefab;
+					glm::vec2 pos{ tree->position.x, tree->position.z };
+					glm::vec2 A = { prefab->boundingBoxL.x * tree->scale.x, prefab->boundingBoxL.z * tree->scale.z };
+					glm::vec2 B = { prefab->boundingBoxL.x * tree->scale.x, prefab->boundingBoxM.z * tree->scale.z };
+					glm::vec2 C = { prefab->boundingBoxM.x * tree->scale.x, prefab->boundingBoxL.z * tree->scale.z };
+					glm::vec2 D = { prefab->boundingBoxM.x * tree->scale.x, prefab->boundingBoxM.z * tree->scale.z };
+
+					float rot = tree->rotation.y;
+					A = Math::RotatePoint(A, rot) + pos;
+					B = Math::RotatePoint(B, rot) + pos;
+					C = Math::RotatePoint(C, rot) + pos;
+					D = Math::RotatePoint(D, rot) + pos;
+
+					std::array<std::array<glm::vec2, 3>, 2> polygonTree = {
+						std::array<glm::vec2,3>{A, B, D},
+						std::array<glm::vec2,3>{A, C, D}
+					};
+
+					tree->tintColor = glm::vec4(1.0f);
+					if (Math::CheckPolygonCollision(newRoadBoundingBox, polygonTree))
+						if (Math::CheckPolygonCollision(newRoadBoundingPolygon, polygonTree))
+							tree->tintColor = glm::vec4{ 1.0f, 0.3f, 0.2f, 1.0f };
+				}
+			}
+			b_ConstructionRestricted |= collisionIsRestricted;
+
+
+			glm::vec3 AB1 = m_ConstructionPositions[1] - m_ConstructionPositions[0];
+			glm::vec3 AB2 = m_ConstructionPositions[2] - m_ConstructionPositions[3];
+
+			float rotationOffset1 = AB1.x < 0.0f ? 180.0f : 0.0f;
+			float rotationOffset2 = AB2.x < 0.0f ? 180.0f : 0.0f;
+
+			float rotationStart = glm::atan(-AB1.z / AB1.x) + glm::radians(rotationOffset1 + 180.0f);
+			float rotationEnd = glm::atan(-AB2.z / AB2.x) + glm::radians(rotationOffset2 + 180.0f);
+
+			m_GuidelinesStart->enabled = !b_ConstructionStartSnapped;
+			m_GuidelinesEnd->enabled = !b_ConstructionEndSnapped;
+
+			m_GuidelinesStart->SetTransform(m_ConstructionPositions[0] + glm::vec3{ 0.0f, 0.15f, 0.0f }, { 1.0f, 1.0f, 1.0f }, { 0.0f, rotationStart, 0.0f });
+			m_GuidelinesEnd->SetTransform(m_ConstructionPositions[3] + glm::vec3{ 0.0f, 0.15f, 0.0f }, { 1.0f, 1.0f, 1.0f }, { 0.0f, rotationEnd, 0.0f });
+
+			for (size_t& inUse : m_GuidelinesInUse)
+				inUse = 0;
+			m_GuidelinesInUse[m_Type] += count;
+
+			if (m_GuidelinesInUse[m_Type] > m_Guidelines[m_Type].size())
+				for (size_t j = m_Guidelines[m_Type].size(); j < m_GuidelinesInUse[m_Type]; j++)
+					m_Guidelines[m_Type].push_back(new Object(m_Scene->MainApplication->roads[m_Type][0], m_Scene->MainApplication->roads[m_Type][0]));
+
+
+			// Move this into its own function
 			glm::vec3 p1 = m_ConstructionPositions[0];
 			for (int c = 0; c < count; c++)
 			{
@@ -1737,15 +2033,12 @@ namespace Can
 				p1 = p2;
 			}
 
-			b_ConstructionRestricted |= collisionIsRestricted;
-
 			m_GuidelinesStart->tintColor = b_ConstructionRestricted ? glm::vec4{ 1.0f, 0.3f, 0.2f, 1.0f } : glm::vec4(1.0f);
 			m_GuidelinesEnd->tintColor = b_ConstructionRestricted ? glm::vec4{ 1.0f, 0.3f, 0.2f, 1.0f } : glm::vec4(1.0f);
 
 			for (std::vector<Object*>& os : m_Guidelines)
 				for (Object* rg : os)
 					rg->tintColor = b_ConstructionRestricted ? glm::vec4{ 1.0f, 0.3f, 0.2f, 1.0f } : glm::vec4(1.0f);
-
 		}
 	}
 	void RoadManager::OnUpdate_Destruction(glm::vec3 prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection)
@@ -1860,7 +2153,7 @@ namespace Can
 
 	}
 
-	bool RoadManager::OnMousePressed(MouseCode button, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection)
+	bool RoadManager::OnMousePressed(MouseCode button)
 	{
 		switch (m_ConstructionMode)
 		{
@@ -1876,7 +2169,7 @@ namespace Can
 			}
 			else if (button != MouseCode::Button0)
 				return false;
-			OnMousePressed_Straight(cameraPosition, cameraDirection);
+			OnMousePressed_Straight();
 			break;
 		case RoadConstructionMode::QuadraticCurve:
 			if (button == MouseCode::Button1)
@@ -1888,7 +2181,7 @@ namespace Can
 			}
 			if (button != MouseCode::Button0)
 				return false;
-			OnMousePressed_QuadraticCurve(cameraPosition, cameraDirection);
+			OnMousePressed_QuadraticCurve();
 			break;
 		case RoadConstructionMode::CubicCurve:
 			if (button == MouseCode::Button1)
@@ -1900,7 +2193,7 @@ namespace Can
 			}
 			if (button != MouseCode::Button0)
 				return false;
-			OnMousePressed_CubicCurve(cameraPosition, cameraDirection);
+			OnMousePressed_CubicCurve();
 			break;
 		case RoadConstructionMode::Upgrade:
 			break;
@@ -1911,27 +2204,15 @@ namespace Can
 			break;
 		}
 	}
-	bool RoadManager::OnMousePressed_Straight(const glm::vec3& cameraPosition, const glm::vec3& cameraDirection)
+	bool RoadManager::OnMousePressed_Straight()
 	{
-		glm::vec3 intersection = Helper::GetRayHitPointOnTerrain(m_Scene, cameraPosition, cameraDirection);
+		m_ConstructionPhase++;
 
-		if (intersection.y >= -0.5f)
-		{
-			if (m_ConstructionPhase == 0)
-			{
-				m_ConstructionPhase++;
-			}
-			else
-			{
-				m_ConstructionPositions[1] = (m_ConstructionPositions[0] + m_ConstructionPositions[3]) / 2.0f;
-				m_ConstructionPositions[2] = (m_ConstructionPositions[0] + m_ConstructionPositions[3]) / 2.0f;
-				m_ConstructionPhase++;
-			}
-		}
-
-		// take this put it into else part of the prev if else
 		if (m_ConstructionPhase > 1)
 		{
+			m_ConstructionPositions[1] = (m_ConstructionPositions[0] + m_ConstructionPositions[3]) / 2.0f;
+			m_ConstructionPositions[2] = (m_ConstructionPositions[0] + m_ConstructionPositions[3]) / 2.0f;
+
 			for (std::vector<Object*>& os : m_Guidelines)
 				for (Object* rg : os)
 					rg->enabled = false;
@@ -1947,18 +2228,19 @@ namespace Can
 				});
 
 			ResetStates();
+			m_Scene->m_TreeManager.ResetStates();
+			m_Scene->m_BuildingManager.ResetStates();
+
 			m_GuidelinesStart->enabled = true;
 			m_GuidelinesEnd->enabled = true;
 		}
+
 		return false;
 	}
-	bool RoadManager::OnMousePressed_QuadraticCurve(const glm::vec3& cameraPosition, const glm::vec3& cameraDirection)
+	bool RoadManager::OnMousePressed_QuadraticCurve()
 	{
-		glm::vec3 intersection = Helper::GetRayHitPointOnTerrain(m_Scene, cameraPosition, cameraDirection);
-		if (intersection.y > -0.5f)
-		{
-			m_ConstructionPhase++;
-		}
+		m_ConstructionPhase++;
+
 		if (m_ConstructionPhase > 2)
 		{
 			for (std::vector<Object*>& os : m_Guidelines)
@@ -1976,19 +2258,18 @@ namespace Can
 				});
 
 			ResetStates();
+			m_Scene->m_TreeManager.ResetStates();
+			m_Scene->m_BuildingManager.ResetStates();
+
 			m_GuidelinesStart->enabled = true;
 			m_GuidelinesEnd->enabled = true;
 		}
 		return false;
 	}
-	bool RoadManager::OnMousePressed_CubicCurve(const glm::vec3& cameraPosition, const glm::vec3& cameraDirection)
+	bool RoadManager::OnMousePressed_CubicCurve()
 	{
-		glm::vec3 intersection = Helper::GetRayHitPointOnTerrain(m_Scene, cameraPosition, cameraDirection);
-		if (intersection.y > -0.5f)
-		{
-			m_ConstructionPositions[cubicCurveOrder[m_ConstructionPhase]] = intersection;
-			m_ConstructionPhase++;
-		}
+		m_ConstructionPhase++;
+
 		if (m_ConstructionPhase > 3)
 		{
 			for (std::vector<Object*>& os : m_Guidelines)
@@ -2001,6 +2282,9 @@ namespace Can
 			AddRoadSegment(m_ConstructionPositions);
 
 			ResetStates();
+			m_Scene->m_TreeManager.ResetStates();
+			m_Scene->m_BuildingManager.ResetStates();
+
 			m_GuidelinesStart->enabled = true;
 			m_GuidelinesEnd->enabled = true;
 		}
@@ -2320,7 +2604,7 @@ namespace Can
 			roadSegment->ConnectedObjectAtStart.end = newEnd;
 			m_Ends.push_back(newEnd);
 		}
-		
+
 		if (m_EndSnappedJunction != nullptr)
 		{
 			roadSegment->ConnectedObjectAtEnd.junction = m_EndSnappedJunction;
