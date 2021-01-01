@@ -1745,10 +1745,10 @@ namespace Can
 				{
 					Prefab* prefab = building->object->prefab;
 					glm::vec2 pos{ building->object->position.x, building->object->position.z };
-					glm::vec2 A = { prefab->boundingBoxL.x, prefab->boundingBoxL.z };
-					glm::vec2 B = { prefab->boundingBoxL.x, prefab->boundingBoxM.z };
-					glm::vec2 C = { prefab->boundingBoxM.x, prefab->boundingBoxL.z };
-					glm::vec2 D = { prefab->boundingBoxM.x, prefab->boundingBoxM.z };
+					glm::vec2 A{ prefab->boundingBoxL.x, prefab->boundingBoxL.z };
+					glm::vec2 B{ prefab->boundingBoxL.x, prefab->boundingBoxM.z };
+					glm::vec2 C{ prefab->boundingBoxM.x, prefab->boundingBoxL.z };
+					glm::vec2 D{ prefab->boundingBoxM.x, prefab->boundingBoxM.z };
 
 					float rot = building->object->rotation.y;
 					A = Math::RotatePoint(A, rot) + pos;
