@@ -71,14 +71,17 @@ namespace Can
 			}
 			if (snapOptions[0])
 			{
-				SnapInformation snapInformation = CheckSnapping(cameraPosition, cameraDirection);
+				SnapInformation snapInformation = CheckSnapping(prevLocation);
 				prevLocation = snapInformation.snapped ? snapInformation.location : prevLocation;
 				b_ConstructionStartSnapped = snapInformation.snapped;
+
 				m_StartSnappedJunction = snapInformation.junction;
 				m_StartSnappedEnd = snapInformation.end;
 				m_StartSnappedRoadSegment = snapInformation.roadSegment;
-				m_StartSnappedRoadSegmentT = snapInformation.roadT;
-				m_StartSnappedRoadSegmentTDelta = snapInformation.roadTDelta;
+
+				m_StartSnappedRoadSegmentTo = snapInformation.roadSegmentTo;
+				m_StartSnappedRoadSegmentTp = snapInformation.roadSegmentTp;
+				m_StartSnappedRoadSegmentTn = snapInformation.roadSegmentTn;
 			}
 			m_ConstructionPositions[0] = prevLocation;
 
@@ -102,14 +105,17 @@ namespace Can
 			}
 			if (snapOptions[0])
 			{
-				SnapInformation snapInformation = CheckSnapping(cameraPosition, cameraDirection);
+				SnapInformation snapInformation = CheckSnapping(prevLocation);
 				prevLocation = snapInformation.snapped ? snapInformation.location : prevLocation;
 				b_ConstructionEndSnapped = snapInformation.snapped;
+
 				m_EndSnappedJunction = snapInformation.junction;
 				m_EndSnappedEnd = snapInformation.end;
 				m_EndSnappedRoadSegment = snapInformation.roadSegment;
-				m_EndSnappedRoadSegmentT = snapInformation.roadT;
-				m_EndSnappedRoadSegmentTDelta = snapInformation.roadTDelta;
+
+				m_EndSnappedRoadSegmentTo = snapInformation.roadSegmentTo;
+				m_EndSnappedRoadSegmentTp = snapInformation.roadSegmentTp;
+				m_EndSnappedRoadSegmentTn = snapInformation.roadSegmentTn;
 			}
 			m_ConstructionPositions[1] = prevLocation;
 			m_ConstructionPositions[2] = prevLocation;
@@ -157,7 +163,7 @@ namespace Can
 				}
 				else if (m_StartSnappedRoadSegment)
 				{
-					glm::vec3 prevPoint = Math::CubicCurve(m_StartSnappedRoadSegment->GetCurvePoints(), m_StartSnappedRoadSegmentT - m_StartSnappedRoadSegmentTDelta);
+					glm::vec3 prevPoint = Math::CubicCurve(m_StartSnappedRoadSegment->GetCurvePoints(), m_StartSnappedRoadSegmentTn);
 					glm::vec3 directionOldRoadSegment = prevLocation - prevPoint;
 
 					directionOldRoadSegment.y = 0;
@@ -211,7 +217,7 @@ namespace Can
 				}
 				else if (m_EndSnappedRoadSegment)
 				{
-					glm::vec3 prevPoint = Math::CubicCurve(m_EndSnappedRoadSegment->GetCurvePoints(), m_EndSnappedRoadSegmentT - m_EndSnappedRoadSegmentTDelta);
+					glm::vec3 prevPoint = Math::CubicCurve(m_EndSnappedRoadSegment->GetCurvePoints(), m_EndSnappedRoadSegmentTn);
 					glm::vec3 directionOldRoadSegment = prevLocation - prevPoint;
 
 					directionOldRoadSegment.y = 0;
@@ -623,14 +629,17 @@ namespace Can
 			}
 			if (snapOptions[0])
 			{
-				SnapInformation snapInformation = CheckSnapping(cameraPosition, cameraDirection);
+				SnapInformation snapInformation = CheckSnapping(prevLocation);
 				prevLocation = snapInformation.snapped ? snapInformation.location : prevLocation;
 				b_ConstructionStartSnapped = snapInformation.snapped;
+
 				m_StartSnappedJunction = snapInformation.junction;
 				m_StartSnappedEnd = snapInformation.end;
 				m_StartSnappedRoadSegment = snapInformation.roadSegment;
-				m_StartSnappedRoadSegmentT = snapInformation.roadT;
-				m_StartSnappedRoadSegmentTDelta = snapInformation.roadTDelta;
+
+				m_StartSnappedRoadSegmentTo = snapInformation.roadSegmentTo;
+				m_StartSnappedRoadSegmentTp = snapInformation.roadSegmentTp;
+				m_StartSnappedRoadSegmentTn = snapInformation.roadSegmentTn;
 			}
 			m_ConstructionPositions[0] = prevLocation;
 
@@ -699,7 +708,7 @@ namespace Can
 				}
 				else if (m_StartSnappedRoadSegment)
 				{
-					glm::vec3 prevPoint = Math::CubicCurve(m_StartSnappedRoadSegment->GetCurvePoints(), m_StartSnappedRoadSegmentT - m_StartSnappedRoadSegmentTDelta);
+					glm::vec3 prevPoint = Math::CubicCurve(m_StartSnappedRoadSegment->GetCurvePoints(), m_StartSnappedRoadSegmentTn);
 					glm::vec3 directionOldRoadSegment = prevLocation - prevPoint;
 
 					directionOldRoadSegment.y = 0;
@@ -1237,14 +1246,16 @@ namespace Can
 			}
 			if (snapOptions[0])
 			{
-				SnapInformation snapInformation = CheckSnapping(cameraPosition, cameraDirection);
+				SnapInformation snapInformation = CheckSnapping(prevLocation);
 				prevLocation = snapInformation.snapped ? snapInformation.location : prevLocation;
 				b_ConstructionStartSnapped = snapInformation.snapped;
 				m_StartSnappedJunction = snapInformation.junction;
 				m_StartSnappedEnd = snapInformation.end;
 				m_StartSnappedRoadSegment = snapInformation.roadSegment;
-				m_StartSnappedRoadSegmentT = snapInformation.roadT;
-				m_StartSnappedRoadSegmentTDelta = snapInformation.roadTDelta;
+
+				m_StartSnappedRoadSegmentTo = snapInformation.roadSegmentTo;
+				m_StartSnappedRoadSegmentTp = snapInformation.roadSegmentTp;
+				m_StartSnappedRoadSegmentTn = snapInformation.roadSegmentTn;
 			}
 			m_ConstructionPositions[cubicCurveOrder[0]] = prevLocation;
 			m_ConstructionPositions[cubicCurveOrder[1]] = prevLocation;
@@ -1271,14 +1282,17 @@ namespace Can
 			}
 			if (cubicCurveOrder[1] == 3 && snapOptions[0])
 			{
-				SnapInformation snapInformation = CheckSnapping(cameraPosition, cameraDirection);
+				SnapInformation snapInformation = CheckSnapping(prevLocation);
 				prevLocation = snapInformation.snapped ? snapInformation.location : prevLocation;
 				b_ConstructionEndSnapped = snapInformation.snapped;
+
 				m_EndSnappedJunction = snapInformation.junction;
 				m_EndSnappedEnd = snapInformation.end;
 				m_EndSnappedRoadSegment = snapInformation.roadSegment;
-				m_EndSnappedRoadSegmentT = snapInformation.roadT;
-				m_EndSnappedRoadSegmentTDelta = snapInformation.roadTDelta;
+
+				m_EndSnappedRoadSegmentTo = snapInformation.roadSegmentTo;
+				m_EndSnappedRoadSegmentTp = snapInformation.roadSegmentTp;
+				m_EndSnappedRoadSegmentTn = snapInformation.roadSegmentTn;
 			}
 
 			m_ConstructionPositions[cubicCurveOrder[1]] = prevLocation;
@@ -1327,7 +1341,7 @@ namespace Can
 				}
 				else if (m_StartSnappedRoadSegment)
 				{
-					glm::vec3 prevPoint = Math::CubicCurve(m_StartSnappedRoadSegment->GetCurvePoints(), m_StartSnappedRoadSegmentT - m_StartSnappedRoadSegmentTDelta);
+					glm::vec3 prevPoint = Math::CubicCurve(m_StartSnappedRoadSegment->GetCurvePoints(), m_StartSnappedRoadSegmentTn);
 					glm::vec3 directionOldRoadSegment = prevLocation - prevPoint;
 
 					directionOldRoadSegment.y = 0;
@@ -2043,7 +2057,7 @@ namespace Can
 	}
 	void RoadManager::OnUpdate_Destruction(glm::vec3& prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection)
 	{
-		SnapInformation snapInformation = CheckSnapping(cameraPosition, cameraDirection);
+		SnapInformation snapInformation = CheckSnapping(prevLocation);
 		m_DestructionSnappedJunction = snapInformation.junction;
 		m_DestructionSnappedEnd = snapInformation.end;
 		m_DestructionSnappedRoadSegment = snapInformation.roadSegment;
@@ -2489,7 +2503,7 @@ namespace Can
 			};
 			curve[1] = (curve[0] + curve[1]) / 2.0f;
 			float length = glm::length(curve[1] - curve[0]);
-			glm::vec3 prevPointOnCurve = Math::CubicCurve(m_StartSnappedRoadSegment->GetCurvePoints(), m_StartSnappedRoadSegmentT - m_StartSnappedRoadSegmentTDelta);
+			glm::vec3 prevPointOnCurve = Math::CubicCurve(m_StartSnappedRoadSegment->GetCurvePoints(), m_StartSnappedRoadSegmentTn);
 			glm::vec3 vec = glm::normalize(prevPointOnCurve - curve[3]) * length;
 			curve[2] = curve[3] + vec;
 
@@ -2524,7 +2538,7 @@ namespace Can
 			};
 			curve[1] = (curve[0] + curve[1]) / 2.0f;
 			length = glm::length(curve[1] - curve[0]);
-			prevPointOnCurve = Math::CubicCurve(m_StartSnappedRoadSegment->GetCurvePoints(), m_StartSnappedRoadSegmentT + m_StartSnappedRoadSegmentTDelta);
+			prevPointOnCurve = Math::CubicCurve(m_StartSnappedRoadSegment->GetCurvePoints(), m_StartSnappedRoadSegmentTp);
 			vec = glm::normalize(prevPointOnCurve - curve[3]) * length;
 			curve[2] = curve[3] + vec;
 
@@ -2651,7 +2665,7 @@ namespace Can
 			};
 			curve[1] = (curve[0] + curve[1]) / 2.0f;
 			float length = glm::length(curve[1] - curve[0]);
-			glm::vec3 prevPointOnCurve = Math::CubicCurve(m_EndSnappedRoadSegment->GetCurvePoints(), m_EndSnappedRoadSegmentT - m_EndSnappedRoadSegmentTDelta);
+			glm::vec3 prevPointOnCurve = Math::CubicCurve(m_EndSnappedRoadSegment->GetCurvePoints(), m_EndSnappedRoadSegmentTn);
 			glm::vec3 vec = glm::normalize(prevPointOnCurve - curve[3]) * length;
 			curve[2] = curve[3] + vec;
 
@@ -2687,7 +2701,7 @@ namespace Can
 			};
 			curve[1] = (curve[0] + curve[1]) / 2.0f;
 			length = glm::length(curve[1] - curve[0]);
-			prevPointOnCurve = Math::CubicCurve(m_EndSnappedRoadSegment->GetCurvePoints(), m_EndSnappedRoadSegmentT + m_EndSnappedRoadSegmentTDelta);
+			prevPointOnCurve = Math::CubicCurve(m_EndSnappedRoadSegment->GetCurvePoints(), m_EndSnappedRoadSegmentTp);
 			vec = glm::normalize(prevPointOnCurve - curve[3]) * length;
 			curve[2] = curve[3] + vec;
 
@@ -2894,72 +2908,73 @@ namespace Can
 		delete roadSegment;
 	}
 
-	SnapInformation RoadManager::CheckSnapping(const glm::vec3& cameraPosition, const glm::vec3& cameraDirection)
+	SnapInformation RoadManager::CheckSnapping(const glm::vec3& prevLocation)
 	{
 		Prefab* selectedRoad = m_Scene->MainApplication->roads[m_Type][0];
-		float roadPrefabWidth = selectedRoad->boundingBoxM.z - selectedRoad->boundingBoxL.z;
-		float snapDistance = roadPrefabWidth;
-		SnapInformation results{ false, { 0.0f, 0.0f, 0.0f } };
+		float roadSegmentPrefabWidth = selectedRoad->boundingBoxM.z - selectedRoad->boundingBoxL.z;
+		float roadPrefabLength = selectedRoad->boundingBoxM.x - selectedRoad->boundingBoxL.x;
 
-		/* Update later
+		SnapInformation results;
+
+		glm::vec2 P{ prevLocation.x, prevLocation.z };
+
 		for (Junction* junction : m_Junctions)
 		{
-			glm::vec3 Intersection = Helper::RayPlaneIntersection(cameraPosition, cameraDirection, junction->position, { 0.0f, 1.0f, 0.0f, });
-
-			float distance = glm::length(junction->position - Intersection);
-			if (distance < snapDistance)
+			float distance = glm::length(junction->position - prevLocation);
+			if (distance < roadSegmentPrefabWidth)
 			{
-				results.snapLocation = junction->position;
+				results.location = junction->position;
 				results.snapped = true;
-				results.snappedJunction = junction;
+				results.junction = junction;
 				return results;
 			}
 		}
+
 		for (End* end : m_Ends)
 		{
 			float endRadius = end->object->prefab->boundingBoxM.x - end->object->prefab->boundingBoxL.x;
-			snapDistance = roadPrefabWidth / 2.0f + endRadius;
+			float snapDistance = roadSegmentPrefabWidth * 0.5f + endRadius;
 
-			glm::vec3 Intersection = Helper::RayPlaneIntersection(cameraPosition, cameraDirection, end->object->position, { 0.0f, 1.0f, 0.0f, });
-
-			float distance = glm::length(end->object->position - Intersection);
+			float distance = glm::length(end->object->position - prevLocation);
 			if (distance < snapDistance)
 			{
-				results.snapLocation = end->object->position;
+				results.location = end->object->position;
 				results.snapped = true;
-				results.snappedEnd = end;
+				results.end = end;
 				return results;
 			}
 		}
-		float roadPrefabLength = selectedRoad->boundingBoxM.x - selectedRoad->boundingBoxL.x;
 		for (RoadSegment* roadSegment : m_RoadSegments)
 		{
-			float roadWidth = road->object->prefab->boundingBoxM.z - road->object->prefab->boundingBoxL.z;
-			snapDistance = (roadPrefabWidth + roadWidth) / 2.0f;
+			float roadSegmentWidth = roadSegment->Type[0]->boundingBoxM.z - roadSegment->Type[0]->boundingBoxL.z;
+			float snapDistance = (roadSegmentPrefabWidth + roadSegmentWidth) * 0.5f;
 
-			road->object->enabled = true;
-			glm::vec3 Intersection = Helper::RayPlaneIntersection(cameraPosition, cameraDirection, road->GetStartPosition(), { 0.0f, 1.0f, 0.0f, });
+			const auto& cps = roadSegment->GetCurvePoints();
 
-
-			glm::vec3 B = Intersection - road->GetStartPosition();
-			float bLength = glm::length(B);
-
-			float angle = glm::acos(glm::dot(road->direction, B) / bLength);
-			float distance = bLength * glm::sin(angle);
-
-			if (distance < snapDistance)
+			std::array<std::array<glm::vec2, 3>, 2> roadSegmentBoundingBox = Math::GetBoundingBoxOfBezierCurve(cps, snapDistance);
+			if (Math::CheckPolygonPointCollision(roadSegmentBoundingBox, P))
 			{
-				float c = bLength * glm::cos(angle);
-				if (c <= roadPrefabLength || c >= road->length - roadPrefabLength)
-					continue;
+				std::array<float, 10> ts = Math::GetCubicCurveSampleTs<10, 10>(cps);
 
-				results.snapLocation = road->GetStartPosition() + glm::normalize(road->direction) * c;
-				results.snapped = true;
-				results.snappedRoad = road;
-				return results;
+				for (size_t i = 1; i < 9; i++)
+				{
+					glm::vec3 pointOnCurve = Math::CubicCurve(cps, ts[i]);
+					float distance = glm::length(pointOnCurve - prevLocation);
+					if (distance < snapDistance)
+					{
+						results.location = pointOnCurve;
+						results.snapped = true;
+						results.roadSegment = roadSegment;
+
+						results.roadSegmentTo = ts[i];
+						results.roadSegmentTp = ts[i+1];
+						results.roadSegmentTn = ts[i-1];
+						
+						return results;
+					}
+				}
 			}
 		}
-		*/
 		return results;
 	}
 

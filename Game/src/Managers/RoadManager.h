@@ -21,14 +21,17 @@ namespace Can
 
 	struct SnapInformation
 	{
-		bool snapped;
-		glm::vec3 location;
+		bool snapped = false;
+		
+		glm::vec3 location{ 0.0f, 0.0f, 0.0f};
+		
 		Junction* junction = nullptr;
 		End* end = nullptr;
 		RoadSegment* roadSegment = nullptr;
-		float roadT = 0.0f;
-		float roadTDelta = 0.0f;
-
+		
+		float roadSegmentTo = 0.0f;
+		float roadSegmentTp = 0.0f;
+		float roadSegmentTn = 0.0f;
 	};
 
 	class RoadManager
@@ -65,7 +68,7 @@ namespace Can
 		void AddRoadSegment(const std::array<glm::vec3, 4>& curvePoints);
 		void RemoveRoadSegment(RoadSegment* roadSegment);
 
-		SnapInformation CheckSnapping(const glm::vec3& cameraPosition, const glm::vec3& cameraDirection);
+		SnapInformation CheckSnapping(const glm::vec3& prevLocation);
 
 		void ResetStates();
 	public:
@@ -108,15 +111,17 @@ namespace Can
 		Junction* m_StartSnappedJunction = nullptr;
 		End* m_StartSnappedEnd = nullptr;
 		RoadSegment* m_StartSnappedRoadSegment = nullptr;
-		float m_StartSnappedRoadSegmentT = 0.0f;
-		float m_StartSnappedRoadSegmentTDelta = 0.0f;
+		float m_StartSnappedRoadSegmentTo = 0.0f;
+		float m_StartSnappedRoadSegmentTp = 0.0f;
+		float m_StartSnappedRoadSegmentTn = 0.0f;
 
 		// End Snap
 		Junction* m_EndSnappedJunction = nullptr;
 		End* m_EndSnappedEnd = nullptr;
 		RoadSegment* m_EndSnappedRoadSegment = nullptr;
-		float m_EndSnappedRoadSegmentT = 0.0f;
-		float m_EndSnappedRoadSegmentTDelta = 0.0f;
+		float m_EndSnappedRoadSegmentTo = 0.0f;
+		float m_EndSnappedRoadSegmentTp = 0.0f;
+		float m_EndSnappedRoadSegmentTn = 0.0f;
 
 		// Destruction Snap
 		Junction* m_DestructionSnappedJunction = nullptr;
