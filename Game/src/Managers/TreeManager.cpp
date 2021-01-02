@@ -94,7 +94,7 @@ namespace Can
 	{
 	}
 
-	void TreeManager::OnUpdate(glm::vec3 prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection)
+	void TreeManager::OnUpdate(glm::vec3& prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection)
 	{
 		switch (m_ConstructionMode)
 		{
@@ -110,7 +110,7 @@ namespace Can
 			break;
 		}
 	}
-	void TreeManager::OnUpdate_Adding(glm::vec3 prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection)
+	void TreeManager::OnUpdate_Adding(glm::vec3& prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection)
 	{
 		b_AddingRestricted = false;
 		m_Guideline->SetTransform(prevLocation);
@@ -189,7 +189,7 @@ namespace Can
 		b_AddingRestricted = collidedWithRoad | collidedWithBuilding;
 		m_Guideline->tintColor = b_AddingRestricted ? glm::vec4{ 1.0f, 0.3f, 0.2f, 1.0f } : glm::vec4(1.0f);
 	}
-	void TreeManager::OnUpdate_Removing(glm::vec3 prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection)
+	void TreeManager::OnUpdate_Removing(glm::vec3& prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection)
 	{
 		m_SelectedTreeToRemove = m_Trees.end();
 

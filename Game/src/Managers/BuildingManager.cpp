@@ -25,7 +25,7 @@ namespace Can
 	{
 	}
 
-	void BuildingManager::OnUpdate(glm::vec3 prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection)
+	void BuildingManager::OnUpdate(glm::vec3& prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection)
 	{
 		switch (m_ConstructionMode)
 		{
@@ -43,7 +43,7 @@ namespace Can
 			break;
 		}
 	}
-	void BuildingManager::OnUpdate_Construction(glm::vec3 prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection)
+	void BuildingManager::OnUpdate_Construction(glm::vec3& prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection)
 	{
 		b_ConstructionRestricted = true;
 		m_SnappedRoadSegment = nullptr;
@@ -227,7 +227,7 @@ namespace Can
 		b_ConstructionRestricted = (restrictions[1] && !snappedToRoad) || collidedWithRoad || collidedWithOtherBuildings;
 		m_Guideline->tintColor = b_ConstructionRestricted ? glm::vec4{ 1.0f, 0.3f, 0.2f, 1.0f } : glm::vec4(1.0f);
 	}
-	void BuildingManager::OnUpdate_Destruction(glm::vec3 prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection)
+	void BuildingManager::OnUpdate_Destruction(glm::vec3& prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection)
 	{
 		m_SelectedBuildingToDestruct = m_Buildings.end();
 		for (auto& it = m_Buildings.begin(); it != m_Buildings.end(); ++it)

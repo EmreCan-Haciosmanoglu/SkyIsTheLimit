@@ -34,7 +34,7 @@ namespace Can
 	{
 	}
 
-	void RoadManager::OnUpdate(glm::vec3 prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection)
+	void RoadManager::OnUpdate(glm::vec3& prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection)
 	{
 		switch (m_ConstructionMode)
 		{
@@ -56,7 +56,7 @@ namespace Can
 			break;
 		}
 	}
-	void RoadManager::OnUpdate_Straight(glm::vec3 prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection)
+	void RoadManager::OnUpdate_Straight(glm::vec3& prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection)
 	{
 		Prefab* selectedRoad = m_Scene->MainApplication->roads[m_Type][0];
 		float roadPrefabWidth = selectedRoad->boundingBoxM.z - selectedRoad->boundingBoxL.z;
@@ -608,7 +608,7 @@ namespace Can
 			*/
 		}
 	}
-	void RoadManager::OnUpdate_QuadraticCurve(glm::vec3 prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection)
+	void RoadManager::OnUpdate_QuadraticCurve(glm::vec3& prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection)
 	{
 		Prefab* selectedRoad = m_Scene->MainApplication->roads[m_Type][0];
 		float roadPrefabWidth = selectedRoad->boundingBoxM.z - selectedRoad->boundingBoxL.z;
@@ -1218,7 +1218,7 @@ namespace Can
 					rg->tintColor = b_ConstructionRestricted ? glm::vec4{ 1.0f, 0.3f, 0.2f, 1.0f } : glm::vec4(1.0f);
 		}
 	}
-	void RoadManager::OnUpdate_CubicCurve(glm::vec3 prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection)
+	void RoadManager::OnUpdate_CubicCurve(glm::vec3& prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection)
 	{
 		Prefab* selectedRoad = m_Scene->MainApplication->roads[m_Type][0];
 		float roadPrefabWidth = selectedRoad->boundingBoxM.z - selectedRoad->boundingBoxL.z;
@@ -2041,7 +2041,7 @@ namespace Can
 					rg->tintColor = b_ConstructionRestricted ? glm::vec4{ 1.0f, 0.3f, 0.2f, 1.0f } : glm::vec4(1.0f);
 		}
 	}
-	void RoadManager::OnUpdate_Destruction(glm::vec3 prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection)
+	void RoadManager::OnUpdate_Destruction(glm::vec3& prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection)
 	{
 		SnapInformation snapInformation = CheckSnapping(cameraPosition, cameraDirection);
 		m_DestructionSnappedJunction = snapInformation.junction;
