@@ -50,6 +50,7 @@ namespace Can
 
 	private:
 		void Construct();
+		void CalcRotsAndDirs();
 
 	public:
 		std::array<Prefab*, 3> Type;
