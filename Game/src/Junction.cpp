@@ -39,10 +39,10 @@ namespace Can
 
 		std::vector<glm::vec3> Intersections;
 
-		size_t roadCount = connectedRoadSegments.size();
-		for (size_t i = 0; i < roadCount; i++)
+		size_t roadSegmentCount = connectedRoadSegments.size();
+		for (size_t i = 0; i < roadSegmentCount; i++)
 		{
-			size_t iNext = (i + 1) % roadCount;
+			size_t iNext = (i + 1) % roadSegmentCount;
 			RoadSegment* rs1 = connectedRoadSegments[i];
 			RoadSegment* rs2 = connectedRoadSegments[iNext];
 
@@ -52,8 +52,8 @@ namespace Can
 			glm::vec3 r1Direction = this == rs1->ConnectedObjectAtStart.junction ? rs1->GetStartDirection() : rs1->GetEndDirection();
 			glm::vec3 r2Direction = this == rs2->ConnectedObjectAtStart.junction ? rs2->GetStartDirection() : rs2->GetEndDirection();
 
-			float r1width = rs1->object->prefab->boundingBoxM.z - rs1->object->prefab->boundingBoxL.z;
-			float r2width = rs2->object->prefab->boundingBoxM.z - rs2->object->prefab->boundingBoxL.z;
+			float r1width = rs1->Type[0]->boundingBoxM.z - rs1->Type[0]->boundingBoxL.z;
+			float r2width = rs2->Type[0]->boundingBoxM.z - rs2->Type[0]->boundingBoxL.z;
 
 
 			r1Direction.y = 0.0f;
@@ -82,7 +82,7 @@ namespace Can
 		}
 
 		size_t indexCount = 0;
-		for (size_t i = 0; i < roadCount; i++)
+		for (size_t i = 0; i < roadSegmentCount; i++)
 			indexCount += connectedRoadSegments[i]->Type[1]->indexCount;
 		TexturedObjectVertex* TOVertices = new TexturedObjectVertex[indexCount];
 
@@ -90,7 +90,7 @@ namespace Can
 		uint8_t textureSlotIndex = 0;
 
 		size_t offset = 0;
-		for (size_t i = 0; i < roadCount; i++)
+		for (size_t i = 0; i < roadSegmentCount; i++)
 		{
 			RoadSegment* rs = connectedRoadSegments[i];
 			Prefab* prefab = rs->Type[1];
@@ -118,11 +118,11 @@ namespace Can
 			}
 
 			glm::vec3 intersection1 = Intersections[i];
-			glm::vec3 intersection2 = Intersections[((roadCount + i) - 1) % roadCount];
+			glm::vec3 intersection2 = Intersections[((roadSegmentCount + i) - 1) % roadSegmentCount];
 
-			glm::vec3 R1 = this == rs->ConnectedObjectAtStart.junction ? rs->GetEndPosition() : rs->GetStartPosition();
+			glm::vec3 R1 = this == rs->ConnectedObjectAtStart.junction ? rs->GetStartPosition() : rs->GetEndPosition();
 
-			glm::vec3 JR1 = glm::normalize(R1 - position);
+			glm::vec3 JR1 = this == rs->ConnectedObjectAtStart.junction ? rs->GetStartDirection() : rs->GetEndDirection();
 			JR1.y = 0.0f;
 			JR1 = glm::normalize(JR1);
 			glm::vec3 shiftAmount = glm::rotate(JR1, glm::radians(90.0f), glm::vec3{ 0.0f, 1.0f, 0.0f }) * roadWidth / 2.0f;
@@ -132,8 +132,8 @@ namespace Can
 			glm::vec3 R1p = R1 + shiftAmount;
 			glm::vec3 R1n = R1 - shiftAmount;
 
-			float lengthJP = glm::length(R1p - Jp) - glm::length(R1p - intersection2);
-			float lengthJN = glm::length(R1n - Jn) - glm::length(R1n - intersection1);
+			float lengthJP = glm::length(R1p - intersection2) - glm::length(R1p - Jp);
+			float lengthJN = glm::length(R1n - intersection1) - glm::length(R1n - Jn);
 
 			float l = 0.0f;
 			if (lengthJN < lengthJP)
@@ -142,9 +142,9 @@ namespace Can
 				glm::vec3 temp = position + JR1 * offsetLength;
 				l = lengthJP;
 				if (this == rs->ConnectedObjectAtStart.junction)
-					rs->SetStartPosition(temp);
+					rs->SetCurvePoint(0, temp);
 				else
-					rs->SetEndPosition(temp);
+					rs->SetCurvePoint(3, temp);
 			}
 			else
 			{
@@ -152,9 +152,9 @@ namespace Can
 				glm::vec3 temp = position + JR1 * offsetLength;
 				l = lengthJN;
 				if (this == rs->ConnectedObjectAtStart.junction)
-					rs->SetStartPosition(temp);
+					rs->SetCurvePoint(0, temp);
 				else
-					rs->SetEndPosition(temp);
+					rs->SetCurvePoint(3, temp);
 			}
 
 
