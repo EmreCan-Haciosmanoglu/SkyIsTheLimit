@@ -29,9 +29,7 @@ namespace Can
 		End* end = nullptr;
 		RoadSegment* roadSegment = nullptr;
 		
-		float roadSegmentTo = 0.0f;
-		float roadSegmentTp = 0.0f;
-		float roadSegmentTn = 0.0f;
+		float T = 0.0f;
 	};
 
 	class RoadManager
@@ -47,6 +45,16 @@ namespace Can
 		void OnUpdate_Destruction(glm::vec3& prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection);
 
 		void DrawStraightGuidelines(const glm::vec3& pointA, const glm::vec3& pointB);
+		void DrawCurvedGuidelines(const std::array<glm::vec3, 4>& curvePoints);
+		
+		bool CheckStraightRoadRoadCollision(const std::array<std::array<glm::vec2, 3>, 2>& polygon);
+		void CheckStraightRoadBuildingCollision(const std::array<std::array<glm::vec2, 3>, 2>& polygon);
+		void CheckStraightRoadTreeCollision(const std::array<std::array<glm::vec2, 3>, 2>& polygon);
+		
+		// need template
+		bool CheckRoadRoadCollision(const std::array<std::array<glm::vec2, 3>, 2>& box, const std::array<std::array<glm::vec2, 3>, (10 - 1) * 2>& polygon);
+		void CheckRoadBuildingCollision(const std::array<std::array<glm::vec2, 3>, 2>& box, const std::array<std::array<glm::vec2, 3>, (10 - 1) * 2>& polygon);
+		void CheckRoadTreeCollision(const std::array<std::array<glm::vec2, 3>, 2>& box, const std::array<std::array<glm::vec2, 3>, (10 - 1) * 2>& polygon);
 
 		bool OnMousePressed(MouseCode button);
 		bool OnMousePressed_Straight();
@@ -92,8 +100,8 @@ namespace Can
 		RoadConstructionMode m_ConstructionMode = RoadConstructionMode::None;
 
 		std::vector<RoadSegment*> m_RoadSegments{};
-		std::vector<Junction*> m_Junctions{};
-		std::vector<End*> m_Ends{};
+		std::vector<Junction*> m_Junctions{};		// Change this to node instead?
+		std::vector<End*> m_Ends{};					// Change this to node instead?
 
 		int m_ConstructionPhase = 0;
 		bool b_ConstructionStartSnapped = false;
@@ -111,17 +119,13 @@ namespace Can
 		Junction* m_StartSnappedJunction = nullptr;
 		End* m_StartSnappedEnd = nullptr;
 		RoadSegment* m_StartSnappedRoadSegment = nullptr;
-		float m_StartSnappedRoadSegmentTo = 0.0f;
-		float m_StartSnappedRoadSegmentTp = 0.0f;
-		float m_StartSnappedRoadSegmentTn = 0.0f;
+		float m_StartSnappedRoadSegmentT = 0.0f;
 
 		// End Snap
 		Junction* m_EndSnappedJunction = nullptr;
 		End* m_EndSnappedEnd = nullptr;
 		RoadSegment* m_EndSnappedRoadSegment = nullptr;
-		float m_EndSnappedRoadSegmentTo = 0.0f;
-		float m_EndSnappedRoadSegmentTp = 0.0f;
-		float m_EndSnappedRoadSegmentTn = 0.0f;
+		float m_EndSnappedRoadSegmentT = 0.0f;
 
 		// Destruction Snap
 		Junction* m_DestructionSnappedJunction = nullptr;
