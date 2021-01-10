@@ -46,7 +46,8 @@ namespace Can
 			float rot2 = (dir2.z < 0.0f) ? glm::acos(-dir2.x) + glm::radians(180.f) : glm::acos(dir2.x);
 
 			float diff = rot2 - rot1;
-			diff += (float)(std::abs(diff) > 3.0f) * glm::radians(360.0f);
+			diff += (diff < -3.0f ? glm::radians(360.0f) : diff > 3.0f ? glm::radians(-360.0f) : 0.0f);
+			printf("rot2(%.2f) - rot1(%.2f) = %.2f\n", rot2, rot1, diff);
 			for (int i = 0; i < prefabIndexCount; i++)
 			{
 				size_t offset = c * prefabIndexCount + i;

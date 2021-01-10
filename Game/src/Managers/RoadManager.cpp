@@ -888,7 +888,7 @@ namespace Can
 				}
 				else if (m_EndSnappedRoadSegment)
 				{
-					glm::vec3 tangent = Math::CubicCurveTangent(m_StartSnappedRoadSegment->GetCurvePoints(), m_StartSnappedRoadSegmentT);
+					glm::vec3 tangent = Math::CubicCurveTangent(m_EndSnappedRoadSegment->GetCurvePoints(), m_EndSnappedRoadSegmentT);
 					tangent = glm::normalize(tangent);
 
 					float angle = glm::acos(glm::dot(tangent, directionNewRoadSegment));
