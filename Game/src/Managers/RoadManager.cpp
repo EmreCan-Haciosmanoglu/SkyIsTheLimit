@@ -2348,7 +2348,7 @@ namespace Can
 	{
 		for (RoadSegment* roadSegment : m_RoadSegments)
 		{
-			if (!b_ConstructionStartSnapped)
+			if (b_ConstructionStartSnapped)
 			{
 				if (roadSegment == m_StartSnappedRoadSegment)
 					continue;
@@ -2361,7 +2361,7 @@ namespace Can
 						continue;
 				}
 			}
-			if (!b_ConstructionEndSnapped)
+			if (b_ConstructionEndSnapped)
 			{
 				if (roadSegment == m_EndSnappedRoadSegment)
 					continue;
@@ -2446,7 +2446,7 @@ namespace Can
 	{
 		for (RoadSegment* roadSegment : m_RoadSegments)
 		{
-			if (!b_ConstructionStartSnapped)
+			if (b_ConstructionStartSnapped)
 			{
 				if (roadSegment == m_StartSnappedRoadSegment)
 					continue;
@@ -2459,7 +2459,7 @@ namespace Can
 						continue;
 				}
 			}
-			if (!b_ConstructionEndSnapped)
+			if (b_ConstructionEndSnapped)
 			{
 				if (roadSegment == m_EndSnappedRoadSegment)
 					continue;
