@@ -808,7 +808,6 @@ namespace Can
 					m_ConstructionPositions[2].z = C.y;
 				}
 			}
-
 			bool angleIsRestricted = false; // also check angle of new road's curve
 			if (restrictions[0])
 			{
@@ -897,18 +896,14 @@ namespace Can
 				}
 			}
 
-			std::array<std::array<glm::vec2, 3>, 2> newRoadBoundingBox = Math::GetBoundingBoxOfBezierCurve({
+			std::array<glm::vec3, 4> cps = {
 					m_ConstructionPositions[0],
 						(m_ConstructionPositions[2] + m_ConstructionPositions[0]) * 0.5f,
 						(m_ConstructionPositions[2] + m_ConstructionPositions[3]) * 0.5f,
 						m_ConstructionPositions[3],
-				}, roadPrefabWidth * 0.5f);
-			std::array<std::array<glm::vec2, 3>, (10 - 1) * 2> newRoadBoundingPolygon = Math::GetBoundingPolygonOfBezierCurve<10, 10>({
-					m_ConstructionPositions[0],
-						(m_ConstructionPositions[2] + m_ConstructionPositions[0]) * 0.5f,
-						(m_ConstructionPositions[2] + m_ConstructionPositions[3]) * 0.5f,
-						m_ConstructionPositions[3],
-				}, roadPrefabWidth * 0.5f);
+			};
+			std::array<std::array<glm::vec2, 3>, 2> newRoadBoundingBox = Math::GetBoundingBoxOfBezierCurve(cps, roadPrefabWidth * 0.5f);
+			std::array<std::array<glm::vec2, 3>, (10 - 1) * 2> newRoadBoundingPolygon = Math::GetBoundingPolygonOfBezierCurve<10, 10>(cps, roadPrefabWidth * 0.5f);
 
 			bool collisionIsRestricted = restrictions[2] ? CheckRoadRoadCollision(newRoadBoundingBox, newRoadBoundingPolygon) : false;
 
@@ -919,7 +914,7 @@ namespace Can
 
 			b_ConstructionRestricted |= collisionIsRestricted;
 			b_ConstructionRestricted |= angleIsRestricted;
-			DrawCurvedGuidelines(m_ConstructionPositions);
+			DrawCurvedGuidelines(cps);
 
 			// do something about these
 			/*if (m_StartSnappedRoadSegment != nullptr)
@@ -2090,8 +2085,8 @@ namespace Can
 			if (m_Scene->m_BuildingManager.restrictions[0] && restrictions[2])
 				CheckRoadBuildingCollision(newRoadBoundingBox, newRoadBoundingPolygon);
 			if (m_Scene->m_TreeManager.restrictions[0] && restrictions[2])
-				CheckRoadTreeCollision(newRoadBoundingBox, newRoadBoundingPolygon); 
-			
+				CheckRoadTreeCollision(newRoadBoundingBox, newRoadBoundingPolygon);
+
 			b_ConstructionRestricted |= angleIsRestricted;
 			b_ConstructionRestricted |= collisionIsRestricted;
 
@@ -2322,13 +2317,7 @@ namespace Can
 		glm::vec3 p1 = curvePoints[0];
 		for (int c = 0; c < count; c++)
 		{
-			glm::vec3 p2 = Math::CubicCurve<float>(std::array<glm::vec3, 4>{
-				curvePoints[0],
-					(curvePoints[2] + curvePoints[0]) * 0.5f,
-					(curvePoints[2] + curvePoints[3]) * 0.5f,
-					curvePoints[3],
-			},
-				(c + 1.0f) / count);
+			glm::vec3 p2 = Math::CubicCurve<float>(std::array<glm::vec3, 4>{curvePoints}, (c + 1.0f) / count);
 			glm::vec3 vec1 = p2 - p1;
 			float length = glm::length(vec1);
 			glm::vec3 dir1 = vec1 / length;
