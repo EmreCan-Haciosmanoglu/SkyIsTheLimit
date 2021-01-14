@@ -21,15 +21,14 @@ namespace Can
 
 	void RoadSegment::Construct()
 	{
-		constexpr int count = 20;
 		float lengthRoad = Type[0]->boundingBoxM.x - Type[0]->boundingBoxL.x;
+		std::vector<float> samples = Math::GetCubicCurveSampleTs(CurvePoints, lengthRoad);
+		size_t count = samples.size();
 
 		size_t prefabIndexCount = Type[0]->indexCount;
 		size_t indexCount = prefabIndexCount * count;
 		size_t vertexCount = indexCount * (3 + 2 + 3);
 		TexturedObjectVertex* TOVertices = new TexturedObjectVertex[indexCount];
-
-		std::array<float, count> samples = Math::GetCubicCurveSampleTs<count, 10>(CurvePoints);
 
 		glm::vec3 p1 = CurvePoints[0];
 		for (int c = 1; c < count; c++)
@@ -38,16 +37,20 @@ namespace Can
 			glm::vec3 vec1 = p2 - p1;
 			float length = glm::length(vec1);
 			float scale = length / lengthRoad;
-
 			glm::vec3 dir1 = vec1 / length;
 			glm::vec3 dir2 = (c < count - 1) ? glm::normalize((glm::vec3)Math::CubicCurve<float>(CurvePoints, samples[c + 1]) - p2) : -Directions[1];
 
 			float rot1 = (dir1.z < 0.0f) ? glm::acos(-dir1.x) + glm::radians(180.f) : glm::acos(dir1.x);
 			float rot2 = (dir2.z < 0.0f) ? glm::acos(-dir2.x) + glm::radians(180.f) : glm::acos(dir2.x);
 
+			float diffRot = glm::acos(glm::dot(dir1, dir2));
 			float diff = rot2 - rot1;
-			diff += (diff < -3.0f ? glm::radians(360.0f) : diff > 3.0f ? glm::radians(-360.0f) : 0.0f);
-			printf("rot2(%.2f) - rot1(%.2f) = %.2f\n", rot2, rot1, diff);
+			if ((diff > -4.0f && diff < -2.0f) || (diff > 2.0f && diff < 4.0f))
+			{
+				std::cout << std::endl;
+			}
+			//diff += (diff < -3.0f ? glm::radians(360.0f) : diff > 3.0f ? glm::radians(-360.0f) : 0.0f);
+			printf("rot2(%.3f) - rot1(%.3f) = %.3f\n", rot2, rot1, diff);
 			for (int i = 0; i < prefabIndexCount; i++)
 			{
 				size_t offset = c * prefabIndexCount + i;
@@ -79,6 +82,7 @@ namespace Can
 			}
 			p1 = p2;
 		}
+		printf("\n");
 		Prefab* newPrefab = new Prefab(Type[0]->objectPath, Type[0]->shaderPath, Type[0]->texturePath, (float*)TOVertices, indexCount);
 
 		for (int c = 0; c < count; c++)

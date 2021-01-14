@@ -19,7 +19,7 @@ namespace Can
 			1280.0f / 720.0f,
 			0.1f,
 			1000.0f,
-			glm::vec3{ 10.0f, 5.0f, -5.0f },
+			glm::vec3{ 22.0f, 15.0f, -0.0f },
 			glm::vec3{ -60.0f, 0.0f, 0.0f }
 		)
 	{

@@ -2849,19 +2849,21 @@ namespace Can
 		else if (m_StartSnappedEnd != nullptr)
 		{
 			RoadSegment* connectedRoadSegment = m_StartSnappedEnd->connectedRoadSegment;
-			if (connectedRoadSegment->ConnectedObjectAtStart.end == m_StartSnappedEnd)
-				connectedRoadSegment->ConnectedObjectAtStart.end = nullptr;
-			else
-				connectedRoadSegment->ConnectedObjectAtEnd.end = nullptr;
 
 			Junction* newJunction = new Junction(std::vector<RoadSegment*>{ connectedRoadSegment, roadSegment }, m_StartSnappedEnd->object->position);
 			roadSegment->ConnectedObjectAtStart.junction = newJunction;
 
-			if (connectedRoadSegment->GetStartPosition() == m_StartSnappedEnd->object->position)
-				roadSegment->ConnectedObjectAtStart.junction = newJunction;
-			else
-				roadSegment->ConnectedObjectAtEnd.junction = newJunction;
+			if (connectedRoadSegment->ConnectedObjectAtStart.end == m_StartSnappedEnd)
+			{
 
+				connectedRoadSegment->ConnectedObjectAtStart.end = nullptr;
+				connectedRoadSegment->ConnectedObjectAtStart.junction = newJunction;
+			}
+			else
+			{
+				connectedRoadSegment->ConnectedObjectAtEnd.end = nullptr;
+				connectedRoadSegment->ConnectedObjectAtEnd.junction = newJunction;
+			}
 
 			auto position = std::find(m_Ends.begin(), m_Ends.end(), m_StartSnappedEnd);
 			m_Ends.erase(position);
@@ -3011,25 +3013,21 @@ namespace Can
 		}
 		else if (m_EndSnappedEnd != nullptr)
 		{
-			// Check angle if bigger than x
-			// Create Junction
-			// Else
-			// Connected 2 road Segment
-
 			RoadSegment* connectedRoadSegment = m_EndSnappedEnd->connectedRoadSegment;
-			if (connectedRoadSegment->ConnectedObjectAtStart.end == m_EndSnappedEnd)
-				connectedRoadSegment->ConnectedObjectAtStart.end = nullptr;
-			else
-				connectedRoadSegment->ConnectedObjectAtEnd.end = nullptr;
-
-
+			
 			Junction* newJunction = new Junction(std::vector<RoadSegment*>{ connectedRoadSegment, roadSegment}, m_EndSnappedEnd->object->position);
 			roadSegment->ConnectedObjectAtEnd.junction = newJunction;
 
-			if (connectedRoadSegment->GetStartPosition() == m_EndSnappedEnd->object->position)
+			if (connectedRoadSegment->ConnectedObjectAtStart.end == m_EndSnappedEnd)
+			{
+				connectedRoadSegment->ConnectedObjectAtStart.end = nullptr;
 				connectedRoadSegment->ConnectedObjectAtStart.junction = newJunction;
+			}
 			else
+			{
+				connectedRoadSegment->ConnectedObjectAtEnd.end = nullptr;
 				connectedRoadSegment->ConnectedObjectAtEnd.junction = newJunction;
+			}
 
 
 			auto position = std::find(m_Ends.begin(), m_Ends.end(), m_EndSnappedEnd);
@@ -3098,7 +3096,7 @@ namespace Can
 				curve
 			);
 
-			Junction* roadSegmentEndSnappedJunction = m_EndSnappedRoadSegment->ConnectedObjectAtStart.junction;
+			Junction* roadSegmentEndSnappedJunction = m_EndSnappedRoadSegment->ConnectedObjectAtEnd.junction;
 			if (roadSegmentEndSnappedJunction != nullptr)
 			{
 				auto it = std::find(
@@ -3114,8 +3112,8 @@ namespace Can
 			}
 			else
 			{
-				rs2->ConnectedObjectAtStart.end = m_EndSnappedRoadSegment->ConnectedObjectAtStart.end;
-				m_EndSnappedRoadSegment->ConnectedObjectAtStart.end->connectedRoadSegment = rs2;
+				rs2->ConnectedObjectAtStart.end = m_EndSnappedRoadSegment->ConnectedObjectAtEnd.end;
+				m_EndSnappedRoadSegment->ConnectedObjectAtEnd.end->connectedRoadSegment = rs2;
 			}
 			m_RoadSegments.push_back(rs2);
 
@@ -3199,7 +3197,11 @@ namespace Can
 						otherRoadSegment->Type[2],
 						junction->position,
 						glm::vec3{ 1.0f, 1.0f, 1.0f },
-						glm::vec3{ 0.0f, otherRoadSegment->GetStartRotation().y, otherRoadSegment->GetStartRotation().x }
+						glm::vec3{ 
+							0.0f,
+							otherRoadSegment->GetStartRotation().y + glm::radians(180.0f),
+							otherRoadSegment->GetStartRotation().x 
+						}
 					);
 					otherRoadSegment->ConnectedObjectAtStart.end = newEnd;
 					otherRoadSegment->ConnectedObjectAtStart.junction = nullptr;
@@ -3213,7 +3215,11 @@ namespace Can
 						otherRoadSegment->Type[2],
 						junction->position,
 						glm::vec3{ 1.0f, 1.0f, 1.0f },
-						glm::vec3{ 0.0f, otherRoadSegment->GetEndRotation().y, otherRoadSegment->GetEndRotation().x }
+						glm::vec3{ 
+							0.0f, 
+							otherRoadSegment->GetEndRotation().y + glm::radians(180.0f),
+							otherRoadSegment->GetEndRotation().x 
+						}
 					);
 					otherRoadSegment->ConnectedObjectAtEnd.end = newEnd;
 					otherRoadSegment->ConnectedObjectAtEnd.junction = nullptr;
@@ -3255,7 +3261,11 @@ namespace Can
 						otherRoadSegment->Type[2],
 						junction->position,
 						glm::vec3{ 1.0f, 1.0f, 1.0f },
-						glm::vec3{ 0.0f, otherRoadSegment->GetStartRotation().y, otherRoadSegment->GetStartRotation().x }
+						glm::vec3{ 
+							0.0f, 
+							otherRoadSegment->GetStartRotation().y + glm::radians(180.0f),
+							otherRoadSegment->GetStartRotation().x 
+						}
 					);
 					otherRoadSegment->ConnectedObjectAtStart.end = newEnd;
 					otherRoadSegment->ConnectedObjectAtStart.junction = nullptr;
@@ -3269,7 +3279,11 @@ namespace Can
 						otherRoadSegment->Type[2],
 						junction->position,
 						glm::vec3{ 1.0f, 1.0f, 1.0f },
-						glm::vec3{ 0.0f, otherRoadSegment->GetEndRotation().y, otherRoadSegment->GetEndRotation().x }
+						glm::vec3{ 
+							0.0f,
+							otherRoadSegment->GetEndRotation().y + glm::radians(180.0f),
+							otherRoadSegment->GetEndRotation().x 
+						}
 					);
 					otherRoadSegment->ConnectedObjectAtEnd.end = newEnd;
 					otherRoadSegment->ConnectedObjectAtEnd.junction = nullptr;
