@@ -55,49 +55,61 @@ namespace Can
 		float buildingDepthFromCenter = -selectedBuilding->boundingBoxL.x;
 
 		bool snappedToRoad = false;
-		/* Update Later
 		if (snapOptions[0])
 		{
-			for (Road* road : m_Scene->m_RoadManager.GetRoads())
+			for (RoadSegment* roadSegment : m_Scene->m_RoadManager.GetRoadSegments())
 			{
-				float roadWidth = road->object->prefab->boundingBoxM.z - road->object->prefab->boundingBoxL.z;
-				glm::vec3& roadDir = road->direction;
-				roadDir.y = 0.0f;
-				float snapDistance = buildingDepthFromCenter + (roadWidth / 2.0f);
+				float roadWidth = roadSegment->Type[0]->boundingBoxM.z - roadSegment->Type[0]->boundingBoxL.z;
+				float roadLength = roadSegment->Type[0]->boundingBoxM.x - roadSegment->Type[0]->boundingBoxL.x;
+				float snapDistance = buildingDepthFromCenter + (roadWidth * 0.5f);
 
-				glm::vec3 Intersection = Helper::RayPlaneIntersection(
-					cameraPosition,
-					cameraDirection,
-					road->GetStartPosition(),
-					{ 0.0f, 1.0f, 0.0f, }
-				);
+				const std::array<glm::vec3, 4>& vs = roadSegment->GetCurvePoints();
+				std::array<std::array<glm::vec2, 3>, 2> roadPolygon = Math::GetBoundingBoxOfBezierCurve(vs, snapDistance);
 
-				glm::vec3 B = Intersection - road->GetStartPosition();
-				float bLength = glm::length(B);
-
-				float angle = glm::acos(glm::dot(roadDir, B) / bLength);
-				float distance = bLength * glm::sin(angle);
-
-				if (distance < snapDistance)
+				if (Math::CheckPolygonPointCollision(roadPolygon, glm::vec2{ prevLocation.x, prevLocation.z }))
 				{
-					bool right = (glm::cross(B, roadDir)).y > 0.0f;
-					glm::vec3 shiftDir = glm::normalize(glm::rotate(roadDir, glm::radians(-90.0f), glm::vec3{ 0.0f, 1.0f, 0.0f }));
-					glm::vec3 shiftAmount = (right * 2.0f - 1.0f) * shiftDir * snapDistance;
+					std::vector<glm::vec3> ps = Math::GetCubicCurveSamples(vs, roadLength);
+					size_t size = ps.size();
+					glm::vec3 p0 = ps[0];
+					for (size_t i = 1; i < size; i++)
+					{
+						glm::vec3 p1 = ps[i];
+						glm::vec3 dirToP1 = p1 - p0;
+						dirToP1.y = 0.0f;
+						dirToP1 = glm::normalize(dirToP1);
 
-					float c = bLength * glm::cos(angle);
-					if (c <= 0 || c >= road->length)
-						continue;
-					prevLocation = road->GetStartPosition() + road->direction * c + shiftAmount;
-					m_SnappedRoad = road;
-					m_GuidelinePosition = prevLocation;
-					m_GuidelineRotation = { 0.0f, right * glm::radians(180.0f) + glm::radians(90.0f) + road->rotation.y ,0.0f };
-					m_Guideline->SetTransform(m_GuidelinePosition, glm::vec3(1.0f), m_GuidelineRotation);
-					snappedToRoad = true;
-					break;
+						glm::vec3 dirToPrev = prevLocation - p0;
+						float l1 = glm::length(dirToPrev);
+
+						float angle = glm::acos(glm::dot(dirToP1, dirToPrev) / l1);
+						float dist = l1 * glm::sin(angle);
+
+						if (dist < snapDistance)
+						{
+							float c = l1 * glm::cos(angle);
+							if (c >= 0.0f && c <= roadLength) // needs lil' bit more length to each directions
+							{
+								bool r = glm::cross(dirToP1, dirToPrev).y < 0.0f;
+								glm::vec3 shiftDir{ -dirToP1.z, 0.0f, dirToP1.x };
+								glm::vec3 shiftAmount = ((float)r * 2.0f - 1.0f) * shiftDir * snapDistance;
+								prevLocation = p0 + (dirToP1 * c) + shiftAmount;
+								m_SnappedRoadSegment = roadSegment;
+								m_GuidelinePosition = prevLocation;
+								float rotationOffset = (float)(dirToP1.x < 0.0f) * glm::radians(180.0f);
+								float rotation = glm::atan(-dirToP1.z / dirToP1.x) + rotationOffset;
+								m_GuidelineRotation = glm::vec3{ 0.0f, (float)r * glm::radians(180.0f) + glm::radians(90.0f) + rotation, 0.0f };
+								m_Guideline->SetTransform(m_GuidelinePosition, glm::vec3(1.0f), m_GuidelineRotation);
+								snappedToRoad = true;
+								goto snapped;
+							}
+						}
+						p0 = p1;
+					}
 				}
 			}
 		}
-		*/
+	snapped:
+
 
 		if (snapOptions[1])
 		{
