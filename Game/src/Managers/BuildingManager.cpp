@@ -110,26 +110,29 @@ namespace Can
 		}
 	snapped:
 
-
 		if (snapOptions[1])
 		{
 			if (m_SnappedRoadSegment)
 			{
-				glm::vec2 boundingSquareL = { m_Guideline->prefab->boundingBoxL.x, m_Guideline->prefab->boundingBoxL.z };
-				glm::vec2 boundingSquareM = { m_Guideline->prefab->boundingBoxM.x, m_Guideline->prefab->boundingBoxM.z };
+				glm::vec2 boundingL{ m_Guideline->prefab->boundingBoxL.x, m_Guideline->prefab->boundingBoxL.z };
+				glm::vec2 boundingM{ m_Guideline->prefab->boundingBoxM.x, m_Guideline->prefab->boundingBoxM.z };
+				glm::vec2 buildingP{ m_GuidelinePosition.x, m_GuidelinePosition.z };
 
 				for (Building* building : m_SnappedRoadSegment->Buildings)
 				{
-					Object* object = building->object;
+					glm::vec2 bL{ building->object->prefab->boundingBoxL.x, building->object->prefab->boundingBoxL.z };
+					glm::vec2 bM{ building->object->prefab->boundingBoxM.x, building->object->prefab->boundingBoxM.z };
+					glm::vec2 bP{ building->position.x, building->position.z };
+					
 					glm::vec2 mtv = Helper::CheckRotatedRectangleCollision(
-						{ object->prefab->boundingBoxL.x, object->prefab->boundingBoxL.z },
-						{ object->prefab->boundingBoxM.x, object->prefab->boundingBoxM.z },
-						object->rotation.y,
-						{ object->position.x, object->position.z },
-						boundingSquareL,
-						boundingSquareM,
+						bL,
+						bL,
+						building->object->rotation.y,
+						bP,
+						boundingL,
+						boundingM,
 						m_GuidelineRotation.y,
-						{ m_GuidelinePosition.x, m_GuidelinePosition.z }
+						buildingP
 					);
 					if (mtv.x != 0.0f || mtv.y != 0.0f)
 					{
@@ -184,14 +187,14 @@ namespace Can
 
 		if (restrictions[0] && m_Scene->m_TreeManager.restrictions[0])
 		{
-			glm::vec2 buildingL = { selectedBuilding->boundingBoxL.x, selectedBuilding->boundingBoxL.z };
-			glm::vec2 buildingM = { selectedBuilding->boundingBoxM.x, selectedBuilding->boundingBoxM.z };
-			glm::vec2 buildingP = { m_GuidelinePosition.x, m_GuidelinePosition.z };
+			glm::vec2 buildingL{ selectedBuilding->boundingBoxL.x, selectedBuilding->boundingBoxL.z };
+			glm::vec2 buildingM{ selectedBuilding->boundingBoxM.x, selectedBuilding->boundingBoxM.z };
+			glm::vec2 buildingP{ m_GuidelinePosition.x, m_GuidelinePosition.z };
 			for (Object* tree : m_Scene->m_TreeManager.GetTrees())
 			{
-				glm::vec2 treeL = { tree->prefab->boundingBoxL.x, tree->prefab->boundingBoxL.z };
-				glm::vec2 treeM = { tree->prefab->boundingBoxM.x, tree->prefab->boundingBoxM.z };
-				glm::vec2 treeP = { tree->position.x, tree->position.z };
+				glm::vec2 treeL{ tree->prefab->boundingBoxL.x, tree->prefab->boundingBoxL.z };
+				glm::vec2 treeM{ tree->prefab->boundingBoxM.x, tree->prefab->boundingBoxM.z };
+				glm::vec2 treeP{ tree->position.x, tree->position.z };
 				glm::vec2 mtv = Helper::CheckRotatedRectangleCollision(
 					treeL,
 					treeM,
@@ -211,22 +214,24 @@ namespace Can
 		bool collidedWithOtherBuildings = false;
 		if (restrictions[0])
 		{
-			glm::vec2 buildingL = { selectedBuilding->boundingBoxL.x, selectedBuilding->boundingBoxL.z };
-			glm::vec2 buildingM = { selectedBuilding->boundingBoxM.x, selectedBuilding->boundingBoxM.z };
+			glm::vec2 buildingL{ selectedBuilding->boundingBoxL.x, selectedBuilding->boundingBoxL.z };
+			glm::vec2 buildingM{ selectedBuilding->boundingBoxM.x, selectedBuilding->boundingBoxM.z };
+			glm::vec2 buildingP{ m_GuidelinePosition.x, m_GuidelinePosition.z };
+
 			for (Building* building : m_Buildings)
 			{
-				glm::vec2 bL = { building->object->prefab->boundingBoxL.x, building->object->prefab->boundingBoxL.z };
-				glm::vec2 bM = { building->object->prefab->boundingBoxM.x, building->object->prefab->boundingBoxM.z };
-
+				glm::vec2 bL{ building->object->prefab->boundingBoxL.x, building->object->prefab->boundingBoxL.z };
+				glm::vec2 bM{ building->object->prefab->boundingBoxM.x, building->object->prefab->boundingBoxM.z };
+				glm::vec2 bP{ building->position.x, building->position.z };
 				glm::vec2 mtv = Helper::CheckRotatedRectangleCollision(
 					bL,
 					bM,
 					building->object->rotation.y,
-					glm::vec2{ building->position.x, building->position.z },
+					bP,
 					buildingL,
 					buildingM,
 					m_GuidelineRotation.y,
-					glm::vec2{ m_GuidelinePosition.x, m_GuidelinePosition.z }
+					buildingP
 				);
 				if (mtv.x != 0.0f || mtv.y != 0.0f)
 				{
@@ -341,6 +346,7 @@ namespace Can
 			m_Buildings.erase(m_SelectedBuildingToDestruct);
 			delete building;
 		}
+		ResetStates();
 		return false;
 	}
 
