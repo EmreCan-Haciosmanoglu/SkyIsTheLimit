@@ -66,8 +66,8 @@ namespace Can
 		{
 			if (snapOptions[4])
 			{
-				prevLocation.x = prevLocation.x - std::fmod(prevLocation.x + 0.25f, 0.5f) + 0.25f;
-				prevLocation.z = prevLocation.z - std::fmod(prevLocation.z + 0.25f, 0.5f) - 0.25f;
+				prevLocation.x = prevLocation.x - std::fmod(prevLocation.x, 0.5f) + 0.25f;
+				prevLocation.z = prevLocation.z - std::fmod(prevLocation.z, 0.5f) - 0.25f;
 			}
 			if (snapOptions[0])
 			{
@@ -83,23 +83,22 @@ namespace Can
 			}
 			m_ConstructionPositions[0] = prevLocation;
 
-			m_GuidelinesStart->SetTransform(prevLocation + glm::vec3{ 0.0f, 0.15f, 0.0f }, { 1.0f, 1.0f, 1.0f }, { 0.0f, glm::radians(180.0f), 0.0f });
-			m_GuidelinesEnd->SetTransform(prevLocation + glm::vec3{ 0.0f, 0.15f, 0.0f }, { 1.0f, 1.0f, 1.0f }, { 0.0f, 0.0f, 0.0f });
+			m_GuidelinesStart->SetTransform(prevLocation + glm::vec3{ 0.0f, 0.15f, 0.0f }, glm::vec3(1.0f), glm::vec3{ 0.0f, glm::radians(180.0f), 0.0f });
+			m_GuidelinesEnd->SetTransform(prevLocation + glm::vec3{ 0.0f, 0.15f, 0.0f }, glm::vec3(1.0f), glm::vec3(0.0f));
 		}
 		else
 		{
 			for (std::vector<Object*>& os : m_Guidelines)
 				for (Object* rsg : os)
 					rsg->enabled = false;
-
 			for (size_t& inUse : m_GuidelinesInUse)
 				inUse = 0;
 
 			b_ConstructionRestricted = false;
 			if (snapOptions[4])
 			{
-				prevLocation.x = prevLocation.x - std::fmod(prevLocation.x + 0.25f, 0.5f) + 0.25f;
-				prevLocation.z = prevLocation.z - std::fmod(prevLocation.z + 0.25f, 0.5f) + 0.25f;
+				prevLocation.x = prevLocation.x - std::fmod(prevLocation.x, 0.5f) + 0.25f;
+				prevLocation.z = prevLocation.z - std::fmod(prevLocation.z, 0.5f) - 0.25f;
 			}
 			if (snapOptions[0])
 			{
@@ -113,11 +112,12 @@ namespace Can
 
 				m_EndSnappedRoadSegmentT = snapInformation.T;
 			}
+
 			m_ConstructionPositions[1] = prevLocation;
 			m_ConstructionPositions[2] = prevLocation;
 			m_ConstructionPositions[3] = prevLocation;
 
-			bool angleIsRestricted = false;
+			bool angleIsRestricted = false; // TODO: After angle snapping
 			if (restrictions[0])
 			{
 				glm::vec3 directionNewRoadSegment = prevLocation - m_ConstructionPositions[0];
@@ -194,7 +194,7 @@ namespace Can
 				}
 				else if (m_EndSnappedRoadSegment)
 				{
-					glm::vec3 tangent = Math::CubicCurveTangent(m_StartSnappedRoadSegment->GetCurvePoints(), m_StartSnappedRoadSegmentT);
+					glm::vec3 tangent = Math::CubicCurveTangent(m_EndSnappedRoadSegment->GetCurvePoints(), m_StartSnappedRoadSegmentT);
 					tangent = glm::normalize(tangent);
 
 					float angle = glm::acos(glm::dot(tangent, directionNewRoadSegment));
@@ -202,6 +202,9 @@ namespace Can
 					angleIsRestricted |= angle < 0.5f || angle > 2.63f;
 				}
 			}
+			bool lengthIsRestricted = false;
+			if(restrictions[1])
+			{ }
 
 			glm::vec3 AB = m_ConstructionPositions[3] - m_ConstructionPositions[0];
 
@@ -216,7 +219,9 @@ namespace Can
 					float length = glm::length(AB);
 					length = length - std::fmod(length, roadPrefabLength);
 					AB = length * glm::normalize(AB);
-					m_ConstructionPositions[3] = m_ConstructionPositions[0] + AB;
+					m_ConstructionPositions[1] = m_ConstructionPositions[0] + AB;
+					m_ConstructionPositions[2] = m_ConstructionPositions[1];
+					m_ConstructionPositions[3] = m_ConstructionPositions[1];
 				}
 				if (snapOptions[2])
 				{
@@ -249,16 +254,15 @@ namespace Can
 						else
 							newAngle = angle;
 
-						AB = glm::rotate(AB, glm::radians(angle - newAngle), { 0.0f, 1.0f, 0.0f });
+						AB = glm::rotateY(AB, glm::radians(angle - newAngle));
 						m_ConstructionPositions[3] = m_ConstructionPositions[0] + AB;
 					}
 					else if (m_StartSnappedRoadSegment)
 					{
-						glm::vec3 point = Math::CubicCurveTangent(m_ConstructionPositions, m_StartSnappedRoadSegmentT);
-						float snappedRoadRotationY = glm::degrees(glm::atan(point.z / point.x));
+						glm::vec3 point = Math::CubicCurveTangent(m_StartSnappedRoadSegment->GetCurvePoints(), m_StartSnappedRoadSegmentT);
+						float snappedRoadRotationY = glm::degrees(glm::atan(-point.z / point.x));
 						float newRoadRotationY = glm::degrees(rotationEnd);
 						float angle = std::fmod(snappedRoadRotationY - newRoadRotationY + 720.0f, 180.0f);
-
 						float newAngle = 0.0f;
 						if (angle < 32.0f)
 							newAngle = 30.0f;
@@ -270,8 +274,10 @@ namespace Can
 							newAngle = angle + 2.5f - std::fmod(angle + 2.5f, 5.0f);
 						else
 							newAngle = angle;
+						if (Input::IsMouseButtonPressed(MouseCode::Button2))
+							std::cout << "\nOld road angle: " << snappedRoadRotationY << ",\nNew road angle: " << newRoadRotationY << ",\nOld angle: " << angle << ",\nNew angle: " << newAngle << std::endl;
 
-						AB = glm::rotate(AB, -glm::radians(angle - newAngle), { 0.0f, 1.0f, 0.0f });
+						AB = glm::rotateY(AB, glm::radians(angle - newAngle));
 						m_ConstructionPositions[3] = m_ConstructionPositions[0] + AB;
 					}
 					else if (m_StartSnappedJunction)
@@ -280,7 +286,7 @@ namespace Can
 						float smallestAngle = 180.0f;
 						for (RoadSegment* roadSegment : m_StartSnappedJunction->connectedRoadSegments)
 						{
-							float snappedRoadRotationY = m_StartSnappedJunction == roadSegment->ConnectedObjectAtStart.junction ? glm::degrees(roadSegment->GetStartRotation().y) : glm::degrees(roadSegment->GetEndRotation().y);
+							float snappedRoadRotationY = glm::degrees(roadSegment->ConnectedObjectAtStart.junction == m_StartSnappedJunction ? roadSegment->GetStartRotation().y : roadSegment->GetEndRotation().y);
 							float angle = std::fmod(snappedRoadRotationY - newRoadRotationY + 720.0f, 180.0f);
 							smallestAngle = std::min(smallestAngle, angle);
 						}
@@ -294,7 +300,7 @@ namespace Can
 						else
 							newAngle = smallestAngle;
 
-						AB = glm::rotate(AB, -glm::radians(smallestAngle - newAngle), { 0.0f, 1.0f, 0.0f });
+						AB = glm::rotateY(AB, glm::radians(smallestAngle - newAngle));
 						m_ConstructionPositions[3] = m_ConstructionPositions[0] + AB;
 					}
 					else if (Input::IsKeyPressed(KeyCode::LeftControl))
@@ -302,7 +308,7 @@ namespace Can
 						float angle = std::fmod(glm::degrees(rotationEnd) + 720.0f, 360.0f);
 						float newAngle = angle + 2.5f - std::fmod(angle + 2.5f, 5.0f);
 
-						AB = glm::rotate(AB, -glm::radians(angle - newAngle), { 0.0f, 1.0f, 0.0f });
+						AB = glm::rotateY(AB, -glm::radians(angle - newAngle));
 						m_ConstructionPositions[3] = m_ConstructionPositions[0] + AB;
 					}
 				}
@@ -337,6 +343,7 @@ namespace Can
 				CheckStraightRoadTreeCollision(newRoadPolygon);
 
 			b_ConstructionRestricted |= angleIsRestricted;
+			b_ConstructionRestricted |= lengthIsRestricted;
 			b_ConstructionRestricted |= collisionIsRestricted;
 
 			DrawStraightGuidelines(m_ConstructionPositions[0], m_ConstructionPositions[3]);
@@ -490,8 +497,8 @@ namespace Can
 		{
 			if (snapOptions[4])
 			{
-				prevLocation.x = prevLocation.x - std::fmod(prevLocation.x + 0.25f, 0.5f) + 0.25f;
-				prevLocation.z = prevLocation.z - std::fmod(prevLocation.z + 0.25f, 0.5f) - 0.25f;
+				prevLocation.x = prevLocation.x - std::fmod(prevLocation.x, 0.5f) + 0.25f;
+				prevLocation.z = prevLocation.z - std::fmod(prevLocation.z, 0.5f) - 0.25f;
 			}
 			if (snapOptions[0])
 			{
@@ -507,8 +514,8 @@ namespace Can
 			}
 			m_ConstructionPositions[0] = prevLocation;
 
-			m_GuidelinesStart->SetTransform(prevLocation + glm::vec3{ 0.0f, 0.15f, 0.0f }, { 1.0f, 1.0f, 1.0f }, { 0.0f, glm::radians(180.0f), 0.0f });
-			m_GuidelinesEnd->SetTransform(prevLocation + glm::vec3{ 0.0f, 0.15f, 0.0f }, { 1.0f, 1.0f, 1.0f }, { 0.0f, 0.0f, 0.0f });
+			m_GuidelinesStart->SetTransform(prevLocation + glm::vec3{ 0.0f, 0.15f, 0.0f }, glm::vec3(1.0f), { 0.0f, glm::radians(180.0f), 0.0f });
+			m_GuidelinesEnd->SetTransform(prevLocation + glm::vec3{ 0.0f, 0.15f, 0.0f },glm::vec3(1.0f), glm::vec3(0.0f));
 		}
 		else if (m_ConstructionPhase == 1)
 		{
@@ -606,15 +613,15 @@ namespace Can
 					else
 						newAngle = angle;
 
-					AB = glm::rotate(AB, glm::radians(angle - newAngle), { 0.0f, 1.0f, 0.0f });
+					AB = glm::rotateY(AB, glm::radians(angle - newAngle));
 					m_ConstructionPositions[1] = m_ConstructionPositions[0] + AB;
 					m_ConstructionPositions[2] = m_ConstructionPositions[1];
 					m_ConstructionPositions[3] = m_ConstructionPositions[1];
 				}
 				else if (m_StartSnappedRoadSegment)
 				{
-					glm::vec3 point = Math::CubicCurveTangent(m_ConstructionPositions, m_StartSnappedRoadSegmentT);
-					float snappedRoadRotationY = glm::degrees(glm::atan(point.z / point.x));
+					glm::vec3 point = Math::CubicCurveTangent(m_StartSnappedRoadSegment->GetCurvePoints(), m_StartSnappedRoadSegmentT);
+					float snappedRoadRotationY = glm::degrees(glm::atan(-point.z / point.x));
 					float newRoadRotationY = glm::degrees(rotationEnd);
 					float angle = std::fmod(snappedRoadRotationY - newRoadRotationY + 720.0f, 180.0f);
 
@@ -630,7 +637,7 @@ namespace Can
 					else
 						newAngle = angle;
 
-					AB = glm::rotate(AB, -glm::radians(angle - newAngle), { 0.0f, 1.0f, 0.0f });
+					AB = glm::rotateY(AB, glm::radians(angle - newAngle));
 					m_ConstructionPositions[1] = m_ConstructionPositions[0] + AB;
 					m_ConstructionPositions[2] = m_ConstructionPositions[1];
 					m_ConstructionPositions[3] = m_ConstructionPositions[1];
@@ -641,7 +648,7 @@ namespace Can
 					float smallestAngle = 180.0f;
 					for (RoadSegment* roadSegment : m_StartSnappedJunction->connectedRoadSegments)
 					{
-						float snappedRoadRotationY = m_StartSnappedJunction == roadSegment->ConnectedObjectAtStart.junction ? glm::degrees(roadSegment->GetStartRotation().y) : glm::degrees(roadSegment->GetEndRotation().y);
+						float snappedRoadRotationY = glm::degrees(roadSegment->ConnectedObjectAtStart.junction == m_StartSnappedJunction ? roadSegment->GetStartRotation().y : roadSegment->GetEndRotation().y);
 						float angle = std::fmod(snappedRoadRotationY - newRoadRotationY + 720.0f, 180.0f);
 						smallestAngle = std::min(smallestAngle, angle);
 					}
@@ -655,7 +662,7 @@ namespace Can
 					else
 						newAngle = smallestAngle;
 
-					AB = glm::rotate(AB, -glm::radians(smallestAngle - newAngle), { 0.0f, 1.0f, 0.0f });
+					AB = glm::rotateY(AB, glm::radians(smallestAngle - newAngle));
 					m_ConstructionPositions[1] = m_ConstructionPositions[0] + AB;
 					m_ConstructionPositions[2] = m_ConstructionPositions[1];
 					m_ConstructionPositions[3] = m_ConstructionPositions[1];
@@ -665,7 +672,7 @@ namespace Can
 					float angle = std::fmod(glm::degrees(rotationEnd) + 720.0f, 360.0f);
 					float newAngle = angle + 2.5f - std::fmod(angle + 2.5f, 5.0f);
 
-					AB = glm::rotate(AB, -glm::radians(angle - newAngle), { 0.0f, 1.0f, 0.0f });
+					AB = glm::rotateY(AB, -glm::radians(angle - newAngle));
 					m_ConstructionPositions[1] = m_ConstructionPositions[0] + AB;
 					m_ConstructionPositions[2] = m_ConstructionPositions[1];
 					m_ConstructionPositions[3] = m_ConstructionPositions[1];
@@ -1065,8 +1072,8 @@ namespace Can
 		{
 			if (snapOptions[4])
 			{
-				prevLocation.x = prevLocation.x - std::fmod(prevLocation.x + 0.25f, 0.5f) + 0.25f;
-				prevLocation.z = prevLocation.z - std::fmod(prevLocation.z + 0.25f, 0.5f) - 0.25f;
+				prevLocation.x = prevLocation.x - std::fmod(prevLocation.x, 0.5f) + 0.25f;
+				prevLocation.z = prevLocation.z - std::fmod(prevLocation.z, 0.5f) - 0.25f;
 			}
 			if (snapOptions[0])
 			{
@@ -1085,18 +1092,18 @@ namespace Can
 			m_ConstructionPositions[2] = prevLocation;
 			m_ConstructionPositions[3] = prevLocation;
 
-			m_GuidelinesStart->SetTransform(prevLocation + glm::vec3{ 0.0f, 0.15f, 0.0f }, { 1.0f, 1.0f, 1.0f }, { 0.0f, glm::radians(180.0f), 0.0f });
-			m_GuidelinesEnd->SetTransform(prevLocation + glm::vec3{ 0.0f, 0.15f, 0.0f }, { 1.0f, 1.0f, 1.0f }, { 0.0f, 0.0f, 0.0f });
+			m_GuidelinesStart->SetTransform(prevLocation + glm::vec3{ 0.0f, 0.15f, 0.0f }, glm::vec3(1.0f), glm::vec3{ 0.0f, glm::radians(180.0f), 0.0f });
+			m_GuidelinesEnd->SetTransform(prevLocation + glm::vec3{ 0.0f, 0.15f, 0.0f }, glm::vec3(1.0f), glm::vec3(0.0f));
 		}
 		else if (m_ConstructionPhase == 1)
 		{
 			b_ConstructionRestricted = false;
 			if (snapOptions[4])
 			{
-				prevLocation.x = prevLocation.x - std::fmod(prevLocation.x + 0.25f, 0.5f) + 0.25f;
-				prevLocation.z = prevLocation.z - std::fmod(prevLocation.z + 0.25f, 0.5f) + 0.25f;
+				prevLocation.x = prevLocation.x - std::fmod(prevLocation.x, 0.5f) + 0.25f;
+				prevLocation.z = prevLocation.z - std::fmod(prevLocation.z, 0.5f) - 0.25f;
 			}
-			if (cubicCurveOrder[1] == 3 && snapOptions[0])
+			if (snapOptions[0] && cubicCurveOrder[1] == 3)
 			{
 				SnapInformation snapInformation = CheckSnapping(prevLocation);
 				prevLocation = snapInformation.location;
@@ -1114,7 +1121,7 @@ namespace Can
 			m_ConstructionPositions[3] = prevLocation;
 
 			bool angleIsRestricted = false;
-			if (cubicCurveOrder[1] != 3 && restrictions[0])
+			if (cubicCurveOrder[1] == 1 && restrictions[0])
 			{
 				glm::vec3 directionNewRoadSegment = prevLocation - m_ConstructionPositions[0];
 				directionNewRoadSegment.y = 0;
@@ -1183,7 +1190,7 @@ namespace Can
 				m_ConstructionPositions[3].y = m_ConstructionPositions[0].y;
 				AB.y = 0.0f;
 			}
-			if (cubicCurveOrder[1] == 1 && snapOptions[3] && glm::length(AB) > 0.5f)
+			if (snapOptions[3] && cubicCurveOrder[1] == 1 && glm::length(AB) > 0.5f)
 			{
 				if (m_StartSnappedEnd)
 				{
@@ -1207,8 +1214,10 @@ namespace Can
 					else
 						newAngle = angle;
 
-					AB = glm::rotate(AB, glm::radians(angle - newAngle), { 0.0f, 1.0f, 0.0f });
+					AB = glm::rotateY(AB, glm::radians(angle - newAngle));
 					m_ConstructionPositions[1] = m_ConstructionPositions[0] + AB;
+					m_ConstructionPositions[2] = m_ConstructionPositions[1];
+					m_ConstructionPositions[3] = m_ConstructionPositions[1];
 				}
 				else if (m_StartSnappedRoadSegment)
 				{
@@ -1228,8 +1237,10 @@ namespace Can
 					else
 						newAngle = angle;
 
-					AB = glm::rotate(AB, -glm::radians(angle - newAngle), { 0.0f, 1.0f, 0.0f });
+					AB = glm::rotateY(AB, glm::radians(angle - newAngle));
 					m_ConstructionPositions[1] = m_ConstructionPositions[0] + AB;
+					m_ConstructionPositions[2] = m_ConstructionPositions[1];
+					m_ConstructionPositions[3] = m_ConstructionPositions[1];
 				}
 				else if (m_StartSnappedJunction)
 				{
@@ -1251,16 +1262,20 @@ namespace Can
 					else
 						newAngle = smallestAngle;
 
-					AB = glm::rotate(AB, -glm::radians(smallestAngle - newAngle), { 0.0f, 1.0f, 0.0f });
+					AB = glm::rotateY(AB, glm::radians(smallestAngle - newAngle));
 					m_ConstructionPositions[1] = m_ConstructionPositions[0] + AB;
+					m_ConstructionPositions[2] = m_ConstructionPositions[1];
+					m_ConstructionPositions[3] = m_ConstructionPositions[1];
 				}
 				else if (Input::IsKeyPressed(KeyCode::LeftControl))
 				{
 					float angle = std::fmod(glm::degrees(rotationEnd) + 720.0f, 360.0f);
 					float newAngle = angle + 2.5f - std::fmod(angle + 2.5f, 5.0f);
 
-					AB = glm::rotate(AB, -glm::radians(angle - newAngle), { 0.0f, 1.0f, 0.0f });
+					AB = glm::rotateY(AB, -glm::radians(angle - newAngle));
 					m_ConstructionPositions[1] = m_ConstructionPositions[0] + AB;
+					m_ConstructionPositions[2] = m_ConstructionPositions[1];
+					m_ConstructionPositions[3] = m_ConstructionPositions[1];
 				}
 			}
 
@@ -1364,8 +1379,8 @@ namespace Can
 			b_ConstructionRestricted = false;
 			if (snapOptions[4])
 			{
-				prevLocation.x = prevLocation.x - std::fmod(prevLocation.x + 0.25f, 0.5f) + 0.25f;
-				prevLocation.z = prevLocation.z - std::fmod(prevLocation.z + 0.25f, 0.5f) + 0.25f;
+				prevLocation.x = prevLocation.x - std::fmod(prevLocation.x, 0.5f) + 0.25f;
+				prevLocation.z = prevLocation.z - std::fmod(prevLocation.z, 0.5f) - 0.25f;
 			}
 			if (cubicCurveOrder[2] == 3 && snapOptions[0])
 			{
@@ -1539,7 +1554,7 @@ namespace Can
 						else
 							newAngle = angle;
 
-						AB1 = glm::rotate(AB1, glm::radians(angle - newAngle), { 0.0f, 1.0f, 0.0f });
+						AB1 = glm::rotateY(AB1, glm::radians(angle - newAngle));
 						m_ConstructionPositions[1] = m_ConstructionPositions[0] + AB1;
 					}
 					else if (m_StartSnappedRoadSegment)
@@ -1560,7 +1575,7 @@ namespace Can
 						else
 							newAngle = angle;
 
-						AB1 = glm::rotate(AB1, -glm::radians(angle - newAngle), { 0.0f, 1.0f, 0.0f });
+						AB1 = glm::rotateY(AB1, glm::radians(angle - newAngle));
 						m_ConstructionPositions[1] = m_ConstructionPositions[0] + AB1;
 					}
 					else if (m_StartSnappedJunction)
@@ -1583,7 +1598,7 @@ namespace Can
 						else
 							newAngle = smallestAngle;
 
-						AB1 = glm::rotate(AB1, -glm::radians(smallestAngle - newAngle), { 0.0f, 1.0f, 0.0f });
+						AB1 = glm::rotateY(AB1, glm::radians(smallestAngle - newAngle));
 						m_ConstructionPositions[1] = m_ConstructionPositions[0] + AB1;
 					}
 					else if (Input::IsKeyPressed(KeyCode::LeftControl))
@@ -1591,7 +1606,7 @@ namespace Can
 						float angle = std::fmod(glm::degrees(rotation1) + 720.0f, 360.0f);
 						float newAngle = angle + 2.5f - std::fmod(angle + 2.5f, 5.0f);
 
-						AB1 = glm::rotate(AB1, -glm::radians(angle - newAngle), { 0.0f, 1.0f, 0.0f });
+						AB1 = glm::rotateY(AB1, -glm::radians(angle - newAngle));
 						m_ConstructionPositions[1] = m_ConstructionPositions[0] + AB1;
 					}
 				}
@@ -1619,7 +1634,7 @@ namespace Can
 						else
 							newAngle = angle;
 
-						AB2 = glm::rotate(AB2, glm::radians(angle - newAngle), { 0.0f, 1.0f, 0.0f });
+						AB2 = glm::rotateY(AB2, glm::radians(angle - newAngle));
 						m_ConstructionPositions[cubicCurveOrder[2]] = m_ConstructionPositions[cubicCurveOrder[1]] + AB2;
 					}
 					else if (m_StartSnappedRoadSegment)
@@ -1640,7 +1655,7 @@ namespace Can
 						else
 							newAngle = angle;
 
-						AB2 = glm::rotate(AB2, -glm::radians(angle - newAngle), { 0.0f, 1.0f, 0.0f });
+						AB2 = glm::rotateY(AB2, glm::radians(angle - newAngle));
 						m_ConstructionPositions[cubicCurveOrder[2]] = m_ConstructionPositions[cubicCurveOrder[1]] + AB2;
 					}
 					else if (m_StartSnappedJunction)
@@ -1663,7 +1678,7 @@ namespace Can
 						else
 							newAngle = smallestAngle;
 
-						AB2 = glm::rotate(AB2, -glm::radians(smallestAngle - newAngle), { 0.0f, 1.0f, 0.0f });
+						AB2 = glm::rotateY(AB2, glm::radians(smallestAngle - newAngle));
 						m_ConstructionPositions[cubicCurveOrder[2]] = m_ConstructionPositions[cubicCurveOrder[1]] + AB2;
 					}
 					else if (Input::IsKeyPressed(KeyCode::LeftControl))
@@ -1671,7 +1686,7 @@ namespace Can
 						float angle = std::fmod(glm::degrees(rotation2) + 720.0f, 360.0f);
 						float newAngle = angle + 2.5f - std::fmod(angle + 2.5f, 5.0f);
 
-						AB2 = glm::rotate(AB2, -glm::radians(angle - newAngle), { 0.0f, 1.0f, 0.0f });
+						AB2 = glm::rotateY(AB2, -glm::radians(angle - newAngle));
 						m_ConstructionPositions[cubicCurveOrder[2]] = m_ConstructionPositions[cubicCurveOrder[1]] + AB2;
 					}
 				}
@@ -1771,8 +1786,8 @@ namespace Can
 			b_ConstructionRestricted = false;
 			if (snapOptions[4])
 			{
-				prevLocation.x = prevLocation.x - std::fmod(prevLocation.x + 0.25f, 0.5f) + 0.25f;
-				prevLocation.z = prevLocation.z - std::fmod(prevLocation.z + 0.25f, 0.5f) + 0.25f;
+				prevLocation.x = prevLocation.x - std::fmod(prevLocation.x, 0.5f) + 0.25f;
+				prevLocation.z = prevLocation.z - std::fmod(prevLocation.z, 0.5f) - 0.25f;
 			}
 			if (cubicCurveOrder[3] == 3 && snapOptions[0])
 			{
@@ -1939,7 +1954,7 @@ namespace Can
 						else
 							newAngle = angle;
 
-						AB1 = glm::rotate(AB1, glm::radians(angle - newAngle), { 0.0f, 1.0f, 0.0f });
+						AB1 = glm::rotateY(AB1, glm::radians(angle - newAngle));
 						m_ConstructionPositions[1] = m_ConstructionPositions[0] + AB1;
 					}
 					else if (m_StartSnappedRoadSegment)
@@ -1960,7 +1975,7 @@ namespace Can
 						else
 							newAngle = angle;
 
-						AB1 = glm::rotate(AB1, -glm::radians(angle - newAngle), { 0.0f, 1.0f, 0.0f });
+						AB1 = glm::rotateY(AB1, glm::radians(angle - newAngle));
 						m_ConstructionPositions[1] = m_ConstructionPositions[0] + AB1;
 					}
 					else if (m_StartSnappedJunction)
@@ -1983,7 +1998,7 @@ namespace Can
 						else
 							newAngle = smallestAngle;
 
-						AB1 = glm::rotate(AB1, -glm::radians(smallestAngle - newAngle), { 0.0f, 1.0f, 0.0f });
+						AB1 = glm::rotateY(AB1, glm::radians(smallestAngle - newAngle));
 						m_ConstructionPositions[1] = m_ConstructionPositions[0] + AB1;
 					}
 					else if (Input::IsKeyPressed(KeyCode::LeftControl))
@@ -1991,7 +2006,7 @@ namespace Can
 						float angle = std::fmod(glm::degrees(rotation1) + 720.0f, 360.0f);
 						float newAngle = angle + 2.5f - std::fmod(angle + 2.5f, 5.0f);
 
-						AB1 = glm::rotate(AB1, -glm::radians(angle - newAngle), { 0.0f, 1.0f, 0.0f });
+						AB1 = glm::rotateY(AB1, -glm::radians(angle - newAngle));
 						m_ConstructionPositions[1] = m_ConstructionPositions[0] + AB1;
 					}
 				}
@@ -2019,7 +2034,7 @@ namespace Can
 						else
 							newAngle = angle;
 
-						AB2 = glm::rotate(AB2, glm::radians(angle - newAngle), { 0.0f, 1.0f, 0.0f });
+						AB2 = glm::rotateY(AB2, glm::radians(angle - newAngle));
 						m_ConstructionPositions[cubicCurveOrder[3]] = m_ConstructionPositions[cubicCurveOrder[2]] + AB2;
 					}
 					else if (m_StartSnappedRoadSegment)
@@ -2040,7 +2055,7 @@ namespace Can
 						else
 							newAngle = angle;
 
-						AB2 = glm::rotate(AB2, -glm::radians(angle - newAngle), { 0.0f, 1.0f, 0.0f });
+						AB2 = glm::rotateY(AB2, glm::radians(angle - newAngle));
 						m_ConstructionPositions[cubicCurveOrder[3]] = m_ConstructionPositions[cubicCurveOrder[2]] + AB2;
 					}
 					else if (m_StartSnappedJunction)
@@ -2063,7 +2078,7 @@ namespace Can
 						else
 							newAngle = smallestAngle;
 
-						AB2 = glm::rotate(AB2, -glm::radians(smallestAngle - newAngle), { 0.0f, 1.0f, 0.0f });
+						AB2 = glm::rotateY(AB2, glm::radians(smallestAngle - newAngle));
 						m_ConstructionPositions[cubicCurveOrder[3]] = m_ConstructionPositions[cubicCurveOrder[2]] + AB2;
 					}
 					else if (Input::IsKeyPressed(KeyCode::LeftControl))
@@ -2071,7 +2086,7 @@ namespace Can
 						float angle = std::fmod(glm::degrees(rotation2) + 720.0f, 360.0f);
 						float newAngle = angle + 2.5f - std::fmod(angle + 2.5f, 5.0f);
 
-						AB2 = glm::rotate(AB2, -glm::radians(angle - newAngle), { 0.0f, 1.0f, 0.0f });
+						AB2 = glm::rotateY(AB2, -glm::radians(angle - newAngle));
 						m_ConstructionPositions[cubicCurveOrder[3]] = m_ConstructionPositions[cubicCurveOrder[2]] + AB2;
 					}
 				}
@@ -2257,8 +2272,8 @@ namespace Can
 		m_GuidelinesStart->enabled = !b_ConstructionStartSnapped;
 		m_GuidelinesEnd->enabled = !b_ConstructionEndSnapped;
 
-		m_GuidelinesStart->SetTransform(pointA + glm::vec3{ 0.0f, 0.15f, 0.0f }, { 1.0f, 1.0f, 1.0f }, { 0.0f, rotationStart, 0.0f });
-		m_GuidelinesEnd->SetTransform(pointB + glm::vec3{ 0.0f, 0.15f, 0.0f }, { 1.0f, 1.0f, 1.0f }, { 0.0f, rotationEnd, 0.0f });
+		m_GuidelinesStart->SetTransform(pointA + glm::vec3{ 0.0f, 0.15f, 0.0f }, glm::vec3(1.0f), { 0.0f, rotationStart, 0.0f });
+		m_GuidelinesEnd->SetTransform(pointB + glm::vec3{ 0.0f, 0.15f, 0.0f }, glm::vec3(1.0f), { 0.0f, rotationEnd, 0.0f });
 
 		m_GuidelinesStart->tintColor = b_ConstructionRestricted ? glm::vec4{ 1.0f, 0.3f, 0.2f, 1.0f } : glm::vec4(1.0f);
 		m_GuidelinesEnd->tintColor = b_ConstructionRestricted ? glm::vec4{ 1.0f, 0.3f, 0.2f, 1.0f } : glm::vec4(1.0f);
@@ -2303,8 +2318,8 @@ namespace Can
 		m_GuidelinesStart->enabled = !b_ConstructionStartSnapped;
 		m_GuidelinesEnd->enabled = !b_ConstructionEndSnapped;
 
-		m_GuidelinesStart->SetTransform(curvePoints[0] + glm::vec3{ 0.0f, 0.15f, 0.0f }, { 1.0f, 1.0f, 1.0f }, { 0.0f, rotationStart, 0.0f });
-		m_GuidelinesEnd->SetTransform(curvePoints[3] + glm::vec3{ 0.0f, 0.15f, 0.0f }, { 1.0f, 1.0f, 1.0f }, { 0.0f, rotationEnd, 0.0f });
+		m_GuidelinesStart->SetTransform(curvePoints[0] + glm::vec3{ 0.0f, 0.15f, 0.0f }, glm::vec3(1.0f), { 0.0f, rotationStart, 0.0f });
+		m_GuidelinesEnd->SetTransform(curvePoints[3] + glm::vec3{ 0.0f, 0.15f, 0.0f }, glm::vec3(1.0f), { 0.0f, rotationEnd, 0.0f });
 
 		for (size_t& inUse : m_GuidelinesInUse)
 			inUse = 0;
@@ -2994,7 +3009,7 @@ namespace Can
 				roadSegment,
 				m_Scene->MainApplication->roads[m_Type][2],
 				curvePoints[0],
-				glm::vec3{ 1.0f, 1.0f, 1.0f },
+				glm::vec3(1.0f),
 				glm::vec3{
 					0.0f,
 					roadSegment->GetStartRotation().y + glm::radians(180.0f),
@@ -3014,7 +3029,7 @@ namespace Can
 		else if (m_EndSnappedEnd != nullptr)
 		{
 			RoadSegment* connectedRoadSegment = m_EndSnappedEnd->connectedRoadSegment;
-			
+
 			Junction* newJunction = new Junction(std::vector<RoadSegment*>{ connectedRoadSegment, roadSegment}, m_EndSnappedEnd->object->position);
 			roadSegment->ConnectedObjectAtEnd.junction = newJunction;
 
@@ -3155,7 +3170,7 @@ namespace Can
 				roadSegment,
 				m_Scene->MainApplication->roads[m_Type][2],
 				curvePoints[3],
-				glm::vec3{ 1.0f, 1.0f, 1.0f },
+				glm::vec3(1.0f),
 				glm::vec3{
 					0.0f,
 					roadSegment->GetEndRotation().y + glm::radians(180.0f),
@@ -3196,11 +3211,11 @@ namespace Can
 						otherRoadSegment,
 						otherRoadSegment->Type[2],
 						junction->position,
-						glm::vec3{ 1.0f, 1.0f, 1.0f },
-						glm::vec3{ 
+						glm::vec3(1.0f),
+						glm::vec3{
 							0.0f,
 							otherRoadSegment->GetStartRotation().y + glm::radians(180.0f),
-							otherRoadSegment->GetStartRotation().x 
+							otherRoadSegment->GetStartRotation().x
 						}
 					);
 					otherRoadSegment->ConnectedObjectAtStart.end = newEnd;
@@ -3214,11 +3229,11 @@ namespace Can
 						otherRoadSegment,
 						otherRoadSegment->Type[2],
 						junction->position,
-						glm::vec3{ 1.0f, 1.0f, 1.0f },
-						glm::vec3{ 
-							0.0f, 
+						glm::vec3(1.0f),
+						glm::vec3{
+							0.0f,
 							otherRoadSegment->GetEndRotation().y + glm::radians(180.0f),
-							otherRoadSegment->GetEndRotation().x 
+							otherRoadSegment->GetEndRotation().x
 						}
 					);
 					otherRoadSegment->ConnectedObjectAtEnd.end = newEnd;
@@ -3260,11 +3275,11 @@ namespace Can
 						otherRoadSegment,
 						otherRoadSegment->Type[2],
 						junction->position,
-						glm::vec3{ 1.0f, 1.0f, 1.0f },
-						glm::vec3{ 
-							0.0f, 
+						glm::vec3(1.0f),
+						glm::vec3{
+							0.0f,
 							otherRoadSegment->GetStartRotation().y + glm::radians(180.0f),
-							otherRoadSegment->GetStartRotation().x 
+							otherRoadSegment->GetStartRotation().x
 						}
 					);
 					otherRoadSegment->ConnectedObjectAtStart.end = newEnd;
@@ -3278,11 +3293,11 @@ namespace Can
 						otherRoadSegment,
 						otherRoadSegment->Type[2],
 						junction->position,
-						glm::vec3{ 1.0f, 1.0f, 1.0f },
-						glm::vec3{ 
+						glm::vec3(1.0f),
+						glm::vec3{
 							0.0f,
 							otherRoadSegment->GetEndRotation().y + glm::radians(180.0f),
-							otherRoadSegment->GetEndRotation().x 
+							otherRoadSegment->GetEndRotation().x
 						}
 					);
 					otherRoadSegment->ConnectedObjectAtEnd.end = newEnd;
