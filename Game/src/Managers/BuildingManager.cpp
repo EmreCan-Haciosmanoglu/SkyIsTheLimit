@@ -87,7 +87,7 @@ namespace Can
 						if (dist < snapDistance)
 						{
 							float c = l1 * glm::cos(angle);
-							if (c >= 0.0f && c <= roadLength) // needs lil' bit more length to each directions
+							if (c >= -0.5f * roadLength && c <= 1.5f * roadLength) // needs lil' bit more length to each directions
 							{
 								bool r = glm::cross(dirToP1, dirToPrev).y < 0.0f;
 								glm::vec3 shiftDir{ -dirToP1.z, 0.0f, dirToP1.x };
@@ -116,7 +116,7 @@ namespace Can
 			{
 				glm::vec2 boundingL{ m_Guideline->prefab->boundingBoxL.x, m_Guideline->prefab->boundingBoxL.z };
 				glm::vec2 boundingM{ m_Guideline->prefab->boundingBoxM.x, m_Guideline->prefab->boundingBoxM.z };
-				glm::vec2 buildingP{ m_GuidelinePosition.x, m_GuidelinePosition.z };
+				glm::vec2 boundingP{ prevLocation.x, prevLocation.z };
 
 				for (Building* building : m_SnappedRoadSegment->Buildings)
 				{
@@ -126,13 +126,13 @@ namespace Can
 					
 					glm::vec2 mtv = Helper::CheckRotatedRectangleCollision(
 						bL,
-						bL,
+						bM,
 						building->object->rotation.y,
 						bP,
 						boundingL,
 						boundingM,
 						m_GuidelineRotation.y,
-						buildingP
+						boundingP
 					);
 					if (mtv.x != 0.0f || mtv.y != 0.0f)
 					{

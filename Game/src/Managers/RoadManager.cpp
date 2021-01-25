@@ -3368,6 +3368,7 @@ namespace Can
 				return results;
 			}
 		}
+		
 		for (RoadSegment* roadSegment : m_RoadSegments)
 		{
 			float roadSegmentWidth = roadSegment->Type[0]->boundingBoxM.z - roadSegment->Type[0]->boundingBoxL.z;
