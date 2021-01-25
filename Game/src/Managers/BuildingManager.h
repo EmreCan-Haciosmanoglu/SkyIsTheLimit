@@ -65,6 +65,7 @@ namespace Can
 		glm::vec3 m_GuidelineRotation = glm::vec3(0.0f);
 
 		RoadSegment* m_SnappedRoadSegment = nullptr;
+		float m_SnappedT = -1.0f;
 
 		std::vector<Building*>::iterator& m_SelectedBuildingToDestruct = m_Buildings.end();
 

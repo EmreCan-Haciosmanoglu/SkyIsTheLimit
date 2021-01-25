@@ -68,7 +68,8 @@ namespace Can
 
 				if (Math::CheckPolygonPointCollision(roadPolygon, glm::vec2{ prevLocation.x, prevLocation.z }))
 				{
-					std::vector<glm::vec3> ps = Math::GetCubicCurveSamples(vs, roadLength);
+					std::vector<float> ts{ 0.0f };
+					std::vector<glm::vec3> ps = Math::GetCubicCurveSamples(vs, roadLength, ts);
 					size_t size = ps.size();
 					glm::vec3 p0 = ps[0];
 					for (size_t i = 1; i < size; i++)
@@ -100,6 +101,7 @@ namespace Can
 								m_GuidelineRotation = glm::vec3{ 0.0f, (float)r * glm::radians(180.0f) + glm::radians(90.0f) + rotation, 0.0f };
 								m_Guideline->SetTransform(m_GuidelinePosition, glm::vec3(1.0f), m_GuidelineRotation);
 								snappedToRoad = true;
+								m_SnappedT = ts[i];
 								goto snapped;
 							}
 						}
@@ -123,7 +125,7 @@ namespace Can
 					glm::vec2 bL{ building->object->prefab->boundingBoxL.x, building->object->prefab->boundingBoxL.z };
 					glm::vec2 bM{ building->object->prefab->boundingBoxM.x, building->object->prefab->boundingBoxM.z };
 					glm::vec2 bP{ building->position.x, building->position.z };
-					
+
 					glm::vec2 mtv = Helper::CheckRotatedRectangleCollision(
 						bL,
 						bM,
@@ -293,7 +295,7 @@ namespace Can
 	{
 		if (!b_ConstructionRestricted)
 		{
-			Building* newBuilding = new Building(m_Guideline->type, m_SnappedRoadSegment, m_GuidelinePosition, m_GuidelineRotation);
+			Building* newBuilding = new Building(m_Guideline->type, m_SnappedRoadSegment, m_SnappedT, m_GuidelinePosition, m_GuidelineRotation);
 			if (m_SnappedRoadSegment)
 				m_SnappedRoadSegment->Buildings.push_back(newBuilding);
 			m_Buildings.push_back(newBuilding);
@@ -383,6 +385,7 @@ namespace Can
 		m_GuidelineRotation = glm::vec3(0.0f);
 
 		m_SnappedRoadSegment = nullptr;
+		m_SnappedT = -1.0f;
 
 		m_SelectedBuildingToDestruct = m_Buildings.end();
 

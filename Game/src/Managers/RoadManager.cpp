@@ -2978,24 +2978,17 @@ namespace Can
 
 			for (Building* building : m_StartSnappedRoadSegment->Buildings)
 			{
-
-				/* Needs to be Redone
-				glm::vec3 B = building->position - r1->GetStartPosition();
-				float bLength = glm::length(B);
-
-				float angle = glm::acos(glm::dot(r1->direction, B) / bLength);
-
-				float c = bLength * glm::cos(angle);
-				if (c <= 0.0f || c >= r1->length)
+				float t = building->snappedT;
+				if (t < m_StartSnappedRoadSegmentT)
 				{
-					r2->connectedBuildings.push_back(building);
-					building->connectedRoad = r2;
+					building->snappedT = t / m_StartSnappedRoadSegmentT;
+					rs1->Buildings.push_back(building);
 				}
 				else
 				{
-					r1->connectedBuildings.push_back(building);
-					building->connectedRoad = r1;
-				}*/
+					building->snappedT = (1.0f - t) / (1.0f - m_StartSnappedRoadSegmentT);
+					rs2->Buildings.push_back(building);
+				}
 			}
 
 			auto it = std::find(m_RoadSegments.begin(), m_RoadSegments.end(), m_StartSnappedRoadSegment);
@@ -3140,23 +3133,17 @@ namespace Can
 
 			for (Building* building : m_EndSnappedRoadSegment->Buildings)
 			{
-				/* Tekrar kodla
-				glm::vec3 B = building->position - r1->GetStartPosition();
-				float bLength = glm::length(B);
-
-				float angle = glm::acos(glm::dot(r1->direction, B) / bLength);
-
-				float c = bLength * glm::cos(angle);
-				if (c <= 0.0f || c >= r1->length)
+				float t = building->snappedT;
+				if (t < m_EndSnappedRoadSegmentT)
 				{
-					r2->connectedBuildings.push_back(building);
-					building->connectedRoad = r2;
+					building->snappedT = t / m_EndSnappedRoadSegmentT;
+					rs1->Buildings.push_back(building);
 				}
 				else
 				{
-					r1->connectedBuildings.push_back(building);
-					building->connectedRoad = r1;
-				}*/
+					building->snappedT = (1.0f - t) / (1.0f - m_EndSnappedRoadSegmentT);
+					rs2->Buildings.push_back(building);
+				}
 			}
 
 			auto it = std::find(m_RoadSegments.begin(), m_RoadSegments.end(), m_EndSnappedRoadSegment);
