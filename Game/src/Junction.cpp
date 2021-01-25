@@ -39,50 +39,52 @@ namespace Can
 
 		std::vector<glm::vec3> Intersections;
 
-		size_t roadCount = connectedRoadSegments.size();
-		for (size_t i = 0; i < roadCount; i++)
+		size_t roadSegmentCount = connectedRoadSegments.size();
+
+		for (size_t i = 0; i < roadSegmentCount; i++)
 		{
-			size_t iNext = (i + 1) % roadCount;
+			size_t iNext = (i + 1) % roadSegmentCount;
 			RoadSegment* rs1 = connectedRoadSegments[i];
 			RoadSegment* rs2 = connectedRoadSegments[iNext];
 
-			glm::vec3 R1_S = this == rs1->ConnectedObjectAtStart.junction ? rs1->GetStartPosition() : rs1->GetEndPosition();
-			glm::vec3 R2_S = this == rs2->ConnectedObjectAtStart.junction ? rs2->GetStartPosition() : rs2->GetEndPosition();
+			glm::vec3 R1Position = this == rs1->ConnectedObjectAtStart.junction ? rs1->ConnectedObjectAtStart.junction->position : rs1->ConnectedObjectAtEnd.junction->position;
+			glm::vec3 R2Position = this == rs2->ConnectedObjectAtStart.junction ? rs2->ConnectedObjectAtStart.junction->position : rs2->ConnectedObjectAtEnd.junction->position;
 
 			glm::vec3 r1Direction = this == rs1->ConnectedObjectAtStart.junction ? rs1->GetStartDirection() : rs1->GetEndDirection();
 			glm::vec3 r2Direction = this == rs2->ConnectedObjectAtStart.junction ? rs2->GetStartDirection() : rs2->GetEndDirection();
-
-			float r1width = rs1->object->prefab->boundingBoxM.z - rs1->object->prefab->boundingBoxL.z;
-			float r2width = rs2->object->prefab->boundingBoxM.z - rs2->object->prefab->boundingBoxL.z;
-
-
 			r1Direction.y = 0.0f;
 			r2Direction.y = 0.0f;
 
-			glm::vec3 shiftR1Dir = glm::normalize(glm::rotate(r1Direction, glm::radians(-90.0f), glm::vec3{ 0.0f, 1.0f, 0.0f }));
-			glm::vec3 shiftR2Dir = glm::normalize(glm::rotate(r2Direction, glm::radians(+90.0f), glm::vec3{ 0.0f, 1.0f, 0.0f }));
+			float r1width = rs1->Type[0]->boundingBoxM.z - rs1->Type[0]->boundingBoxL.z;
+			float r2width = rs2->Type[0]->boundingBoxM.z - rs2->Type[0]->boundingBoxL.z;
 
-			glm::vec3 shiftR1Amount = shiftR1Dir * r1width / 2.0f;
-			glm::vec3 shiftR2Amount = shiftR2Dir * r2width / 2.0f;
 
-			float angleDiff = (r1Direction.x / r1Direction.z) - (r2Direction.x / r2Direction.z);
-			if (angleDiff < 0.0001f && angleDiff > -0.0001f)
+			// glm::vec3 shiftRDir = glm::normalize(glm::rotateY(rDirection, glm::radians(-90.0f)));
+			glm::vec3 shiftR1Dir = glm::normalize(glm::vec3{ +r1Direction.z, r1Direction.y, -r1Direction.x });
+			glm::vec3 shiftR2Dir = glm::normalize(glm::vec3{ -r2Direction.z, r2Direction.y, +r2Direction.x });
+
+			glm::vec3 shiftR1Amount = shiftR1Dir * (r1width  * 0.5f);
+			glm::vec3 shiftR2Amount = shiftR2Dir * (r2width  * 0.5f);
+
+			float angleDiff = glm::degrees(glm::acos(glm::dot(shiftR1Dir, shiftR2Dir)));
+			if (angleDiff < 1.0f && angleDiff > 179.0f)
 			{
 				Intersections.push_back({ position.x + shiftR1Amount.x, 0.0f, position.z + shiftR1Amount.z });
 				continue;
 			}
+			else
+			{
+				R1Position += shiftR1Amount;
+				R2Position += shiftR2Amount;
 
-			R1_S += shiftR1Amount;
-			R2_S += shiftR2Amount;
-
-			r2Direction = glm::rotate(r2Direction, glm::radians(90.0f), glm::vec3{ 0.0f, 1.0f, 0.0f });
-			glm::vec3 I = Helper::RayPlaneIntersection(R1_S, r1Direction, R2_S, r2Direction);
-
-			Intersections.push_back(I);
+				glm::vec3 I = Helper::RayPlaneIntersection(R1Position, r1Direction, R2Position, shiftR2Dir);
+				I.y = 0.0f;
+				Intersections.push_back(I);
+			}
 		}
 
 		size_t indexCount = 0;
-		for (size_t i = 0; i < roadCount; i++)
+		for (size_t i = 0; i < roadSegmentCount; i++)
 			indexCount += connectedRoadSegments[i]->Type[1]->indexCount;
 		TexturedObjectVertex* TOVertices = new TexturedObjectVertex[indexCount];
 
@@ -90,7 +92,7 @@ namespace Can
 		uint8_t textureSlotIndex = 0;
 
 		size_t offset = 0;
-		for (size_t i = 0; i < roadCount; i++)
+		for (size_t i = 0; i < roadSegmentCount; i++)
 		{
 			RoadSegment* rs = connectedRoadSegments[i];
 			Prefab* prefab = rs->Type[1];
@@ -118,48 +120,35 @@ namespace Can
 			}
 
 			glm::vec3 intersection1 = Intersections[i];
-			glm::vec3 intersection2 = Intersections[((roadCount + i) - 1) % roadCount];
+			glm::vec3 intersection2 = Intersections[((i - 1) + roadSegmentCount) % roadSegmentCount];
 
-			glm::vec3 R1 = this == rs->ConnectedObjectAtStart.junction ? rs->GetEndPosition() : rs->GetStartPosition();
 
-			glm::vec3 JR1 = glm::normalize(R1 - position);
-			JR1.y = 0.0f;
-			JR1 = glm::normalize(JR1);
-			glm::vec3 shiftAmount = glm::rotate(JR1, glm::radians(90.0f), glm::vec3{ 0.0f, 1.0f, 0.0f }) * roadWidth / 2.0f;
+			//glm::vec3 RPos = this == rs->ConnectedObjectAtStart.junction ? rs->GetCurvePoint(1) : rs->GetCurvePoint(2);
+			glm::vec3 RPos = rs->GetCurvePoint(2 - (size_t)(this == rs->ConnectedObjectAtStart.junction));
+			glm::vec3 RDir = this == rs->ConnectedObjectAtStart.junction ? rs->GetStartDirection() : rs->GetEndDirection();
+			RDir.y = 0.0f;
+			RDir = glm::normalize(RDir);
+
+			glm::vec3 shiftAmount = glm::vec3{ RDir.z, RDir.y, -RDir.x } *(roadWidth * 0.5f);
 
 			glm::vec3 Jp = position + shiftAmount;
+			glm::vec3 R1p = RPos + shiftAmount;
+
 			glm::vec3 Jn = position - shiftAmount;
-			glm::vec3 R1p = R1 + shiftAmount;
-			glm::vec3 R1n = R1 - shiftAmount;
+			glm::vec3 R1n = RPos - shiftAmount;
 
-			float lengthJP = glm::length(R1p - Jp) - glm::length(R1p - intersection2);
-			float lengthJN = glm::length(R1n - Jn) - glm::length(R1n - intersection1);
+			float lcp = glm::length((this == rs->ConnectedObjectAtStart.junction ? rs->GetCurvePoint(1) - rs->GetCurvePoint(0) : rs->GetCurvePoint(2) - rs->GetCurvePoint(3)));
+			float lengthJP = glm::length(R1p - Jp) - glm::length(R1p - intersection1);
+			float lengthJN = glm::length(R1n - Jn) - glm::length(R1n - intersection2);
+			float l = lengthJN > lengthJP ? lengthJN : lengthJP;
 
-			float l = 0.0f;
-			if (lengthJN < lengthJP)
-			{
-				float offsetLength = lengthJP + roadLength;
-				glm::vec3 temp = position + JR1 * offsetLength;
-				l = lengthJP;
-				if (this == rs->ConnectedObjectAtStart.junction)
-					rs->SetStartPosition(temp);
-				else
-					rs->SetEndPosition(temp);
-			}
-			else
-			{
-				float offsetLength = lengthJN + roadLength;
-				glm::vec3 temp = position + JR1 * offsetLength;
-				l = lengthJN;
-				if (this == rs->ConnectedObjectAtStart.junction)
-					rs->SetStartPosition(temp);
-				else
-					rs->SetEndPosition(temp);
-			}
-
+			float offsetLength = l + roadLength;
+			glm::vec3 temp = position + RDir * offsetLength;
+			rs->SetCurvePoint(3 * (size_t)(this != rs->ConnectedObjectAtStart.junction), temp);
+			if (offsetLength >= lcp)
+				rs->SetCurvePoint(2 - (size_t)(this == rs->ConnectedObjectAtStart.junction), temp + RDir * 0.1f);
 
 			float angle = rs->ConnectedObjectAtStart.junction == this ? rs->GetStartRotation().y : rs->GetEndRotation().y;
-
 			size_t OneVertexSize = (int)(sizeof(TexturedObjectVertex) / sizeof(float));
 			for (size_t j = 0; j < prefabIndexCount; j++)
 			{

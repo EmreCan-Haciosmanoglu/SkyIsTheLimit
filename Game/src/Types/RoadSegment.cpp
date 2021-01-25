@@ -10,23 +10,8 @@ namespace Can
 	RoadSegment::RoadSegment(const std::array<Prefab*, 3>& type, const std::array<glm::vec3, 4>& curvePoints)
 		: Type(type)
 		, CurvePoints(curvePoints)
-		, Directions({
-			glm::normalize(curvePoints[1] - curvePoints[0]),
-			glm::normalize(curvePoints[2] - curvePoints[3])
-			})
 	{
-		glm::vec2 dir = glm::normalize(glm::vec2{ Directions[0].x, Directions[0].z });
-		Rotations[0].y = glm::acos(dir.x) * ((float)(dir.y < 0.0f) * 2.0f - 1.0f);
-		glm::vec3 dirR = glm::rotate(Directions[0], -Rotations[0].y, glm::vec3{ 0.0f, 1.0f, 0.0f });
-		dir = glm::normalize(glm::vec2{ dirR.x, dirR.y });
-		Rotations[0].x = glm::acos(dir.x) * ((float)(dir.y < 0.0f) * 2.0f - 1.0f);
-
-		dir = glm::normalize(glm::vec2{ Directions[1].x, Directions[1].z });
-		Rotations[1].y = glm::acos(dir.x) * ((float)(dir.y < 0.0f) * 2.0f - 1.0f);
-		dirR = glm::rotate(Directions[1], -Rotations[1].y, glm::vec3{ 0.0f, 1.0f, 0.0f });
-		dir = glm::normalize(glm::vec2{ dirR.x, dirR.y });
-		Rotations[1].x = glm::acos(dir.x) * ((float)(dir.y < 0.0f) * 2.0f - 1.0f);
-
+		CalcRotsAndDirs();
 		Construct();
 	}
 	RoadSegment::~RoadSegment()
@@ -36,17 +21,14 @@ namespace Can
 
 	void RoadSegment::Construct()
 	{
-		constexpr int count = 20;
 		float lengthRoad = Type[0]->boundingBoxM.x - Type[0]->boundingBoxL.x;
-
-
+		std::vector<float> samples = Math::GetCubicCurveSampleTs(CurvePoints, lengthRoad);
+		size_t count = samples.size();
 
 		size_t prefabIndexCount = Type[0]->indexCount;
 		size_t indexCount = prefabIndexCount * count;
 		size_t vertexCount = indexCount * (3 + 2 + 3);
 		TexturedObjectVertex* TOVertices = new TexturedObjectVertex[indexCount];
-
-		std::array<float, count> samples = Math::GetCubicCurveSampleTs<count, 10>(CurvePoints);
 
 		glm::vec3 p1 = CurvePoints[0];
 		for (int c = 1; c < count; c++)
@@ -55,13 +37,20 @@ namespace Can
 			glm::vec3 vec1 = p2 - p1;
 			float length = glm::length(vec1);
 			float scale = length / lengthRoad;
-
 			glm::vec3 dir1 = vec1 / length;
 			glm::vec3 dir2 = (c < count - 1) ? glm::normalize((glm::vec3)Math::CubicCurve<float>(CurvePoints, samples[c + 1]) - p2) : -Directions[1];
 
 			float rot1 = (dir1.z < 0.0f) ? glm::acos(-dir1.x) + glm::radians(180.f) : glm::acos(dir1.x);
 			float rot2 = (dir2.z < 0.0f) ? glm::acos(-dir2.x) + glm::radians(180.f) : glm::acos(dir2.x);
 
+			float diffRot = glm::acos(glm::dot(dir1, dir2));
+			float diff = rot2 - rot1;
+			if ((diff > -4.0f && diff < -2.0f) || (diff > 2.0f && diff < 4.0f))
+			{
+				std::cout << std::endl;
+			}
+			//diff += (diff < -3.0f ? glm::radians(360.0f) : diff > 3.0f ? glm::radians(-360.0f) : 0.0f);
+			printf("rot2(%.3f) - rot1(%.3f) = %.3f\n", rot2, rot1, diff);
 			for (int i = 0; i < prefabIndexCount; i++)
 			{
 				size_t offset = c * prefabIndexCount + i;
@@ -80,23 +69,20 @@ namespace Can
 				float t = point.x / (lengthRoad * scale);
 				t = t < 0.01f ? 0.0f : (t > 0.99f ? 1.0f : t);
 
-
 				point = Helper::RotateAPointAroundAPoint(point, rot1);
 				point2 = Helper::RotateAPointAroundAPoint(point2, rot1);
-				point = Helper::RotateAPointAroundAPoint(point, Math::Lerp(0.0f, rot2 - rot1, t), point2);
+				point = Helper::RotateAPointAroundAPoint(point, Math::Lerp(0.0f, diff, t), point2);
 
 				TOVertices[offset].Position.x = point.x + p1.x - CurvePoints[0].x;
 				TOVertices[offset].Position.y = Type[0]->vertices[index + 1] + p1.y - CurvePoints[0].y;
 				TOVertices[offset].Position.z = point.y + p1.z - CurvePoints[0].z;
-				TOVertices[offset].UV.x = Type[0]->vertices[index + 3];
-				TOVertices[offset].UV.y = Type[0]->vertices[index + 4];
-				TOVertices[offset].Normal.x = Type[0]->vertices[index + 5];
-				TOVertices[offset].Normal.y = Type[0]->vertices[index + 6];
-				TOVertices[offset].Normal.z = Type[0]->vertices[index + 7];
+				TOVertices[offset].UV = *(glm::vec2*) & Type[0]->vertices[index + 3];
+				TOVertices[offset].Normal = *(glm::vec3*) & Type[0]->vertices[index + 5];
 				TOVertices[offset].TextureIndex = Type[0]->vertices[index + 8];
 			}
 			p1 = p2;
 		}
+		printf("\n");
 		Prefab* newPrefab = new Prefab(Type[0]->objectPath, Type[0]->shaderPath, Type[0]->texturePath, (float*)TOVertices, indexCount);
 
 		for (int c = 0; c < count; c++)
@@ -121,6 +107,25 @@ namespace Can
 		}
 
 		object = new Object(newPrefab, Type[0], CurvePoints[0], glm::vec3(1.0f), glm::vec3(0.0f));
+	}
+
+	void RoadSegment::CalcRotsAndDirs()
+	{
+		Directions = {
+			(glm::vec3)glm::normalize(CurvePoints[1] - CurvePoints[0]),
+				(glm::vec3)glm::normalize(CurvePoints[2] - CurvePoints[3])
+		};
+		glm::vec2 dir = glm::normalize(glm::vec2{ Directions[0].x, Directions[0].z });
+		Rotations[0].y = glm::acos(dir.x) * ((float)(dir.y < 0.0f) * 2.0f - 1.0f);
+		glm::vec3 dirR = glm::rotate(Directions[0], -Rotations[0].y, glm::vec3{ 0.0f, 1.0f, 0.0f });
+		dir = glm::normalize(glm::vec2{ dirR.x, dirR.y });
+		Rotations[0].x = glm::acos(dir.x) * ((float)(dir.y < 0.0f) * 2.0f - 1.0f);
+
+		dir = glm::normalize(glm::vec2{ Directions[1].x, Directions[1].z });
+		Rotations[1].y = glm::acos(dir.x) * ((float)(dir.y < 0.0f) * 2.0f - 1.0f);
+		dirR = glm::rotate(Directions[1], -Rotations[1].y, glm::vec3{ 0.0f, 1.0f, 0.0f });
+		dir = glm::normalize(glm::vec2{ dirR.x, dirR.y });
+		Rotations[1].x = glm::acos(dir.x) * ((float)(dir.y < 0.0f) * 2.0f - 1.0f);
 	}
 
 	void RoadSegment::ReConstruct()
@@ -166,21 +171,25 @@ namespace Can
 	void RoadSegment::SetStartPosition(const glm::vec3& position)
 	{
 		CurvePoints[0] = position;
+		CalcRotsAndDirs();
 		ReConstruct();
 	}
 	void RoadSegment::SetEndPosition(const glm::vec3& position)
 	{
 		CurvePoints[3] = position;
+		CalcRotsAndDirs();
 		ReConstruct();
 	}
 	void RoadSegment::SetCurvePoints(const std::array<glm::vec3, 4>& curvePoints)
 	{
 		CurvePoints = curvePoints;
+		CalcRotsAndDirs();
 		ReConstruct();
 	}
 	void RoadSegment::SetCurvePoint(size_t index, const glm::vec3& curvePoint)
 	{
 		CurvePoints[index] = curvePoint;
+		CalcRotsAndDirs();
 		ReConstruct();
 	}
 }
