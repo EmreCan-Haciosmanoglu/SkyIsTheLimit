@@ -8,7 +8,7 @@
 
 #include "Helper.h"
 
-#include "TestScene.h"
+#include "Scenes/GameScene.h"
 
 namespace Can
 {
@@ -94,6 +94,7 @@ namespace Can
 	{
 		delete object;
 	}
+	
 	void Road::ConstructObject(Prefab* prefab)
 	{
 		float lengthRoad = prefab->boundingBoxM.x - prefab->boundingBoxL.x;
@@ -147,15 +148,16 @@ namespace Can
 			float c = bLength * glm::cos(angle);
 			if (c <= 0.0f || c >= length)
 			{
+				auto man = &(GameScene::ActiveGameScene->m_BuildingManager);
 				auto it = std::find(
-					TestScene::m_Buildings.begin(),
-					TestScene::m_Buildings.end(),
+					man->GetBuildings().begin(),
+					man->GetBuildings().end(),
 					building
 				);
 				connectedBuildings.erase(connectedBuildings.begin() + i);
 				building->connectedRoad = nullptr;
-				if(TestScene::buildingSnapOptions[0])
-					TestScene::m_Buildings.erase(it);
+				if(man->snapOptions[0])
+					man->GetBuildings().erase(it);
 				delete building;
 				i--;
 			}

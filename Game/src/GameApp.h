@@ -1,7 +1,7 @@
 #pragma once
 #include "Can.h"
 
-#include "TestScene.h"
+#include "Scenes/GameScene.h"
 #include "UIScene.h"
 #include "Debug.h"
 
@@ -32,7 +32,7 @@ namespace Can
 		std::vector<Prefab*> buildings;
 		std::vector<Prefab*> trees;
 		
-		TestScene* testScene = nullptr; 
+		GameScene* gameScene = nullptr;
 		UIScene* uiScene = nullptr;
 		Debug* debugScene = nullptr;
 	};
