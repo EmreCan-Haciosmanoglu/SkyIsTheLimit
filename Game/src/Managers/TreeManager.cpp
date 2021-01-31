@@ -62,7 +62,7 @@ namespace Can
 					int type = colors[Random::Integer((int)colors.size())];
 					glm::vec3 offsetPos{ Random::Float(halfOffset), 0.0f, Random::Float(halfOffset) };
 					glm::vec3 randomRot{ 0.0f, Random::Float(-glm::radians(90.0f),glm::radians(90.0f)), 0.0f };
-					glm::vec3 randomScale{ Random::Float(-0.2, 0.2),  Random::Float(-0.2, 0.2),  Random::Float(-0.2, 0.2) };
+					glm::vec3 randomScale{ Random::Float(-0.2f, 0.2f),  Random::Float(-0.2f, 0.2f),  Random::Float(-0.2f, 0.2f) };
 					if (type == 0)
 					{
 						Object* tree = new Object(
@@ -235,7 +235,7 @@ namespace Can
 		{
 			using namespace Utility;
 			glm::vec3 randomRot{ 0.0f, Random::Float(-glm::radians(90.0f),glm::radians(90.0f)), 0.0f };
-			glm::vec3 randomScale{ Random::Float(-0.2, 0.2),  Random::Float(-0.2, 0.2),  Random::Float(-0.2, 0.2) };
+			glm::vec3 randomScale{ Random::Float(-0.2f, 0.2f),  Random::Float(-0.2f, 0.2f),  Random::Float(-0.2f, 0.2f) };
 			Object* tree = new Object(
 				m_Scene->MainApplication->trees[m_Type],
 				m_Scene->MainApplication->trees[m_Type],
