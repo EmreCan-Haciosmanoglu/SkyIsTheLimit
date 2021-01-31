@@ -27,6 +27,8 @@ namespace Can
 			glm::vec4{ 221.0f / 255.0f, 255.0f / 255.0f, 247.0f / 255.0f, 1.0f },
 			nullptr,
 			[this, height]() {
+				if (!Input::IsMouseButtonPressed(MouseCode::Button0))
+					return;
 				entt::registry& mainRegistry = this->m_Scene->m_Registry;
 
 				entt::entity panelRoadsID = this->m_PanelRoads->entityID;
@@ -83,6 +85,8 @@ namespace Can
 			glm::vec4{ 255.0f / 255.0f, 166.0f / 255.0f, 158.0f / 255.0f, 1.0f },
 			nullptr,
 			[this, height]() {
+				if (!Input::IsMouseButtonPressed(MouseCode::Button0))
+					return;
 				entt::registry& mainRegistry = this->m_Scene->m_Registry;
 
 				entt::entity panelRoadsID = this->m_PanelRoads->entityID;
@@ -139,6 +143,8 @@ namespace Can
 			glm::vec4{ 69.0f / 255.0f, 123.0f / 255.0f, 157.0f / 255.0f, 1.0f },
 			nullptr,
 			[this, height]() {
+				if (!Input::IsMouseButtonPressed(MouseCode::Button0))
+					return;
 				entt::registry& mainRegistry = this->m_Scene->m_Registry;
 
 				entt::entity panelRoadsID = this->m_PanelRoads->entityID;
@@ -195,7 +201,8 @@ namespace Can
 			glm::vec4{ 170.0f / 255.0f, 68.0f / 255.0f, 101.0f / 255.0f, 1.0f },
 			nullptr,
 			[this]() {
-
+				if (!Input::IsMouseButtonPressed(MouseCode::Button0))
+					return;
 				entt::registry& mainRegistry = this->m_Scene->m_Registry;
 
 				entt::entity panelNeedsID = this->m_PanelNeeds->entityID;
@@ -220,7 +227,8 @@ namespace Can
 			glm::vec4{ 147.0f / 255.0f, 225.0f / 255.0f, 216.0f / 255.0f, 1.0f },
 			nullptr,
 			[this]() {
-
+				if (!Input::IsMouseButtonPressed(MouseCode::Button0))
+					return;
 				entt::registry& mainRegistry = this->m_Scene->m_Registry;
 
 				entt::entity panelNeedsID = this->m_PanelNeeds->entityID;
@@ -459,6 +467,8 @@ namespace Can
 					glm::vec4{ 1.0f, 1.0f, 1.0f, 1.0f },
 					Texture2D::Create(roadtumbnailimagefiles[i]),
 					[i, this]() {
+						if (!Input::IsMouseButtonPressed(MouseCode::Button0))
+							return;
 						std::cout << "You clicked the " << (i + 1) << "th Button inside the Road panel!" << std::endl;
 						this->m_Parent->gameScene->SetConstructionMode(ConstructionMode::Road);
 						auto mode = this->m_Parent->gameScene->m_RoadManager.GetConstructionMode();
@@ -484,6 +494,8 @@ namespace Can
 					glm::vec4{ 1.0f, 1.0f, 1.0f, 1.0f },
 					Texture2D::Create(buildingtumbnailimagefiles[i]),
 					[i, this]() {
+						if (!Input::IsMouseButtonPressed(MouseCode::Button0))
+							return;
 						std::cout << "You clicked the " << (i + 1) << "th Button inside the Building panel!" << std::endl;
 						this->m_Parent->gameScene->SetConstructionMode(ConstructionMode::Building);
 						auto mode = this->m_Parent->gameScene->m_BuildingManager.GetConstructionMode();
@@ -509,6 +521,8 @@ namespace Can
 					glm::vec4{ 1.0f, 1.0f, 1.0f, 1.0f },
 					Texture2D::Create(treetumbnailimagefiles[i]),
 					[i, this]() {
+						if (!Input::IsMouseButtonPressed(MouseCode::Button0))
+							return;
 						std::cout << "You clicked the " << (i + 1) << "th Button inside the Tree panel!" << std::endl;
 						this->m_Parent->gameScene->SetConstructionMode(ConstructionMode::Tree);
 						auto mode = this->m_Parent->gameScene->m_TreeManager.GetConstructionMode();
