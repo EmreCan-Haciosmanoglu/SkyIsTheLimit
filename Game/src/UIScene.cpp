@@ -16,9 +16,82 @@ namespace Can
 		)
 		, m_Scene(new Scene())
 	{
+		testImage = Texture2D::Create("assets/textures/TreeMap.png");
 		float width = m_AspectRatio * m_ZoomLevel * 2.0f;
 		float height = m_ZoomLevel * 2.0f;
+		Application& app = Application::Get();
+		unsigned int w = app.GetWindow().GetWidth();
+		unsigned int h = app.GetWindow().GetHeight();
 
+		testView = new ScrollView(	ScrollViewConstructorParameters{
+			m_Scene->m_Registry,
+			m_Scene->entityID,
+			glm::vec3{ 1.0f, height * 0.3f, 0.0f },
+			glm::vec3{ width * 0.75f - 0.5f, height * 0.4f , 0.0f },
+			glm::vec4{ 221.0f / 255.0f, 255.0f / 255.0f, 247.0f / 255.0f, 1.0f },
+			2,
+			[]() {std::cout << "You clicked to the ScrollView!" << std::endl; }
+			},
+									ScrollBarConstructorParameters{
+				m_Scene->m_Registry,
+				m_Scene->entityID,
+				glm::vec3{ 1.0f, height * 0.5f, 0.0f },
+				glm::vec2{ width * 0.75f - 0.5f, 1.0f},
+				glm::vec4{ 221.0f / 255.0f, 155.0f / 255.0f, 247.0f / 255.0f, 1.0f },
+				glm::vec4{ 255.0f / 255.0f, 166.0f / 255.0f, 158.0f / 255.0f, 1.0f },
+				false,
+				false,
+				0.0f,
+				4.0f,
+				0.0f,
+				[this, width, w, height, h]() {
+					if (!Input::IsMouseButtonPressed(MouseCode::Button0))
+						return;
+					entt::registry& mainRegistry = this->m_Scene->m_Registry;
+					entt::entity scrollbarID = this->testView->scrollbar->entityID;
+
+					auto [mouseX, mouseY] = Input::GetMousePos();
+					bool changed = this->testView->scrollbar->Update(glm::vec2{
+							(mouseX * width) / w,
+							(mouseY * height) / h
+						});
+					if (changed)
+						this->testView->Update();
+					mainRegistry.emplace_or_replace<OnDragCallbackComponent>(scrollbarID,this->testView->scrollbar->OnDragCallback);
+				},
+				[this, width, w, height, h]() {
+					entt::registry& mainRegistry = this->m_Scene->m_Registry;
+					entt::entity scrollbarID = this->testView->scrollbar->entityID;
+
+					auto [mouseX, mouseY] = Input::GetMousePos();
+					bool changed = this->testView->scrollbar->Update(glm::vec2{
+							(mouseX * width) / w,
+							(mouseY * height) / h
+						});
+					if (changed)
+						this->testView->Update();
+
+					if (!Input::IsMouseButtonPressed(MouseCode::Button0))
+						mainRegistry.remove<OnDragCallbackComponent>(scrollbarID);
+				}
+			});
+		m_Scene->m_Registry.emplace<ChildrenComponent>(m_Scene->entityID, std::vector<entt::entity>{ testView->entityID });
+		std::vector<entt::entity>& childrenOfTheView = m_Scene->m_Registry.get_or_emplace<ChildrenComponent>(testView->entityID, std::vector<entt::entity>{});
+		for (size_t i = 0; i < 10; i++)
+		{
+			testPanelsForView[i] = new Panel(PanelConstructorParameters{
+				m_Scene->m_Registry,
+				testView->entityID,
+				glm::vec3(0.0f),
+				glm::vec2(3.0f),
+				glm::vec4(1.0f),//glm::vec4{ 69.0f / 255.0f, 123.0f / 255.0f, 157.0f / 255.0f, 1.0f },
+				testImage,
+				[i]() {std::cout << "You clicked the " << (i + 1) << "th Button inside the Tree panel!" << std::endl; }
+				});
+			childrenOfTheView.push_back(testPanelsForView[i]->entityID);
+		}
+		testView->Update();
+#if 0
 		m_ButtonRoads = new Button(ButtonConstructorParameters{
 			m_Scene->m_Registry,
 			m_Scene->entityID,
@@ -535,6 +608,7 @@ namespace Can
 				m_TreePanelButtonList.push_back(treePanelbutton);
 			}
 		}
+#endif
 	}
 
 	UIScene::~UIScene()
@@ -599,12 +673,20 @@ namespace Can
 		float widthHalf = m_AspectRatio * m_ZoomLevel;
 		float heightHalf = m_ZoomLevel;
 
+		RenderCommand::SetClearColor({ 0.9f, 0.9f, 0.9f, 1.0f });
+		RenderCommand::Clear();
+
 		Renderer2D::BeginScene(m_CameraController.GetCamera());
 
 		glm::vec2 offset = { -widthHalf, heightHalf };
-		ChildrenComponent& children = m_Scene->m_Registry.get<ChildrenComponent>(m_Scene->entityID);
+		ChildrenComponent& children = m_Scene->m_Registry.get_or_emplace<ChildrenComponent>(m_Scene->entityID, std::vector<entt::entity>{});
 		for (auto entity : children)
 			Draw(entity, &(m_Scene->m_Registry), offset);
+
+		auto view = m_Scene->m_Registry.view<OnDragCallbackComponent>();
+
+		for (entt::entity e : view)
+			m_Scene->m_Registry.get<OnDragCallbackComponent>(e)();
 
 		Can::Renderer2D::EndScene();
 	}
@@ -656,24 +738,18 @@ namespace Can
 			}
 		}
 
+		if (registry->has<IgnoreCollisionComponent>(id))
+			return false;
 
 		auto& [transform, spriteRenderer] = registry->get< TransformComponent, SpriteRendererComponent>(id);
 
-		glm::vec3 pos;
-		glm::vec3 scale;
-		glm::quat q;			// Don't care right now
-		glm::vec3 skew;			// Don't care right now
-		glm::vec4 perspective;	// Don't care right now
-		glm::decompose(transform.Transform, scale, q, pos, skew, perspective);
-
-		glm::vec2& size = spriteRenderer.size;
 		glm::vec2 leftTop = {
-			pos.x,
-			pos.y
+			transform.Position.x,
+			transform.Position.y
 		};
 		glm::vec2 rightBottom = {
-			pos.x + size.x * scale.x,
-			pos.y + size.y * scale.y
+			transform.Position.x + spriteRenderer.size.x * transform.Scale.x,
+			transform.Position.y + spriteRenderer.size.y * transform.Scale.y
 		};
 
 		if (
@@ -706,26 +782,17 @@ namespace Can
 		}
 
 		auto& [transform, spriteRenderer] = registry->get< TransformComponent, SpriteRendererComponent>(id);
+		glm::vec3 pos = transform.Position;
 
-		glm::vec3 pos;
-		glm::vec3 scale;
-		glm::quat q;			// Don't care right now
-		glm::vec3 skew;			// Don't care right now
-		glm::vec4 perspective;	// Don't care right now
-		glm::decompose(transform.Transform, scale, q, pos, skew, perspective);
+		pos.x = pos.x + offset.x + spriteRenderer.size.x / 2.0f;
+		pos.y = -1 * (pos.y - offset.y + spriteRenderer.size.y / 2.0f);
 
-		scale.x *= spriteRenderer.size.x;
-		scale.y *= spriteRenderer.size.y;
+		glm::mat4 newTransform = glm::translate(glm::mat4(1.0f), pos) * glm::scale(glm::mat4(1), glm::vec3(spriteRenderer.size, 1.0f));
 
-		pos.x = pos.x + offset.x + scale.x / 2.0f;
-		pos.y = -1 * (pos.y - offset.y + scale.y / 2.0f);
-
-		glm::mat4 newTransform = glm::translate(glm::mat4(1.0f), pos) * glm::scale(glm::mat4(1), scale);
-
-		Renderer2D::DrawQuad(DrawQuadParameters{ pos - glm::vec3{ 0.0f, 0.0f, 0.00001f }, scale + glm::vec3{ 0.1f, 0.1f, 0.1f }, 0.0f, { 0.0f, 0.0f, 0.0f, 1.0f }, nullptr });
+		Renderer2D::DrawQuad(DrawQuadParameters{ pos - glm::vec3{ 0.0f, 0.0f, 0.00001f }, glm::vec3(spriteRenderer.size, 1.0f) + glm::vec3{ 0.05f, 0.05f, 0.0f }, 0.0f, { 0.0f, 0.0f, 0.0f, 1.0f }, nullptr, spriteRenderer.trim });
 		if (spriteRenderer.texture)
-			Renderer2D::DrawQuad(newTransform, DrawQuadParameters{ glm::vec3(0.0f), glm::vec3(0.0f), 0.0f, spriteRenderer.color, spriteRenderer.texture });
+			Renderer2D::DrawQuad(newTransform, DrawQuadParameters{ glm::vec3(0.0f), glm::vec3(0.0f), 0.0f, spriteRenderer.color, spriteRenderer.texture, spriteRenderer.trim });
 		else
-			Renderer2D::DrawQuad(newTransform, DrawQuadParameters{ glm::vec3(0.0f), glm::vec3(0.0f), 0.0f, spriteRenderer.color, nullptr });
+			Renderer2D::DrawQuad(newTransform, DrawQuadParameters{ glm::vec3(0.0f), glm::vec3(0.0f), 0.0f, spriteRenderer.color, nullptr, spriteRenderer.trim });
 	}
 }
