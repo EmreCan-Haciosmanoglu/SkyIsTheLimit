@@ -23,7 +23,7 @@ namespace Can
 		unsigned int w = app.GetWindow().GetWidth();
 		unsigned int h = app.GetWindow().GetHeight();
 
-		testView = new ScrollView(	ScrollViewConstructorParameters{
+		testView = new ScrollView(ScrollViewConstructorParameters{
 			m_Scene->m_Registry,
 			m_Scene->entityID,
 			glm::vec3{ 1.0f, height * 0.3f, 0.0f },
@@ -32,7 +32,7 @@ namespace Can
 			2,
 			[]() {std::cout << "You clicked to the ScrollView!" << std::endl; }
 			},
-									ScrollBarConstructorParameters{
+			ScrollBarConstructorParameters{
 				m_Scene->m_Registry,
 				m_Scene->entityID,
 				glm::vec3{ 1.0f, height * 0.5f, 0.0f },
@@ -77,7 +77,7 @@ namespace Can
 			});
 		m_Scene->m_Registry.emplace<ChildrenComponent>(m_Scene->entityID, std::vector<entt::entity>{ testView->entityID });
 		std::vector<entt::entity>& childrenOfTheView = m_Scene->m_Registry.get_or_emplace<ChildrenComponent>(testView->entityID, std::vector<entt::entity>{});
-		for (size_t i = 0; i < 10; i++)
+		for (size_t i = 0; i < 20; i++)
 		{
 			testPanelsForView[i] = new Panel(PanelConstructorParameters{
 				m_Scene->m_Registry,
@@ -329,58 +329,63 @@ namespace Can
 		m_Scene->m_Registry.emplace<ChildrenComponent>(m_Scene->entityID, buttonList);
 
 
-		m_PanelRoads = new Panel(
+		m_PanelRoads = new Panel(PanelConstructorParameters{
 			m_Scene->m_Registry,
 			m_ButtonRoads->entityID,
 			glm::vec3{ 0.5f, height - 4.5f, 0.001f },
-			glm::vec3{ width - 1.0f, 4.0f, 1.0f },
+			glm::vec2{ width - 1.0f, 4.0f },
 			glm::vec4{ 221.0f / 255.0f, 255.0f / 255.0f, 247.0f / 255.0f, 1.0f },
+			nullptr,
 			[]() {std::cout << "You clicked the panel that is for Roads!" << std::endl; }
-		);
+			});
 		//m_Scene->m_Registry.emplace<HiddenComponent>(m_PanelRoads->entityID);
 		m_Scene->m_Registry.emplace<ChildrenComponent>(m_ButtonRoads->entityID, std::vector<entt::entity>{ m_PanelRoads->entityID });
 
-		m_PanelBuildings = new Panel(
+		m_PanelBuildings = new Panel(PanelConstructorParameters{
 			m_Scene->m_Registry,
 			m_ButtonBuildings->entityID,
 			glm::vec3{ 0.5f, height - 4.5f, 0.001f },
-			glm::vec3{ width - 1.0f, 4.0f, 1.0f },
+			glm::vec2{ width - 1.0f, 4.0f },
 			glm::vec4{ 255.0f / 255.0f, 166.0f / 255.0f, 158.0f / 255.0f, 1.0f },
+			nullptr,
 			[]() {std::cout << "You clicked the panel that is for Buildings!" << std::endl; }
-		);
+			});
 		m_Scene->m_Registry.emplace<HiddenComponent>(m_PanelBuildings->entityID);
 		m_Scene->m_Registry.emplace<ChildrenComponent>(m_ButtonBuildings->entityID, std::vector<entt::entity>{ m_PanelBuildings->entityID });
 
-		m_PanelTrees = new Panel(
+		m_PanelTrees = new Panel(PanelConstructorParameters{
 			m_Scene->m_Registry,
 			m_ButtonTrees->entityID,
 			glm::vec3{ 0.5f, height - 4.5f, 0.001f },
-			glm::vec3{ width - 1.0f, 4.0f, 1.0f },
+			glm::vec2{ width - 1.0f, 4.0f },
 			glm::vec4{ 69.0f / 255.0f, 123.0f / 255.0f, 157.0f / 255.0f, 1.0f },
+			nullptr,
 			[]() {std::cout << "You clicked the panel that is for Trees!" << std::endl; }
-		);
+			});
 		m_Scene->m_Registry.emplace<HiddenComponent>(m_PanelTrees->entityID);
 		m_Scene->m_Registry.emplace<ChildrenComponent>(m_ButtonTrees->entityID, std::vector<entt::entity>{ m_PanelTrees->entityID });
 
-		m_PanelNeeds = new Panel(
+		m_PanelNeeds = new Panel(PanelConstructorParameters{
 			m_Scene->m_Registry,
 			m_ButtonTools->entityID,
 			glm::vec3{ 0.5f, 1.6f, 0.001f },
-			glm::vec3{ 3.5f, 11.0f, 1.0f },
+			glm::vec2{ 3.5f, 11.0f },
 			glm::vec4{ 170.0f / 255.0f, 68.0f / 255.0f, 101.0f / 255.0f, 1.0f },
+			nullptr,
 			[]() {std::cout << "You clicked the panel that is for Needs!" << std::endl; }
-		);
+			});
 		m_Scene->m_Registry.emplace<HiddenComponent>(m_PanelNeeds->entityID);
 		m_Scene->m_Registry.emplace<ChildrenComponent>(m_ButtonNeeds->entityID, std::vector<entt::entity>{ m_PanelNeeds->entityID });
 
-		m_PanelTools = new Panel(
+		m_PanelTools = new Panel(PanelConstructorParameters{
 			m_Scene->m_Registry,
 			m_ButtonTools->entityID,
 			glm::vec3{ 0.5f, 1.6f, 0.001f },
-			glm::vec3{ 3.5f, 11.0f, 1.0f },
+			glm::vec2{ 3.5f, 11.0f },
 			glm::vec4{ 147.0f / 255.0f, 225.0f / 255.0f, 216.0f / 255.0f, 1.0f },
+			nullptr,
 			[]() {std::cout << "You clicked the panel that is for Tools!" << std::endl; }
-		);
+			});
 		m_Scene->m_Registry.emplace<HiddenComponent>(m_PanelTools->entityID);
 		m_Scene->m_Registry.emplace<ChildrenComponent>(m_ButtonTools->entityID, std::vector<entt::entity>{ m_PanelTools->entityID });
 
@@ -743,15 +748,13 @@ namespace Can
 
 		auto& [transform, spriteRenderer] = registry->get< TransformComponent, SpriteRendererComponent>(id);
 
+		glm::vec2 size = spriteRenderer.size * transform.Scale;
 		glm::vec2 leftTop = {
 			transform.Position.x,
 			transform.Position.y
 		};
-		glm::vec2 rightBottom = {
-			transform.Position.x + spriteRenderer.size.x * transform.Scale.x,
-			transform.Position.y + spriteRenderer.size.y * transform.Scale.y
-		};
-
+		glm::vec2 rightBottom = leftTop + size * glm::vec2{ spriteRenderer.trim[1], spriteRenderer.trim[2] };
+		leftTop += size * glm::vec2{ spriteRenderer.trim[3], spriteRenderer.trim[0] };
 		if (
 			clickPosition.x < leftTop.x ||
 			clickPosition.y < leftTop.y ||

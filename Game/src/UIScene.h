@@ -27,7 +27,7 @@ namespace Can
 
 		ScrollBar* testBar = nullptr;
 		ScrollView* testView = nullptr;
-		std::array<Panel*, 10> testPanelsForView;
+		std::array<Panel*, 20> testPanelsForView;
 		Ref<Texture2D> testImage;
 
 		Button* m_ButtonRoads = nullptr;
@@ -41,6 +41,10 @@ namespace Can
 		Panel* m_PanelTrees = nullptr;
 		Panel* m_PanelNeeds = nullptr;
 		Panel* m_PanelTools = nullptr;
+
+		ScrollView* m_ScrollViewRoads = nullptr;
+		ScrollView* m_ScrollViewBuildings = nullptr;
+		ScrollView* m_ScrollViewTrees = nullptr;
 
 		Button* m_ButtonTools_01 = nullptr;
 		Button* m_ButtonTools_02 = nullptr;
