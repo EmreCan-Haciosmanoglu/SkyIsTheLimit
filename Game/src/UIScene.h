@@ -25,11 +25,6 @@ namespace Can
 	public:
 		Scene* m_Scene;
 
-		ScrollBar* testBar = nullptr;
-		ScrollView* testView = nullptr;
-		std::array<Panel*, 20> testPanelsForView;
-		Ref<Texture2D> testImage;
-
 		Button* m_ButtonRoads = nullptr;
 		Button* m_ButtonBuildings = nullptr;
 		Button* m_ButtonTrees = nullptr;
