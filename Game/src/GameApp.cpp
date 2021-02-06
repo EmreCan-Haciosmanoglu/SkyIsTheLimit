@@ -26,11 +26,10 @@ namespace Can
 		LoadTrees();
 
 		gameScene = new GameScene(this);
-		PushLayer(gameScene);
+		//PushLayer(gameScene);
 
 		uiScene = new UIScene(this);
 		PushOverlay(uiScene);
-		//PushLayer(uiScene);
 
 		debugScene = new Debug(this);
 		PushOverlay(debugScene);
