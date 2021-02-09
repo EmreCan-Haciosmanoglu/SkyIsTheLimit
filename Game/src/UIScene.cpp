@@ -897,10 +897,10 @@ namespace Can
 
 		glm::mat4 newTransform = glm::translate(glm::mat4(1.0f), pos) * glm::scale(glm::mat4(1), glm::vec3(spriteRenderer.size, 1.0f));
 
-		Renderer2D::DrawQuad(DrawQuadParameters{ pos - glm::vec3{ 0.0f, 0.0f, 0.00001f }, glm::vec3(spriteRenderer.size, 1.0f) + glm::vec3{ 0.05f, 0.05f, 0.0f }, 0.0f, { 0.0f, 0.0f, 0.0f, 1.0f }, nullptr, spriteRenderer.trim });
+		Renderer2D::DrawRoundedQuad(DrawQuadParameters{ pos - glm::vec3{ 0.0f, 0.0f, 0.0001f }, glm::vec3(spriteRenderer.size, 1.0f) + glm::vec3{ 0.05f, 0.05f, 0.0f }, 0.0f, { 0.0f, 0.0f, 0.0f, 1.0f }, nullptr, spriteRenderer.trim }, 0.5f, 2);
 		if (spriteRenderer.texture)
-			Renderer2D::DrawQuad(newTransform, DrawQuadParameters{ glm::vec3(0.0f), glm::vec3(0.0f), 0.0f, spriteRenderer.color, spriteRenderer.texture, spriteRenderer.trim });
+			Renderer2D::DrawRoundedQuad(newTransform, DrawQuadParameters{ transform.Position, spriteRenderer.size, 0.0f, spriteRenderer.color, spriteRenderer.texture, spriteRenderer.trim }, 0.5f, 2);
 		else
-			Renderer2D::DrawQuad(newTransform, DrawQuadParameters{ glm::vec3(0.0f), glm::vec3(0.0f), 0.0f, spriteRenderer.color, nullptr, spriteRenderer.trim });
+			Renderer2D::DrawRoundedQuad(newTransform, DrawQuadParameters{ transform.Position, spriteRenderer.size, 0.0f, spriteRenderer.color, nullptr, spriteRenderer.trim }, 0.5f, 2);
 	}
 }
