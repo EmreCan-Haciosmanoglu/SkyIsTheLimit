@@ -37,6 +37,9 @@ namespace Can
 		Panel* m_PanelNeeds = nullptr;
 		Panel* m_PanelTools = nullptr;
 
+		Button* m_AddTreeButton = nullptr;
+		Button* m_RemoveTreeButton = nullptr;
+
 		ScrollView* m_ScrollViewRoads = nullptr;
 		ScrollView* m_ScrollViewBuildings = nullptr;
 		ScrollView* m_ScrollViewTrees = nullptr;

@@ -19,7 +19,8 @@ namespace Can
 		//terrainPrefab = Helper::GetPrefabForTerrain("assets/objects/heightmap.png");
 
 		treeMap = Texture2D::Create("assets/textures/treeMap.png");
-
+		addTexture = Texture2D::Create("assets/textures/Buttons/Add.png");
+		removeTexture = Texture2D::Create("assets/textures/Buttons/Remove.png");
 
 		LoadRoads();
 		LoadBuildings();
