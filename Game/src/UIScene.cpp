@@ -9,11 +9,7 @@ namespace Can
 		: m_Parent(parent)
 		, m_ZoomLevel(10.0f)
 		, m_AspectRatio(1280.0f / 720.0f)
-		, m_CameraController(
-			m_AspectRatio,
-			m_ZoomLevel,
-			false
-		)
+		, m_CameraController(m_AspectRatio, m_ZoomLevel, false)
 		, m_Scene(new Scene())
 	{
 		float width = m_AspectRatio * m_ZoomLevel * 2.0f;
@@ -896,11 +892,16 @@ namespace Can
 		pos.y = -1 * (pos.y - offset.y + spriteRenderer.size.y / 2.0f);
 
 		glm::mat4 newTransform = glm::translate(glm::mat4(1.0f), pos) * glm::scale(glm::mat4(1), glm::vec3(spriteRenderer.size, 1.0f));
-
-		Renderer2D::DrawRoundedQuad(DrawQuadParameters{ pos - glm::vec3{ 0.0f, 0.0f, 0.0001f }, glm::vec3(spriteRenderer.size, 1.0f) + glm::vec3{ 0.05f, 0.05f, 0.0f }, 0.0f, { 0.0f, 0.0f, 0.0f, 1.0f }, nullptr, spriteRenderer.trim }, 0.5f, 2);
-		if (spriteRenderer.texture)
-			Renderer2D::DrawRoundedQuad(newTransform, DrawQuadParameters{ transform.Position, spriteRenderer.size, 0.0f, spriteRenderer.color, spriteRenderer.texture, spriteRenderer.trim }, 0.5f, 2);
+		if (spriteRenderer.borderRadius >= 0.0f)
+		{
+			Renderer2D::DrawRoundedQuad(DrawQuadParameters{ pos - glm::vec3{ 0.0f, 0.0f, 0.0001f }, glm::vec3(spriteRenderer.size, 1.0f) + glm::vec3{ 0.05f, 0.05f, 0.0f }, 0.0f, { 0.0f, 0.0f, 0.0f, 1.0f }, nullptr, spriteRenderer.trim, spriteRenderer.borderRadius, 2 });
+			Renderer2D::DrawRoundedQuad(newTransform, DrawQuadParameters{ transform.Position, spriteRenderer.size, 0.0f, spriteRenderer.color, spriteRenderer.texture, spriteRenderer.trim, spriteRenderer.borderRadius, 2 });
+		}
 		else
-			Renderer2D::DrawRoundedQuad(newTransform, DrawQuadParameters{ transform.Position, spriteRenderer.size, 0.0f, spriteRenderer.color, nullptr, spriteRenderer.trim }, 0.5f, 2);
+		{
+			Renderer2D::DrawQuad(DrawQuadParameters{ pos - glm::vec3{ 0.0f, 0.0f, 0.0001f }, glm::vec3(spriteRenderer.size, 1.0f) + glm::vec3{ 0.05f, 0.05f, 0.0f }, 0.0f, { 0.0f, 0.0f, 0.0f, 1.0f }, nullptr, spriteRenderer.trim });
+			Renderer2D::DrawQuad(newTransform, DrawQuadParameters{ transform.Position, spriteRenderer.size, 0.0f, spriteRenderer.color, spriteRenderer.texture, spriteRenderer.trim });
+		}
+
 	}
 }
