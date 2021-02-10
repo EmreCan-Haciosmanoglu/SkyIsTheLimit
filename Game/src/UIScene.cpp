@@ -75,7 +75,8 @@ namespace Can
 						mainRegistry.emplace<HiddenComponent>(panelRoadsID);
 					}
 				}
-			}
+			},
+			0.3f
 			});
 		m_ButtonBuildings = new Button(ButtonConstructorParameters{
 			m_Scene->m_Registry,
@@ -133,7 +134,8 @@ namespace Can
 						mainRegistry.emplace<HiddenComponent>(panelBuildingsID);
 					}
 				}
-			}
+			},
+			0.3f
 			});
 		m_ButtonTrees = new Button(ButtonConstructorParameters{
 			m_Scene->m_Registry,
@@ -191,12 +193,14 @@ namespace Can
 						mainRegistry.emplace<HiddenComponent>(panelTreesID);
 					}
 				}
-			} });
+			},
+			0.3f
+			});
 
 		m_ButtonNeeds = new Button(ButtonConstructorParameters{
 			m_Scene->m_Registry,
 			m_Scene->entityID,
-			glm::vec3{ 0.5f, 0.5f, 0.0011f },
+			glm::vec3{ 0.75f, 0.5f, 0.0011f },
 			glm::vec2{ 1.0f, 1.0f },
 			glm::vec4{ 170.0f / 255.0f, 68.0f / 255.0f, 101.0f / 255.0f, 1.0f },
 			nullptr,
@@ -217,7 +221,8 @@ namespace Can
 				{
 					mainRegistry.emplace<HiddenComponent>(panelNeedsID);
 				}
-			}
+			},
+			0.2f
 			});
 		m_ButtonTools = new Button(ButtonConstructorParameters{
 			m_Scene->m_Registry,
@@ -243,7 +248,8 @@ namespace Can
 				{
 					mainRegistry.emplace<HiddenComponent>(panelToolsID);
 				}
-			}
+			},
+			0.2f
 			});
 
 		std::vector<entt::entity> buttonList = {
@@ -263,7 +269,8 @@ namespace Can
 			glm::vec2{ width - 1.0f, 5.2f },
 			glm::vec4{ 221.0f / 255.0f, 255.0f / 255.0f, 247.0f / 255.0f, 1.0f },
 			nullptr,
-			[]() {std::cout << "You clicked the panel that is for Roads!" << std::endl; }
+			[]() {std::cout << "You clicked the panel that is for Roads!" << std::endl; },
+			0.1f
 			});
 		//m_Scene->m_Registry.emplace<HiddenComponent>(m_PanelRoads->entityID);
 		m_Scene->m_Registry.emplace<ChildrenComponent>(m_ButtonRoads->entityID, std::vector<entt::entity>{ m_PanelRoads->entityID });
@@ -275,7 +282,8 @@ namespace Can
 			glm::vec2{ width - 1.0f, 5.2f },
 			glm::vec4{ 255.0f / 255.0f, 166.0f / 255.0f, 158.0f / 255.0f, 1.0f },
 			nullptr,
-			[]() {std::cout << "You clicked the panel that is for Buildings!" << std::endl; }
+			[]() {std::cout << "You clicked the panel that is for Buildings!" << std::endl; },
+			0.1f
 			});
 		m_Scene->m_Registry.emplace<HiddenComponent>(m_PanelBuildings->entityID);
 		m_Scene->m_Registry.emplace<ChildrenComponent>(m_ButtonBuildings->entityID, std::vector<entt::entity>{ m_PanelBuildings->entityID });
@@ -287,7 +295,8 @@ namespace Can
 			glm::vec2{ width - 1.0f, 5.2f },
 			glm::vec4{ 69.0f / 255.0f, 123.0f / 255.0f, 157.0f / 255.0f, 1.0f },
 			nullptr,
-			[]() {std::cout << "You clicked the panel that is for Trees!" << std::endl; }
+			[]() {std::cout << "You clicked the panel that is for Trees!" << std::endl; },
+			0.1f
 			});
 		m_Scene->m_Registry.emplace<HiddenComponent>(m_PanelTrees->entityID);
 		m_Scene->m_Registry.emplace<ChildrenComponent>(m_ButtonTrees->entityID, std::vector<entt::entity>{ m_PanelTrees->entityID });
@@ -295,11 +304,12 @@ namespace Can
 		m_PanelNeeds = new Panel(PanelConstructorParameters{
 			m_Scene->m_Registry,
 			m_ButtonTools->entityID,
-			glm::vec3{ 0.5f, 1.6f, 0.001f },
-			glm::vec2{ 3.5f, 11.0f },
+			glm::vec3{ 0.5f, 1.75f, 0.001f },
+			glm::vec2{ 2.75f, 9.0f },
 			glm::vec4{ 170.0f / 255.0f, 68.0f / 255.0f, 101.0f / 255.0f, 1.0f },
 			nullptr,
-			[]() {std::cout << "You clicked the panel that is for Needs!" << std::endl; }
+			[]() {std::cout << "You clicked the panel that is for Needs!" << std::endl; },
+			0.1f
 			});
 		m_Scene->m_Registry.emplace<HiddenComponent>(m_PanelNeeds->entityID);
 		m_Scene->m_Registry.emplace<ChildrenComponent>(m_ButtonNeeds->entityID, std::vector<entt::entity>{ m_PanelNeeds->entityID });
@@ -307,11 +317,12 @@ namespace Can
 		m_PanelTools = new Panel(PanelConstructorParameters{
 			m_Scene->m_Registry,
 			m_ButtonTools->entityID,
-			glm::vec3{ 0.5f, 1.6f, 0.001f },
-			glm::vec2{ 3.5f, 11.0f },
+			glm::vec3{ 0.5f, 1.75f, 0.001f },
+			glm::vec2{ 2.75f, 9.0f },
 			glm::vec4{ 147.0f / 255.0f, 225.0f / 255.0f, 216.0f / 255.0f, 1.0f },
 			nullptr,
-			[]() {std::cout << "You clicked the panel that is for Tools!" << std::endl; }
+			[]() {std::cout << "You clicked the panel that is for Tools!" << std::endl; },
+			0.1f
 			});
 		m_Scene->m_Registry.emplace<HiddenComponent>(m_PanelTools->entityID);
 		m_Scene->m_Registry.emplace<ChildrenComponent>(m_ButtonTools->entityID, std::vector<entt::entity>{ m_PanelTools->entityID });
@@ -485,47 +496,47 @@ namespace Can
 		/*Buttons in the tools panel*/ {
 			glm::vec2 buttonSize{ 1.0f, 1.0f };
 			glm::vec4 buttonColor{ 1.0f, 1.0f, 1.0f, 1.0f };
-			m_ButtonTools_01 = new Button(ButtonConstructorParameters{ m_Scene->m_Registry, m_PanelTools->entityID, glm::vec3{ 1.0f, 2.0f, 0.0011f }, buttonSize, buttonColor,nullptr,
-				[]() {std::cout << "You clicked the 1st Button inside the tools panel!" << std::endl; }
+			m_ButtonTools_01 = new Button(ButtonConstructorParameters{ m_Scene->m_Registry, m_PanelTools->entityID, glm::vec3{ 0.75f, 2.0f, 0.0011f }, buttonSize, buttonColor, nullptr,
+				[]() {std::cout << "You clicked the 1st Button inside the tools panel!" << std::endl; }, 0.2f
 				});
-			m_ButtonTools_02 = new Button(ButtonConstructorParameters{ m_Scene->m_Registry, m_PanelTools->entityID, glm::vec3{ 2.5f, 2.0f, 0.0011f }, buttonSize, buttonColor,nullptr,
-				[]() {std::cout << "You clicked the 2nd Button inside the tools panel!" << std::endl; }
+			m_ButtonTools_02 = new Button(ButtonConstructorParameters{ m_Scene->m_Registry, m_PanelTools->entityID, glm::vec3{ 2.0f, 2.0f, 0.0011f }, buttonSize, buttonColor, nullptr,
+				[]() {std::cout << "You clicked the 2nd Button inside the tools panel!" << std::endl; }, 0.2f
 				});
-			m_ButtonTools_03 = new Button(ButtonConstructorParameters{ m_Scene->m_Registry, m_PanelTools->entityID, glm::vec3{ 1.0f, 3.5f, 0.0011f }, buttonSize, buttonColor,nullptr,
-				[]() {std::cout << "You clicked the 3rd Button inside the tools panel!" << std::endl; }
+			m_ButtonTools_03 = new Button(ButtonConstructorParameters{ m_Scene->m_Registry, m_PanelTools->entityID, glm::vec3{ 0.75f, 3.25f, 0.0011f }, buttonSize, buttonColor, nullptr,
+				[]() {std::cout << "You clicked the 3rd Button inside the tools panel!" << std::endl; }, 0.2f
 				});
-			m_ButtonTools_04 = new Button(ButtonConstructorParameters{ m_Scene->m_Registry, m_PanelTools->entityID, glm::vec3{ 2.5f, 3.5f, 0.0011f }, buttonSize, buttonColor,nullptr,
-				[]() {std::cout << "You clicked the 4th Button inside the tools panel!" << std::endl; }
+			m_ButtonTools_04 = new Button(ButtonConstructorParameters{ m_Scene->m_Registry, m_PanelTools->entityID, glm::vec3{ 2.0f, 3.25f, 0.0011f }, buttonSize, buttonColor, nullptr,
+				[]() {std::cout << "You clicked the 4th Button inside the tools panel!" << std::endl; }, 0.2f
 				});
-			m_ButtonTools_05 = new Button(ButtonConstructorParameters{ m_Scene->m_Registry, m_PanelTools->entityID, glm::vec3{ 1.0f, 5.0f, 0.0011f }, buttonSize, buttonColor,nullptr,
-				[]() {std::cout << "You clicked the 5th Button inside the tools panel!" << std::endl; }
+			m_ButtonTools_05 = new Button(ButtonConstructorParameters{ m_Scene->m_Registry, m_PanelTools->entityID, glm::vec3{ 0.75f, 4.5f, 0.0011f }, buttonSize, buttonColor, nullptr,
+				[]() {std::cout << "You clicked the 5th Button inside the tools panel!" << std::endl; }, 0.2f
 				});
-			m_ButtonTools_06 = new Button(ButtonConstructorParameters{ m_Scene->m_Registry, m_PanelTools->entityID, glm::vec3{ 2.5f, 5.0f, 0.0011f }, buttonSize, buttonColor,nullptr,
-				[]() {std::cout << "You clicked the 6th Button inside the tools panel!" << std::endl; }
+			m_ButtonTools_06 = new Button(ButtonConstructorParameters{ m_Scene->m_Registry, m_PanelTools->entityID, glm::vec3{ 2.0f, 4.5, 0.0011f }, buttonSize, buttonColor, nullptr,
+				[]() {std::cout << "You clicked the 6th Button inside the tools panel!" << std::endl; }, 0.2f
 				});
-			m_ButtonTools_07 = new Button(ButtonConstructorParameters{ m_Scene->m_Registry, m_PanelTools->entityID, glm::vec3{ 1.0f, 6.5f, 0.0011f }, buttonSize, buttonColor,nullptr,
-				[]() {std::cout << "You clicked the 7th Button inside the tools panel!" << std::endl; }
+			m_ButtonTools_07 = new Button(ButtonConstructorParameters{ m_Scene->m_Registry, m_PanelTools->entityID, glm::vec3{ 0.75f, 5.75, 0.0011f }, buttonSize, buttonColor, nullptr,
+				[]() {std::cout << "You clicked the 7th Button inside the tools panel!" << std::endl; }, 0.2f
 				});
-			m_ButtonTools_08 = new Button(ButtonConstructorParameters{ m_Scene->m_Registry, m_PanelTools->entityID, glm::vec3{ 2.5f, 6.5f, 0.0011f }, buttonSize, buttonColor,nullptr,
-				[]() {std::cout << "You clicked the 8th Button inside the tools panel!" << std::endl; }
+			m_ButtonTools_08 = new Button(ButtonConstructorParameters{ m_Scene->m_Registry, m_PanelTools->entityID, glm::vec3{ 2.0f, 5.75, 0.0011f }, buttonSize, buttonColor, nullptr,
+				[]() {std::cout << "You clicked the 8th Button inside the tools panel!" << std::endl; }, 0.2f
 				});
-			m_ButtonTools_09 = new Button(ButtonConstructorParameters{ m_Scene->m_Registry, m_PanelTools->entityID, glm::vec3{ 1.0f, 8.0f, 0.0011f }, buttonSize, buttonColor,nullptr,
-				[]() {std::cout << "You clicked the 9th Button inside the tools panel!" << std::endl; }
+			m_ButtonTools_09 = new Button(ButtonConstructorParameters{ m_Scene->m_Registry, m_PanelTools->entityID, glm::vec3{ 0.75f, 7.0f, 0.0011f }, buttonSize, buttonColor, nullptr,
+				[]() {std::cout << "You clicked the 9th Button inside the tools panel!" << std::endl; }, 0.2f
 				});
-			m_ButtonTools_10 = new Button(ButtonConstructorParameters{ m_Scene->m_Registry, m_PanelTools->entityID, glm::vec3{ 2.5f, 8.0f, 0.0011f }, buttonSize, buttonColor,nullptr,
-				[]() {std::cout << "You clicked the 10th Button inside the tools panel!" << std::endl; }
+			m_ButtonTools_10 = new Button(ButtonConstructorParameters{ m_Scene->m_Registry, m_PanelTools->entityID, glm::vec3{ 2.0f, 7.0f, 0.0011f }, buttonSize, buttonColor, nullptr,
+				[]() {std::cout << "You clicked the 10th Button inside the tools panel!" << std::endl; }, 0.2f
 				});
-			m_ButtonTools_11 = new Button(ButtonConstructorParameters{ m_Scene->m_Registry, m_PanelTools->entityID, glm::vec3{ 1.0f, 9.5f, 0.0011f }, buttonSize, buttonColor,nullptr,
-				[]() {std::cout << "You clicked the 11th Button inside the tools panel!" << std::endl; }
+			m_ButtonTools_11 = new Button(ButtonConstructorParameters{ m_Scene->m_Registry, m_PanelTools->entityID, glm::vec3{ 0.75f, 8.25, 0.0011f }, buttonSize, buttonColor, nullptr,
+				[]() {std::cout << "You clicked the 11th Button inside the tools panel!" << std::endl; }, 0.2f
 				});
-			m_ButtonTools_12 = new Button(ButtonConstructorParameters{ m_Scene->m_Registry, m_PanelTools->entityID, glm::vec3{ 2.5f, 9.5f, 0.0011f }, buttonSize, buttonColor,nullptr,
-				[]() {std::cout << "You clicked the 12th Button inside the tools panel!" << std::endl; }
+			m_ButtonTools_12 = new Button(ButtonConstructorParameters{ m_Scene->m_Registry, m_PanelTools->entityID, glm::vec3{ 2.0f, 8.25, 0.0011f }, buttonSize, buttonColor, nullptr,
+				[]() {std::cout << "You clicked the 12th Button inside the tools panel!" << std::endl; }, 0.2f
 				});
-			m_ButtonTools_13 = new Button(ButtonConstructorParameters{ m_Scene->m_Registry, m_PanelTools->entityID, glm::vec3{ 1.0f, 11.0f, 0.0011f }, buttonSize, buttonColor,nullptr,
-				[]() {std::cout << "You clicked the 13th Button inside the tools panel!" << std::endl; }
+			m_ButtonTools_13 = new Button(ButtonConstructorParameters{ m_Scene->m_Registry, m_PanelTools->entityID, glm::vec3{ 0.75f, 9.5, 0.0011f }, buttonSize, buttonColor, nullptr,
+				[]() {std::cout << "You clicked the 13th Button inside the tools panel!" << std::endl; }, 0.2f
 				});
-			m_ButtonTools_14 = new Button(ButtonConstructorParameters{ m_Scene->m_Registry, m_PanelTools->entityID, glm::vec3{ 2.5f, 11.0f, 0.0011f }, buttonSize, buttonColor,nullptr,
-				[]() {std::cout << "You clicked the 14th Button inside the tools panel!" << std::endl; }
+			m_ButtonTools_14 = new Button(ButtonConstructorParameters{ m_Scene->m_Registry, m_PanelTools->entityID, glm::vec3{ 2.0f, 9.5, 0.0011f }, buttonSize, buttonColor, nullptr,
+				[]() {std::cout << "You clicked the 14th Button inside the tools panel!" << std::endl; }, 0.2f
 				});
 			std::vector<entt::entity> toolsButtonList = {
 			 m_ButtonTools_01->entityID,
@@ -548,47 +559,47 @@ namespace Can
 		/*Buttons in the Needs panel*/ {
 			glm::vec2 buttonSize{ 1.0f, 1.0f };
 			glm::vec4 buttonColor{ 1.0f, 1.0f, 1.0f, 1.0f };
-			m_ButtonNeeds_01 = new Button(ButtonConstructorParameters{ m_Scene->m_Registry, m_PanelNeeds->entityID, glm::vec3{ 1.0f, 2.0f, 0.0011f }, buttonSize, buttonColor, nullptr,
-				[]() {std::cout << "You clicked the 1st Button inside the Needs panel!" << std::endl; }
-				});
-			m_ButtonNeeds_02 = new Button(ButtonConstructorParameters{ m_Scene->m_Registry, m_PanelNeeds->entityID, glm::vec3{ 2.5f, 2.0f, 0.0011f }, buttonSize, buttonColor, nullptr,
-				[]() {std::cout << "You clicked the 2nd Button inside the Needs panel!" << std::endl; }
-				});
-			m_ButtonNeeds_03 = new Button(ButtonConstructorParameters{ m_Scene->m_Registry, m_PanelNeeds->entityID, glm::vec3{ 1.0f, 3.5f, 0.0011f }, buttonSize, buttonColor, nullptr,
-				[]() {std::cout << "You clicked the 3rd Button inside the Needs panel!" << std::endl; }
-				});
-			m_ButtonNeeds_04 = new Button(ButtonConstructorParameters{ m_Scene->m_Registry, m_PanelNeeds->entityID, glm::vec3{ 2.5f, 3.5f, 0.0011f }, buttonSize, buttonColor, nullptr,
-				[]() {std::cout << "You clicked the 4th Button inside the Needs panel!" << std::endl; }
-				});
-			m_ButtonNeeds_05 = new Button(ButtonConstructorParameters{ m_Scene->m_Registry, m_PanelNeeds->entityID, glm::vec3{ 1.0f, 5.0f, 0.0011f }, buttonSize, buttonColor, nullptr,
-				[]() {std::cout << "You clicked the 5th Button inside the Needs panel!" << std::endl; }
-				});
-			m_ButtonNeeds_06 = new Button(ButtonConstructorParameters{ m_Scene->m_Registry, m_PanelNeeds->entityID, glm::vec3{ 2.5f, 5.0f, 0.0011f }, buttonSize, buttonColor, nullptr,
-				[]() {std::cout << "You clicked the 6th Button inside the Needs panel!" << std::endl; }
-				});
-			m_ButtonNeeds_07 = new Button(ButtonConstructorParameters{ m_Scene->m_Registry, m_PanelNeeds->entityID, glm::vec3{ 1.0f, 6.5f, 0.0011f }, buttonSize, buttonColor, nullptr,
-				[]() {std::cout << "You clicked the 7th Button inside the Needs panel!" << std::endl; }
-				});
-			m_ButtonNeeds_08 = new Button(ButtonConstructorParameters{ m_Scene->m_Registry, m_PanelNeeds->entityID, glm::vec3{ 2.5f, 6.5f, 0.0011f }, buttonSize, buttonColor, nullptr,
-				[]() {std::cout << "You clicked the 8th Button inside the Needs panel!" << std::endl; }
-				});
-			m_ButtonNeeds_09 = new Button(ButtonConstructorParameters{ m_Scene->m_Registry, m_PanelNeeds->entityID, glm::vec3{ 1.0f, 8.0f, 0.0011f }, buttonSize, buttonColor, nullptr,
-				[]() {std::cout << "You clicked the 9th Button inside the Needs panel!" << std::endl; }
-				});
-			m_ButtonNeeds_10 = new Button(ButtonConstructorParameters{ m_Scene->m_Registry, m_PanelNeeds->entityID, glm::vec3{ 2.5f, 8.0f, 0.0011f }, buttonSize, buttonColor, nullptr,
-				[]() {std::cout << "You clicked the 10th Button inside the Needs panel!" << std::endl; }
-				});
-			m_ButtonNeeds_11 = new Button(ButtonConstructorParameters{ m_Scene->m_Registry, m_PanelNeeds->entityID, glm::vec3{ 1.0f, 9.5f, 0.0011f }, buttonSize, buttonColor, nullptr,
-				[]() {std::cout << "You clicked the 11th Button inside the Needs panel!" << std::endl; }
-				});
-			m_ButtonNeeds_12 = new Button(ButtonConstructorParameters{ m_Scene->m_Registry, m_PanelNeeds->entityID, glm::vec3{ 2.5f, 9.5f, 0.0011f }, buttonSize, buttonColor, nullptr,
-				[]() {std::cout << "You clicked the 12th Button inside the Needs panel!" << std::endl; }
-				});
-			m_ButtonNeeds_13 = new Button(ButtonConstructorParameters{ m_Scene->m_Registry, m_PanelNeeds->entityID, glm::vec3{ 1.0f, 11.0f, 0.0011f }, buttonSize, buttonColor, nullptr,
-				[]() {std::cout << "You clicked the 13th Button inside the Needs panel!" << std::endl; }
-				});
-			m_ButtonNeeds_14 = new Button(ButtonConstructorParameters{ m_Scene->m_Registry, m_PanelNeeds->entityID, glm::vec3{ 2.5f, 11.0f, 0.0011f }, buttonSize, buttonColor, nullptr,
-				[]() {std::cout << "You clicked the 14th Button inside the Needs panel!" << std::endl; }
+			m_ButtonNeeds_01 = new Button(ButtonConstructorParameters{ m_Scene->m_Registry, m_PanelNeeds->entityID, glm::vec3{ 0.75f, 2.0f, 0.0011f }, buttonSize, buttonColor, nullptr,
+				[]() {std::cout << "You clicked the 1st Button inside the Needs panel!" << std::endl; }, 0.2f	    
+				});																								    
+			m_ButtonNeeds_02 = new Button(ButtonConstructorParameters{ m_Scene->m_Registry, m_PanelNeeds->entityID, glm::vec3{ 2.0f, 2.0f, 0.0011f }, buttonSize, buttonColor, nullptr,
+				[]() {std::cout << "You clicked the 2nd Button inside the Needs panel!" << std::endl; }, 0.2f	    
+				});																								    
+			m_ButtonNeeds_03 = new Button(ButtonConstructorParameters{ m_Scene->m_Registry, m_PanelNeeds->entityID, glm::vec3{ 0.75f, 3.25f, 0.0011f }, buttonSize, buttonColor, nullptr,
+				[]() {std::cout << "You clicked the 3rd Button inside the Needs panel!" << std::endl; }, 0.2f	    
+				});																								    
+			m_ButtonNeeds_04 = new Button(ButtonConstructorParameters{ m_Scene->m_Registry, m_PanelNeeds->entityID, glm::vec3{ 2.0f, 3.25f, 0.0011f }, buttonSize, buttonColor, nullptr,
+				[]() {std::cout << "You clicked the 4th Button inside the Needs panel!" << std::endl; }, 0.2f	    
+				});																								    
+			m_ButtonNeeds_05 = new Button(ButtonConstructorParameters{ m_Scene->m_Registry, m_PanelNeeds->entityID, glm::vec3{ 0.75f, 4.5f, 0.0011f }, buttonSize, buttonColor, nullptr,
+				[]() {std::cout << "You clicked the 5th Button inside the Needs panel!" << std::endl; }, 0.2f	    
+				});																								    
+			m_ButtonNeeds_06 = new Button(ButtonConstructorParameters{ m_Scene->m_Registry, m_PanelNeeds->entityID, glm::vec3{ 2.0f, 4.5, 0.0011f }, buttonSize, buttonColor, nullptr,
+				[]() {std::cout << "You clicked the 6th Button inside the Needs panel!" << std::endl; }, 0.2f	    
+				});																								    
+			m_ButtonNeeds_07 = new Button(ButtonConstructorParameters{ m_Scene->m_Registry, m_PanelNeeds->entityID, glm::vec3{ 0.75f, 5.75, 0.0011f }, buttonSize, buttonColor, nullptr,
+				[]() {std::cout << "You clicked the 7th Button inside the Needs panel!" << std::endl; }, 0.2f	    
+				});																								    
+			m_ButtonNeeds_08 = new Button(ButtonConstructorParameters{ m_Scene->m_Registry, m_PanelNeeds->entityID, glm::vec3{ 2.0f, 5.75, 0.0011f }, buttonSize, buttonColor, nullptr,
+				[]() {std::cout << "You clicked the 8th Button inside the Needs panel!" << std::endl; }, 0.2f	    
+				});																								    
+			m_ButtonNeeds_09 = new Button(ButtonConstructorParameters{ m_Scene->m_Registry, m_PanelNeeds->entityID, glm::vec3{ 0.75f, 7.0f, 0.0011f }, buttonSize, buttonColor, nullptr,
+				[]() {std::cout << "You clicked the 9th Button inside the Needs panel!" << std::endl; }, 0.2f	    
+				});																								    
+			m_ButtonNeeds_10 = new Button(ButtonConstructorParameters{ m_Scene->m_Registry, m_PanelNeeds->entityID, glm::vec3{ 2.0f, 7.0f, 0.0011f }, buttonSize, buttonColor, nullptr,
+				[]() {std::cout << "You clicked the 10th Button inside the Needs panel!" << std::endl; }, 0.2f	    
+				});																								    
+			m_ButtonNeeds_11 = new Button(ButtonConstructorParameters{ m_Scene->m_Registry, m_PanelNeeds->entityID, glm::vec3{ 0.75f, 8.25, 0.0011f }, buttonSize, buttonColor, nullptr,
+				[]() {std::cout << "You clicked the 11th Button inside the Needs panel!" << std::endl; }, 0.2f	    
+				});																								    
+			m_ButtonNeeds_12 = new Button(ButtonConstructorParameters{ m_Scene->m_Registry, m_PanelNeeds->entityID, glm::vec3{ 2.0f, 8.25, 0.0011f }, buttonSize, buttonColor, nullptr,
+				[]() {std::cout << "You clicked the 12th Button inside the Needs panel!" << std::endl; }, 0.2f	    
+				});																								    
+			m_ButtonNeeds_13 = new Button(ButtonConstructorParameters{ m_Scene->m_Registry, m_PanelNeeds->entityID, glm::vec3{ 0.75f, 9.5, 0.0011f }, buttonSize, buttonColor, nullptr,
+				[]() {std::cout << "You clicked the 13th Button inside the Needs panel!" << std::endl; }, 0.2f	    
+				});																								    
+			m_ButtonNeeds_14 = new Button(ButtonConstructorParameters{ m_Scene->m_Registry, m_PanelNeeds->entityID, glm::vec3{ 2.0f, 9.5, 0.0011f }, buttonSize, buttonColor, nullptr,
+				[]() {std::cout << "You clicked the 14th Button inside the Needs panel!" << std::endl; }, 0.2f
 				});
 			std::vector<entt::entity> needsButtonList = {
 			 m_ButtonNeeds_01->entityID,
@@ -646,7 +657,8 @@ namespace Can
 						if (mode == RoadConstructionMode::None || mode == RoadConstructionMode::Destruct)
 							this->m_Parent->gameScene->m_RoadManager.SetConstructionMode(RoadConstructionMode::Straight);
 						this->m_Parent->gameScene->m_RoadManager.SetType(i);
-					}
+					},
+					0.1f
 					});
 				children.Children.push_back(roadPanelbutton->entityID);
 				m_RoadPanelButtonList.push_back(roadPanelbutton);
@@ -674,7 +686,8 @@ namespace Can
 						if (mode == BuildingConstructionMode::None || mode == BuildingConstructionMode::Destruct)
 							this->m_Parent->gameScene->m_BuildingManager.SetConstructionMode(BuildingConstructionMode::Construct);
 						this->m_Parent->gameScene->m_BuildingManager.SetType(i);
-					}
+					},
+					0.1f
 					});
 				children.Children.push_back(buildingPanelbutton->entityID);
 				m_BuildingPanelButtonList.push_back(buildingPanelbutton);
@@ -702,7 +715,8 @@ namespace Can
 						if (mode == TreeConstructionMode::None || mode == TreeConstructionMode::Removing)
 							this->m_Parent->gameScene->m_TreeManager.SetConstructionMode(TreeConstructionMode::Adding);
 						this->m_Parent->gameScene->m_TreeManager.SetType(i);
-					}
+					},
+					0.1f
 					});
 				children.Children.push_back(treePanelbutton->entityID);
 				m_TreePanelButtonList.push_back(treePanelbutton);
@@ -894,12 +908,12 @@ namespace Can
 		glm::mat4 newTransform = glm::translate(glm::mat4(1.0f), pos) * glm::scale(glm::mat4(1), glm::vec3(spriteRenderer.size, 1.0f));
 		if (spriteRenderer.borderRadius >= 0.0f)
 		{
-			Renderer2D::DrawRoundedQuad(DrawQuadParameters{ pos - glm::vec3{ 0.0f, 0.0f, 0.0001f }, glm::vec3(spriteRenderer.size, 1.0f) + glm::vec3{ 0.05f, 0.05f, 0.0f }, 0.0f, { 0.0f, 0.0f, 0.0f, 1.0f }, nullptr, spriteRenderer.trim, spriteRenderer.borderRadius, 2 });
-			Renderer2D::DrawRoundedQuad(newTransform, DrawQuadParameters{ transform.Position, spriteRenderer.size, 0.0f, spriteRenderer.color, spriteRenderer.texture, spriteRenderer.trim, spriteRenderer.borderRadius, 2 });
+			Renderer2D::DrawRoundedQuad(DrawQuadParameters{ pos - glm::vec3{ 0.0f, 0.0f, 0.0001f }, glm::vec3(spriteRenderer.size, 1.0f) + glm::vec3{ 0.075f, 0.075f, 0.0f }, 0.0f, { 0.0f, 0.0f, 0.0f, 1.0f }, nullptr, spriteRenderer.trim, spriteRenderer.borderRadius, 3 });
+			Renderer2D::DrawRoundedQuad(newTransform, DrawQuadParameters{ transform.Position, spriteRenderer.size, 0.0f, spriteRenderer.color, spriteRenderer.texture, spriteRenderer.trim, spriteRenderer.borderRadius, 3 });
 		}
 		else
 		{
-			Renderer2D::DrawQuad(DrawQuadParameters{ pos - glm::vec3{ 0.0f, 0.0f, 0.0001f }, glm::vec3(spriteRenderer.size, 1.0f) + glm::vec3{ 0.05f, 0.05f, 0.0f }, 0.0f, { 0.0f, 0.0f, 0.0f, 1.0f }, nullptr, spriteRenderer.trim });
+			Renderer2D::DrawQuad(DrawQuadParameters{ pos - glm::vec3{ 0.0f, 0.0f, 0.0001f }, glm::vec3(spriteRenderer.size, 1.0f) + glm::vec3{ 0.075f, 0.075f, 0.0f }, 0.0f, { 0.0f, 0.0f, 0.0f, 1.0f }, nullptr, spriteRenderer.trim });
 			Renderer2D::DrawQuad(newTransform, DrawQuadParameters{ transform.Position, spriteRenderer.size, 0.0f, spriteRenderer.color, spriteRenderer.texture, spriteRenderer.trim });
 		}
 
