@@ -928,12 +928,12 @@ namespace Can
 		glm::mat4 newTransform = glm::translate(glm::mat4(1.0f), pos) * glm::scale(glm::mat4(1), glm::vec3(spriteRenderer.size, 1.0f));
 		if (spriteRenderer.borderRadius >= 0.0f)
 		{
-			Renderer2D::DrawRoundedQuad(DrawQuadParameters{ pos - glm::vec3{ 0.0f, 0.0f, 0.0001f }, glm::vec3(spriteRenderer.size, 1.0f) + glm::vec3{ 0.075f, 0.075f, 0.0f }, 0.0f, { 0.0f, 0.0f, 0.0f, 1.0f }, nullptr, spriteRenderer.trim, spriteRenderer.borderRadius, 3 });
+			if (spriteRenderer.border) Renderer2D::DrawRoundedQuad(DrawQuadParameters{ pos - glm::vec3{ 0.0f, 0.0f, 0.0001f }, glm::vec3(spriteRenderer.size, 1.0f) + glm::vec3{ 0.075f, 0.075f, 0.0f }, 0.0f, { 0.0f, 0.0f, 0.0f, 1.0f }, nullptr, spriteRenderer.trim, spriteRenderer.borderRadius, 3 });
 			Renderer2D::DrawRoundedQuad(newTransform, DrawQuadParameters{ transform.Position, spriteRenderer.size, 0.0f, spriteRenderer.color, spriteRenderer.texture, spriteRenderer.trim, spriteRenderer.borderRadius, 3 });
 		}
 		else
 		{
-			Renderer2D::DrawQuad(DrawQuadParameters{ pos - glm::vec3{ 0.0f, 0.0f, 0.0001f }, glm::vec3(spriteRenderer.size, 1.0f) + glm::vec3{ 0.075f, 0.075f, 0.0f }, 0.0f, { 0.0f, 0.0f, 0.0f, 1.0f }, nullptr, spriteRenderer.trim });
+			if (spriteRenderer.border) Renderer2D::DrawQuad(DrawQuadParameters{ pos - glm::vec3{ 0.0f, 0.0f, 0.0001f }, glm::vec3(spriteRenderer.size, 1.0f) + glm::vec3{ 0.075f, 0.075f, 0.0f }, 0.0f, { 0.0f, 0.0f, 0.0f, 1.0f }, nullptr, spriteRenderer.trim });
 			Renderer2D::DrawQuad(newTransform, DrawQuadParameters{ transform.Position, spriteRenderer.size, 0.0f, spriteRenderer.color, spriteRenderer.texture, spriteRenderer.trim });
 		}
 
