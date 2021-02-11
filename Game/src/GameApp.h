@@ -23,8 +23,14 @@ namespace Can
 	public:
 		Prefab* terrainPrefab;
 		Ref<Texture2D> treeMap;
-		Ref<Texture2D> addTexture;		 // Put better name
-		Ref<Texture2D> removeTexture;	 // Put better name
+		
+		Ref<Texture2D> addTexture;			// Put better name
+		Ref<Texture2D> removeTexture;		// Put better name
+		Ref<Texture2D> cancelTexture;		// Put better name
+		Ref<Texture2D> upgradeTexture;		// Put better name
+		Ref<Texture2D> downgradeTexture;	// Put better name
+
+
 
 		std::vector<std::array<Prefab*, 3>> roads;
 		// 0 => Road
