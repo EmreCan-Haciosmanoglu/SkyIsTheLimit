@@ -21,13 +21,22 @@ namespace Can
 		treeMap = Texture2D::Create("assets/textures/treeMap.png");
 		addTexture = Texture2D::Create("assets/textures/Buttons/Add.png");
 		removeTexture = Texture2D::Create("assets/textures/Buttons/Remove.png");
+		cancelTexture = Texture2D::Create("assets/textures/Buttons/Cancel.png");
+		upgradeTexture = Texture2D::Create("assets/textures/Buttons/Upgrade.png");
+		straightTexture = Texture2D::Create("assets/textures/Buttons/Straight.png");
+		quadraticTexture = Texture2D::Create("assets/textures/Buttons/Quadratic.png");
+		downgradeTexture = Texture2D::Create("assets/textures/Buttons/Downgrade.png");
+		cubic1234Texture = Texture2D::Create("assets/textures/Buttons/Cubic1234.png");
+		cubic1243Texture = Texture2D::Create("assets/textures/Buttons/Cubic1243.png");
+		cubic1342Texture = Texture2D::Create("assets/textures/Buttons/Cubic1342.png");
+		cubic1432Texture = Texture2D::Create("assets/textures/Buttons/Cubic1432.png");
 
 		LoadRoads();
 		LoadBuildings();
 		LoadTrees();
 
 		gameScene = new GameScene(this);
-		//PushLayer(gameScene);
+		PushLayer(gameScene);
 
 		uiScene = new UIScene(this);
 		PushOverlay(uiScene);
