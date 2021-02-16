@@ -269,6 +269,7 @@ namespace Can
 	}
 	void TreeManager::SetConstructionMode(TreeConstructionMode mode)
 	{
+		if (m_ConstructionMode == mode) return;
 		ResetStates();
 		m_ConstructionMode = mode;
 

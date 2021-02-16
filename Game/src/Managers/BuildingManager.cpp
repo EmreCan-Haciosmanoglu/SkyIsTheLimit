@@ -360,7 +360,9 @@ namespace Can
 	}
 	void BuildingManager::SetConstructionMode(BuildingConstructionMode mode)
 	{
+		if (m_ConstructionMode == mode) return;
 		ResetStates();
+
 		m_ConstructionMode = mode;
 
 		switch (m_ConstructionMode)
