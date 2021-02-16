@@ -380,8 +380,6 @@ namespace Can
 						mainRegistry.remove<OnDragCallbackComponent>(scrollbarID);
 				}
 			});
-		m_Scene->m_Registry.emplace<ChildrenComponent>(m_PanelRoads->entityID, std::vector<entt::entity>{ m_ScrollViewRoads->entityID });
-
 		m_ScrollViewBuildings = new ScrollView(
 			ScrollViewConstructorParameters{
 				m_Scene->m_Registry,
@@ -435,8 +433,6 @@ namespace Can
 						mainRegistry.remove<OnDragCallbackComponent>(scrollbarID);
 				}
 			});
-		m_Scene->m_Registry.emplace<ChildrenComponent>(m_PanelBuildings->entityID, std::vector<entt::entity>{ m_ScrollViewBuildings->entityID });
-
 		m_ScrollViewTrees = new ScrollView(
 			ScrollViewConstructorParameters{
 				m_Scene->m_Registry,
@@ -490,28 +486,244 @@ namespace Can
 						mainRegistry.remove<OnDragCallbackComponent>(scrollbarID);
 				}
 			});
-		ChildrenComponent& pTreesChildren = m_Scene->m_Registry.emplace<ChildrenComponent>(m_PanelTrees->entityID, std::vector<entt::entity>{ m_ScrollViewTrees->entityID });
 
-		m_AddTreeButton = new Button(ButtonConstructorParameters{
+		m_StraightRoadButton = new Button(ButtonConstructorParameters{
+			m_Scene->m_Registry,
+			m_PanelRoads->entityID,
+			glm::vec3{0.75f, height - 5.0f, 0.01f},
+			glm::vec2(1.0f),
+			glm::vec4(1.0f),
+			m_Parent->straightTexture,
+			[this]() {
+				this->m_Parent->gameScene->SetConstructionMode(ConstructionMode::Road);
+				if (m_Parent->gameScene->m_RoadManager.GetConstructionMode() != RoadConstructionMode::Straight)
+					this->m_Parent->gameScene->m_RoadManager.SetConstructionMode(RoadConstructionMode::Straight);
+			}
+			});
+		m_QuadraticRoadButton = new Button(ButtonConstructorParameters{
+			m_Scene->m_Registry,
+			m_PanelRoads->entityID,
+			glm::vec3{2.0f, height - 5.0f, 0.01f},
+			glm::vec2(1.0f),
+			glm::vec4(1.0f),
+			m_Parent->quadraticTexture,
+			[this]() {
+				this->m_Parent->gameScene->SetConstructionMode(ConstructionMode::Road);
+				if (m_Parent->gameScene->m_RoadManager.GetConstructionMode() != RoadConstructionMode::QuadraticCurve)
+					this->m_Parent->gameScene->m_RoadManager.SetConstructionMode(RoadConstructionMode::QuadraticCurve);
+			}
+			});
+		m_Cubic1234RoadButton = new Button(ButtonConstructorParameters{
+			m_Scene->m_Registry,
+			m_PanelRoads->entityID,
+			glm::vec3{3.25f, (height - 5.0f) + 0.0f, 0.01f},
+			glm::vec2(1.0f),
+			glm::vec4(1.0f),
+			m_Parent->cubic1234Texture,
+			[this]() {
+				this->m_Parent->gameScene->SetConstructionMode(ConstructionMode::Road);
+				if (m_Parent->gameScene->m_RoadManager.GetConstructionMode() != RoadConstructionMode::CubicCurve)
+					this->m_Parent->gameScene->m_RoadManager.SetConstructionMode(RoadConstructionMode::CubicCurve);
+				this->m_Parent->gameScene->m_RoadManager.cubicCurveOrder = std::array<uint8_t, 4>{ 0, 1, 2, 3};
+			}
+			});
+		m_Cubic1243RoadButton = new Button(ButtonConstructorParameters{
+			m_Scene->m_Registry,
+			m_PanelRoads->entityID,
+			glm::vec3{3.25f, (height - 5.0f) + 1.25f, 0.01f},
+			glm::vec2(1.0f),
+			glm::vec4(1.0f),
+			m_Parent->cubic1243Texture,
+			[this]() {
+				this->m_Parent->gameScene->SetConstructionMode(ConstructionMode::Road);
+				if (m_Parent->gameScene->m_RoadManager.GetConstructionMode() != RoadConstructionMode::CubicCurve)
+					this->m_Parent->gameScene->m_RoadManager.SetConstructionMode(RoadConstructionMode::CubicCurve);
+				this->m_Parent->gameScene->m_RoadManager.cubicCurveOrder = std::array<uint8_t, 4>{0, 1, 3, 2};
+			}
+			});
+		m_Cubic1342RoadButton = new Button(ButtonConstructorParameters{
+			m_Scene->m_Registry,
+			m_PanelRoads->entityID,
+			glm::vec3{3.25f, (height - 5.0f) + 2.5f, 0.01f},
+			glm::vec2(1.0f),
+			glm::vec4(1.0f),
+			m_Parent->cubic1342Texture,
+			[this]() {
+				this->m_Parent->gameScene->SetConstructionMode(ConstructionMode::Road);
+				if (m_Parent->gameScene->m_RoadManager.GetConstructionMode() != RoadConstructionMode::CubicCurve)
+					this->m_Parent->gameScene->m_RoadManager.SetConstructionMode(RoadConstructionMode::CubicCurve);
+				this->m_Parent->gameScene->m_RoadManager.cubicCurveOrder = std::array<uint8_t, 4>{0, 3, 1, 2};
+			}
+			});
+		m_Cubic1432RoadButton = new Button(ButtonConstructorParameters{
+			m_Scene->m_Registry,
+			m_PanelRoads->entityID,
+			glm::vec3{3.25f, (height - 5.0f) + 3.75f, 0.01f},
+			glm::vec2(1.0f),
+			glm::vec4(1.0f),
+			m_Parent->cubic1432Texture,
+			[this]() {
+				this->m_Parent->gameScene->SetConstructionMode(ConstructionMode::Road);
+				if (m_Parent->gameScene->m_RoadManager.GetConstructionMode() != RoadConstructionMode::CubicCurve)
+					this->m_Parent->gameScene->m_RoadManager.SetConstructionMode(RoadConstructionMode::CubicCurve);
+				this->m_Parent->gameScene->m_RoadManager.cubicCurveOrder = std::array<uint8_t, 4>{0, 3, 2, 1};
+			}
+			});
+		m_DestructRoadButton = new Button(ButtonConstructorParameters{
+			m_Scene->m_Registry,
+			m_PanelRoads->entityID,
+			glm::vec3{4.5f, height - 5.0f, 0.01f},
+			glm::vec2(1.0f),
+			glm::vec4(1.0f),
+			m_Parent->removeTexture,
+			[this]() {
+				this->m_Parent->gameScene->SetConstructionMode(ConstructionMode::Road);
+				if (m_Parent->gameScene->m_RoadManager.GetConstructionMode() != RoadConstructionMode::Destruct)
+				this->m_Parent->gameScene->m_RoadManager.SetConstructionMode(RoadConstructionMode::Destruct);
+			}
+			});
+		m_UpgradeRoadButton = new Button(ButtonConstructorParameters{
+			m_Scene->m_Registry,
+			m_PanelRoads->entityID,
+			glm::vec3{5.75f, height - 5.0f, 0.01f},
+			glm::vec2(1.0f),
+			glm::vec4(1.0f),
+			m_Parent->upgradeTexture,
+			[this]() {
+				this->m_Parent->gameScene->SetConstructionMode(ConstructionMode::Road);
+				if (m_Parent->gameScene->m_RoadManager.GetConstructionMode() != RoadConstructionMode::Upgrade)
+				this->m_Parent->gameScene->m_RoadManager.SetConstructionMode(RoadConstructionMode::Upgrade);
+			}
+			});
+		m_CancelRoadButton = new Button(ButtonConstructorParameters{
+			m_Scene->m_Registry,
+			m_PanelRoads->entityID,
+			glm::vec3{7.0f, height - 5.0f, 0.01f},
+			glm::vec2(1.0f),
+			glm::vec4(1.0f),
+			m_Parent->cancelTexture,
+			[this]() {
+				this->m_Parent->gameScene->SetConstructionMode(ConstructionMode::Road);
+				if (m_Parent->gameScene->m_RoadManager.GetConstructionMode() != RoadConstructionMode::None)
+				this->m_Parent->gameScene->m_RoadManager.SetConstructionMode(RoadConstructionMode::None);
+			}
+			});
+		m_Scene->m_Registry.emplace<ChildrenComponent>(m_PanelRoads->entityID, std::vector<entt::entity>{
+			m_ScrollViewRoads->entityID,
+			m_StraightRoadButton->entityID,
+			m_QuadraticRoadButton->entityID,
+			m_Cubic1234RoadButton->entityID,
+			m_Cubic1243RoadButton->entityID,
+			m_Cubic1342RoadButton->entityID,
+			m_Cubic1432RoadButton->entityID,
+			m_DestructRoadButton->entityID,
+			m_UpgradeRoadButton->entityID,
+			m_CancelRoadButton->entityID
+			});
+
+		m_ConstructBuildingButton = new Button(ButtonConstructorParameters{
+			m_Scene->m_Registry,
+			m_PanelBuildings->entityID,
+			glm::vec3{2.0f, height - 5.0f, 0.01f},
+			glm::vec2(1.0f),
+			glm::vec4(1.0f),
+			m_Parent->addTexture,
+			[this]() {
+				this->m_Parent->gameScene->SetConstructionMode(ConstructionMode::Building);
+				if (m_Parent->gameScene->m_BuildingManager.GetConstructionMode() != BuildingConstructionMode::Construct)
+					this->m_Parent->gameScene->m_BuildingManager.SetConstructionMode(BuildingConstructionMode::Construct);
+			}
+			});
+		m_DestructBuildingButton = new Button(ButtonConstructorParameters{
+			m_Scene->m_Registry,
+			m_PanelBuildings->entityID,
+			glm::vec3{3.5f, height - 5.0f, 0.01f},
+			glm::vec2(1.0f),
+			glm::vec4(1.0f),
+			m_Parent->removeTexture,
+			[this]() {
+				this->m_Parent->gameScene->SetConstructionMode(ConstructionMode::Building);
+				if (m_Parent->gameScene->m_BuildingManager.GetConstructionMode() != BuildingConstructionMode::Destruct)
+					this->m_Parent->gameScene->m_BuildingManager.SetConstructionMode(BuildingConstructionMode::Destruct);
+			}
+			});
+		m_UpgradeBuildingButton = new Button(ButtonConstructorParameters{
+			m_Scene->m_Registry,
+			m_PanelBuildings->entityID,
+			glm::vec3{5.0f, height - 5.0f, 0.01f},
+			glm::vec2(1.0f),
+			glm::vec4(1.0f),
+			m_Parent->upgradeTexture,
+			[this]() {
+				this->m_Parent->gameScene->SetConstructionMode(ConstructionMode::Building);
+				if (m_Parent->gameScene->m_BuildingManager.GetConstructionMode() != BuildingConstructionMode::Upgrade)
+					this->m_Parent->gameScene->m_BuildingManager.SetConstructionMode(BuildingConstructionMode::Upgrade);
+			}
+			});
+		m_CancelBuildingButton = new Button(ButtonConstructorParameters{
+			m_Scene->m_Registry,
+			m_PanelBuildings->entityID,
+			glm::vec3{6.5f, height - 5.0f, 0.01f},
+			glm::vec2(1.0f),
+			glm::vec4(1.0f),
+			m_Parent->cancelTexture,
+			[this]() {
+				this->m_Parent->gameScene->SetConstructionMode(ConstructionMode::Building);
+				if (m_Parent->gameScene->m_BuildingManager.GetConstructionMode() != BuildingConstructionMode::None)
+					this->m_Parent->gameScene->m_BuildingManager.SetConstructionMode(BuildingConstructionMode::None);
+			}
+			});
+		m_Scene->m_Registry.emplace<ChildrenComponent>(m_PanelBuildings->entityID, std::vector<entt::entity>{
+			m_ScrollViewBuildings->entityID ,
+			m_ConstructBuildingButton->entityID,
+			m_DestructBuildingButton->entityID,
+			m_UpgradeBuildingButton->entityID,
+			m_CancelBuildingButton->entityID
+			});
+
+		m_AddTreePanelButton = new Button(ButtonConstructorParameters{
 			m_Scene->m_Registry,
 			m_PanelTrees->entityID,
 			glm::vec3{2.0f, height - 5.0f, 0.01f},
 			glm::vec2(1.0f),
 			glm::vec4(1.0f),
 			m_Parent->addTexture,
-			[]() {}
+			[this]() {
+				this->m_Parent->gameScene->SetConstructionMode(ConstructionMode::Tree);
+				this->m_Parent->gameScene->m_TreeManager.SetConstructionMode(TreeConstructionMode::Adding);
+			}
 			});
-		pTreesChildren.Children.push_back(m_AddTreeButton->entityID);
-		m_RemoveTreeButton = new Button(ButtonConstructorParameters{
+		m_RemoveTreePanelButton = new Button(ButtonConstructorParameters{
 			m_Scene->m_Registry,
 			m_PanelTrees->entityID,
-			glm::vec3{4.0f, height - 5.0f, 0.01f},
+			glm::vec3{3.5f, height - 5.0f, 0.01f},
 			glm::vec2(1.0f),
 			glm::vec4(1.0f),
 			m_Parent->removeTexture,
-			[]() {}
+			[this]() {
+				this->m_Parent->gameScene->SetConstructionMode(ConstructionMode::Tree);
+				this->m_Parent->gameScene->m_TreeManager.SetConstructionMode(TreeConstructionMode::Removing);
+			}
 			});
-		pTreesChildren.Children.push_back(m_RemoveTreeButton->entityID);
+		m_CancelTreePanelButton = new Button(ButtonConstructorParameters{
+			m_Scene->m_Registry,
+			m_PanelTrees->entityID,
+			glm::vec3{5.0f, height - 5.0f, 0.01f},
+			glm::vec2(1.0f),
+			glm::vec4(1.0f),
+			m_Parent->cancelTexture,
+			[this]() {
+				this->m_Parent->gameScene->SetConstructionMode(ConstructionMode::Tree);
+				this->m_Parent->gameScene->m_TreeManager.SetConstructionMode(TreeConstructionMode::None);
+			}
+			});
+
+		m_Scene->m_Registry.emplace<ChildrenComponent>(m_PanelTrees->entityID, std::vector<entt::entity>{
+			m_ScrollViewTrees->entityID,
+			m_AddTreePanelButton->entityID,
+			m_RemoveTreePanelButton->entityID,
+			m_CancelTreePanelButton->entityID
+			});
 
 		/*Buttons in the tools panel*/ {
 			glm::vec2 buttonSize{ 1.0f, 1.0f };
@@ -813,8 +1025,8 @@ namespace Can
 		float widthHalf = m_AspectRatio * m_ZoomLevel;
 		float heightHalf = m_ZoomLevel;
 
-		RenderCommand::SetClearColor({ 0.9f, 0.9f, 0.9f, 1.0f });
-		RenderCommand::Clear();
+		//RenderCommand::SetClearColor({ 0.9f, 0.9f, 0.9f, 1.0f });
+		//RenderCommand::Clear();
 
 		Renderer2D::BeginScene(m_CameraController.GetCamera());
 
@@ -911,13 +1123,6 @@ namespace Can
 		if (registry->has<TransformComponent, SpriteRendererComponent>(id) == false)
 			return;
 
-		if (registry->has<ChildrenComponent>(id))
-		{
-			ChildrenComponent& children = registry->get<ChildrenComponent>(id);
-
-			for (auto entity : children)
-				Draw(entity, registry, offset);
-		}
 
 		auto& [transform, spriteRenderer] = registry->get< TransformComponent, SpriteRendererComponent>(id);
 		glm::vec3 pos = transform.Position;
@@ -937,5 +1142,12 @@ namespace Can
 			Renderer2D::DrawQuad(newTransform, DrawQuadParameters{ transform.Position, spriteRenderer.size, 0.0f, spriteRenderer.color, spriteRenderer.texture, spriteRenderer.trim });
 		}
 
+		if (registry->has<ChildrenComponent>(id))
+		{
+			ChildrenComponent& children = registry->get<ChildrenComponent>(id);
+
+			for (auto entity : children)
+				Draw(entity, registry, offset);
+		}
 	}
 }

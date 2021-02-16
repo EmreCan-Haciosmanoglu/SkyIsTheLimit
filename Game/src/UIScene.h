@@ -37,8 +37,24 @@ namespace Can
 		Panel* m_PanelNeeds = nullptr;
 		Panel* m_PanelTools = nullptr;
 
-		Button* m_AddTreeButton = nullptr;
-		Button* m_RemoveTreeButton = nullptr;
+		Button* m_QuadraticRoadButton = nullptr;
+		Button* m_StraightRoadButton = nullptr;
+		Button* m_Cubic1234RoadButton = nullptr;
+		Button* m_Cubic1243RoadButton = nullptr;
+		Button* m_Cubic1342RoadButton = nullptr;
+		Button* m_Cubic1432RoadButton = nullptr;
+		Button* m_DestructRoadButton = nullptr;
+		Button* m_UpgradeRoadButton = nullptr;
+		Button* m_CancelRoadButton = nullptr;
+		
+		Button* m_ConstructBuildingButton = nullptr;
+		Button* m_DestructBuildingButton = nullptr;
+		Button* m_UpgradeBuildingButton = nullptr;
+		Button* m_CancelBuildingButton = nullptr;
+
+		Button* m_AddTreePanelButton = nullptr;
+		Button* m_RemoveTreePanelButton = nullptr;
+		Button* m_CancelTreePanelButton = nullptr;
 
 		ScrollView* m_ScrollViewRoads = nullptr;
 		ScrollView* m_ScrollViewBuildings = nullptr;
