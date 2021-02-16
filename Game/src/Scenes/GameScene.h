@@ -40,8 +40,6 @@ namespace Can
 
 		void SetConstructionMode(ConstructionMode mode);
 
-		void ResetStates();
-
 	private:
 		glm::vec3 GetRayCastedFromScreen();
 
