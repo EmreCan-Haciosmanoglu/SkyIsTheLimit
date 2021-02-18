@@ -45,11 +45,7 @@ namespace Can
 
 			float diffRot = glm::acos(glm::dot(dir1, dir2));
 			float diff = rot2 - rot1;
-			if ((diff > -4.0f && diff < -2.0f) || (diff > 2.0f && diff < 4.0f))
-			{
-				std::cout << std::endl;
-			}
-			//diff += (diff < -3.0f ? glm::radians(360.0f) : diff > 3.0f ? glm::radians(-360.0f) : 0.0f);
+			diff += (diff < -3.0f ? glm::radians(360.0f) : diff > 3.0f ? glm::radians(-360.0f) : 0.0f);
 			printf("rot2(%.3f) - rot1(%.3f) = %.3f\n", rot2, rot1, diff);
 			for (int i = 0; i < prefabIndexCount; i++)
 			{

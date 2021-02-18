@@ -2740,7 +2740,6 @@ namespace Can
 	}
 	void RoadManager::SetConstructionMode(RoadConstructionMode mode)
 	{
-		if (m_ConstructionMode == mode) return;
 		ResetStates();
 		m_ConstructionMode = mode;
 
@@ -2749,13 +2748,7 @@ namespace Can
 		case Can::RoadConstructionMode::None:
 			break;
 		case Can::RoadConstructionMode::Straight:
-			m_GuidelinesStart->enabled = true;
-			m_GuidelinesEnd->enabled = true;
-			break;
 		case Can::RoadConstructionMode::QuadraticCurve:
-			m_GuidelinesStart->enabled = true;
-			m_GuidelinesEnd->enabled = true;
-			break;
 		case Can::RoadConstructionMode::CubicCurve:
 			m_GuidelinesStart->enabled = true;
 			m_GuidelinesEnd->enabled = true;

@@ -39,6 +39,7 @@ namespace Can
 		bool OnMousePressed(Event::MouseButtonPressedEvent& event);
 
 		void SetConstructionMode(ConstructionMode mode);
+		const ConstructionMode& GetConstructionMode() { return e_ConstructionMode; }
 
 	private:
 		glm::vec3 GetRayCastedFromScreen();

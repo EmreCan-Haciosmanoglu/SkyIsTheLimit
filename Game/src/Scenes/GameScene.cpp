@@ -16,7 +16,7 @@ namespace Can
 		, m_BuildingManager(this)
 		, m_MainCameraController(
 			45.0f,
-			1280.0f / 720.0f,
+			16.0f / 9.0f,
 			0.1f,
 			1000.0f,
 			glm::vec3{ 22.0f, 15.0f, -0.0f },
