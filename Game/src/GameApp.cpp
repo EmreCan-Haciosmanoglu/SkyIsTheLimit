@@ -4,14 +4,15 @@
 
 #include "Helper.h"
 
-Can::Application* Can::CreateApplication()
+Can::Application* Can::CreateApplication(const Can::WindowProps& props)
 {
-	return new GameApp();
+	return new GameApp(props);
 }
 
 namespace Can
 {
-	GameApp::GameApp()
+	GameApp::GameApp(const Can::WindowProps& props)
+		:Application(props)
 	{
 		terrainPrefab = Helper::GetPrefabForTerrain("assets/objects/flat_land.png");
 		//terrainPrefab = Helper::GetPrefabForTerrain("assets/objects/flat_land_small.png");

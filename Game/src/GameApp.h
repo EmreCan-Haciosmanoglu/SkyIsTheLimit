@@ -10,7 +10,7 @@ namespace Can
 	class GameApp : public Can::Application
 	{
 	public:
-		GameApp();
+		GameApp(const Can::WindowProps& props);
 		~GameApp();
 
 	private:
