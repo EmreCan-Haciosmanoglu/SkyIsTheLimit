@@ -202,13 +202,13 @@ namespace Can
 					angleIsRestricted |= angle < 0.5f || angle > 2.63f;
 				}
 			}
-			
+
 			glm::vec3 AB = m_ConstructionPositions[3] - m_ConstructionPositions[0];
 
 			float rotationOffset = (float)(AB.x < 0.0f) * glm::radians(180.0f);
 			float rotationEnd = glm::atan(-AB.z / AB.x) + rotationOffset;
 			float rotationStart = rotationEnd + glm::radians(180.0f);
-			
+
 
 			if (!b_ConstructionEndSnapped)
 			{
@@ -514,7 +514,7 @@ namespace Can
 			m_ConstructionPositions[0] = prevLocation;
 
 			m_GuidelinesStart->SetTransform(prevLocation + glm::vec3{ 0.0f, 0.15f, 0.0f }, glm::vec3(1.0f), { 0.0f, glm::radians(180.0f), 0.0f });
-			m_GuidelinesEnd->SetTransform(prevLocation + glm::vec3{ 0.0f, 0.15f, 0.0f },glm::vec3(1.0f), glm::vec3(0.0f));
+			m_GuidelinesEnd->SetTransform(prevLocation + glm::vec3{ 0.0f, 0.15f, 0.0f }, glm::vec3(1.0f), glm::vec3(0.0f));
 		}
 		else if (m_ConstructionPhase == 1)
 		{
@@ -1380,6 +1380,8 @@ namespace Can
 		}
 		else if (m_ConstructionPhase == 2)
 		{
+		if (Input::IsKeyPressed(KeyCode::Y))
+			std::cout << std::endl;
 			b_ConstructionRestricted = false;
 			if (snapOptions[4])
 			{
@@ -2729,6 +2731,7 @@ namespace Can
 
 	void RoadManager::SetType(size_t type)
 	{
+		if (m_Type == type) return;
 		m_Type = type;
 		delete m_GuidelinesEnd;
 		delete m_GuidelinesStart;
@@ -2745,13 +2748,7 @@ namespace Can
 		case Can::RoadConstructionMode::None:
 			break;
 		case Can::RoadConstructionMode::Straight:
-			m_GuidelinesStart->enabled = true;
-			m_GuidelinesEnd->enabled = true;
-			break;
 		case Can::RoadConstructionMode::QuadraticCurve:
-			m_GuidelinesStart->enabled = true;
-			m_GuidelinesEnd->enabled = true;
-			break;
 		case Can::RoadConstructionMode::CubicCurve:
 			m_GuidelinesStart->enabled = true;
 			m_GuidelinesEnd->enabled = true;
@@ -3355,7 +3352,7 @@ namespace Can
 				return results;
 			}
 		}
-		
+
 		for (RoadSegment* roadSegment : m_RoadSegments)
 		{
 			float roadSegmentWidth = roadSegment->Type[0]->boundingBoxM.z - roadSegment->Type[0]->boundingBoxL.z;
@@ -3419,13 +3416,11 @@ namespace Can
 			roadSegment->object->enabled = true;
 			roadSegment->object->SetTransform(roadSegment->GetStartPosition());
 		}
-
 		for (Junction* junction : m_Junctions)
 		{
 			junction->object->enabled = true;
 			junction->object->SetTransform(junction->position);
 		}
-
 		for (End* end : m_Ends)
 		{
 			end->object->enabled = true;
