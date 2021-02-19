@@ -16,7 +16,7 @@ namespace Can
 		, m_BuildingManager(this)
 		, m_MainCameraController(
 			45.0f,
-			1280.0f / 720.0f,
+			16.0f / 9.0f,
 			0.1f,
 			1000.0f,
 			glm::vec3{ 22.0f, 15.0f, -0.0f },
@@ -121,30 +121,33 @@ namespace Can
 	}
 	void GameScene::SetConstructionMode(ConstructionMode mode)
 	{
+		if (e_ConstructionMode == mode) return;
 		e_ConstructionMode = mode;
-		ResetStates();
 		switch (e_ConstructionMode)
 		{
 		case ConstructionMode::Road:
+			m_TreeManager.ResetStates();
+			m_BuildingManager.ResetStates();
 			m_RoadManager.SetConstructionMode(m_RoadManager.GetConstructionMode());
 			break;
 		case ConstructionMode::Building:
+			m_RoadManager.ResetStates();
+			m_TreeManager.ResetStates();
 			m_BuildingManager.SetConstructionMode(m_BuildingManager.GetConstructionMode());
 			break;
 		case ConstructionMode::Tree:
+			m_RoadManager.ResetStates();
+			m_BuildingManager.ResetStates();
 			m_TreeManager.SetConstructionMode(m_TreeManager.GetConstructionMode());
 			break;
 		case ConstructionMode::None:
+			m_RoadManager.ResetStates();
+			m_TreeManager.ResetStates();
+			m_BuildingManager.ResetStates();
 			break;
 		default:
 			break;
 		}
-	}
-	void GameScene::ResetStates()
-	{
-		m_RoadManager.ResetStates();
-		m_TreeManager.ResetStates();
-		m_BuildingManager.ResetStates();
 	}
 	glm::vec3 GameScene::GetRayCastedFromScreen()
 	{

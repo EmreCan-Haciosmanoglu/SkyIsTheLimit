@@ -4,14 +4,15 @@
 
 #include "Helper.h"
 
-Can::Application* Can::CreateApplication()
+Can::Application* Can::CreateApplication(const Can::WindowProps& props)
 {
-	return new GameApp();
+	return new GameApp(props);
 }
 
 namespace Can
 {
-	GameApp::GameApp()
+	GameApp::GameApp(const Can::WindowProps& props)
+		:Application(props)
 	{
 		terrainPrefab = Helper::GetPrefabForTerrain("assets/objects/flat_land.png");
 		//terrainPrefab = Helper::GetPrefabForTerrain("assets/objects/flat_land_small.png");
@@ -19,7 +20,17 @@ namespace Can
 		//terrainPrefab = Helper::GetPrefabForTerrain("assets/objects/heightmap.png");
 
 		treeMap = Texture2D::Create("assets/textures/treeMap.png");
-
+		addTexture = Texture2D::Create("assets/textures/Buttons/Add.png");
+		removeTexture = Texture2D::Create("assets/textures/Buttons/Remove.png");
+		cancelTexture = Texture2D::Create("assets/textures/Buttons/Cancel.png");
+		upgradeTexture = Texture2D::Create("assets/textures/Buttons/Upgrade.png");
+		straightTexture = Texture2D::Create("assets/textures/Buttons/Straight.png");
+		quadraticTexture = Texture2D::Create("assets/textures/Buttons/Quadratic.png");
+		downgradeTexture = Texture2D::Create("assets/textures/Buttons/Downgrade.png");
+		cubic1234Texture = Texture2D::Create("assets/textures/Buttons/Cubic1234.png");
+		cubic1243Texture = Texture2D::Create("assets/textures/Buttons/Cubic1243.png");
+		cubic1342Texture = Texture2D::Create("assets/textures/Buttons/Cubic1342.png");
+		cubic1432Texture = Texture2D::Create("assets/textures/Buttons/Cubic1432.png");
 
 		LoadRoads();
 		LoadBuildings();
@@ -30,7 +41,6 @@ namespace Can
 
 		uiScene = new UIScene(this);
 		PushOverlay(uiScene);
-		//PushLayer(uiScene);
 
 		debugScene = new Debug(this);
 		PushOverlay(debugScene);

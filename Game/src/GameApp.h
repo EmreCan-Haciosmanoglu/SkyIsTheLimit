@@ -10,7 +10,7 @@ namespace Can
 	class GameApp : public Can::Application
 	{
 	public:
-		GameApp();
+		GameApp(const Can::WindowProps& props);
 		~GameApp();
 
 	private:
@@ -23,6 +23,20 @@ namespace Can
 	public:
 		Prefab* terrainPrefab;
 		Ref<Texture2D> treeMap;
+		
+		Ref<Texture2D> addTexture;			// Put better name
+		Ref<Texture2D> removeTexture;		// Put better name
+		Ref<Texture2D> cancelTexture;		// Put better name
+		Ref<Texture2D> upgradeTexture;		// Put better name
+		Ref<Texture2D> straightTexture;		// Put better name
+		Ref<Texture2D> quadraticTexture;	// Put better name
+		Ref<Texture2D> downgradeTexture;	// Put better name
+		Ref<Texture2D> cubic1234Texture;	// Put better name
+		Ref<Texture2D> cubic1243Texture;	// Put better name
+		Ref<Texture2D> cubic1342Texture;	// Put better name
+		Ref<Texture2D> cubic1432Texture;	// Put better name
+
+
 
 		std::vector<std::array<Prefab*, 3>> roads;
 		// 0 => Road
