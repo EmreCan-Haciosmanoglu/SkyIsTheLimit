@@ -19,6 +19,7 @@ namespace Can
 		void LoadRoads();
 		void LoadBuildings();
 		void LoadTrees();
+		void LoadCars();
 
 	public:
 		Prefab* terrainPrefab;
@@ -45,6 +46,7 @@ namespace Can
 
 		std::vector<Prefab*> buildings;
 		std::vector<Prefab*> trees;
+		std::vector<Prefab*> cars;
 		
 		GameScene* gameScene = nullptr;
 		UIScene* uiScene = nullptr;
