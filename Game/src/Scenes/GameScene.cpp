@@ -14,6 +14,7 @@ namespace Can
 		, m_RoadManager(this)
 		, m_TreeManager(this)
 		, m_BuildingManager(this)
+		, m_CarManager(this)
 		, m_MainCameraController(
 			45.0f,
 			16.0f / 9.0f,
@@ -60,6 +61,9 @@ namespace Can
 				break;
 			case ConstructionMode::Tree:
 				m_TreeManager.OnUpdate(I, camPos, forward);
+				break;
+			case ConstructionMode::Car:
+				m_CarManager.OnUpdate(I, camPos, forward);
 				break;
 			case ConstructionMode::None:
 				break;
@@ -114,6 +118,9 @@ namespace Can
 		case ConstructionMode::Tree:
 			m_TreeManager.OnMousePressed(button);
 			break;
+		case ConstructionMode::Car:
+			m_CarManager.OnMousePressed(button);
+			break;
 		case ConstructionMode::None:
 			break;
 		}
@@ -128,22 +135,32 @@ namespace Can
 		case ConstructionMode::Road:
 			m_TreeManager.ResetStates();
 			m_BuildingManager.ResetStates();
+			m_CarManager.ResetStates();
 			m_RoadManager.SetConstructionMode(m_RoadManager.GetConstructionMode());
 			break;
 		case ConstructionMode::Building:
 			m_RoadManager.ResetStates();
 			m_TreeManager.ResetStates();
+			m_CarManager.ResetStates();
 			m_BuildingManager.SetConstructionMode(m_BuildingManager.GetConstructionMode());
 			break;
 		case ConstructionMode::Tree:
 			m_RoadManager.ResetStates();
 			m_BuildingManager.ResetStates();
+			m_CarManager.ResetStates();
 			m_TreeManager.SetConstructionMode(m_TreeManager.GetConstructionMode());
+			break;
+		case ConstructionMode::Car:
+			m_RoadManager.ResetStates();
+			m_BuildingManager.ResetStates();
+			m_TreeManager.ResetStates();
+			m_CarManager.SetConstructionMode(m_CarManager.GetConstructionMode());
 			break;
 		case ConstructionMode::None:
 			m_RoadManager.ResetStates();
 			m_TreeManager.ResetStates();
 			m_BuildingManager.ResetStates();
+			m_CarManager.ResetStates();
 			break;
 		default:
 			break;

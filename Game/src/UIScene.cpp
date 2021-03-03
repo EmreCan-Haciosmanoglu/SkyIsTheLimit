@@ -1316,11 +1316,11 @@ namespace Can
 						if (!Input::IsMouseButtonPressed(MouseCode::Button0))
 							return;
 						std::cout << "You clicked the " << (i + 1) << "th Button inside the Car panel!" << std::endl;
-						/*this->m_Parent->gameScene->SetConstructionMode(ConstructionMode::Tree);
-						auto mode = this->m_Parent->gameScene->m_TreeManager.GetConstructionMode();
-						if (mode == TreeConstructionMode::None || mode == TreeConstructionMode::Removing)
-							this->m_Parent->gameScene->m_TreeManager.SetConstructionMode(TreeConstructionMode::Adding);
-						this->m_Parent->gameScene->m_TreeManager.SetType(i);*/
+						this->m_Parent->gameScene->SetConstructionMode(ConstructionMode::Car);
+						auto mode = this->m_Parent->gameScene->m_CarManager.GetConstructionMode();
+						if (mode == CarConstructionMode::None || mode == CarConstructionMode::Removing)
+							this->m_Parent->gameScene->m_CarManager.SetConstructionMode(CarConstructionMode::Adding);
+						this->m_Parent->gameScene->m_CarManager.SetType(i);
 					},
 					0.1f
 					});

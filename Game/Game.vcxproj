@@ -142,6 +142,7 @@
     <ClInclude Include="src\Helper.h" />
     <ClInclude Include="src\Junction.h" />
     <ClInclude Include="src\Managers\BuildingManager.h" />
+    <ClInclude Include="src\Managers\CarManager.h" />
     <ClInclude Include="src\Managers\RoadManager.h" />
     <ClInclude Include="src\Managers\TreeManager.h" />
     <ClInclude Include="src\Scenes\GameScene.h" />
@@ -156,6 +157,7 @@
     <ClCompile Include="src\Helper.cpp" />
     <ClCompile Include="src\Junction.cpp" />
     <ClCompile Include="src\Managers\BuildingManager.cpp" />
+    <ClCompile Include="src\Managers\CarManager.cpp" />
     <ClCompile Include="src\Managers\RoadManager.cpp" />
     <ClCompile Include="src\Managers\TreeManager.cpp" />
     <ClCompile Include="src\Scenes\GameScene.cpp" />
