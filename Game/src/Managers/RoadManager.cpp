@@ -2745,17 +2745,17 @@ namespace Can
 
 		switch (m_ConstructionMode)
 		{
-		case Can::RoadConstructionMode::None:
+		case RoadConstructionMode::None:
 			break;
-		case Can::RoadConstructionMode::Straight:
-		case Can::RoadConstructionMode::QuadraticCurve:
-		case Can::RoadConstructionMode::CubicCurve:
+		case RoadConstructionMode::Straight:
+		case RoadConstructionMode::QuadraticCurve:
+		case RoadConstructionMode::CubicCurve:
 			m_GuidelinesStart->enabled = true;
 			m_GuidelinesEnd->enabled = true;
 			break;
-		case Can::RoadConstructionMode::Upgrade:
+		case RoadConstructionMode::Upgrade:
 			break;
-		case Can::RoadConstructionMode::Destruct:
+		case RoadConstructionMode::Destruct:
 			break;
 		default:
 			break;
