@@ -103,66 +103,6 @@ namespace Can
 			ImGui::EndChild();
 		}
 
-		ImGui::Text("Selected Objects");
-		ImGui::BeginChild("Selected Objects", ImVec2(0, 85), true);
-		{
-			static std::string current_road_item = "";
-			if (ImGui::BeginCombo("Selected Road", current_road_item.c_str()))
-			{
-				for (size_t i = 0; i < m_Parent->roads.size(); i++)
-				{
-					bool is_selected = treeManager->GetType() == i;
-					std::string text = "Road-";
-					text += std::to_string(i);
-					if (ImGui::Selectable(text.c_str(), is_selected, 0, ImVec2(0, 25)))
-					{
-						text.copy(current_road_item.data(), text.size(), 0);
-						treeManager->SetType(i);
-					}
-					if (is_selected)
-						ImGui::SetItemDefaultFocus();
-				}
-				ImGui::EndCombo();
-			}
-			static std::string current_building_item = "";
-			if (ImGui::BeginCombo("Selected Building", current_building_item.c_str()))
-			{
-				for (size_t i = 0; i < m_Parent->buildings.size(); i++)
-				{
-					bool is_selected = buildingManager->GetType() == i;
-					std::string text = "Building-";
-					text += std::to_string(i);
-					if (ImGui::Selectable(text.c_str(), is_selected, 0, ImVec2(0, 25)))
-					{
-						text.copy(current_building_item.data(), text.size(), 0);
-						buildingManager->SetType(i);
-					}
-					if (is_selected)
-						ImGui::SetItemDefaultFocus();
-				}
-				ImGui::EndCombo();
-			}
-			static std::string current_tree_item = "";
-			if (ImGui::BeginCombo("Selected Tree", current_tree_item.c_str()))
-			{
-				for (size_t i = 0; i < m_Parent->trees.size(); i++)
-				{
-					bool is_selected = treeManager->GetType()== i;
-					std::string text = "Tree-";
-					text += std::to_string(i);
-					if (ImGui::Selectable(text.c_str(), is_selected, 0, ImVec2(0, 25)))
-					{
-						text.copy(current_tree_item.data(), text.size(), 0);
-						treeManager->SetType(i);
-					}
-					if (is_selected)
-						ImGui::SetItemDefaultFocus();
-				}
-				ImGui::EndCombo();
-			}
-		}
-		ImGui::EndChild();
-
 		if (gameScene->e_ConstructionMode == ConstructionMode::Road)
 		{
 			ImGui::Text("Road Construction Snap Options");
