@@ -3,6 +3,7 @@
 #include "Scenes/GameScene.h"
 #include "Types/RoadSegment.h"
 #include "GameApp.h"
+#include "Helper.h"
 
 #include "Can/Math.h"
 
@@ -35,7 +36,7 @@ namespace Can
 	}
 	void CarManager::OnUpdate_Adding(glm::vec3& prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection)
 	{
-
+		m_SnappedRoadSegment = nullptr;
 		m_Guideline->SetTransform(prevLocation);
 		Prefab* selectedCar = m_Guideline->type;
 
@@ -92,6 +93,25 @@ namespace Can
 	}
 	void CarManager::OnUpdate_Removing(glm::vec3& prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection)
 	{
+		m_SelectedCarToRemove = m_Cars.end();
+
+		for (auto& it = m_Cars.begin(); it != m_Cars.end(); ++it)
+		{
+			Object* car = *it;
+			car->tintColor = glm::vec4(1.0f);
+
+			if (Helper::CheckBoundingBoxHit(
+				cameraPosition,
+				cameraDirection,
+				car->prefab->boundingBoxL + car->position,
+				car->prefab->boundingBoxM + car->position
+			))
+			{
+				m_SelectedCarToRemove = it;
+				car->tintColor = glm::vec4{ 1.0f, 0.3f, 0.2f, 1.0f };
+				break;
+			}
+		}
 	}
 
 	bool CarManager::OnMousePressed(MouseCode button)
@@ -130,6 +150,13 @@ namespace Can
 	}
 	bool CarManager::OnMousePressed_Removing()
 	{
+		if (m_SelectedCarToRemove != m_Cars.end())
+		{
+			Object* car = *m_SelectedCarToRemove;
+			m_Cars.erase(m_SelectedCarToRemove);
+			m_SelectedCarToRemove = m_Cars.end();
+			delete car;
+		}
 		return false;
 	}
 
@@ -160,5 +187,14 @@ namespace Can
 	}
 	void CarManager::ResetStates()
 	{
+
+		m_SelectedCarToRemove = m_Cars.end();
+
+		for (Object* car : m_Cars)
+			car->tintColor = glm::vec4(1.0f);
+
+		m_Guideline->enabled = false;
+		m_Guideline->tintColor = glm::vec4(1.0f);
+		m_SnappedRoadSegment = nullptr;
 	}
 }
