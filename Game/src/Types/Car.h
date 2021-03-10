@@ -1,0 +1,29 @@
+#pragma once
+#include "Can.h"
+
+namespace Can
+{
+	class RoadSegment;
+	class Car
+	{
+	public:
+		Car(
+			Prefab* type,
+			RoadSegment* roadSegment,
+			float t,
+			float speed,
+			const glm::vec3& position,
+			const glm::vec3& target,
+			const glm::vec3& rotation
+		);
+		~Car();
+		RoadSegment* roadSegment;
+		float t = 0.0f;
+		float speed = 100.0f;
+
+		Object* object;
+		glm::vec3 position;
+		glm::vec3 target;
+		bool fromStart = false;
+	};
+}

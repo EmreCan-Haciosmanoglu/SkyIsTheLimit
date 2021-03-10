@@ -41,6 +41,7 @@ namespace Can
 
 	private:
 		glm::vec3 GetRayCastedFromScreen();
+		void MoveMe2AnotherFile(float ts);
 
 	public:
 		GameApp* MainApplication = nullptr;

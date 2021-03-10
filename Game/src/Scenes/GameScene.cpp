@@ -69,10 +69,11 @@ namespace Can
 				break;
 			}
 		}
+		// şimilasyon;
+		MoveMe2AnotherFile(ts);
+		 
 
 		Renderer3D::BeginScene(m_MainCameraController.GetCamera());
-
-
 		m_ShadowMapMasterRenderer->Render(m_LightDirection);
 
 		Renderer3D::DrawObjects(
@@ -206,5 +207,13 @@ namespace Can
 		right = glm::rotate(right, glm::radians(offsetDegrees.x), up);
 		forward = glm::rotate(forward, glm::radians(offsetDegrees.y), right);
 		return forward;
+	}
+	void GameScene::MoveMe2AnotherFile(float ts)
+	{
+		auto& cars = m_CarManager.GetCars();
+		for (auto& car : cars)
+		{
+
+		}
 	}
 }
