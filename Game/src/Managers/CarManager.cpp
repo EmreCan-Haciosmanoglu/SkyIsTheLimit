@@ -97,18 +97,19 @@ namespace Can
 
 		for (auto& it = m_Cars.begin(); it != m_Cars.end(); ++it)
 		{
-			Object* car = *it;
-			car->tintColor = glm::vec4(1.0f);
+			Car* car = *it;
+			Object* obj = car->object;
+			obj->tintColor = glm::vec4(1.0f);
 
 			if (Helper::CheckBoundingBoxHit(
 				cameraPosition,
 				cameraDirection,
-				car->prefab->boundingBoxL + car->position,
-				car->prefab->boundingBoxM + car->position
+				obj->prefab->boundingBoxL + obj->position,
+				obj->prefab->boundingBoxM + obj->position
 			))
 			{
 				m_SelectedCarToRemove = it;
-				car->tintColor = glm::vec4{ 1.0f, 0.3f, 0.2f, 1.0f };
+				obj->tintColor = glm::vec4{ 1.0f, 0.3f, 0.2f, 1.0f };
 				break;
 			}
 		}
@@ -135,11 +136,17 @@ namespace Can
 	{
 		if (m_SnappedRoadSegment != nullptr)
 		{
-			Object* car = new Object(
+			std::vector<float> ts{0};
+			float lengthRoad = m_Scene->MainApplication->cars[m_Type]->boundingBoxM.x -	m_Scene->MainApplication->cars[m_Type]->boundingBoxL.x;
+			std::vector<glm::vec3> samples = Math::GetCubicCurveSamples(m_SnappedRoadSegment->GetCurvePoints(), lengthRoad, ts);
+			glm::vec3 targeT = samples[1];
+			Car* car = new Car(
 				m_Scene->MainApplication->cars[m_Type],
-				m_Scene->MainApplication->cars[m_Type],
+				m_SnappedRoadSegment,
+				0.0f,
+				1.5,
 				m_Guideline->position,
-				glm::vec3{ 1.0f, 1.0f, 1.0f },
+				targeT,
 				m_Guideline->rotation
 			);
 			m_Cars.push_back(car);
@@ -152,7 +159,7 @@ namespace Can
 	{
 		if (m_SelectedCarToRemove != m_Cars.end())
 		{
-			Object* car = *m_SelectedCarToRemove;
+			Object* car = (*m_SelectedCarToRemove)->object;
 			m_Cars.erase(m_SelectedCarToRemove);
 			m_SelectedCarToRemove = m_Cars.end();
 			delete car;
@@ -190,8 +197,8 @@ namespace Can
 
 		m_SelectedCarToRemove = m_Cars.end();
 
-		for (Object* car : m_Cars)
-			car->tintColor = glm::vec4(1.0f);
+		for (Car* car : m_Cars)
+			car->object->tintColor = glm::vec4(1.0f);
 
 		m_Guideline->enabled = false;
 		m_Guideline->tintColor = glm::vec4(1.0f);

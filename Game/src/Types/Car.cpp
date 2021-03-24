@@ -8,14 +8,14 @@ namespace Can
 	Car::Car(
 		Prefab* type,
 		RoadSegment* roadSegment,
-		float t,
+		size_t t_index,
 		float speed,
 		const glm::vec3& position,
 		const glm::vec3& target,
 		const glm::vec3& rotation
 	)
 		: roadSegment(roadSegment)
-		, t(t)
+		, t_index(t_index)
 		, speed(speed)
 		, object(new Object(type, type, position, glm::vec3(1.0f), rotation, true))
 		, position(position)

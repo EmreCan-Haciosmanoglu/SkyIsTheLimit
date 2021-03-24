@@ -10,7 +10,7 @@ namespace Can
 		Car(
 			Prefab* type,
 			RoadSegment* roadSegment,
-			float t,
+			size_t t_index,
 			float speed,
 			const glm::vec3& position,
 			const glm::vec3& target,
@@ -18,7 +18,7 @@ namespace Can
 		);
 		~Car();
 		RoadSegment* roadSegment;
-		float t = 0.0f;
+		size_t t_index = 0;
 		float speed = 100.0f;
 
 		Object* object;

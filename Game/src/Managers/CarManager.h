@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Can/Renderer/Object.h"
+#include "Types/Car.h"
 
 namespace Can
 {
@@ -37,8 +38,8 @@ namespace Can
 		inline const CarConstructionMode GetConstructionMode() const { return m_ConstructionMode; }
 		inline CarConstructionMode GetConstructionMode() { return m_ConstructionMode; }
 
-		inline const std::vector<Object*>& GetCars() const { return m_Cars; }
-		inline std::vector<Object*>& GetCars() { return m_Cars; }
+		inline const std::vector<Car*>& GetCars() const { return m_Cars; }
+		inline std::vector<Car*>& GetCars() { return m_Cars; }
 
 		void ResetStates();
 
@@ -49,12 +50,12 @@ namespace Can
 
 		size_t m_Type = 0;
 
-		std::vector<Object*> m_Cars = {};
+		std::vector<Car*> m_Cars = {};
 
 		RoadSegment* m_SnappedRoadSegment = nullptr;
 		
 
-		std::vector<Object*>::iterator& m_SelectedCarToRemove = m_Cars.end();
+		std::vector<Car*>::iterator& m_SelectedCarToRemove = m_Cars.end();
 
 		Object* m_Guideline = nullptr;
 	};

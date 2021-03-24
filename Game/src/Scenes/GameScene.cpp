@@ -3,6 +3,7 @@
 
 #include "GameApp.h"
 #include "Helper.h"
+#include "Can/Math.h"
 
 namespace Can
 {
@@ -71,7 +72,7 @@ namespace Can
 		}
 		// şimilasyon;
 		MoveMe2AnotherFile(ts);
-		 
+
 
 		Renderer3D::BeginScene(m_MainCameraController.GetCamera());
 		m_ShadowMapMasterRenderer->Render(m_LightDirection);
@@ -211,8 +212,83 @@ namespace Can
 	void GameScene::MoveMe2AnotherFile(float ts)
 	{
 		auto& cars = m_CarManager.GetCars();
-		for (auto& car : cars)
+		for (Car* car : cars)
 		{
+			glm::vec3 targeT = car->target;
+			glm::vec3 pos = car->position;
+			glm::vec3 ab = targeT - pos;
+			glm::vec3 unit = glm::normalize(ab);
+			float journeyLength = ts * car->speed;
+			float leftLenght = glm::length(ab);
+			RoadSegment* road = car->roadSegment;
+
+			if (journeyLength < leftLenght)
+			{
+				car->position = car->position + unit * journeyLength;
+				car->object->SetTransform(car->position);
+			}
+			else
+			{
+				car->position = car->target;
+				car->object->SetTransform(car->position);
+				std::vector<float> ts{ 0 };
+				float lengthRoad = road->object->type->boundingBoxM.x - road->object->type->boundingBoxL.x;
+				std::vector<glm::vec3> samples = Math::GetCubicCurveSamples(road->GetCurvePoints(), lengthRoad, ts);
+
+				if ((samples.size() - 2 == car->t_index && car->fromStart) || (1 == car->t_index && !car->fromStart))
+				{
+					//////new road
+					ConnectedObject& connecto = car->fromStart ? road->ConnectedObjectAtEnd :road->ConnectedObjectAtStart;
+					if (connecto.junction != nullptr)
+					{
+						std::vector<RoadSegment*>& roads = connecto.junction->connectedRoadSegments;
+						int newRoadIndex = Utility::Random::Integer(roads.size());
+						car->roadSegment = roads[newRoadIndex];
+						std::vector<float> ts2{ 0 };
+						float lengthRoad2 = car->roadSegment->object->type->boundingBoxM.x - car->roadSegment->object->type->boundingBoxL.x;
+						std::vector<glm::vec3> samples2 = Math::GetCubicCurveSamples(car->roadSegment->GetCurvePoints(), lengthRoad2, ts2);
+
+						if (connecto.junction == car->roadSegment->ConnectedObjectAtStart.junction)
+						{
+							car->t_index = 0;
+							car->target = samples2[1];
+							car->fromStart = true;
+						}
+						else
+						{
+							car->t_index = samples2.size();
+							car->target = samples2[samples2.size() - 1];
+							car->fromStart = false;
+						}
+
+					}
+					else
+					{
+						if (!car->fromStart)
+						{
+							car->t_index = 0;
+							car->target = samples[1];
+							car->fromStart = true;
+						}
+						else
+						{
+							car->t_index = samples.size();
+							car->target = samples[samples.size() - 1];
+							car->fromStart = false;
+						}
+					}
+
+
+
+				}
+				else
+				{
+					car->target = samples[car->t_index + (car->fromStart ? +1 : -1)];
+					car->t_index += (car->fromStart ? +1 : -1);
+				}
+
+			}
+
 
 		}
 	}
