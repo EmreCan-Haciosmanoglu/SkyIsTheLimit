@@ -243,7 +243,11 @@ namespace Can
 					{
 						std::vector<RoadSegment*>& roads = connecto.junction->connectedRoadSegments;
 						int newRoadIndex = Utility::Random::Integer(roads.size());
+						
+						RoadSegment* rs = car->roadSegment;
+						rs->Cars.erase(std::find(rs->Cars.begin(), rs->Cars.end(), car));
 						car->roadSegment = roads[newRoadIndex];
+						car->roadSegment->Cars.push_back(car);
 						std::vector<float> ts2{ 0 };
 						float lengthRoad2 = car->roadSegment->object->type->boundingBoxM.x - car->roadSegment->object->type->boundingBoxL.x;
 						std::vector<glm::vec3> samples2 = Math::GetCubicCurveSamples(car->roadSegment->GetCurvePoints(), lengthRoad2, ts2);
@@ -277,9 +281,6 @@ namespace Can
 							car->fromStart = false;
 						}
 					}
-
-
-
 				}
 				else
 				{

@@ -150,6 +150,7 @@ namespace Can
 				m_Guideline->rotation
 			);
 			m_Cars.push_back(car);
+			m_SnappedRoadSegment->Cars.push_back(car);
 			ResetStates();
 			m_Guideline->enabled = true;
 		}
@@ -158,8 +159,11 @@ namespace Can
 	bool CarManager::OnMousePressed_Removing()
 	{
 		if (m_SelectedCarToRemove != m_Cars.end())
-		{
-			Object* car = (*m_SelectedCarToRemove)->object;
+		{	
+			Car* r_car = (*m_SelectedCarToRemove);
+			RoadSegment* rs = r_car->roadSegment;
+			rs->Cars.erase(std::find(rs->Cars.begin(), rs->Cars.end(), r_car));
+			Object* car = r_car->object;
 			m_Cars.erase(m_SelectedCarToRemove);
 			m_SelectedCarToRemove = m_Cars.end();
 			delete car;

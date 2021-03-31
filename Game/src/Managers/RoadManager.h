@@ -88,7 +88,7 @@ namespace Can
 		// 3 : Angle
 		// 4 : Grid
 
-		std::array<bool, 3> restrictions = { false, false, false };
+		std::array<bool, 3> restrictions = { false, true, false };
 		// 0 : Small Angle
 		// 1 : Short Length
 		// 2 : Collision
