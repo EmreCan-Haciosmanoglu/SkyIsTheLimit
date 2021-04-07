@@ -222,74 +222,96 @@ namespace Can
 			float leftLenght = glm::length(ab);
 			RoadSegment* road = car->roadSegment;
 
-			if (journeyLength < leftLenght)
+			if (car->inJunction) 
 			{
-				car->position = car->position + unit * journeyLength;
+				car->t += ts / 1.5f;
+				glm::vec3 driftPos = Math::QuadraticCurve(car->driftpoints, car->t);
+				car->position = driftPos;
 				car->object->SetTransform(car->position);
+				if (car->t >= 1.0f)
+				{
+					car->inJunction = false;
+				}
+
 			}
 			else
 			{
-				car->position = car->target;
-				car->object->SetTransform(car->position);
-				std::vector<float> ts{ 0 };
-				float lengthRoad = road->object->type->boundingBoxM.x - road->object->type->boundingBoxL.x;
-				std::vector<glm::vec3> samples = Math::GetCubicCurveSamples(road->GetCurvePoints(), lengthRoad, ts);
-
-				if ((samples.size() - 2 == car->t_index && car->fromStart) || (1 == car->t_index && !car->fromStart))
+				if (journeyLength < leftLenght)
 				{
-					//////new road
-					ConnectedObject& connecto = car->fromStart ? road->ConnectedObjectAtEnd :road->ConnectedObjectAtStart;
-					if (connecto.junction != nullptr)
-					{
-						std::vector<RoadSegment*>& roads = connecto.junction->connectedRoadSegments;
-						int newRoadIndex = Utility::Random::Integer(roads.size());
-						
-						RoadSegment* rs = car->roadSegment;
-						rs->Cars.erase(std::find(rs->Cars.begin(), rs->Cars.end(), car));
-						car->roadSegment = roads[newRoadIndex];
-						car->roadSegment->Cars.push_back(car);
-						std::vector<float> ts2{ 0 };
-						float lengthRoad2 = car->roadSegment->object->type->boundingBoxM.x - car->roadSegment->object->type->boundingBoxL.x;
-						std::vector<glm::vec3> samples2 = Math::GetCubicCurveSamples(car->roadSegment->GetCurvePoints(), lengthRoad2, ts2);
-
-						if (connecto.junction == car->roadSegment->ConnectedObjectAtStart.junction)
-						{
-							car->t_index = 0;
-							car->target = samples2[1];
-							car->fromStart = true;
-						}
-						else
-						{
-							car->t_index = samples2.size();
-							car->target = samples2[samples2.size() - 1];
-							car->fromStart = false;
-						}
-
-					}
-					else
-					{
-						if (!car->fromStart)
-						{
-							car->t_index = 0;
-							car->target = samples[1];
-							car->fromStart = true;
-						}
-						else
-						{
-							car->t_index = samples.size();
-							car->target = samples[samples.size() - 1];
-							car->fromStart = false;
-						}
-					}
+					car->position = car->position + unit * journeyLength;
+					car->object->SetTransform(car->position);
 				}
 				else
 				{
-					car->target = samples[car->t_index + (car->fromStart ? +1 : -1)];
-					car->t_index += (car->fromStart ? +1 : -1);
+					car->position = car->target;
+					car->object->SetTransform(car->position);
+					std::vector<float> ts{ 0 };
+					float lengthRoad = road->object->type->boundingBoxM.x - road->object->type->boundingBoxL.x;
+					std::vector<glm::vec3> samples = Math::GetCubicCurveSamples(road->GetCurvePoints(), lengthRoad, ts);
+
+					if ((samples.size() - 2 == car->t_index && car->fromStart) || (1 == car->t_index && !car->fromStart))
+					{
+						//////new road
+						ConnectedObject& connecto = car->fromStart ? road->ConnectedObjectAtEnd : road->ConnectedObjectAtStart;
+						if (connecto.junction != nullptr)
+						{
+							car->driftpoints[0] = car->position;
+							car->driftpoints[1] = connecto.junction->position;
+							
+							std::vector<RoadSegment*>& roads = connecto.junction->connectedRoadSegments;
+							int newRoadIndex = Utility::Random::Integer(roads.size());
+
+							RoadSegment* rs = car->roadSegment;
+							rs->Cars.erase(std::find(rs->Cars.begin(), rs->Cars.end(), car));
+							car->roadSegment = roads[newRoadIndex];
+							
+							car->roadSegment->Cars.push_back(car);
+							std::vector<float> ts2{ 0 };
+							float lengthRoad2 = car->roadSegment->object->type->boundingBoxM.x - car->roadSegment->object->type->boundingBoxL.x;
+							std::vector<glm::vec3> samples2 = Math::GetCubicCurveSamples(car->roadSegment->GetCurvePoints(), lengthRoad2, ts2);
+
+							if (connecto.junction == car->roadSegment->ConnectedObjectAtStart.junction)
+							{
+								car->t_index = 0;
+								car->target = samples2[1];
+								car->fromStart = true;
+								car->driftpoints[2] = car->roadSegment->GetStartPosition();
+							}
+							else
+							{
+								car->t_index = samples2.size();
+								car->target = samples2[samples2.size() - 1];
+								car->fromStart = false;
+								car->driftpoints[2] = car->roadSegment->GetEndPosition();
+							}
+							car->t = 0;
+							car->inJunction = true;
+
+						}
+						else
+						{
+							if (!car->fromStart)
+							{
+								car->t_index = 0;
+								car->target = samples[1];
+								car->fromStart = true;
+							}
+							else
+							{
+								car->t_index = samples.size();
+								car->target = samples[samples.size() - 1];
+								car->fromStart = false;
+							}
+						}
+					}
+					else
+					{
+						car->target = samples[car->t_index + (car->fromStart ? +1 : -1)];
+						car->t_index += (car->fromStart ? +1 : -1);
+					}
+
 				}
-
 			}
-
 
 		}
 	}
