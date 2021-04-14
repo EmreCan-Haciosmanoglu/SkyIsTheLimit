@@ -66,8 +66,8 @@ namespace Can
 			glm::vec3 shiftR1Amount = shiftR1Dir * (r1width  * 0.5f);
 			glm::vec3 shiftR2Amount = shiftR2Dir * (r2width  * 0.5f);
 
-			float angleDiff = glm::degrees(glm::acos(glm::dot(shiftR1Dir, shiftR2Dir)));
-			if (angleDiff < 1.0f && angleDiff > 179.0f)
+			float angleDiff = glm::degrees(glm::acos(std::max(glm::dot(shiftR1Dir, shiftR2Dir),1.0f)));
+			if (angleDiff < 2.5f && angleDiff > 177.5f)
 			{
 				Intersections.push_back({ position.x + shiftR1Amount.x, 0.0f, position.z + shiftR1Amount.z });
 				continue;

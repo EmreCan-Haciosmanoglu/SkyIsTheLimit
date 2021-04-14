@@ -5,6 +5,7 @@
 namespace Can
 {
 	class End;
+	class Car;
 	class Prefab;
 	class Object;
 	class Junction;
@@ -55,6 +56,7 @@ namespace Can
 	public:
 		std::array<Prefab*, 3> Type;
 		std::vector<Building*> Buildings = {};
+		std::vector<Car*> Cars = {};
 
 		ConnectedObject ConnectedObjectAtStart;
 		ConnectedObject ConnectedObjectAtEnd;

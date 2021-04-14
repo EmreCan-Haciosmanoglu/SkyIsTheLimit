@@ -25,6 +25,7 @@ namespace Can
 		GameScene* gameScene = m_Parent->gameScene;
 		RoadManager* roadManager = &(gameScene->m_RoadManager);
 		TreeManager* treeManager = &(gameScene->m_TreeManager);
+		CarManager* carManager = &(gameScene->m_CarManager);
 		BuildingManager* buildingManager= &(gameScene->m_BuildingManager);
 		if (!is_open)
 			return;
@@ -39,6 +40,8 @@ namespace Can
 			gameScene->SetConstructionMode(ConstructionMode::Building);
 		if (ImGui::RadioButton("Tree", gameScene->e_ConstructionMode == ConstructionMode::Tree))
 			gameScene->SetConstructionMode(ConstructionMode::Tree);
+		if (ImGui::RadioButton("Car", gameScene->e_ConstructionMode == ConstructionMode::Car))
+			gameScene->SetConstructionMode(ConstructionMode::Car);
 		if (ImGui::RadioButton("None", gameScene->e_ConstructionMode == ConstructionMode::None))
 			gameScene->SetConstructionMode(ConstructionMode::None);
 		ImGui::EndChild();
@@ -87,66 +90,18 @@ namespace Can
 				treeManager->SetConstructionMode(TreeConstructionMode::None);
 			ImGui::EndChild();
 		}
-
-		ImGui::Text("Selected Objects");
-		ImGui::BeginChild("Selected Objects", ImVec2(0, 85), true);
+		else if (gameScene->e_ConstructionMode == ConstructionMode::Car)
 		{
-			static std::string current_road_item = "";
-			if (ImGui::BeginCombo("Selected Road", current_road_item.c_str()))
-			{
-				for (size_t i = 0; i < m_Parent->roads.size(); i++)
-				{
-					bool is_selected = treeManager->GetType() == i;
-					std::string text = "Road-";
-					text += std::to_string(i);
-					if (ImGui::Selectable(text.c_str(), is_selected, 0, ImVec2(0, 25)))
-					{
-						text.copy(current_road_item.data(), text.size(), 0);
-						treeManager->SetType(i);
-					}
-					if (is_selected)
-						ImGui::SetItemDefaultFocus();
-				}
-				ImGui::EndCombo();
-			}
-			static std::string current_building_item = "";
-			if (ImGui::BeginCombo("Selected Building", current_building_item.c_str()))
-			{
-				for (size_t i = 0; i < m_Parent->buildings.size(); i++)
-				{
-					bool is_selected = buildingManager->GetType() == i;
-					std::string text = "Building-";
-					text += std::to_string(i);
-					if (ImGui::Selectable(text.c_str(), is_selected, 0, ImVec2(0, 25)))
-					{
-						text.copy(current_building_item.data(), text.size(), 0);
-						buildingManager->SetType(i);
-					}
-					if (is_selected)
-						ImGui::SetItemDefaultFocus();
-				}
-				ImGui::EndCombo();
-			}
-			static std::string current_tree_item = "";
-			if (ImGui::BeginCombo("Selected Tree", current_tree_item.c_str()))
-			{
-				for (size_t i = 0; i < m_Parent->trees.size(); i++)
-				{
-					bool is_selected = treeManager->GetType()== i;
-					std::string text = "Tree-";
-					text += std::to_string(i);
-					if (ImGui::Selectable(text.c_str(), is_selected, 0, ImVec2(0, 25)))
-					{
-						text.copy(current_tree_item.data(), text.size(), 0);
-						treeManager->SetType(i);
-					}
-					if (is_selected)
-						ImGui::SetItemDefaultFocus();
-				}
-				ImGui::EndCombo();
-			}
+			ImGui::Text("Car Construction Mode");
+			ImGui::BeginChild("Car Construction Mode", ImVec2(0, 85), true);
+			if (ImGui::RadioButton("Add", carManager->GetConstructionMode() == CarConstructionMode::Adding))
+				carManager->SetConstructionMode(CarConstructionMode::Adding);
+			if (ImGui::RadioButton("Remove", carManager->GetConstructionMode() == CarConstructionMode::Removing))
+				carManager->SetConstructionMode(CarConstructionMode::Removing);
+			if (ImGui::RadioButton("None", carManager->GetConstructionMode() == CarConstructionMode::None))
+				carManager->SetConstructionMode(CarConstructionMode::None);
+			ImGui::EndChild();
 		}
-		ImGui::EndChild();
 
 		if (gameScene->e_ConstructionMode == ConstructionMode::Road)
 		{

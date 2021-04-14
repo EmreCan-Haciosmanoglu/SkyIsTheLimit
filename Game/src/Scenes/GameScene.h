@@ -6,20 +6,18 @@
 #include "Managers/RoadManager.h"
 #include "Managers/TreeManager.h"
 #include "Managers/BuildingManager.h"
+#include "Managers/CarManager.h"
 
 namespace Can
 {
 	class GameApp;
-
-	class RoadManager;
-	class TreeManager;
-	class BuildingManager;
 
 	enum class ConstructionMode
 	{
 		Road,
 		Building,
 		Tree,
+		Car,
 		None
 	};
 
@@ -43,6 +41,7 @@ namespace Can
 
 	private:
 		glm::vec3 GetRayCastedFromScreen();
+		void MoveMe2AnotherFile(float ts);
 
 	public:
 		GameApp* MainApplication = nullptr;
@@ -52,6 +51,7 @@ namespace Can
 		RoadManager m_RoadManager;
 		TreeManager m_TreeManager;
 		BuildingManager m_BuildingManager;
+		CarManager m_CarManager;
 
 		ConstructionMode e_ConstructionMode = ConstructionMode::None;
 

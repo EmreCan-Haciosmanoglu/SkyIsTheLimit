@@ -2745,17 +2745,17 @@ namespace Can
 
 		switch (m_ConstructionMode)
 		{
-		case Can::RoadConstructionMode::None:
+		case RoadConstructionMode::None:
 			break;
-		case Can::RoadConstructionMode::Straight:
-		case Can::RoadConstructionMode::QuadraticCurve:
-		case Can::RoadConstructionMode::CubicCurve:
+		case RoadConstructionMode::Straight:
+		case RoadConstructionMode::QuadraticCurve:
+		case RoadConstructionMode::CubicCurve:
 			m_GuidelinesStart->enabled = true;
 			m_GuidelinesEnd->enabled = true;
 			break;
-		case Can::RoadConstructionMode::Upgrade:
+		case RoadConstructionMode::Upgrade:
 			break;
-		case Can::RoadConstructionMode::Destruct:
+		case RoadConstructionMode::Destruct:
 			break;
 		default:
 			break;
@@ -2988,9 +2988,12 @@ namespace Can
 				}
 			}
 
+			
+			
+
 			auto it = std::find(m_RoadSegments.begin(), m_RoadSegments.end(), m_StartSnappedRoadSegment);
 			m_RoadSegments.erase(it);
-			delete m_StartSnappedRoadSegment;
+			
 
 			Junction* newJunction = new Junction(std::vector<RoadSegment*>{ roadSegment, rs1, rs2 }, curvePoints[0]);
 			m_Junctions.push_back(newJunction);
@@ -2998,6 +3001,72 @@ namespace Can
 			rs1->ConnectedObjectAtEnd.junction = newJunction;
 			rs2->ConnectedObjectAtEnd.junction = newJunction;
 			newJunction->ConstructObject();
+
+			for (Car* car : m_StartSnappedRoadSegment->Cars)
+			{
+				int t_index = car->t_index;
+				std::vector<float> ts{ 0 };
+				float lengthRoad = car->roadSegment->object->type->boundingBoxM.x - car->roadSegment->object->type->boundingBoxL.x;
+				std::vector<glm::vec3> samples = Math::GetCubicCurveSamples(car->roadSegment->GetCurvePoints(), lengthRoad, ts);
+				if (t_index >= ts.size())
+				{
+					t_index = ts.size()-1;
+				}
+				float t = ts[t_index];
+				if (t < m_StartSnappedRoadSegmentT)
+				{
+					std::vector<float> ts2{ 0 };
+					std::vector<glm::vec3> samples2 = Math::GetCubicCurveSamples(rs1->GetCurvePoints(), lengthRoad, ts2);
+					float teanew = t / m_StartSnappedRoadSegmentT;
+					for (int i = 0; i < ts2.size(); i++)
+					{
+						if (ts2[i] < teanew && i < ts2.size() - 1)
+							continue;
+						if (car->fromStart)
+						{
+							car->t_index = i - 1;
+							car->target = samples2[i];
+
+						}
+						else
+						{
+							car->t_index = i;
+							car->target = samples2[i - 1];
+						}
+						break;
+					}
+					rs1->Cars.push_back(car);
+					car->roadSegment = rs1;
+				}
+				else
+				{
+
+					std::vector<float> ts2{ 0 };
+					std::vector<glm::vec3> samples2 = Math::GetCubicCurveSamples(rs2->GetCurvePoints(), lengthRoad, ts2);
+					float teanew = (1.0f - t) / (1.0f - m_StartSnappedRoadSegmentT);
+					for (int i = 0; i < ts2.size(); i++)
+					{
+						if (ts2[i] < teanew && i < ts2.size() - 1)
+							continue;
+						if (car->fromStart)
+						{
+							car->t_index = i;
+							car->target = samples2[i - 1];
+							car->fromStart = false;
+						}
+						else
+						{
+							car->t_index = i - 1;
+							car->target = samples2[i];
+							car->fromStart = true;
+						}
+						break;
+					}
+					rs2->Cars.push_back(car);
+					car->roadSegment = rs2;
+				}
+			}
+			delete m_StartSnappedRoadSegment;
 		}
 		else
 		{
@@ -3142,10 +3211,9 @@ namespace Can
 					rs2->Buildings.push_back(building);
 				}
 			}
-
+			
 			auto it = std::find(m_RoadSegments.begin(), m_RoadSegments.end(), m_EndSnappedRoadSegment);
 			m_RoadSegments.erase(it);
-			delete m_EndSnappedRoadSegment;
 
 			Junction* newJunction = new Junction(std::vector<RoadSegment*>{ roadSegment, rs1, rs2 }, curvePoints[3]);
 			m_Junctions.push_back(newJunction);
@@ -3153,6 +3221,71 @@ namespace Can
 			rs1->ConnectedObjectAtEnd.junction = newJunction;
 			rs2->ConnectedObjectAtEnd.junction = newJunction;
 			newJunction->ConstructObject();
+			for (Car* car : m_EndSnappedRoadSegment->Cars)
+			{
+				int t_index = car->t_index;
+				std::vector<float> ts{ 0 };
+				float lengthRoad = car->roadSegment->object->type->boundingBoxM.x - car->roadSegment->object->type->boundingBoxL.x;
+				std::vector<glm::vec3> samples = Math::GetCubicCurveSamples(car->roadSegment->GetCurvePoints(), lengthRoad, ts);
+				if (t_index >= ts.size())
+				{
+					t_index = ts.size() - 1;
+				}
+				float t = ts[t_index];
+				if (t < m_EndSnappedRoadSegmentT)
+				{
+					std::vector<float> ts2{ 0 };
+					std::vector<glm::vec3> samples2 = Math::GetCubicCurveSamples(rs1->GetCurvePoints(), lengthRoad, ts2);
+					float teanew = t / m_EndSnappedRoadSegmentT;
+					for (int i = 0; i < ts2.size(); i++)
+					{
+						if (ts2[i] < teanew)
+							continue;
+						if (car->fromStart)
+						{
+							car->t_index = i - 1;
+							car->target = samples2[i];
+
+						}
+						else
+						{
+							car->t_index = i;
+							car->target = samples2[i - 1];
+						}
+						break;
+					}
+					rs1->Cars.push_back(car);
+					car->roadSegment = rs1;
+				}
+				else
+				{
+
+					std::vector<float> ts2{ 0 };
+					std::vector<glm::vec3> samples2 = Math::GetCubicCurveSamples(rs2->GetCurvePoints(), lengthRoad, ts2);
+					float teanew = (1.0f - t) / (1.0f - m_EndSnappedRoadSegmentT);
+					for (int i = 0; i < ts2.size(); i++)
+					{
+						if (ts2[i] < teanew)
+							continue;
+						if (car->fromStart)
+						{
+							car->t_index = i;
+							car->target = samples2[i - 1];
+							car->fromStart = false;
+						}
+						else
+						{
+							car->t_index = i - 1;
+							car->target = samples2[i];
+							car->fromStart = true;
+						}
+						break;
+					}
+					rs2->Cars.push_back(car);
+					car->roadSegment = rs2;
+				}
+			}
+			delete m_EndSnappedRoadSegment;
 		}
 		else
 		{
@@ -3311,6 +3444,12 @@ namespace Can
 		{
 			m_Scene->m_BuildingManager.GetBuildings().erase(std::find(m_Scene->m_BuildingManager.GetBuildings().begin(), m_Scene->m_BuildingManager.GetBuildings().end(), building));
 			delete building;
+		}
+
+		for (Car* car : roadSegment->Cars)
+		{
+			m_Scene->m_CarManager.GetCars().erase(std::find(m_Scene->m_CarManager.GetCars().begin(), m_Scene->m_CarManager.GetCars().end(), car));
+			delete car;
 		}
 
 		delete roadSegment;

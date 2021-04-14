@@ -3,6 +3,7 @@
 
 #include "GameApp.h"
 #include "Helper.h"
+#include "Can/Math.h"
 
 namespace Can
 {
@@ -14,6 +15,7 @@ namespace Can
 		, m_RoadManager(this)
 		, m_TreeManager(this)
 		, m_BuildingManager(this)
+		, m_CarManager(this)
 		, m_MainCameraController(
 			45.0f,
 			16.0f / 9.0f,
@@ -61,14 +63,18 @@ namespace Can
 			case ConstructionMode::Tree:
 				m_TreeManager.OnUpdate(I, camPos, forward);
 				break;
+			case ConstructionMode::Car:
+				m_CarManager.OnUpdate(I, camPos, forward);
+				break;
 			case ConstructionMode::None:
 				break;
 			}
 		}
+		// şimilasyon;
+		MoveMe2AnotherFile(ts);
+
 
 		Renderer3D::BeginScene(m_MainCameraController.GetCamera());
-
-
 		m_ShadowMapMasterRenderer->Render(m_LightDirection);
 
 		Renderer3D::DrawObjects(
@@ -114,6 +120,9 @@ namespace Can
 		case ConstructionMode::Tree:
 			m_TreeManager.OnMousePressed(button);
 			break;
+		case ConstructionMode::Car:
+			m_CarManager.OnMousePressed(button);
+			break;
 		case ConstructionMode::None:
 			break;
 		}
@@ -128,22 +137,32 @@ namespace Can
 		case ConstructionMode::Road:
 			m_TreeManager.ResetStates();
 			m_BuildingManager.ResetStates();
+			m_CarManager.ResetStates();
 			m_RoadManager.SetConstructionMode(m_RoadManager.GetConstructionMode());
 			break;
 		case ConstructionMode::Building:
 			m_RoadManager.ResetStates();
 			m_TreeManager.ResetStates();
+			m_CarManager.ResetStates();
 			m_BuildingManager.SetConstructionMode(m_BuildingManager.GetConstructionMode());
 			break;
 		case ConstructionMode::Tree:
 			m_RoadManager.ResetStates();
 			m_BuildingManager.ResetStates();
+			m_CarManager.ResetStates();
 			m_TreeManager.SetConstructionMode(m_TreeManager.GetConstructionMode());
+			break;
+		case ConstructionMode::Car:
+			m_RoadManager.ResetStates();
+			m_BuildingManager.ResetStates();
+			m_TreeManager.ResetStates();
+			m_CarManager.SetConstructionMode(m_CarManager.GetConstructionMode());
 			break;
 		case ConstructionMode::None:
 			m_RoadManager.ResetStates();
 			m_TreeManager.ResetStates();
 			m_BuildingManager.ResetStates();
+			m_CarManager.ResetStates();
 			break;
 		default:
 			break;
@@ -189,5 +208,128 @@ namespace Can
 		right = glm::rotate(right, glm::radians(offsetDegrees.x), up);
 		forward = glm::rotate(forward, glm::radians(offsetDegrees.y), right);
 		return forward;
+	}
+	void GameScene::MoveMe2AnotherFile(float ts)
+	{
+		auto& cars = m_CarManager.GetCars();
+		for (Car* car : cars)
+		{
+			glm::vec3 targeT = car->target;
+			glm::vec3 pos = car->position;
+			glm::vec3 ab = targeT - pos;
+			glm::vec3 unit = glm::normalize(ab);
+			float journeyLength = ts * car->speed;
+			float leftLenght = glm::length(ab);
+			RoadSegment* road = car->roadSegment;
+
+			if (car->inJunction) 
+			{
+				car->t += ts / 1.5f;
+				glm::vec3 driftPos = Math::QuadraticCurve(car->driftpoints, car->t);
+				glm::vec3 d1rection = glm::normalize(driftPos - car->position);
+				car->position = driftPos;
+
+				car->object->SetTransform(car->position, glm::vec3(1.0f), glm::vec3{ 
+					0.0f, 
+					glm::radians(180.0f)+glm::acos(d1rection.x) * ((float)(d1rection.z < 0.0f) * 2.0f - 1.0f),
+					0.0f });
+				if (car->t >= 1.0f)
+				{
+					car->inJunction = false;
+				}
+
+			}
+			else
+			{
+				if (journeyLength < leftLenght)
+				{
+					car->position = car->position + unit * journeyLength;
+					car->object->SetTransform(car->position);
+				}
+				else
+				{
+					car->position = car->target;
+					car->object->SetTransform(car->position);
+					std::vector<float> ts{ 0 };
+					float lengthRoad = road->object->type->boundingBoxM.x - road->object->type->boundingBoxL.x;
+					std::vector<glm::vec3> samples = Math::GetCubicCurveSamples(road->GetCurvePoints(), lengthRoad, ts);
+
+					if ((samples.size() - 2 == car->t_index && car->fromStart) || (1 == car->t_index && !car->fromStart))
+					{
+						//////new road
+						ConnectedObject& connecto = car->fromStart ? road->ConnectedObjectAtEnd : road->ConnectedObjectAtStart;
+						if (connecto.junction != nullptr)
+						{
+							car->driftpoints[0] = car->position;
+							car->driftpoints[1] = connecto.junction->position;
+							
+							std::vector<RoadSegment*>& roads = connecto.junction->connectedRoadSegments;
+							int newRoadIndex = Utility::Random::Integer(roads.size());
+							RoadSegment* rs = car->roadSegment;
+							
+							while (rs== roads[newRoadIndex])
+							{
+								newRoadIndex = Utility::Random::Integer(roads.size());
+							}
+							
+							rs->Cars.erase(std::find(rs->Cars.begin(), rs->Cars.end(), car));
+							car->roadSegment = roads[newRoadIndex];
+							
+							car->roadSegment->Cars.push_back(car);
+							std::vector<float> ts2{ 0 };
+							float lengthRoad2 = car->roadSegment->object->type->boundingBoxM.x - car->roadSegment->object->type->boundingBoxL.x;
+							std::vector<glm::vec3> samples2 = Math::GetCubicCurveSamples(car->roadSegment->GetCurvePoints(), lengthRoad2, ts2);
+
+							if (connecto.junction == car->roadSegment->ConnectedObjectAtStart.junction)
+							{
+								car->t_index = 0;
+								car->target = samples2[1];
+								car->fromStart = true;
+								car->driftpoints[2] = car->roadSegment->GetStartPosition();
+							}
+							else
+							{
+								car->t_index = samples2.size();
+								car->target = samples2[samples2.size() - 1];
+								car->fromStart = false;
+								car->driftpoints[2] = car->roadSegment->GetEndPosition();
+							}
+							car->t = 0;
+							car->inJunction = true;
+
+						}
+						else
+						{
+							if (!car->fromStart)
+							{
+								car->t_index = 0;
+								car->target = samples[1];
+								car->fromStart = true;
+							}
+							else
+							{
+								car->t_index = samples.size();
+								car->target = samples[samples.size() - 1];
+								car->fromStart = false;
+							}
+						}
+					}
+					else
+					{
+						glm::vec3 oldTarget = car->target;
+						car->target = samples[car->t_index + (car->fromStart ? +1 : -1)];
+						car->t_index += (car->fromStart ? +1 : -1);
+
+						glm::vec3 d1rection = glm::normalize(car->target-oldTarget);
+						car->object->SetTransform(car->position, glm::vec3(1.0f), glm::vec3{
+							0.0f, 
+							glm::radians(180.0f) + glm::acos(d1rection.x) * ((float)(d1rection.z < 0.0f) * 2.0f - 1.0f),
+							0.0f});
+					}
+
+				}
+			}
+
+		}
 	}
 }
