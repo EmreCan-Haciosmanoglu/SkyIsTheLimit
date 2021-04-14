@@ -1,37 +1,19 @@
 #include "canpch.h"
 #include "End.h"
 
-#include "Road.h"
+#include "Types/RoadSegment.h"
 
 namespace Can
 {
-	End::End(Road* connectedRoad, Prefab* prefab)
-		: position({ 0.0f, 0.0f, 0.0f })
-		, connectedRoad(connectedRoad)
-		, object(new Object(prefab, prefab))
-	{
-	}
-	End::End(Road* connectedRoad, Prefab* prefab, const glm::vec3& position)
+	End::End(RoadSegment* connectedRoadSegment, Prefab* prefab, const glm::vec3& position, const glm::vec3& scale, const glm::vec3& rotation)
 		: position(position)
-		, connectedRoad(connectedRoad)
-		, object(new Object(prefab, prefab, position))
-	{
-	}
-	End::End(Road* connectedRoad, Prefab* prefab, const glm::vec3& position, const glm::vec3& scale)
-		: position(position)
-		, connectedRoad(connectedRoad)
-		, object(new Object(prefab, prefab, position, scale))
-	{
-	}
-	End::End(Road* connectedRoad, Prefab* prefab, const glm::vec3& position, const glm::vec3& scale, const glm::vec3& rotation)
-		: position(position)
-		, connectedRoad(connectedRoad)
+		, connectedRoadSegment(connectedRoadSegment)
 		, object(new Object(prefab, prefab, position, scale, rotation))
 	{
 	}
-	End::End(Road* connectedRoad, Object* object)
+	End::End(RoadSegment* connectedRoad, Object* object)
 		: position(object->position)
-		, connectedRoad(connectedRoad)
+		, connectedRoadSegment(connectedRoadSegment)
 		, object(object)
 	{
 	}

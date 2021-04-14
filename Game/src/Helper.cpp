@@ -1,6 +1,8 @@
 #include "canpch.h"
 #include "Helper.h"
 
+#include "Scenes/GameScene.h"
+
 namespace  Can::Helper
 {
 	bool CheckBoundingBoxHit(const glm::vec3& rayStartPoint, const glm::vec3& ray, const glm::vec3& least, const glm::vec3& most)
@@ -28,10 +30,10 @@ namespace  Can::Helper
 	std::array<glm::vec2, 4> getAxis(const std::array<glm::vec2, 4>& c1, const std::array<glm::vec2, 4>& c2)
 	{
 		return std::array<glm::vec2, 4>{
-			glm::normalize(c1[1] - c1[0]),
-				glm::normalize(c1[3] - c1[0]),
-				glm::normalize(c2[1] - c2[0]),
-				glm::normalize(c2[3] - c2[0])
+			glm::normalize(c1[1] - c1[0]) ,
+			glm::normalize(c1[3] - c1[0]) ,
+			glm::normalize(c2[1] - c2[0]) ,
+			glm::normalize(c2[3] - c2[0])
 		};
 	}
 
@@ -66,7 +68,7 @@ namespace  Can::Helper
 				glm::dot(axis[i], rotated_rect2[2]),
 				glm::dot(axis[i], rotated_rect2[3])
 			};
-			
+
 			float s1max = *(std::max_element(scalers1, scalers1 + 4));
 			float s1min = *(std::min_element(scalers1, scalers1 + 4));
 
@@ -90,41 +92,64 @@ namespace  Can::Helper
 		return mtvs[0];
 	}
 
+	glm::vec3 GetRayHitPointOnTerrain(void* s, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection)
+	{
+		Can::GameScene* scene = (Can::GameScene*)s; //I have no idea how to change this
+
+		float* data = scene->m_Terrain->prefab->vertices;
+		glm::vec3 bottomPlaneCollisionPoint = Helper::RayPlaneIntersection(cameraPosition, cameraDirection, { 0.0f, 0.0f, 0.0f }, { 0.0f, 1.0f, 0.0f });
+		glm::vec3 topPlaneCollisionPoint = Helper::RayPlaneIntersection(cameraPosition, cameraDirection, { 0.0f, 1.0f * COLOR_COUNT, 0.0f }, { 0.0f, 1.0f, 0.0f });
+
+		bottomPlaneCollisionPoint.z *= -1;
+		topPlaneCollisionPoint.z *= -1;
+
+		float terrainW = scene->m_Terrain->prefab->boundingBoxM.x * TERRAIN_SCALE_DOWN;
+		float terrainH = -scene->m_Terrain->prefab->boundingBoxL.z * TERRAIN_SCALE_DOWN;
+
+		glm::vec2 minCoord = {
+			std::max(0.0f, TERRAIN_SCALE_DOWN * (std::min(bottomPlaneCollisionPoint.x, topPlaneCollisionPoint.x) - scene->m_Terrain->position.x) - 1),
+			std::max(0.0f, TERRAIN_SCALE_DOWN * (std::min(bottomPlaneCollisionPoint.z, topPlaneCollisionPoint.z) - scene->m_Terrain->position.z) - 1)
+		};
+
+		glm::vec2 maxCoord = {
+			std::min(terrainW, TERRAIN_SCALE_DOWN * (std::max(bottomPlaneCollisionPoint.x, topPlaneCollisionPoint.x) - scene->m_Terrain->position.x) + 1),
+			std::min(terrainH, TERRAIN_SCALE_DOWN * (std::max(bottomPlaneCollisionPoint.z, topPlaneCollisionPoint.z) - scene->m_Terrain->position.z) + 1)
+		};
+		for (size_t y = (size_t)(minCoord.y); y < maxCoord.y; y++)
+		{
+			for (size_t x = (size_t)(minCoord.x); x < maxCoord.x; x++)
+			{
+				for (size_t z = 0; z < 2; z++)
+				{
+					size_t index = (x + ((int)terrainW - 1) * y) * 60 + z * 30;
+					float* A = &data[index + 0];
+					float* B = &data[index + 10];
+					float* C = &data[index + 20];
+					glm::vec3 intersection;
+					bool result = RayTriangleIntersection(
+						cameraPosition,
+						cameraDirection,
+						{ A[0], A[1], A[2] },
+						{ B[0], B[1], B[2] },
+						{ C[0], C[1], C[2] },
+						{ A[7], A[8], A[9] },
+						intersection
+					);
+					if (result)
+					{
+						return intersection;
+					}
+				}
+			}
+		}
+		return glm::vec3(-1.0f);
+	}
+
 	glm::vec3 RayPlaneIntersection(const glm::vec3& X, const glm::vec3& v, const glm::vec3& C, const glm::vec3& n)
 	{
 		glm::vec3 w = C - X;
 		float k = glm::dot(w, n) / glm::dot(v, n);
 		return X + k * v;
-	}
-
-	bool LineSLineSIntersection(glm::vec2 p0, glm::vec2 p1, glm::vec2 p2, glm::vec2 p3, glm::vec2* intersection)
-	{
-		float s_numer, t_numer, denom, t;
-		glm::vec2 s10 = p1 - p0;
-		glm::vec2 s32 = p3 - p2;
-
-		denom = s10.x * s32.y - s32.x * s10.y;
-		if (denom == 0)
-			return false; // Collinear
-		bool denomPositive = denom > 0;
-
-		glm::vec2 s02 = p0 - p2;
-
-		s_numer = s10.x * s02.y - s10.y * s02.x;
-		if ((s_numer < 0) == denomPositive)
-			return false; // No collision
-
-		t_numer = s32.x * s02.y - s32.y * s02.x;
-		if ((t_numer < 0) == denomPositive)
-			return false; // No collision
-
-		if (((s_numer > denom) == denomPositive) || ((t_numer > denom) == denomPositive))
-			return false; // No collision
-		// Collision detected
-		t = t_numer / denom;
-		if (intersection)
-			(*intersection) = p0 + (t * s10);
-		return true;
 	}
 
 	float DistanceBetweenLineSLineS(glm::vec2 p1, glm::vec2 p2, glm::vec2 p3, glm::vec2 p4)
