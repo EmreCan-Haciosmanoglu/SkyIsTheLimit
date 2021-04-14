@@ -226,8 +226,13 @@ namespace Can
 			{
 				car->t += ts / 1.5f;
 				glm::vec3 driftPos = Math::QuadraticCurve(car->driftpoints, car->t);
+				glm::vec3 d1rection = glm::normalize(driftPos - car->position);
 				car->position = driftPos;
-				car->object->SetTransform(car->position);
+
+				car->object->SetTransform(car->position, glm::vec3(1.0f), glm::vec3{ 
+					0.0f, 
+					glm::radians(180.0f)+glm::acos(d1rection.x) * ((float)(d1rection.z < 0.0f) * 2.0f - 1.0f),
+					0.0f });
 				if (car->t >= 1.0f)
 				{
 					car->inJunction = false;
@@ -260,8 +265,13 @@ namespace Can
 							
 							std::vector<RoadSegment*>& roads = connecto.junction->connectedRoadSegments;
 							int newRoadIndex = Utility::Random::Integer(roads.size());
-
 							RoadSegment* rs = car->roadSegment;
+							
+							while (rs== roads[newRoadIndex])
+							{
+								newRoadIndex = Utility::Random::Integer(roads.size());
+							}
+							
 							rs->Cars.erase(std::find(rs->Cars.begin(), rs->Cars.end(), car));
 							car->roadSegment = roads[newRoadIndex];
 							
@@ -306,8 +316,15 @@ namespace Can
 					}
 					else
 					{
+						glm::vec3 oldTarget = car->target;
 						car->target = samples[car->t_index + (car->fromStart ? +1 : -1)];
 						car->t_index += (car->fromStart ? +1 : -1);
+
+						glm::vec3 d1rection = glm::normalize(car->target-oldTarget);
+						car->object->SetTransform(car->position, glm::vec3(1.0f), glm::vec3{
+							0.0f, 
+							glm::radians(180.0f) + glm::acos(d1rection.x) * ((float)(d1rection.z < 0.0f) * 2.0f - 1.0f),
+							0.0f});
 					}
 
 				}

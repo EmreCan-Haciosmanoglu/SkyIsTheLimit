@@ -77,7 +77,7 @@ namespace Can
 							m_SnappedRoadSegment = roadSegment;
 							glm::vec3 r{
 								0.0f,
-								roadSegment->GetStartRotation().y ,
+								roadSegment->GetStartRotation().y + glm::radians(180.f),
 								roadSegment->GetStartRotation().x
 							};
 							m_Guideline->SetTransform(prevLocation, glm::vec3(1.0f), r);
