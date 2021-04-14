@@ -1,8 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
+    <Filter Include="Managers">
+      <UniqueIdentifier>{B34CFEBD-9F19-59C9-C832-4771B45E8E57}</UniqueIdentifier>
+    </Filter>
     <Filter Include="Scenes">
       <UniqueIdentifier>{86EEB3D0-7290-DEA6-5B4B-F2FA478C65F7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Types">
+      <UniqueIdentifier>{3A4E330E-A662-5BBF-6FE4-FE1EDBB757F0}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -12,16 +18,28 @@
     <ClInclude Include="src\GameApp.h" />
     <ClInclude Include="src\Helper.h" />
     <ClInclude Include="src\Junction.h" />
+    <ClInclude Include="src\Managers\BuildingManager.h">
+      <Filter>Managers</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Managers\CarManager.h">
+      <Filter>Managers</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Managers\RoadManager.h">
+      <Filter>Managers</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Managers\TreeManager.h">
+      <Filter>Managers</Filter>
+    </ClInclude>
     <ClInclude Include="src\Scenes\GameScene.h">
       <Filter>Scenes</Filter>
     </ClInclude>
+    <ClInclude Include="src\Types\Car.h">
+      <Filter>Types</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Types\RoadSegment.h">
+      <Filter>Types</Filter>
+    </ClInclude>
     <ClInclude Include="src\UIScene.h" />
-    <ClInclude Include="src\Managers\RoadManager.h" />
-    <ClInclude Include="src\Managers\TreeManager.h" />
-    <ClInclude Include="src\Managers\BuildingManager.h" />
-    <ClInclude Include="src\Types\RoadSegment.h" />
-    <ClInclude Include="src\Managers\CarManager.h" />
-    <ClInclude Include="src\Types\Car.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Building.cpp" />
@@ -30,15 +48,27 @@
     <ClCompile Include="src\GameApp.cpp" />
     <ClCompile Include="src\Helper.cpp" />
     <ClCompile Include="src\Junction.cpp" />
+    <ClCompile Include="src\Managers\BuildingManager.cpp">
+      <Filter>Managers</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Managers\CarManager.cpp">
+      <Filter>Managers</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Managers\RoadManager.cpp">
+      <Filter>Managers</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Managers\TreeManager.cpp">
+      <Filter>Managers</Filter>
+    </ClCompile>
     <ClCompile Include="src\Scenes\GameScene.cpp">
       <Filter>Scenes</Filter>
     </ClCompile>
+    <ClCompile Include="src\Types\Car.cpp">
+      <Filter>Types</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Types\RoadSegment.cpp">
+      <Filter>Types</Filter>
+    </ClCompile>
     <ClCompile Include="src\UIScene.cpp" />
-    <ClCompile Include="src\Managers\RoadManager.cpp" />
-    <ClCompile Include="src\Managers\TreeManager.cpp" />
-    <ClCompile Include="src\Managers\BuildingManager.cpp" />
-    <ClCompile Include="src\Types\RoadSegment.cpp" />
-    <ClCompile Include="src\Managers\CarManager.cpp" />
-    <ClCompile Include="src\Types\Car.cpp" />
   </ItemGroup>
 </Project>

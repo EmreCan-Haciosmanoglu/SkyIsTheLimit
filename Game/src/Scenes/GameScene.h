@@ -21,6 +21,14 @@ namespace Can
 		None
 	};
 
+	enum class SpeedMode
+	{
+		Pause  = 0,
+		Normal = 1,
+		TwoX   = 2,
+		FourX  = 4
+	};
+
 	class GameScene : public Layer::Layer
 	{
 	public:
@@ -37,7 +45,10 @@ namespace Can
 		bool OnMousePressed(Event::MouseButtonPressedEvent& event);
 
 		void SetConstructionMode(ConstructionMode mode);
-		const ConstructionMode& GetConstructionMode() { return e_ConstructionMode; }
+		const ConstructionMode& GetConstructionMode() const { return e_ConstructionMode; }
+
+		void SetSpeedMode(SpeedMode mode);
+		const SpeedMode& GetSpeedMode() const { return e_SpeedMode; }
 
 	private:
 		glm::vec3 GetRayCastedFromScreen();
@@ -54,6 +65,8 @@ namespace Can
 		CarManager m_CarManager;
 
 		ConstructionMode e_ConstructionMode = ConstructionMode::None;
+
+		SpeedMode e_SpeedMode = SpeedMode::Normal;
 
 	private:
 		Camera::Controller::Perspective m_MainCameraController;
