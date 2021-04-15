@@ -18,6 +18,90 @@ namespace Can
 		unsigned int w = app.GetWindow().GetWidth();
 		unsigned int h = app.GetWindow().GetHeight();
 
+		m_ButtonPause = new Button(ButtonConstructorParameters{
+			m_Scene->m_Registry,
+			m_Scene->entityID,
+			glm::vec3{width - 4.0f, 0.5f, 0.2f},
+			glm::vec2(0.8f),
+			glm::vec4(1.0f),
+			m_Parent->pauseTexture,
+			[this]() {
+				entt::registry& mainRegistry = m_Scene->m_Registry;
+				GameScene* gameScene = m_Parent->gameScene;
+
+				mainRegistry.get<SpriteRendererComponent>(m_ButtonPause->entityID).border = true;
+				mainRegistry.get<SpriteRendererComponent>(m_ButtonNormal->entityID).border = false;
+				mainRegistry.get<SpriteRendererComponent>(m_Button2Times->entityID).border = false;
+				mainRegistry.get<SpriteRendererComponent>(m_Button4Times->entityID).border = false;
+				gameScene->SetSpeedMode(SpeedMode::Pause); 
+			},
+			0.1f,
+			false,
+			glm::vec4{ 255.0f / 255.0f, 166.0f / 255.0f, 158.0f / 255.0f, 1.0f },
+			});
+		m_ButtonNormal= new Button(ButtonConstructorParameters{
+			m_Scene->m_Registry,
+			m_Scene->entityID,
+			glm::vec3{width - 3.0f, 0.5f, 0.2f},
+			glm::vec2(0.8f),
+			glm::vec4(1.0f),
+			m_Parent->normalSpeedTexture,
+			[this]() {
+				entt::registry& mainRegistry = m_Scene->m_Registry;
+				GameScene* gameScene = m_Parent->gameScene;
+
+				mainRegistry.get<SpriteRendererComponent>(m_ButtonPause->entityID).border = false;
+				mainRegistry.get<SpriteRendererComponent>(m_ButtonNormal->entityID).border = true;
+				mainRegistry.get<SpriteRendererComponent>(m_Button2Times->entityID).border = false;
+				mainRegistry.get<SpriteRendererComponent>(m_Button4Times->entityID).border = false;
+				gameScene->SetSpeedMode(SpeedMode::Normal);
+			},
+			0.1f,
+			true,
+			glm::vec4{ 255.0f / 255.0f, 166.0f / 255.0f, 158.0f / 255.0f, 1.0f },
+			});
+		m_Button2Times = new Button(ButtonConstructorParameters{
+			m_Scene->m_Registry,
+			m_Scene->entityID,
+			glm::vec3{width - 2.0f, 0.5f, 0.2f},
+			glm::vec2(0.8f),
+			glm::vec4(1.0f),
+			m_Parent->twoTimesSpeedTexture,
+			[this]() {
+				entt::registry& mainRegistry = m_Scene->m_Registry;
+				GameScene* gameScene = m_Parent->gameScene;
+
+				mainRegistry.get<SpriteRendererComponent>(m_ButtonPause->entityID).border = false;
+				mainRegistry.get<SpriteRendererComponent>(m_ButtonNormal->entityID).border = false;
+				mainRegistry.get<SpriteRendererComponent>(m_Button2Times->entityID).border = true;
+				mainRegistry.get<SpriteRendererComponent>(m_Button4Times->entityID).border = false;
+				gameScene->SetSpeedMode(SpeedMode::TwoX);
+			},
+			0.1f,
+			false,
+			glm::vec4{ 255.0f / 255.0f, 166.0f / 255.0f, 158.0f / 255.0f, 1.0f },
+			});
+		m_Button4Times = new Button(ButtonConstructorParameters{
+			m_Scene->m_Registry,
+			m_Scene->entityID,
+			glm::vec3{width - 1.0f, 0.5f, 0.2f},
+			glm::vec2(0.8f),
+			glm::vec4(1.0f),
+			m_Parent->fourTimesSpeedTexture,
+			[this]() {
+				entt::registry& mainRegistry = m_Scene->m_Registry;
+				GameScene* gameScene = m_Parent->gameScene;
+
+				mainRegistry.get<SpriteRendererComponent>(m_ButtonPause->entityID).border = false;
+				mainRegistry.get<SpriteRendererComponent>(m_ButtonNormal->entityID).border = false;
+				mainRegistry.get<SpriteRendererComponent>(m_Button2Times->entityID).border = false;
+				mainRegistry.get<SpriteRendererComponent>(m_Button4Times->entityID).border = true;
+				gameScene->SetSpeedMode(SpeedMode::FourX);
+			},
+			0.1f,
+			false,
+			glm::vec4{ 255.0f / 255.0f, 166.0f / 255.0f, 158.0f / 255.0f, 1.0f },
+			});
 
 		m_ButtonRoads = new Button(ButtonConstructorParameters{
 			m_Scene->m_Registry,
@@ -36,7 +120,7 @@ namespace Can
 				entt::entity panelTreesID = this->m_PanelTrees->entityID;
 				entt::entity panelCarsID = this->m_PanelCars->entityID;
 
-				if (mainRegistry.has<HiddenComponent>(panelBuildingsID) && 
+				if (mainRegistry.has<HiddenComponent>(panelBuildingsID) &&
 					mainRegistry.has<HiddenComponent>(panelTreesID) &&
 					mainRegistry.has<HiddenComponent>(panelCarsID)
 					)
@@ -76,7 +160,7 @@ namespace Can
 					mainRegistry.emplace_or_replace<HiddenComponent>(panelBuildingsID);
 					mainRegistry.emplace_or_replace<HiddenComponent>(panelTreesID);
 					mainRegistry.emplace_or_replace<HiddenComponent>(panelCarsID);
-					
+
 				}
 			},
 			0.3f
@@ -99,9 +183,9 @@ namespace Can
 				entt::entity panelCarsID = this->m_PanelCars->entityID;
 
 				if (
-					mainRegistry.has<HiddenComponent>(panelRoadsID) && 
+					mainRegistry.has<HiddenComponent>(panelRoadsID) &&
 					mainRegistry.has<HiddenComponent>(panelTreesID) &&
-					mainRegistry.has<HiddenComponent>(panelCarsID) 
+					mainRegistry.has<HiddenComponent>(panelCarsID)
 
 					)
 				{
@@ -161,7 +245,7 @@ namespace Can
 				entt::entity panelTreesID = this->m_PanelTrees->entityID;
 				entt::entity panelCarsID = this->m_PanelCars->entityID;
 
-				if (mainRegistry.has<HiddenComponent>(panelRoadsID) && 
+				if (mainRegistry.has<HiddenComponent>(panelRoadsID) &&
 					mainRegistry.has<HiddenComponent>(panelBuildingsID) &&
 					mainRegistry.has<HiddenComponent>(panelCarsID)
 					)
@@ -200,7 +284,7 @@ namespace Can
 					mainRegistry.remove<HiddenComponent>(panelTreesID);
 					mainRegistry.emplace_or_replace<HiddenComponent>(panelRoadsID);
 					mainRegistry.emplace_or_replace<HiddenComponent>(panelBuildingsID);
-					mainRegistry.emplace_or_replace<HiddenComponent>(panelCarsID);					
+					mainRegistry.emplace_or_replace<HiddenComponent>(panelCarsID);
 				}
 			},
 			0.3f
@@ -324,12 +408,16 @@ namespace Can
 			});
 
 		std::vector<entt::entity> buttonList = {
-			 m_ButtonRoads->entityID,
-			 m_ButtonBuildings->entityID,
-			 m_ButtonTrees->entityID,
-			 m_ButtonCars->entityID,
-			 m_ButtonNeeds->entityID,
-			 m_ButtonTools->entityID
+			m_ButtonPause->entityID,
+			m_ButtonNormal->entityID,
+			m_Button2Times->entityID,
+			m_Button4Times->entityID,
+			m_ButtonRoads->entityID,
+			m_ButtonBuildings->entityID,
+			m_ButtonTrees->entityID,
+			m_ButtonCars->entityID,
+			m_ButtonNeeds->entityID,
+			m_ButtonTools->entityID
 		};
 		m_Scene->m_Registry.emplace<ChildrenComponent>(m_Scene->entityID, buttonList);
 
