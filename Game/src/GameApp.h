@@ -25,17 +25,21 @@ namespace Can
 		Prefab* terrainPrefab;
 		Ref<Texture2D> treeMap;
 		
-		Ref<Texture2D> addTexture;			// Put better name
-		Ref<Texture2D> removeTexture;		// Put better name
-		Ref<Texture2D> cancelTexture;		// Put better name
-		Ref<Texture2D> upgradeTexture;		// Put better name
-		Ref<Texture2D> straightTexture;		// Put better name
-		Ref<Texture2D> quadraticTexture;	// Put better name
-		Ref<Texture2D> downgradeTexture;	// Put better name
-		Ref<Texture2D> cubic1234Texture;	// Put better name
-		Ref<Texture2D> cubic1243Texture;	// Put better name
-		Ref<Texture2D> cubic1342Texture;	// Put better name
-		Ref<Texture2D> cubic1432Texture;	// Put better name
+		Ref<Texture2D> addTexture;				// Put better name
+		Ref<Texture2D> pauseTexture;			// Put better name
+		Ref<Texture2D> removeTexture;			// Put better name
+		Ref<Texture2D> cancelTexture;			// Put better name
+		Ref<Texture2D> upgradeTexture;			// Put better name
+		Ref<Texture2D> straightTexture;			// Put better name
+		Ref<Texture2D> quadraticTexture;		// Put better name
+		Ref<Texture2D> downgradeTexture;		// Put better name
+		Ref<Texture2D> cubic1234Texture;		// Put better name
+		Ref<Texture2D> cubic1243Texture;		// Put better name
+		Ref<Texture2D> cubic1342Texture;		// Put better name
+		Ref<Texture2D> cubic1432Texture;		// Put better name
+		Ref<Texture2D> normalSpeedTexture;		// Put better name
+		Ref<Texture2D> twoTimesSpeedTexture;	// Put better name
+		Ref<Texture2D> fourTimesSpeedTexture;	// Put better name
 
 
 

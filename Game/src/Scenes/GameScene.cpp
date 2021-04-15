@@ -70,8 +70,9 @@ namespace Can
 				break;
 			}
 		}
-		// şimilasyon;
-		MoveMe2AnotherFile(ts);
+
+		for (uint8_t i = 0; i < (uint8_t)e_SpeedMode; i++)
+			MoveMe2AnotherFile(ts);
 
 
 		Renderer3D::BeginScene(m_MainCameraController.GetCamera());
@@ -168,6 +169,11 @@ namespace Can
 			break;
 		}
 	}
+	void GameScene::SetSpeedMode(SpeedMode mode)
+	{
+		// More Stuff???
+		e_SpeedMode = mode;
+	}
 	glm::vec3 GameScene::GetRayCastedFromScreen()
 	{
 		auto [mouseX, mouseY] = Can::Input::GetMousePos();
@@ -222,16 +228,16 @@ namespace Can
 			float leftLenght = glm::length(ab);
 			RoadSegment* road = car->roadSegment;
 
-			if (car->inJunction) 
+			if (car->inJunction)
 			{
 				car->t += ts / 1.5f;
 				glm::vec3 driftPos = Math::QuadraticCurve(car->driftpoints, car->t);
 				glm::vec3 d1rection = glm::normalize(driftPos - car->position);
 				car->position = driftPos;
 
-				car->object->SetTransform(car->position, glm::vec3(1.0f), glm::vec3{ 
-					0.0f, 
-					glm::radians(180.0f)+glm::acos(d1rection.x) * ((float)(d1rection.z < 0.0f) * 2.0f - 1.0f),
+				car->object->SetTransform(car->position, glm::vec3(1.0f), glm::vec3{
+					0.0f,
+					glm::radians(180.0f) + glm::acos(d1rection.x) * ((float)(d1rection.z < 0.0f) * 2.0f - 1.0f),
 					0.0f });
 				if (car->t >= 1.0f)
 				{
@@ -262,19 +268,19 @@ namespace Can
 						{
 							car->driftpoints[0] = car->position;
 							car->driftpoints[1] = connecto.junction->position;
-							
+
 							std::vector<RoadSegment*>& roads = connecto.junction->connectedRoadSegments;
 							int newRoadIndex = Utility::Random::Integer(roads.size());
 							RoadSegment* rs = car->roadSegment;
-							
-							while (rs== roads[newRoadIndex])
+
+							while (rs == roads[newRoadIndex])
 							{
 								newRoadIndex = Utility::Random::Integer(roads.size());
 							}
-							
+
 							rs->Cars.erase(std::find(rs->Cars.begin(), rs->Cars.end(), car));
 							car->roadSegment = roads[newRoadIndex];
-							
+
 							car->roadSegment->Cars.push_back(car);
 							std::vector<float> ts2{ 0 };
 							float lengthRoad2 = car->roadSegment->object->type->boundingBoxM.x - car->roadSegment->object->type->boundingBoxL.x;
@@ -320,11 +326,11 @@ namespace Can
 						car->target = samples[car->t_index + (car->fromStart ? +1 : -1)];
 						car->t_index += (car->fromStart ? +1 : -1);
 
-						glm::vec3 d1rection = glm::normalize(car->target-oldTarget);
+						glm::vec3 d1rection = glm::normalize(car->target - oldTarget);
 						car->object->SetTransform(car->position, glm::vec3(1.0f), glm::vec3{
-							0.0f, 
+							0.0f,
 							glm::radians(180.0f) + glm::acos(d1rection.x) * ((float)(d1rection.z < 0.0f) * 2.0f - 1.0f),
-							0.0f});
+							0.0f });
 					}
 
 				}

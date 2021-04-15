@@ -25,29 +25,34 @@ namespace Can
 	public:
 		Scene* m_Scene;
 
-		Button* m_ButtonRoads = nullptr;
+		Button* m_ButtonPause  = nullptr;
+		Button* m_ButtonNormal = nullptr;
+		Button* m_Button2Times = nullptr;
+		Button* m_Button4Times = nullptr;
+
+		Button* m_ButtonRoads     = nullptr;
 		Button* m_ButtonBuildings = nullptr;
-		Button* m_ButtonTrees = nullptr;
-		Button* m_ButtonCars = nullptr;
-		Button* m_ButtonNeeds = nullptr;
-		Button* m_ButtonTools = nullptr;
+		Button* m_ButtonTrees     = nullptr;
+		Button* m_ButtonCars      = nullptr;
+		Button* m_ButtonNeeds     = nullptr;
+		Button* m_ButtonTools     = nullptr;
 
-		Panel* m_PanelRoads = nullptr;
+		Panel* m_PanelRoads     = nullptr;
 		Panel* m_PanelBuildings = nullptr;
-		Panel* m_PanelTrees = nullptr;
-		Panel* m_PanelCars = nullptr;
-		Panel* m_PanelNeeds = nullptr;
-		Panel* m_PanelTools = nullptr;
+		Panel* m_PanelTrees     = nullptr;
+		Panel* m_PanelCars      = nullptr;
+		Panel* m_PanelNeeds     = nullptr;
+		Panel* m_PanelTools     = nullptr;
 
-		Button* m_StraightRoadButton = nullptr;
+		Button* m_StraightRoadButton  = nullptr;
 		Button* m_QuadraticRoadButton = nullptr;
 		Button* m_Cubic1234RoadButton = nullptr;
 		Button* m_Cubic1243RoadButton = nullptr;
 		Button* m_Cubic1342RoadButton = nullptr;
 		Button* m_Cubic1432RoadButton = nullptr;
-		Button* m_DestructRoadButton = nullptr;
-		Button* m_UpgradeRoadButton = nullptr;
-		Button* m_CancelRoadButton = nullptr;
+		Button* m_DestructRoadButton  = nullptr;
+		Button* m_UpgradeRoadButton   = nullptr;
+		Button* m_CancelRoadButton    = nullptr;
 
 		Button* m_ConstructBuildingButton = nullptr;
 		Button* m_DestructBuildingButton = nullptr;
