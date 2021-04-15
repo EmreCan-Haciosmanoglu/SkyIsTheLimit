@@ -21,6 +21,7 @@ namespace Can
 
 		treeMap = Texture2D::Create("assets/textures/treeMap.png");
 		addTexture = Texture2D::Create("assets/textures/Buttons/Add.png");
+		pauseTexture = Texture2D::Create("assets/textures/Buttons/Pause.png");
 		removeTexture = Texture2D::Create("assets/textures/Buttons/Remove.png");
 		cancelTexture = Texture2D::Create("assets/textures/Buttons/Cancel.png");
 		upgradeTexture = Texture2D::Create("assets/textures/Buttons/Upgrade.png");
@@ -31,6 +32,9 @@ namespace Can
 		cubic1243Texture = Texture2D::Create("assets/textures/Buttons/Cubic1243.png");
 		cubic1342Texture = Texture2D::Create("assets/textures/Buttons/Cubic1342.png");
 		cubic1432Texture = Texture2D::Create("assets/textures/Buttons/Cubic1432.png");
+		normalSpeedTexture = Texture2D::Create("assets/textures/Buttons/NormalSpeed.png");
+		twoTimesSpeedTexture = Texture2D::Create("assets/textures/Buttons/TwoTimesSpeed.png");	
+		fourTimesSpeedTexture = Texture2D::Create("assets/textures/Buttons/FourTimesSpeed.png");
 
 		LoadRoads();
 		LoadBuildings();
