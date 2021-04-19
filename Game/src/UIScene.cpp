@@ -33,13 +33,13 @@ namespace Can
 				mainRegistry.get<SpriteRendererComponent>(m_ButtonNormal->entityID).border = false;
 				mainRegistry.get<SpriteRendererComponent>(m_Button2Times->entityID).border = false;
 				mainRegistry.get<SpriteRendererComponent>(m_Button4Times->entityID).border = false;
-				gameScene->SetSpeedMode(SpeedMode::Pause); 
+				gameScene->SetSpeedMode(SpeedMode::Pause);
 			},
 			0.1f,
 			false,
 			glm::vec4{ 255.0f / 255.0f, 166.0f / 255.0f, 158.0f / 255.0f, 1.0f },
 			});
-		m_ButtonNormal= new Button(ButtonConstructorParameters{
+		m_ButtonNormal = new Button(ButtonConstructorParameters{
 			m_Scene->m_Registry,
 			m_Scene->entityID,
 			glm::vec3{width - 3.0f, 0.5f, 0.2f},
@@ -1490,7 +1490,6 @@ namespace Can
 		//RenderCommand::Clear();
 
 		Renderer2D::BeginScene(m_CameraController.GetCamera());
-
 		glm::vec2 offset = { -widthHalf, heightHalf };
 		ChildrenComponent& children = m_Scene->m_Registry.get_or_emplace<ChildrenComponent>(m_Scene->entityID, std::vector<entt::entity>{});
 		for (auto entity : children)
@@ -1500,8 +1499,15 @@ namespace Can
 
 		for (entt::entity e : view)
 			m_Scene->m_Registry.get<OnDragCallbackComponent>(e)();
-
-		Can::Renderer2D::EndScene();
+		char fpsText[10];
+		sprintf(fpsText, "FPS: %3.2f", (1.0f / ts));
+		Renderer2D::DrawText(
+			fpsText,
+			glm::vec3{ -1330.0f , -420.0f, 2.0f },
+			glm::vec4(glm::vec3(0.0f), 1.0f),
+			m_ZoomLevel
+		);
+		Renderer2D::EndScene();
 	}
 	void UIScene::OnEvent(Can::Event::Event& event)
 	{

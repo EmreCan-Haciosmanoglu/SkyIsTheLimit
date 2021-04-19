@@ -58,32 +58,34 @@ namespace Can
 						colors.push_back(1);
 					if (b > 128)
 						colors.push_back(2);
-
-					int type = colors[Random::Integer((int)colors.size())];
-					glm::vec3 offsetPos{ Random::Float(halfOffset), 0.0f, Random::Float(halfOffset) };
-					glm::vec3 randomRot{ 0.0f, Random::Float(-glm::radians(90.0f),glm::radians(90.0f)), 0.0f };
-					glm::vec3 randomScale{ Random::Float(-0.2f, 0.2f),  Random::Float(-0.2f, 0.2f),  Random::Float(-0.2f, 0.2f) };
-					if (type == 0)
+					if (colors.size() != 0)
 					{
-						Object* tree = new Object(
-							m_Scene->MainApplication->trees[0],
-							m_Scene->MainApplication->trees[0],
-							offsetPos + glm::vec3{ (float)x / TERRAIN_SCALE_DOWN, 0.0f, -((float)y / TERRAIN_SCALE_DOWN) },
-							randomScale + glm::vec3{ 1.0f, 1.0f, 1.0f },
-							randomRot + glm::vec3{ 0.0f, 0.0f, 0.0f }
-						);
-						m_Trees.push_back(tree);
-					}
-					else if (type == 1)
-					{
-						Object* tree = new Object(
-							m_Scene->MainApplication->trees[1],
-							m_Scene->MainApplication->trees[1],
-							offsetPos + glm::vec3{ (float)x / TERRAIN_SCALE_DOWN, 0.0f, -((float)y / TERRAIN_SCALE_DOWN) },
-							randomScale + glm::vec3{ 1.0f, 1.0f, 1.0f },
-							randomRot + glm::vec3{ 0.0f, 0.0f, 0.0f }
-						);
-						m_Trees.push_back(tree);
+						int type = colors[Random::Integer((int)colors.size())];
+						glm::vec3 offsetPos{ Random::Float(halfOffset), 0.0f, Random::Float(halfOffset) };
+						glm::vec3 randomRot{ 0.0f, Random::Float(-glm::radians(90.0f),glm::radians(90.0f)), 0.0f };
+						glm::vec3 randomScale{ Random::Float(-0.2f, 0.2f),  Random::Float(-0.2f, 0.2f),  Random::Float(-0.2f, 0.2f) };
+						if (type == 0)
+						{
+							Object* tree = new Object(
+								m_Scene->MainApplication->trees[0],
+								m_Scene->MainApplication->trees[0],
+								offsetPos + glm::vec3{ (float)x / TERRAIN_SCALE_DOWN, 0.0f, -((float)y / TERRAIN_SCALE_DOWN) },
+								randomScale + glm::vec3{ 1.0f, 1.0f, 1.0f },
+								randomRot + glm::vec3{ 0.0f, 0.0f, 0.0f }
+							);
+							m_Trees.push_back(tree);
+						}
+						else if (type == 1)
+						{
+							Object* tree = new Object(
+								m_Scene->MainApplication->trees[1],
+								m_Scene->MainApplication->trees[1],
+								offsetPos + glm::vec3{ (float)x / TERRAIN_SCALE_DOWN, 0.0f, -((float)y / TERRAIN_SCALE_DOWN) },
+								randomScale + glm::vec3{ 1.0f, 1.0f, 1.0f },
+								randomRot + glm::vec3{ 0.0f, 0.0f, 0.0f }
+							);
+							m_Trees.push_back(tree);
+						}
 					}
 				}
 			}
