@@ -57,7 +57,7 @@ namespace Can
 			return;
 		}
 
-		std::sort(roadSegments.begin(), roadSegments.end(), sort_by_angle());
+		std::sort(roadSegments.begin(), roadSegments.end(), Helper::sort_by_angle());
 
 		size_t count = roadSegments.size();
 		std::vector<glm::vec3> Intersections(count, { 0.0f, 0.0f, 0.0f });

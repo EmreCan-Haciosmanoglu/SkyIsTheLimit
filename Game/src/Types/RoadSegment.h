@@ -68,6 +68,8 @@ namespace Can
 		RoadNode* StartNode;
 		RoadNode* EndNode;
 
+		std::vector<glm::vec3> curve_samples{};
+
 		Object* object = nullptr;
 
 	private:

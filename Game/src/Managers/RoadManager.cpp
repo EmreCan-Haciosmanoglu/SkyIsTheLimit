@@ -2,6 +2,7 @@
 #include "RoadManager.h"
 
 #include "Types/RoadSegment.h"
+#include "Types/RoadNode.h"
 #include "Junction.h"
 #include "Building.h"
 #include "End.h"
@@ -1380,8 +1381,6 @@ namespace Can
 		}
 		else if (m_ConstructionPhase == 2)
 		{
-		if (Input::IsKeyPressed(KeyCode::Y))
-			std::cout << std::endl;
 			b_ConstructionRestricted = false;
 			if (snapOptions[4])
 			{
@@ -2180,6 +2179,53 @@ namespace Can
 			*/
 		}
 	}
+	void RoadManager::OnUpdate_Upgrade(glm::vec3& prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection)
+	{
+		if (selected_road_segment)
+			selected_road_segment->object->SetTransform(selected_road_segment->GetStartPosition());
+		glm::vec2 prevLoc2D{ prevLocation.x, prevLocation.z };
+		for (RoadSegment* rs : m_RoadSegments)
+		{
+			float rsl = rs->road_type.length;
+			float snapDist = rs->road_type.width * 0.5f;
+			const std::array<glm::vec3, 4>& cps = rs->GetCurvePoints();
+			std::array<std::array<glm::vec2, 3>, 2> rsBoundingBox = Math::GetBoundingBoxOfBezierCurve(cps, snapDist);
+			bool colidedWithBoundingBox = Math::CheckPolygonPointCollision(rsBoundingBox, prevLoc2D);
+			if (colidedWithBoundingBox)
+			{
+				std::vector<float> ts{ 0.0f };
+				const std::vector<glm::vec3>& curve_samples = rs->curve_samples;
+				size_t curve_samples_size = curve_samples.size();
+				CAN_ASSERT(curve_samples_size > 1, "Samples size can't be smaller than 2");
+				glm::vec3 point0 = curve_samples[0];
+				for (size_t i = 1; i < curve_samples_size; i++)
+				{
+					glm::vec3 point1 = curve_samples[i];
+					glm::vec3 dirToP1 = point1 - point0;
+					dirToP1.y = 0.0f;
+					dirToP1 = glm::normalize(dirToP1);
+
+					glm::vec3 dirToPrev = prevLocation - point0;
+					float l1 = glm::length(dirToPrev);
+
+					float angle = glm::acos(glm::dot(dirToP1, dirToPrev) / l1);
+					float dist = l1 * glm::sin(angle);
+
+					if (dist < snapDist)
+					{
+						float c = l1 * glm::cos(angle);
+						if (c >= -0.5f * rsl && c <= 1.5f * rsl)
+						{
+							selected_road_segment = rs;
+							return;
+						}
+					}
+					point0 = point1;
+				}
+			}
+		}
+		selected_road_segment = nullptr;
+	}
 	void RoadManager::OnUpdate_Destruction(glm::vec3& prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection)
 	{
 		SnapInformation snapInformation = CheckSnapping(prevLocation);
@@ -2710,6 +2756,10 @@ namespace Can
 		}
 		return false;
 	}
+	bool RoadManager::OnMousePressed_Upgrade()
+	{
+		return false;
+	}
 	bool RoadManager::OnMousePressed_Destruction()
 	{
 		if (m_DestructionSnappedJunction != nullptr)
@@ -2988,12 +3038,12 @@ namespace Can
 				}
 			}
 
-			
-			
+
+
 
 			auto it = std::find(m_RoadSegments.begin(), m_RoadSegments.end(), m_StartSnappedRoadSegment);
 			m_RoadSegments.erase(it);
-			
+
 
 			Junction* newJunction = new Junction(std::vector<RoadSegment*>{ roadSegment, rs1, rs2 }, curvePoints[0]);
 			m_Junctions.push_back(newJunction);
@@ -3010,7 +3060,7 @@ namespace Can
 				std::vector<glm::vec3> samples = Math::GetCubicCurveSamples(car->roadSegment->GetCurvePoints(), lengthRoad, ts);
 				if (t_index >= ts.size())
 				{
-					t_index = ts.size()-1;
+					t_index = ts.size() - 1;
 				}
 				float t = ts[t_index];
 				if (t < m_StartSnappedRoadSegmentT)
@@ -3211,7 +3261,7 @@ namespace Can
 					rs2->Buildings.push_back(building);
 				}
 			}
-			
+
 			auto it = std::find(m_RoadSegments.begin(), m_RoadSegments.end(), m_EndSnappedRoadSegment);
 			m_RoadSegments.erase(it);
 
