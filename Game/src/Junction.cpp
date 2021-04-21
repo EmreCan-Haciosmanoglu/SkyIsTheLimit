@@ -186,7 +186,7 @@ namespace Can
 		}
 		Prefab* newPrefab = new Prefab(
 			"", // No need
-			connectedRoadSegments[0]->Type[1]->shaderPath, // If single shader for roads it okay!
+			connectedRoadSegments[0]->Type[1]->shaderPath,
 			textures,
 			textureSlotIndex,
 			(float*)TOVertices,

@@ -1,6 +1,8 @@
 #include "canpch.h"
 #include "RoadSegment.h"
 
+#include "RoadNode.h"
+
 #include "Can/Renderer/Object.h"
 #include "Can/Math.h"
 #include "Helper.h"

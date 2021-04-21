@@ -2,6 +2,8 @@
 #include <array>
 #include <vector>
 
+#include "RoadType.h"
+
 namespace Can
 {
 	class End;
@@ -11,6 +13,7 @@ namespace Can
 	class Junction;
 	class Building;
 	class RoadSegment;
+	class RoadNode;
 
 	struct ConnectedObject
 	{
@@ -55,11 +58,15 @@ namespace Can
 
 	public:
 		std::array<Prefab*, 3> Type;
+		RoadType road_type{};
 		std::vector<Building*> Buildings = {};
 		std::vector<Car*> Cars = {};
 
 		ConnectedObject ConnectedObjectAtStart;
 		ConnectedObject ConnectedObjectAtEnd;
+
+		RoadNode* StartNode;
+		RoadNode* EndNode;
 
 		Object* object = nullptr;
 
