@@ -16,7 +16,8 @@ namespace Can
 			const glm::vec3& target,
 			const glm::vec3& rotation
 		);
-		~Car();
+		~Car(){delete object;}
+
 		RoadSegment* roadSegment;
 		size_t t_index = 0;
 		float speed = 100.0f;

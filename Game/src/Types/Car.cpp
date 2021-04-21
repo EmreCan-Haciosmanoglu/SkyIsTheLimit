@@ -23,9 +23,5 @@ namespace Can
 		, fromStart(true)
 	{
 	}
-	Car::~Car()
-	{
-		delete object;
-
-	}
+	
 }
