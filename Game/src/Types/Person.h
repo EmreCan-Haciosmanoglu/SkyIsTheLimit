@@ -4,6 +4,15 @@
 
 namespace Can
 {
+	enum class PersonStatus
+	{
+		AtHome,
+		AtWork,
+		WalkingDead,
+		Walking,
+		Driving
+	};
+	
 	class RoadSegment;
 	class Building;
 	class Car;
@@ -31,6 +40,8 @@ namespace Can
 		glm::vec3 target;
 		bool fromStart = false;
 		bool inJunction = false;
+		PersonStatus status = PersonStatus::AtHome;
+		float time_left = 0.0f;
 		// 
 		Object* object;
 		std::string firstName ="Adam";
