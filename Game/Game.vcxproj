@@ -147,6 +147,7 @@
     <ClInclude Include="src\Managers\TreeManager.h" />
     <ClInclude Include="src\Scenes\GameScene.h" />
     <ClInclude Include="src\Types\Car.h" />
+    <ClInclude Include="src\Types\Person.h" />
     <ClInclude Include="src\Types\RoadSegment.h" />
     <ClInclude Include="src\UIScene.h" />
   </ItemGroup>
@@ -163,6 +164,7 @@
     <ClCompile Include="src\Managers\TreeManager.cpp" />
     <ClCompile Include="src\Scenes\GameScene.cpp" />
     <ClCompile Include="src\Types\Car.cpp" />
+    <ClCompile Include="src\Types\Person.cpp" />
     <ClCompile Include="src\Types\RoadSegment.cpp" />
     <ClCompile Include="src\UIScene.cpp" />
   </ItemGroup>

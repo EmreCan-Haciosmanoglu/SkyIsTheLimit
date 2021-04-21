@@ -40,6 +40,7 @@
       <Filter>Types</Filter>
     </ClInclude>
     <ClInclude Include="src\UIScene.h" />
+    <ClInclude Include="src\Types\Person.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Building.cpp" />
@@ -70,5 +71,6 @@
       <Filter>Types</Filter>
     </ClCompile>
     <ClCompile Include="src\UIScene.cpp" />
+    <ClCompile Include="src\Types\Person.cpp" />
   </ItemGroup>
 </Project>
