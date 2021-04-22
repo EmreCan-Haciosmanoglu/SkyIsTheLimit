@@ -51,7 +51,7 @@ namespace Can
 		Button* m_Cubic1342RoadButton = nullptr;
 		Button* m_Cubic1432RoadButton = nullptr;
 		Button* m_DestructRoadButton  = nullptr;
-		Button* m_UpgradeRoadButton   = nullptr;
+		Button* m_ChangeRoadButton   = nullptr;
 		Button* m_CancelRoadButton    = nullptr;
 
 		Button* m_ConstructBuildingButton = nullptr;

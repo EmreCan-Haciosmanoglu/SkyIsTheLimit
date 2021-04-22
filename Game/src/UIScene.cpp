@@ -726,7 +726,7 @@ namespace Can
 				mainRegistry.get<SpriteRendererComponent>(m_Cubic1342RoadButton->entityID).border = false;
 				mainRegistry.get<SpriteRendererComponent>(m_Cubic1432RoadButton->entityID).border = false;
 				mainRegistry.get<SpriteRendererComponent>(m_DestructRoadButton->entityID).border = false;
-				mainRegistry.get<SpriteRendererComponent>(m_UpgradeRoadButton->entityID).border = false;
+				mainRegistry.get<SpriteRendererComponent>(m_ChangeRoadButton->entityID).border = false;
 				mainRegistry.get<SpriteRendererComponent>(m_CancelRoadButton->entityID).border = false;
 
 				gameScene->SetConstructionMode(ConstructionMode::Road);
@@ -754,7 +754,7 @@ namespace Can
 				mainRegistry.get<SpriteRendererComponent>(m_Cubic1342RoadButton->entityID).border = false;
 				mainRegistry.get<SpriteRendererComponent>(m_Cubic1432RoadButton->entityID).border = false;
 				mainRegistry.get<SpriteRendererComponent>(m_DestructRoadButton->entityID).border = false;
-				mainRegistry.get<SpriteRendererComponent>(m_UpgradeRoadButton->entityID).border = false;
+				mainRegistry.get<SpriteRendererComponent>(m_ChangeRoadButton->entityID).border = false;
 				mainRegistry.get<SpriteRendererComponent>(m_CancelRoadButton->entityID).border = false;
 
 				gameScene->SetConstructionMode(ConstructionMode::Road);
@@ -782,7 +782,7 @@ namespace Can
 				mainRegistry.get<SpriteRendererComponent>(m_Cubic1342RoadButton->entityID).border = false;
 				mainRegistry.get<SpriteRendererComponent>(m_Cubic1432RoadButton->entityID).border = false;
 				mainRegistry.get<SpriteRendererComponent>(m_DestructRoadButton->entityID).border = false;
-				mainRegistry.get<SpriteRendererComponent>(m_UpgradeRoadButton->entityID).border = false;
+				mainRegistry.get<SpriteRendererComponent>(m_ChangeRoadButton->entityID).border = false;
 				mainRegistry.get<SpriteRendererComponent>(m_CancelRoadButton->entityID).border = false;
 
 				gameScene->SetConstructionMode(ConstructionMode::Road);
@@ -811,7 +811,7 @@ namespace Can
 				mainRegistry.get<SpriteRendererComponent>(m_Cubic1342RoadButton->entityID).border = false;
 				mainRegistry.get<SpriteRendererComponent>(m_Cubic1432RoadButton->entityID).border = false;
 				mainRegistry.get<SpriteRendererComponent>(m_DestructRoadButton->entityID).border = false;
-				mainRegistry.get<SpriteRendererComponent>(m_UpgradeRoadButton->entityID).border = false;
+				mainRegistry.get<SpriteRendererComponent>(m_ChangeRoadButton->entityID).border = false;
 				mainRegistry.get<SpriteRendererComponent>(m_CancelRoadButton->entityID).border = false;
 
 				gameScene->SetConstructionMode(ConstructionMode::Road);
@@ -840,7 +840,7 @@ namespace Can
 				mainRegistry.get<SpriteRendererComponent>(m_Cubic1342RoadButton->entityID).border = true;
 				mainRegistry.get<SpriteRendererComponent>(m_Cubic1432RoadButton->entityID).border = false;
 				mainRegistry.get<SpriteRendererComponent>(m_DestructRoadButton->entityID).border = false;
-				mainRegistry.get<SpriteRendererComponent>(m_UpgradeRoadButton->entityID).border = false;
+				mainRegistry.get<SpriteRendererComponent>(m_ChangeRoadButton->entityID).border = false;
 				mainRegistry.get<SpriteRendererComponent>(m_CancelRoadButton->entityID).border = false;
 
 				gameScene->SetConstructionMode(ConstructionMode::Road);
@@ -869,7 +869,7 @@ namespace Can
 				mainRegistry.get<SpriteRendererComponent>(m_Cubic1342RoadButton->entityID).border = false;
 				mainRegistry.get<SpriteRendererComponent>(m_Cubic1432RoadButton->entityID).border = true;
 				mainRegistry.get<SpriteRendererComponent>(m_DestructRoadButton->entityID).border = false;
-				mainRegistry.get<SpriteRendererComponent>(m_UpgradeRoadButton->entityID).border = false;
+				mainRegistry.get<SpriteRendererComponent>(m_ChangeRoadButton->entityID).border = false;
 				mainRegistry.get<SpriteRendererComponent>(m_CancelRoadButton->entityID).border = false;
 
 				gameScene->SetConstructionMode(ConstructionMode::Road);
@@ -898,7 +898,7 @@ namespace Can
 				mainRegistry.get<SpriteRendererComponent>(m_Cubic1342RoadButton->entityID).border = false;
 				mainRegistry.get<SpriteRendererComponent>(m_Cubic1432RoadButton->entityID).border = false;
 				mainRegistry.get<SpriteRendererComponent>(m_DestructRoadButton->entityID).border = true;
-				mainRegistry.get<SpriteRendererComponent>(m_UpgradeRoadButton->entityID).border = false;
+				mainRegistry.get<SpriteRendererComponent>(m_ChangeRoadButton->entityID).border = false;
 				mainRegistry.get<SpriteRendererComponent>(m_CancelRoadButton->entityID).border = false;
 
 				gameScene->SetConstructionMode(ConstructionMode::Road);
@@ -908,13 +908,13 @@ namespace Can
 			false,
 			glm::vec4{ 255.0f / 255.0f, 166.0f / 255.0f, 158.0f / 255.0f, 1.0f },
 			});
-		m_UpgradeRoadButton = new Button(ButtonConstructorParameters{
+		m_ChangeRoadButton = new Button(ButtonConstructorParameters{
 			m_Scene->m_Registry,
 			m_PanelRoads->entityID,
 			glm::vec3{5.0f, height - 5.0f, 0.01f},
 			glm::vec2(0.8f),
 			glm::vec4(1.0f),
-			m_Parent->upgradeTexture,
+			m_Parent->changeTexture,
 			[this]() {
 				entt::registry& mainRegistry = m_Scene->m_Registry;
 				GameScene* gameScene = m_Parent->gameScene;
@@ -926,11 +926,11 @@ namespace Can
 				mainRegistry.get<SpriteRendererComponent>(m_Cubic1342RoadButton->entityID).border = false;
 				mainRegistry.get<SpriteRendererComponent>(m_Cubic1432RoadButton->entityID).border = false;
 				mainRegistry.get<SpriteRendererComponent>(m_DestructRoadButton->entityID).border = false;
-				mainRegistry.get<SpriteRendererComponent>(m_UpgradeRoadButton->entityID).border = true;
+				mainRegistry.get<SpriteRendererComponent>(m_ChangeRoadButton->entityID).border = true;
 				mainRegistry.get<SpriteRendererComponent>(m_CancelRoadButton->entityID).border = false;
 
 				gameScene->SetConstructionMode(ConstructionMode::Road);
-				gameScene->m_RoadManager.SetConstructionMode(RoadConstructionMode::Upgrade);
+				gameScene->m_RoadManager.SetConstructionMode(RoadConstructionMode::Change);
 			},
 			0.1f,
 			false,
@@ -954,7 +954,7 @@ namespace Can
 				mainRegistry.get<SpriteRendererComponent>(m_Cubic1342RoadButton->entityID).border = false;
 				mainRegistry.get<SpriteRendererComponent>(m_Cubic1432RoadButton->entityID).border = false;
 				mainRegistry.get<SpriteRendererComponent>(m_DestructRoadButton->entityID).border = false;
-				mainRegistry.get<SpriteRendererComponent>(m_UpgradeRoadButton->entityID).border = false;
+				mainRegistry.get<SpriteRendererComponent>(m_ChangeRoadButton->entityID).border = false;
 				mainRegistry.get<SpriteRendererComponent>(m_CancelRoadButton->entityID).border = true;
 
 				gameScene->SetConstructionMode(ConstructionMode::Road);
@@ -973,7 +973,7 @@ namespace Can
 			m_Cubic1342RoadButton->entityID,
 			m_Cubic1432RoadButton->entityID,
 			m_DestructRoadButton->entityID,
-			m_UpgradeRoadButton->entityID,
+			m_ChangeRoadButton->entityID,
 			m_CancelRoadButton->entityID
 			});
 
