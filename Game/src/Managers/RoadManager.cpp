@@ -50,7 +50,8 @@ namespace Can
 		case RoadConstructionMode::CubicCurve:
 			OnUpdate_CubicCurve(prevLocation, cameraPosition, cameraDirection);
 			break;
-		case  RoadConstructionMode::Upgrade:
+		case  RoadConstructionMode::Change:
+			OnUpdate_Change(prevLocation, cameraPosition, cameraDirection);
 			break;
 		case  RoadConstructionMode::Destruct:
 			OnUpdate_Destruction(prevLocation, cameraPosition, cameraDirection);
@@ -2179,13 +2180,17 @@ namespace Can
 			*/
 		}
 	}
-	void RoadManager::OnUpdate_Upgrade(glm::vec3& prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection)
+	void RoadManager::OnUpdate_Change(glm::vec3& prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection)
 	{
 		if (selected_road_segment)
 			selected_road_segment->object->SetTransform(selected_road_segment->GetStartPosition());
 		glm::vec2 prevLoc2D{ prevLocation.x, prevLocation.z };
+		Prefab* roadType = m_Scene->MainApplication->roads[m_Type][0];
 		for (RoadSegment* rs : m_RoadSegments)
 		{
+			if (rs->road_type.road == roadType)
+				continue;
+
 			float rsl = rs->road_type.length;
 			float snapDist = rs->road_type.width * 0.5f;
 			const std::array<glm::vec3, 4>& cps = rs->GetCurvePoints();
@@ -2217,6 +2222,7 @@ namespace Can
 						if (c >= -0.5f * rsl && c <= 1.5f * rsl)
 						{
 							selected_road_segment = rs;
+							selected_road_segment->object->SetTransform(selected_road_segment->GetStartPosition() + glm::vec3{ 0.0f, 0.1f, 0.0f });
 							return;
 						}
 					}
@@ -2660,7 +2666,10 @@ namespace Can
 				return false;
 			OnMousePressed_CubicCurve();
 			break;
-		case RoadConstructionMode::Upgrade:
+		case RoadConstructionMode::Change:
+			if (button != MouseCode::Button0)
+				return false;
+			OnMousePressed_Change();
 			break;
 		case RoadConstructionMode::Destruct:
 			if (button != MouseCode::Button0)
@@ -2756,8 +2765,56 @@ namespace Can
 		}
 		return false;
 	}
-	bool RoadManager::OnMousePressed_Upgrade()
+	bool RoadManager::OnMousePressed_Change()
 	{
+		if (!selected_road_segment)
+			return false;
+
+		selected_road_segment->Type = m_Scene->MainApplication->roads[m_Type];
+		//selected_road_segment->ReConstruct();
+
+		// Old
+		ConnectedObject& cos = selected_road_segment->ConnectedObjectAtStart;
+		if (cos.end)
+		{
+			m_Ends.erase(std::find(m_Ends.begin(), m_Ends.end(), cos.end));
+			Object* obj = cos.end->object;
+			End* end = new End(
+				selected_road_segment,
+				m_Scene->MainApplication->roads[m_Type][2],
+				obj->position,
+				obj->scale,
+				obj->rotation
+			);
+			delete cos.end;
+			cos.end = end;
+			m_Ends.push_back(end);
+		}
+		else
+		{
+			cos.junction->ReconstructObject();
+		}
+		ConnectedObject& con = selected_road_segment->ConnectedObjectAtEnd;
+		if (con.end)
+		{
+			m_Ends.erase(std::find(m_Ends.begin(), m_Ends.end(), con.end));
+			Object* obj = con.end->object;
+			End* end = new End(
+				selected_road_segment,
+				m_Scene->MainApplication->roads[m_Type][2],
+				obj->position,
+				obj->scale,
+				obj->rotation
+			);
+			delete con.end;
+			con.end = end;
+			m_Ends.push_back(end);
+		}
+		else
+		{
+			con.junction->ReconstructObject();
+		}
+
 		return false;
 	}
 	bool RoadManager::OnMousePressed_Destruction()
@@ -2803,7 +2860,7 @@ namespace Can
 			m_GuidelinesStart->enabled = true;
 			m_GuidelinesEnd->enabled = true;
 			break;
-		case RoadConstructionMode::Upgrade:
+		case RoadConstructionMode::Change:
 			break;
 		case RoadConstructionMode::Destruct:
 			break;

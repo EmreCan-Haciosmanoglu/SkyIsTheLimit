@@ -148,8 +148,11 @@ namespace Can
 			glm::vec3 rp = RoadPos + shiftAmount;
 			glm::vec3 rn = RoadPos - shiftAmount;
 
-			float ljp = -glm::length(rp - intersection1);
-			float ljn = -glm::length(rn - intersection2);
+			glm::vec3 jp = position + shiftAmount;
+			glm::vec3 jn = position - shiftAmount;
+
+			float ljp = glm::length(rp - jp) - glm::length(rp - intersection1);
+			float ljn = glm::length(rn - jn) -glm::length(rn - intersection2);
 			//float ljp = glm::length(rp - intersection1);
 			//float ljn = glm::length(rn - intersection2);
 

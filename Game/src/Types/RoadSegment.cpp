@@ -23,8 +23,15 @@ namespace Can
 
 	void RoadSegment::Construct()
 	{
-		float lengthRoad = Type[0]->boundingBoxM.x - Type[0]->boundingBoxL.x;
-		std::vector<float> samples = Math::GetCubicCurveSampleTs(CurvePoints, lengthRoad);
+		road_type.length = Type[0]->boundingBoxM.x - Type[0]->boundingBoxL.x;
+		//road_type.junction_length = Type[1]->boundingBoxM.x - Type[1]->boundingBoxL.x;
+		road_type.width = Type[0]->boundingBoxM.z - Type[0]->boundingBoxL.z;
+		road_type.road = Type[0];
+		road_type.junction = Type[1];
+		road_type.end= Type[2];
+
+		std::vector<float> samples = Math::GetCubicCurveSampleTs(CurvePoints, road_type.length);
+		curve_samples.clear();
 		size_t count = samples.size();
 
 		size_t prefabIndexCount = Type[0]->indexCount;
@@ -33,12 +40,13 @@ namespace Can
 		TexturedObjectVertex* TOVertices = new TexturedObjectVertex[indexCount];
 
 		glm::vec3 p1 = CurvePoints[0];
+		curve_samples.push_back(p1);
 		for (int c = 1; c < count; c++)
 		{
 			glm::vec3 p2 = Math::CubicCurve<float>(CurvePoints, samples[c]);
 			glm::vec3 vec1 = p2 - p1;
 			float length = glm::length(vec1);
-			float scale = length / lengthRoad;
+			float scale = length / road_type.length;
 			glm::vec3 dir1 = vec1 / length;
 			glm::vec3 dir2 = (c < count - 1) ? glm::normalize((glm::vec3)Math::CubicCurve<float>(CurvePoints, samples[c + 1]) - p2) : -Directions[1];
 
@@ -64,7 +72,7 @@ namespace Can
 					0.0f
 				};
 
-				float t = point.x / (lengthRoad * scale);
+				float t = point.x / (road_type.length * scale);
 				t = t < 0.01f ? 0.0f : (t > 0.99f ? 1.0f : t);
 
 				point = Helper::RotateAPointAroundAPoint(point, rot1);
@@ -79,6 +87,7 @@ namespace Can
 				TOVertices[offset].TextureIndex = Type[0]->vertices[index + 8];
 			}
 			p1 = p2;
+			curve_samples.push_back(p1);
 		}
 		printf("\n");
 		Prefab* newPrefab = new Prefab(Type[0]->objectPath, Type[0]->shaderPath, Type[0]->texturePath, (float*)TOVertices, indexCount);
@@ -90,7 +99,7 @@ namespace Can
 			float length = glm::length(vec);
 			glm::vec3 dir = vec / length;
 
-			float scale = length / lengthRoad;
+			float scale = length / road_type.length;
 
 			for (int i = 0; i < prefabIndexCount; i++)
 			{
@@ -128,7 +137,7 @@ namespace Can
 
 	void RoadSegment::ReConstruct()
 	{
-		delete object;
+		if(object) delete object;
 
 		Construct();
 

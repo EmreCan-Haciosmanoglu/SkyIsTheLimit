@@ -16,7 +16,7 @@ namespace Can
 		Straight,
 		QuadraticCurve,
 		CubicCurve,
-		Upgrade,
+		Change,
 		Destruct
 	};
 
@@ -46,7 +46,7 @@ namespace Can
 		void OnUpdate_Straight(glm::vec3& prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection);
 		void OnUpdate_QuadraticCurve(glm::vec3& prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection);
 		void OnUpdate_CubicCurve(glm::vec3& prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection);
-		void OnUpdate_Upgrade(glm::vec3& prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection);
+		void OnUpdate_Change(glm::vec3& prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection);
 		void OnUpdate_Destruction(glm::vec3& prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection);
 
 		void DrawStraightGuidelines(const glm::vec3& pointA, const glm::vec3& pointB);
@@ -65,7 +65,7 @@ namespace Can
 		bool OnMousePressed_Straight();
 		bool OnMousePressed_QuadraticCurve();
 		bool OnMousePressed_CubicCurve();
-		bool OnMousePressed_Upgrade();
+		bool OnMousePressed_Change();
 		bool OnMousePressed_Destruction();
 
 		void SetType(size_t type);
