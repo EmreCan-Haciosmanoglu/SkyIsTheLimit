@@ -2,6 +2,7 @@
 #include "RoadManager.h"
 
 #include "Types/RoadSegment.h"
+#include "Types/RoadNode.h"
 #include "Junction.h"
 #include "Building.h"
 #include "End.h"
@@ -19,15 +20,18 @@ namespace Can
 	RoadManager::RoadManager(GameScene* scene)
 		: m_Scene(scene)
 	{
-		m_GuidelinesStart = new Object(m_Scene->MainApplication->roads[m_Type][2], m_Scene->MainApplication->roads[m_Type][2], glm::vec3(0.0f), glm::vec3(1.0f), glm::vec3(0.0f), false);
-		m_GuidelinesEnd = new Object(m_Scene->MainApplication->roads[m_Type][2], m_Scene->MainApplication->roads[m_Type][2], glm::vec3(0.0f), glm::vec3(1.0f), glm::vec3(0.0f), false);
+		m_GuidelinesStart = new Object(m_Scene->MainApplication->roads[m_Type][2]);
+		m_GuidelinesStart->enabled = false;
+		m_GuidelinesEnd = new Object(m_Scene->MainApplication->roads[m_Type][2]);
+		m_GuidelinesEnd->enabled = false;
 
 		size_t roadTypeCount = m_Scene->MainApplication->roads.size();
 		for (size_t i = 0; i < roadTypeCount; i++)
 		{
 			m_GuidelinesInUse.push_back(0);
 			m_Guidelines.push_back({});
-			m_Guidelines[i].push_back(new Object(m_Scene->MainApplication->roads[i][0], m_Scene->MainApplication->roads[i][0], glm::vec3(0.0f), glm::vec3(1.0f), glm::vec3(0.0f), false));
+			m_Guidelines[i].push_back(new Object(m_Scene->MainApplication->roads[i][0]));
+			m_Guidelines[i][0]->enabled = false;
 		}
 	}
 	RoadManager::~RoadManager()
@@ -49,7 +53,8 @@ namespace Can
 		case RoadConstructionMode::CubicCurve:
 			OnUpdate_CubicCurve(prevLocation, cameraPosition, cameraDirection);
 			break;
-		case  RoadConstructionMode::Upgrade:
+		case  RoadConstructionMode::Change:
+			OnUpdate_Change(prevLocation, cameraPosition, cameraDirection);
 			break;
 		case  RoadConstructionMode::Destruct:
 			OnUpdate_Destruction(prevLocation, cameraPosition, cameraDirection);
@@ -83,8 +88,8 @@ namespace Can
 			}
 			m_ConstructionPositions[0] = prevLocation;
 
-			m_GuidelinesStart->SetTransform(prevLocation + glm::vec3{ 0.0f, 0.15f, 0.0f }, glm::vec3(1.0f), glm::vec3{ 0.0f, glm::radians(180.0f), 0.0f });
-			m_GuidelinesEnd->SetTransform(prevLocation + glm::vec3{ 0.0f, 0.15f, 0.0f }, glm::vec3(1.0f), glm::vec3(0.0f));
+			m_GuidelinesStart->SetTransform(prevLocation + glm::vec3{ 0.0f, 0.15f, 0.0f }, glm::vec3{ 0.0f, glm::radians(180.0f), 0.0f });
+			m_GuidelinesEnd->SetTransform(prevLocation + glm::vec3{ 0.0f, 0.15f, 0.0f }, glm::vec3(0.0f));
 		}
 		else
 		{
@@ -513,8 +518,8 @@ namespace Can
 			}
 			m_ConstructionPositions[0] = prevLocation;
 
-			m_GuidelinesStart->SetTransform(prevLocation + glm::vec3{ 0.0f, 0.15f, 0.0f }, glm::vec3(1.0f), { 0.0f, glm::radians(180.0f), 0.0f });
-			m_GuidelinesEnd->SetTransform(prevLocation + glm::vec3{ 0.0f, 0.15f, 0.0f }, glm::vec3(1.0f), glm::vec3(0.0f));
+			m_GuidelinesStart->SetTransform(prevLocation + glm::vec3{ 0.0f, 0.15f, 0.0f }, { 0.0f, glm::radians(180.0f), 0.0f });
+			m_GuidelinesEnd->SetTransform(prevLocation + glm::vec3{ 0.0f, 0.15f, 0.0f },  glm::vec3(0.0f));
 		}
 		else if (m_ConstructionPhase == 1)
 		{
@@ -1094,8 +1099,8 @@ namespace Can
 			m_ConstructionPositions[2] = prevLocation;
 			m_ConstructionPositions[3] = prevLocation;
 
-			m_GuidelinesStart->SetTransform(prevLocation + glm::vec3{ 0.0f, 0.15f, 0.0f }, glm::vec3(1.0f), glm::vec3{ 0.0f, glm::radians(180.0f), 0.0f });
-			m_GuidelinesEnd->SetTransform(prevLocation + glm::vec3{ 0.0f, 0.15f, 0.0f }, glm::vec3(1.0f), glm::vec3(0.0f));
+			m_GuidelinesStart->SetTransform(prevLocation + glm::vec3{ 0.0f, 0.15f, 0.0f },  glm::vec3{ 0.0f, glm::radians(180.0f), 0.0f });
+			m_GuidelinesEnd->SetTransform(prevLocation + glm::vec3{ 0.0f, 0.15f, 0.0f },  glm::vec3(0.0f));
 		}
 		else if (m_ConstructionPhase == 1)
 		{
@@ -1380,8 +1385,6 @@ namespace Can
 		}
 		else if (m_ConstructionPhase == 2)
 		{
-		if (Input::IsKeyPressed(KeyCode::Y))
-			std::cout << std::endl;
 			b_ConstructionRestricted = false;
 			if (snapOptions[4])
 			{
@@ -2180,6 +2183,58 @@ namespace Can
 			*/
 		}
 	}
+	void RoadManager::OnUpdate_Change(glm::vec3& prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection)
+	{
+		if (selected_road_segment)
+			selected_road_segment->object->SetTransform(selected_road_segment->GetStartPosition());
+		glm::vec2 prevLoc2D{ prevLocation.x, prevLocation.z };
+		Prefab* roadType = m_Scene->MainApplication->roads[m_Type][0];
+		for (RoadSegment* rs : m_RoadSegments)
+		{
+			if (rs->road_type.road == roadType)
+				continue;
+
+			float rsl = rs->road_type.length;
+			float snapDist = rs->road_type.width * 0.5f;
+			const std::array<glm::vec3, 4>& cps = rs->GetCurvePoints();
+			std::array<std::array<glm::vec2, 3>, 2> rsBoundingBox = Math::GetBoundingBoxOfBezierCurve(cps, snapDist);
+			bool colidedWithBoundingBox = Math::CheckPolygonPointCollision(rsBoundingBox, prevLoc2D);
+			if (colidedWithBoundingBox)
+			{
+				std::vector<float> ts{ 0.0f };
+				const std::vector<glm::vec3>& curve_samples = rs->curve_samples;
+				size_t curve_samples_size = curve_samples.size();
+				CAN_ASSERT(curve_samples_size > 1, "Samples size can't be smaller than 2");
+				glm::vec3 point0 = curve_samples[0];
+				for (size_t i = 1; i < curve_samples_size; i++)
+				{
+					glm::vec3 point1 = curve_samples[i];
+					glm::vec3 dirToP1 = point1 - point0;
+					dirToP1.y = 0.0f;
+					dirToP1 = glm::normalize(dirToP1);
+
+					glm::vec3 dirToPrev = prevLocation - point0;
+					float l1 = glm::length(dirToPrev);
+
+					float angle = glm::acos(glm::dot(dirToP1, dirToPrev) / l1);
+					float dist = l1 * glm::sin(angle);
+
+					if (dist < snapDist)
+					{
+						float c = l1 * glm::cos(angle);
+						if (c >= -0.5f * rsl && c <= 1.5f * rsl)
+						{
+							selected_road_segment = rs;
+							selected_road_segment->object->SetTransform(selected_road_segment->GetStartPosition() + glm::vec3{ 0.0f, 0.1f, 0.0f });
+							return;
+						}
+					}
+					point0 = point1;
+				}
+			}
+		}
+		selected_road_segment = nullptr;
+	}
 	void RoadManager::OnUpdate_Destruction(glm::vec3& prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection)
 	{
 		SnapInformation snapInformation = CheckSnapping(prevLocation);
@@ -2262,7 +2317,7 @@ namespace Can
 		m_GuidelinesInUse[m_Type] += countAB;
 		if (m_GuidelinesInUse[m_Type] > m_Guidelines[m_Type].size())
 			for (size_t j = m_Guidelines[m_Type].size(); j < m_GuidelinesInUse[m_Type]; j++)
-				m_Guidelines[m_Type].push_back(new Object(m_Scene->MainApplication->roads[m_Type][0], m_Scene->MainApplication->roads[m_Type][0]));
+				m_Guidelines[m_Type].push_back(new Object(m_Scene->MainApplication->roads[m_Type][0]));
 
 		for (size_t j = 0; j < countAB; j++)
 		{
@@ -2270,8 +2325,8 @@ namespace Can
 			roadG->enabled = true;
 			roadG->SetTransform(
 				pointA + (normalizedAB * ((j + discountStart) * scaledRoadLength)) + glm::vec3{ 0.0f, 0.15f, 0.0f },
-				glm::vec3{ 1.0f * scaleAB, 1.0f, 1.0f },
-				glm::vec3{ 0.0f, rotationEnd, 0.0f }
+				glm::vec3{ 0.0f, rotationEnd, 0.0f },
+				glm::vec3{ 1.0f * scaleAB, 1.0f, 1.0f }
 			);
 		}
 
@@ -2280,8 +2335,8 @@ namespace Can
 		m_GuidelinesStart->enabled = !b_ConstructionStartSnapped;
 		m_GuidelinesEnd->enabled = !b_ConstructionEndSnapped;
 
-		m_GuidelinesStart->SetTransform(pointA + glm::vec3{ 0.0f, 0.15f, 0.0f }, glm::vec3(1.0f), { 0.0f, rotationStart, 0.0f });
-		m_GuidelinesEnd->SetTransform(pointB + glm::vec3{ 0.0f, 0.15f, 0.0f }, glm::vec3(1.0f), { 0.0f, rotationEnd, 0.0f });
+		m_GuidelinesStart->SetTransform(pointA + glm::vec3{ 0.0f, 0.15f, 0.0f },  { 0.0f, rotationStart, 0.0f });
+		m_GuidelinesEnd->SetTransform(pointB + glm::vec3{ 0.0f, 0.15f, 0.0f },  { 0.0f, rotationEnd, 0.0f });
 
 		m_GuidelinesStart->tintColor = b_ConstructionRestricted ? glm::vec4{ 1.0f, 0.3f, 0.2f, 1.0f } : glm::vec4(1.0f);
 		m_GuidelinesEnd->tintColor = b_ConstructionRestricted ? glm::vec4{ 1.0f, 0.3f, 0.2f, 1.0f } : glm::vec4(1.0f);
@@ -2326,8 +2381,8 @@ namespace Can
 		m_GuidelinesStart->enabled = !b_ConstructionStartSnapped;
 		m_GuidelinesEnd->enabled = !b_ConstructionEndSnapped;
 
-		m_GuidelinesStart->SetTransform(curvePoints[0] + glm::vec3{ 0.0f, 0.15f, 0.0f }, glm::vec3(1.0f), { 0.0f, rotationStart, 0.0f });
-		m_GuidelinesEnd->SetTransform(curvePoints[3] + glm::vec3{ 0.0f, 0.15f, 0.0f }, glm::vec3(1.0f), { 0.0f, rotationEnd, 0.0f });
+		m_GuidelinesStart->SetTransform(curvePoints[0] + glm::vec3{ 0.0f, 0.15f, 0.0f },  { 0.0f, rotationStart, 0.0f });
+		m_GuidelinesEnd->SetTransform(curvePoints[3] + glm::vec3{ 0.0f, 0.15f, 0.0f },  { 0.0f, rotationEnd, 0.0f });
 
 		for (size_t& inUse : m_GuidelinesInUse)
 			inUse = 0;
@@ -2335,7 +2390,7 @@ namespace Can
 
 		if (m_GuidelinesInUse[m_Type] > m_Guidelines[m_Type].size())
 			for (size_t j = m_Guidelines[m_Type].size(); j < m_GuidelinesInUse[m_Type]; j++)
-				m_Guidelines[m_Type].push_back(new Object(m_Scene->MainApplication->roads[m_Type][0], m_Scene->MainApplication->roads[m_Type][0]));
+				m_Guidelines[m_Type].push_back(new Object(m_Scene->MainApplication->roads[m_Type][0]));
 
 		glm::vec3 p1 = curvePoints[0];
 		for (int c = 0; c < count; c++)
@@ -2352,8 +2407,8 @@ namespace Can
 			roadSG->enabled = true;
 			roadSG->SetTransform(
 				p1 + glm::vec3{ 0.0f, 0.15f, 0.0f },
-				glm::vec3{ scale, 1.0f, 1.0f },
-				glm::vec3{ 0.0f, rot1, 0.0f }
+				glm::vec3{ 0.0f, rot1, 0.0f },
+				glm::vec3{ scale, 1.0f, 1.0f }
 			);
 
 			p1 = p2;
@@ -2614,7 +2669,10 @@ namespace Can
 				return false;
 			OnMousePressed_CubicCurve();
 			break;
-		case RoadConstructionMode::Upgrade:
+		case RoadConstructionMode::Change:
+			if (button != MouseCode::Button0)
+				return false;
+			OnMousePressed_Change();
 			break;
 		case RoadConstructionMode::Destruct:
 			if (button != MouseCode::Button0)
@@ -2710,6 +2768,58 @@ namespace Can
 		}
 		return false;
 	}
+	bool RoadManager::OnMousePressed_Change()
+	{
+		if (!selected_road_segment)
+			return false;
+
+		selected_road_segment->Type = m_Scene->MainApplication->roads[m_Type];
+		//selected_road_segment->ReConstruct();
+
+		// Old
+		ConnectedObject& cos = selected_road_segment->ConnectedObjectAtStart;
+		if (cos.end)
+		{
+			m_Ends.erase(std::find(m_Ends.begin(), m_Ends.end(), cos.end));
+			Object* obj = cos.end->object;
+			End* end = new End(
+				selected_road_segment,
+				m_Scene->MainApplication->roads[m_Type][2],
+				obj->position,
+				obj->rotation,
+				obj->scale
+			);
+			delete cos.end;
+			cos.end = end;
+			m_Ends.push_back(end);
+		}
+		else
+		{
+			cos.junction->ReconstructObject();
+		}
+		ConnectedObject& con = selected_road_segment->ConnectedObjectAtEnd;
+		if (con.end)
+		{
+			m_Ends.erase(std::find(m_Ends.begin(), m_Ends.end(), con.end));
+			Object* obj = con.end->object;
+			End* end = new End(
+				selected_road_segment,
+				m_Scene->MainApplication->roads[m_Type][2],
+				obj->position,
+				obj->rotation,
+				obj->scale
+			);
+			delete con.end;
+			con.end = end;
+			m_Ends.push_back(end);
+		}
+		else
+		{
+			con.junction->ReconstructObject();
+		}
+
+		return false;
+	}
 	bool RoadManager::OnMousePressed_Destruction()
 	{
 		if (m_DestructionSnappedJunction != nullptr)
@@ -2735,8 +2845,8 @@ namespace Can
 		m_Type = type;
 		delete m_GuidelinesEnd;
 		delete m_GuidelinesStart;
-		m_GuidelinesStart = new Object(m_Scene->MainApplication->roads[m_Type][2], m_Scene->MainApplication->roads[m_Type][2], glm::vec3(0.0f), glm::vec3(1.0f), glm::vec3(0.0f));
-		m_GuidelinesEnd = new Object(m_Scene->MainApplication->roads[m_Type][2], m_Scene->MainApplication->roads[m_Type][2], glm::vec3(0.0f), glm::vec3(1.0f), glm::vec3(0.0f));
+		m_GuidelinesStart = new Object(m_Scene->MainApplication->roads[m_Type][2]);
+		m_GuidelinesEnd = new Object(m_Scene->MainApplication->roads[m_Type][2]);
 	}
 	void RoadManager::SetConstructionMode(RoadConstructionMode mode)
 	{
@@ -2753,7 +2863,7 @@ namespace Can
 			m_GuidelinesStart->enabled = true;
 			m_GuidelinesEnd->enabled = true;
 			break;
-		case RoadConstructionMode::Upgrade:
+		case RoadConstructionMode::Change:
 			break;
 		case RoadConstructionMode::Destruct:
 			break;
@@ -2988,12 +3098,12 @@ namespace Can
 				}
 			}
 
-			
-			
+
+
 
 			auto it = std::find(m_RoadSegments.begin(), m_RoadSegments.end(), m_StartSnappedRoadSegment);
 			m_RoadSegments.erase(it);
-			
+
 
 			Junction* newJunction = new Junction(std::vector<RoadSegment*>{ roadSegment, rs1, rs2 }, curvePoints[0]);
 			m_Junctions.push_back(newJunction);
@@ -3006,11 +3116,11 @@ namespace Can
 			{
 				int t_index = car->t_index;
 				std::vector<float> ts{ 0 };
-				float lengthRoad = car->roadSegment->object->type->boundingBoxM.x - car->roadSegment->object->type->boundingBoxL.x;
+				float lengthRoad = car->roadSegment->road_type.length;
 				std::vector<glm::vec3> samples = Math::GetCubicCurveSamples(car->roadSegment->GetCurvePoints(), lengthRoad, ts);
 				if (t_index >= ts.size())
 				{
-					t_index = ts.size()-1;
+					t_index = ts.size() - 1;
 				}
 				float t = ts[t_index];
 				if (t < m_StartSnappedRoadSegmentT)
@@ -3074,7 +3184,6 @@ namespace Can
 				roadSegment,
 				m_Scene->MainApplication->roads[m_Type][2],
 				curvePoints[0],
-				glm::vec3(1.0f),
 				glm::vec3{
 					0.0f,
 					roadSegment->GetStartRotation().y + glm::radians(180.0f),
@@ -3211,7 +3320,7 @@ namespace Can
 					rs2->Buildings.push_back(building);
 				}
 			}
-			
+
 			auto it = std::find(m_RoadSegments.begin(), m_RoadSegments.end(), m_EndSnappedRoadSegment);
 			m_RoadSegments.erase(it);
 
@@ -3225,7 +3334,7 @@ namespace Can
 			{
 				int t_index = car->t_index;
 				std::vector<float> ts{ 0 };
-				float lengthRoad = car->roadSegment->object->type->boundingBoxM.x - car->roadSegment->object->type->boundingBoxL.x;
+				float lengthRoad = car->roadSegment->road_type.length;
 				std::vector<glm::vec3> samples = Math::GetCubicCurveSamples(car->roadSegment->GetCurvePoints(), lengthRoad, ts);
 				if (t_index >= ts.size())
 				{
@@ -3293,7 +3402,6 @@ namespace Can
 				roadSegment,
 				m_Scene->MainApplication->roads[m_Type][2],
 				curvePoints[3],
-				glm::vec3(1.0f),
 				glm::vec3{
 					0.0f,
 					roadSegment->GetEndRotation().y + glm::radians(180.0f),
@@ -3334,7 +3442,6 @@ namespace Can
 						otherRoadSegment,
 						otherRoadSegment->Type[2],
 						junction->position,
-						glm::vec3(1.0f),
 						glm::vec3{
 							0.0f,
 							otherRoadSegment->GetStartRotation().y + glm::radians(180.0f),
@@ -3352,7 +3459,6 @@ namespace Can
 						otherRoadSegment,
 						otherRoadSegment->Type[2],
 						junction->position,
-						glm::vec3(1.0f),
 						glm::vec3{
 							0.0f,
 							otherRoadSegment->GetEndRotation().y + glm::radians(180.0f),
@@ -3398,7 +3504,6 @@ namespace Can
 						otherRoadSegment,
 						otherRoadSegment->Type[2],
 						junction->position,
-						glm::vec3(1.0f),
 						glm::vec3{
 							0.0f,
 							otherRoadSegment->GetStartRotation().y + glm::radians(180.0f),
@@ -3416,7 +3521,6 @@ namespace Can
 						otherRoadSegment,
 						otherRoadSegment->Type[2],
 						junction->position,
-						glm::vec3(1.0f),
 						glm::vec3{
 							0.0f,
 							otherRoadSegment->GetEndRotation().y + glm::radians(180.0f),

@@ -67,7 +67,7 @@ namespace Can
 			glm::vec3 shiftR2Amount = shiftR2Dir * (r2width  * 0.5f);
 
 			float angleDiff = glm::degrees(glm::acos(std::min(glm::dot(shiftR1Dir, shiftR2Dir),1.0f)));
-			if (angleDiff < 2.5f && angleDiff > 177.5f)
+			if (angleDiff < 2.5f || angleDiff > 177.5f)
 			{
 				Intersections.push_back({ position.x + shiftR1Amount.x, 0.0f, position.z + shiftR1Amount.z });
 				continue;
@@ -186,14 +186,15 @@ namespace Can
 		}
 		Prefab* newPrefab = new Prefab(
 			"", // No need
-			connectedRoadSegments[0]->Type[1]->shaderPath, // If single shader for roads it okay!
+			connectedRoadSegments[0]->Type[1]->shaderPath,
 			textures,
 			textureSlotIndex,
 			(float*)TOVertices,
 			indexCount,
 			indexCount * (int)(sizeof(TexturedObjectVertex) / sizeof(float))
 		);
-		object = new Object(newPrefab, newPrefab, position);
+		object = new Object(newPrefab, position);
+		object->owns_prefab = true;
 	}
 	void Junction::ReconstructObject()
 	{

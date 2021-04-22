@@ -12,7 +12,8 @@ namespace Can
 	CarManager::CarManager(GameScene* scene)
 		: m_Scene(scene)
 	{
-		m_Guideline = new Object(m_Scene->MainApplication->cars[m_Type], m_Scene->MainApplication->cars[m_Type], glm::vec3(0.0f), glm::vec3(1.0f), glm::vec3(0.0f), false);
+		m_Guideline = new Object(m_Scene->MainApplication->cars[m_Type]);
+		m_Guideline->enabled = false;
 	}
 	CarManager::~CarManager()
 	{
@@ -38,7 +39,7 @@ namespace Can
 	{
 		m_SnappedRoadSegment = nullptr;
 		m_Guideline->SetTransform(prevLocation);
-		Prefab* selectedCar = m_Guideline->type;
+		Prefab* selectedCar = m_Guideline->prefab;
 
 		for (RoadSegment* roadSegment : m_Scene->m_RoadManager.GetRoadSegments())
 		{
@@ -80,7 +81,7 @@ namespace Can
 								roadSegment->GetStartRotation().y + glm::radians(180.f),
 								roadSegment->GetStartRotation().x
 							};
-							m_Guideline->SetTransform(prevLocation, glm::vec3(1.0f), r);
+							m_Guideline->SetTransform(prevLocation, r);
 							goto snapped;
 						}
 					}
@@ -175,7 +176,7 @@ namespace Can
 	{
 		m_Type = type;
 		delete m_Guideline;
-		m_Guideline = new Object(m_Scene->MainApplication->cars[m_Type], m_Scene->MainApplication->cars[m_Type], glm::vec3(0.0f), glm::vec3(1.0f), glm::vec3(0.0f));
+		m_Guideline = new Object(m_Scene->MainApplication->cars[m_Type]);
 
 	}
 	void CarManager::SetConstructionMode(CarConstructionMode mode)

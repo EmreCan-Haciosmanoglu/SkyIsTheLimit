@@ -6,6 +6,7 @@ namespace Can
 {
 	class GameScene;
 	class RoadSegment;
+	class RoadNode;
 	class Junction;
 	class End;
 
@@ -15,7 +16,7 @@ namespace Can
 		Straight,
 		QuadraticCurve,
 		CubicCurve,
-		Upgrade,
+		Change,
 		Destruct
 	};
 
@@ -28,6 +29,9 @@ namespace Can
 		Junction* junction = nullptr;
 		End* end = nullptr;
 		RoadSegment* roadSegment = nullptr;
+
+		RoadSegment* segment = nullptr;
+		RoadNode* node = nullptr;
 		
 		float T = 0.0f;
 	};
@@ -42,6 +46,7 @@ namespace Can
 		void OnUpdate_Straight(glm::vec3& prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection);
 		void OnUpdate_QuadraticCurve(glm::vec3& prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection);
 		void OnUpdate_CubicCurve(glm::vec3& prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection);
+		void OnUpdate_Change(glm::vec3& prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection);
 		void OnUpdate_Destruction(glm::vec3& prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection);
 
 		void DrawStraightGuidelines(const glm::vec3& pointA, const glm::vec3& pointB);
@@ -60,6 +65,7 @@ namespace Can
 		bool OnMousePressed_Straight();
 		bool OnMousePressed_QuadraticCurve();
 		bool OnMousePressed_CubicCurve();
+		bool OnMousePressed_Change();
 		bool OnMousePressed_Destruction();
 
 		void SetType(size_t type);
@@ -131,6 +137,10 @@ namespace Can
 		Junction* m_DestructionSnappedJunction = nullptr;
 		End* m_DestructionSnappedEnd = nullptr;
 		RoadSegment* m_DestructionSnappedRoadSegment = nullptr;
+
+		// Selection
+		RoadSegment* selected_road_segment = nullptr;
+		RoadNode* selected_road_node = nullptr;
 
 		std::vector<std::vector<Object*>> m_Guidelines{};
 		std::vector<size_t> m_GuidelinesInUse{};

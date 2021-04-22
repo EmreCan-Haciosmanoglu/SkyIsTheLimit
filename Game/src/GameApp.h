@@ -29,6 +29,7 @@ namespace Can
 		Ref<Texture2D> pauseTexture;			// Put better name
 		Ref<Texture2D> removeTexture;			// Put better name
 		Ref<Texture2D> cancelTexture;			// Put better name
+		Ref<Texture2D> changeTexture;			// Put better name
 		Ref<Texture2D> upgradeTexture;			// Put better name
 		Ref<Texture2D> straightTexture;			// Put better name
 		Ref<Texture2D> quadraticTexture;		// Put better name

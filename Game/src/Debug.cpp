@@ -56,8 +56,8 @@ namespace Can
 				roadManager->SetConstructionMode(RoadConstructionMode::QuadraticCurve);
 			if (ImGui::RadioButton("CubicCurve", roadManager->GetConstructionMode() == RoadConstructionMode::CubicCurve))
 				roadManager->SetConstructionMode(RoadConstructionMode::CubicCurve);
-			if (ImGui::RadioButton("Upgrade", roadManager->GetConstructionMode() == RoadConstructionMode::Upgrade))
-				roadManager->SetConstructionMode(RoadConstructionMode::Upgrade);
+			if (ImGui::RadioButton("Change", roadManager->GetConstructionMode() == RoadConstructionMode::Change))
+				roadManager->SetConstructionMode(RoadConstructionMode::Change);
 			if (ImGui::RadioButton("Destruction", roadManager->GetConstructionMode() == RoadConstructionMode::Destruct))
 				roadManager->SetConstructionMode(RoadConstructionMode::Destruct);
 			if (ImGui::RadioButton("None", roadManager->GetConstructionMode() == RoadConstructionMode::None))

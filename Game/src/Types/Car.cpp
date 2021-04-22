@@ -17,7 +17,7 @@ namespace Can
 		: roadSegment(roadSegment)
 		, t_index(t_index)
 		, speed(speed)
-		, object(new Object(type, type, position, glm::vec3(1.0f), rotation, true))
+		, object(new Object(type, position, rotation))
 		, position(position)
 		, target(target)
 		, fromStart(true)

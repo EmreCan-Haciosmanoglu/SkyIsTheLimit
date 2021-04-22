@@ -21,8 +21,8 @@ namespace Can
 	TreeManager::TreeManager(GameScene* scene)
 		: m_Scene(scene)
 	{
-		m_Guideline = new Object(m_Scene->MainApplication->trees[m_Type], m_Scene->MainApplication->trees[m_Type], glm::vec3(0.0f), glm::vec3(1.0f), glm::vec3(0.0f), false);
-
+		m_Guideline = new Object(m_Scene->MainApplication->trees[m_Type]);
+		m_Guideline->enabled = false;
 
 		Ref<Texture2D> treeMap = m_Scene->MainApplication->treeMap;
 		treeMap->Bind();
@@ -68,10 +68,9 @@ namespace Can
 						{
 							Object* tree = new Object(
 								m_Scene->MainApplication->trees[0],
-								m_Scene->MainApplication->trees[0],
 								offsetPos + glm::vec3{ (float)x / TERRAIN_SCALE_DOWN, 0.0f, -((float)y / TERRAIN_SCALE_DOWN) },
-								randomScale + glm::vec3{ 1.0f, 1.0f, 1.0f },
-								randomRot + glm::vec3{ 0.0f, 0.0f, 0.0f }
+								randomRot + glm::vec3{ 0.0f, 0.0f, 0.0f },
+								randomScale + glm::vec3{ 1.0f, 1.0f, 1.0f }
 							);
 							m_Trees.push_back(tree);
 						}
@@ -79,10 +78,9 @@ namespace Can
 						{
 							Object* tree = new Object(
 								m_Scene->MainApplication->trees[1],
-								m_Scene->MainApplication->trees[1],
 								offsetPos + glm::vec3{ (float)x / TERRAIN_SCALE_DOWN, 0.0f, -((float)y / TERRAIN_SCALE_DOWN) },
-								randomScale + glm::vec3{ 1.0f, 1.0f, 1.0f },
-								randomRot + glm::vec3{ 0.0f, 0.0f, 0.0f }
+								randomRot + glm::vec3{ 0.0f, 0.0f, 0.0f },
+								randomScale + glm::vec3{ 1.0f, 1.0f, 1.0f }
 							);
 							m_Trees.push_back(tree);
 						}
@@ -240,10 +238,9 @@ namespace Can
 			glm::vec3 randomScale{ Random::Float(-0.2f, 0.2f),  Random::Float(-0.2f, 0.2f),  Random::Float(-0.2f, 0.2f) };
 			Object* tree = new Object(
 				m_Scene->MainApplication->trees[m_Type],
-				m_Scene->MainApplication->trees[m_Type],
 				m_GuidelinePosition,
-				randomScale + glm::vec3{ 1.0f, 1.0f, 1.0f },
-				randomRot + glm::vec3{ 0.0f, 0.0f, 0.0f }
+				randomRot + glm::vec3{ 0.0f, 0.0f, 0.0f },
+				randomScale + glm::vec3{ 1.0f, 1.0f, 1.0f }
 			);
 			m_Trees.push_back(tree);
 			ResetStates();
@@ -267,7 +264,7 @@ namespace Can
 	{
 		m_Type = type;
 		delete m_Guideline;
-		m_Guideline = new Object(m_Scene->MainApplication->trees[m_Type], m_Scene->MainApplication->trees[m_Type], glm::vec3(0.0f), glm::vec3(1.0f), glm::vec3(0.0f));
+		m_Guideline = new Object(m_Scene->MainApplication->trees[m_Type]);
 	}
 	void TreeManager::SetConstructionMode(TreeConstructionMode mode)
 	{

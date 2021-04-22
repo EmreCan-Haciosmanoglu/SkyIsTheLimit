@@ -19,7 +19,8 @@ namespace Can
 	BuildingManager::BuildingManager(GameScene* scene)
 		: m_Scene(scene)
 	{
-		m_Guideline = new Object(m_Scene->MainApplication->buildings[m_Type], m_Scene->MainApplication->buildings[m_Type], glm::vec3(0.0f), glm::vec3(1.0f), glm::vec3(0.0f), false);
+		m_Guideline = new Object(m_Scene->MainApplication->buildings[m_Type]);
+		m_Guideline->enabled = false;
 	}
 	BuildingManager::~BuildingManager()
 	{
@@ -50,7 +51,7 @@ namespace Can
 		m_Guideline->SetTransform(prevLocation);
 		m_GuidelinePosition = prevLocation;
 
-		Prefab* selectedBuilding = m_Guideline->type;
+		Prefab* selectedBuilding = m_Guideline->prefab;
 		float buildingWidth = selectedBuilding->boundingBoxM.z - selectedBuilding->boundingBoxL.z;
 		float buildingDepthFromCenter = -selectedBuilding->boundingBoxL.x;
 
@@ -99,7 +100,7 @@ namespace Can
 								float rotationOffset = (float)(dirToP1.x < 0.0f) * glm::radians(180.0f);
 								float rotation = glm::atan(-dirToP1.z / dirToP1.x) + rotationOffset;
 								m_GuidelineRotation = glm::vec3{ 0.0f, (float)r * glm::radians(180.0f) + glm::radians(90.0f) + rotation, 0.0f };
-								m_Guideline->SetTransform(m_GuidelinePosition, glm::vec3(1.0f), m_GuidelineRotation);
+								m_Guideline->SetTransform(m_GuidelinePosition, m_GuidelineRotation);
 								snappedToRoad = true;
 								m_SnappedT = ts[i];
 								goto snapped;
@@ -140,7 +141,7 @@ namespace Can
 					{
 						prevLocation += glm::vec3{ mtv.x, 0.0f, mtv.y };
 						m_GuidelinePosition = prevLocation;
-						m_Guideline->SetTransform(m_GuidelinePosition, glm::vec3(1.0f), m_GuidelineRotation);
+						m_Guideline->SetTransform(m_GuidelinePosition, m_GuidelineRotation);
 						break;
 					}
 				}
@@ -295,7 +296,7 @@ namespace Can
 	{
 		if (!b_ConstructionRestricted)
 		{
-			Building* newBuilding = new Building(m_Guideline->type, m_SnappedRoadSegment, m_SnappedT, m_GuidelinePosition, m_GuidelineRotation);
+			Building* newBuilding = new Building(m_Guideline->prefab, m_SnappedRoadSegment, m_SnappedT, m_GuidelinePosition, m_GuidelineRotation);
 			if (m_SnappedRoadSegment)
 				m_SnappedRoadSegment->Buildings.push_back(newBuilding);
 			m_Buildings.push_back(newBuilding);
@@ -356,7 +357,7 @@ namespace Can
 	{
 		m_Type = type;
 		delete m_Guideline;
-		m_Guideline = new Object(m_Scene->MainApplication->buildings[m_Type], m_Scene->MainApplication->buildings[m_Type], glm::vec3(0.0f), glm::vec3(1.0f), glm::vec3(0.0f));
+		m_Guideline = new Object(m_Scene->MainApplication->buildings[m_Type]);
 	}
 	void BuildingManager::SetConstructionMode(BuildingConstructionMode mode)
 	{

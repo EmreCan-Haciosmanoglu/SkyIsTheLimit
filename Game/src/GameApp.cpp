@@ -24,6 +24,7 @@ namespace Can
 		pauseTexture = Texture2D::Create("assets/textures/Buttons/Pause.png");
 		removeTexture = Texture2D::Create("assets/textures/Buttons/Remove.png");
 		cancelTexture = Texture2D::Create("assets/textures/Buttons/Cancel.png");
+		changeTexture = Texture2D::Create("assets/textures/Buttons/Change.png");
 		upgradeTexture = Texture2D::Create("assets/textures/Buttons/Upgrade.png");
 		straightTexture = Texture2D::Create("assets/textures/Buttons/Straight.png");
 		quadraticTexture = Texture2D::Create("assets/textures/Buttons/Quadratic.png");
