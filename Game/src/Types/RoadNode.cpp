@@ -53,7 +53,7 @@ namespace Can
 					rs->GetEndRotation().x
 				};
 			}
-			object = new Object(rs->road_type.end, rs->road_type.end, position, glm::vec3(1.0f), rotation);
+			object = new Object(rs->road_type.end, position, rotation);
 			return;
 		}
 
@@ -212,6 +212,7 @@ namespace Can
 			indexCount,
 			indexCount * oneVertexSize
 		);
-		object = new Object(newPrefab, newPrefab, position);
+		object = new Object(newPrefab, position);
+		object->owns_prefab = true;
 	}
 }

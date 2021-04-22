@@ -5,10 +5,10 @@
 
 namespace Can
 {
-	End::End(RoadSegment* connectedRoadSegment, Prefab* prefab, const glm::vec3& position, const glm::vec3& scale, const glm::vec3& rotation)
+	End::End(RoadSegment* connectedRoadSegment, Prefab* prefab, const glm::vec3& position, const glm::vec3& rotation, const glm::vec3& scale)
 		: position(position)
 		, connectedRoadSegment(connectedRoadSegment)
-		, object(new Object(prefab, prefab, position, scale, rotation))
+		, object(new Object(prefab, position, rotation, scale))
 	{
 	}
 	End::End(RoadSegment* connectedRoad, Object* object)

@@ -20,15 +20,18 @@ namespace Can
 	RoadManager::RoadManager(GameScene* scene)
 		: m_Scene(scene)
 	{
-		m_GuidelinesStart = new Object(m_Scene->MainApplication->roads[m_Type][2], m_Scene->MainApplication->roads[m_Type][2], glm::vec3(0.0f), glm::vec3(1.0f), glm::vec3(0.0f), false);
-		m_GuidelinesEnd = new Object(m_Scene->MainApplication->roads[m_Type][2], m_Scene->MainApplication->roads[m_Type][2], glm::vec3(0.0f), glm::vec3(1.0f), glm::vec3(0.0f), false);
+		m_GuidelinesStart = new Object(m_Scene->MainApplication->roads[m_Type][2]);
+		m_GuidelinesStart->enabled = false;
+		m_GuidelinesEnd = new Object(m_Scene->MainApplication->roads[m_Type][2]);
+		m_GuidelinesEnd->enabled = false;
 
 		size_t roadTypeCount = m_Scene->MainApplication->roads.size();
 		for (size_t i = 0; i < roadTypeCount; i++)
 		{
 			m_GuidelinesInUse.push_back(0);
 			m_Guidelines.push_back({});
-			m_Guidelines[i].push_back(new Object(m_Scene->MainApplication->roads[i][0], m_Scene->MainApplication->roads[i][0], glm::vec3(0.0f), glm::vec3(1.0f), glm::vec3(0.0f), false));
+			m_Guidelines[i].push_back(new Object(m_Scene->MainApplication->roads[i][0]));
+			m_Guidelines[i][0]->enabled = false;
 		}
 	}
 	RoadManager::~RoadManager()
@@ -85,8 +88,8 @@ namespace Can
 			}
 			m_ConstructionPositions[0] = prevLocation;
 
-			m_GuidelinesStart->SetTransform(prevLocation + glm::vec3{ 0.0f, 0.15f, 0.0f }, glm::vec3(1.0f), glm::vec3{ 0.0f, glm::radians(180.0f), 0.0f });
-			m_GuidelinesEnd->SetTransform(prevLocation + glm::vec3{ 0.0f, 0.15f, 0.0f }, glm::vec3(1.0f), glm::vec3(0.0f));
+			m_GuidelinesStart->SetTransform(prevLocation + glm::vec3{ 0.0f, 0.15f, 0.0f }, glm::vec3{ 0.0f, glm::radians(180.0f), 0.0f });
+			m_GuidelinesEnd->SetTransform(prevLocation + glm::vec3{ 0.0f, 0.15f, 0.0f }, glm::vec3(0.0f));
 		}
 		else
 		{
@@ -515,8 +518,8 @@ namespace Can
 			}
 			m_ConstructionPositions[0] = prevLocation;
 
-			m_GuidelinesStart->SetTransform(prevLocation + glm::vec3{ 0.0f, 0.15f, 0.0f }, glm::vec3(1.0f), { 0.0f, glm::radians(180.0f), 0.0f });
-			m_GuidelinesEnd->SetTransform(prevLocation + glm::vec3{ 0.0f, 0.15f, 0.0f }, glm::vec3(1.0f), glm::vec3(0.0f));
+			m_GuidelinesStart->SetTransform(prevLocation + glm::vec3{ 0.0f, 0.15f, 0.0f }, { 0.0f, glm::radians(180.0f), 0.0f });
+			m_GuidelinesEnd->SetTransform(prevLocation + glm::vec3{ 0.0f, 0.15f, 0.0f },  glm::vec3(0.0f));
 		}
 		else if (m_ConstructionPhase == 1)
 		{
@@ -1096,8 +1099,8 @@ namespace Can
 			m_ConstructionPositions[2] = prevLocation;
 			m_ConstructionPositions[3] = prevLocation;
 
-			m_GuidelinesStart->SetTransform(prevLocation + glm::vec3{ 0.0f, 0.15f, 0.0f }, glm::vec3(1.0f), glm::vec3{ 0.0f, glm::radians(180.0f), 0.0f });
-			m_GuidelinesEnd->SetTransform(prevLocation + glm::vec3{ 0.0f, 0.15f, 0.0f }, glm::vec3(1.0f), glm::vec3(0.0f));
+			m_GuidelinesStart->SetTransform(prevLocation + glm::vec3{ 0.0f, 0.15f, 0.0f },  glm::vec3{ 0.0f, glm::radians(180.0f), 0.0f });
+			m_GuidelinesEnd->SetTransform(prevLocation + glm::vec3{ 0.0f, 0.15f, 0.0f },  glm::vec3(0.0f));
 		}
 		else if (m_ConstructionPhase == 1)
 		{
@@ -2314,7 +2317,7 @@ namespace Can
 		m_GuidelinesInUse[m_Type] += countAB;
 		if (m_GuidelinesInUse[m_Type] > m_Guidelines[m_Type].size())
 			for (size_t j = m_Guidelines[m_Type].size(); j < m_GuidelinesInUse[m_Type]; j++)
-				m_Guidelines[m_Type].push_back(new Object(m_Scene->MainApplication->roads[m_Type][0], m_Scene->MainApplication->roads[m_Type][0]));
+				m_Guidelines[m_Type].push_back(new Object(m_Scene->MainApplication->roads[m_Type][0]));
 
 		for (size_t j = 0; j < countAB; j++)
 		{
@@ -2322,8 +2325,8 @@ namespace Can
 			roadG->enabled = true;
 			roadG->SetTransform(
 				pointA + (normalizedAB * ((j + discountStart) * scaledRoadLength)) + glm::vec3{ 0.0f, 0.15f, 0.0f },
-				glm::vec3{ 1.0f * scaleAB, 1.0f, 1.0f },
-				glm::vec3{ 0.0f, rotationEnd, 0.0f }
+				glm::vec3{ 0.0f, rotationEnd, 0.0f },
+				glm::vec3{ 1.0f * scaleAB, 1.0f, 1.0f }
 			);
 		}
 
@@ -2332,8 +2335,8 @@ namespace Can
 		m_GuidelinesStart->enabled = !b_ConstructionStartSnapped;
 		m_GuidelinesEnd->enabled = !b_ConstructionEndSnapped;
 
-		m_GuidelinesStart->SetTransform(pointA + glm::vec3{ 0.0f, 0.15f, 0.0f }, glm::vec3(1.0f), { 0.0f, rotationStart, 0.0f });
-		m_GuidelinesEnd->SetTransform(pointB + glm::vec3{ 0.0f, 0.15f, 0.0f }, glm::vec3(1.0f), { 0.0f, rotationEnd, 0.0f });
+		m_GuidelinesStart->SetTransform(pointA + glm::vec3{ 0.0f, 0.15f, 0.0f },  { 0.0f, rotationStart, 0.0f });
+		m_GuidelinesEnd->SetTransform(pointB + glm::vec3{ 0.0f, 0.15f, 0.0f },  { 0.0f, rotationEnd, 0.0f });
 
 		m_GuidelinesStart->tintColor = b_ConstructionRestricted ? glm::vec4{ 1.0f, 0.3f, 0.2f, 1.0f } : glm::vec4(1.0f);
 		m_GuidelinesEnd->tintColor = b_ConstructionRestricted ? glm::vec4{ 1.0f, 0.3f, 0.2f, 1.0f } : glm::vec4(1.0f);
@@ -2378,8 +2381,8 @@ namespace Can
 		m_GuidelinesStart->enabled = !b_ConstructionStartSnapped;
 		m_GuidelinesEnd->enabled = !b_ConstructionEndSnapped;
 
-		m_GuidelinesStart->SetTransform(curvePoints[0] + glm::vec3{ 0.0f, 0.15f, 0.0f }, glm::vec3(1.0f), { 0.0f, rotationStart, 0.0f });
-		m_GuidelinesEnd->SetTransform(curvePoints[3] + glm::vec3{ 0.0f, 0.15f, 0.0f }, glm::vec3(1.0f), { 0.0f, rotationEnd, 0.0f });
+		m_GuidelinesStart->SetTransform(curvePoints[0] + glm::vec3{ 0.0f, 0.15f, 0.0f },  { 0.0f, rotationStart, 0.0f });
+		m_GuidelinesEnd->SetTransform(curvePoints[3] + glm::vec3{ 0.0f, 0.15f, 0.0f },  { 0.0f, rotationEnd, 0.0f });
 
 		for (size_t& inUse : m_GuidelinesInUse)
 			inUse = 0;
@@ -2387,7 +2390,7 @@ namespace Can
 
 		if (m_GuidelinesInUse[m_Type] > m_Guidelines[m_Type].size())
 			for (size_t j = m_Guidelines[m_Type].size(); j < m_GuidelinesInUse[m_Type]; j++)
-				m_Guidelines[m_Type].push_back(new Object(m_Scene->MainApplication->roads[m_Type][0], m_Scene->MainApplication->roads[m_Type][0]));
+				m_Guidelines[m_Type].push_back(new Object(m_Scene->MainApplication->roads[m_Type][0]));
 
 		glm::vec3 p1 = curvePoints[0];
 		for (int c = 0; c < count; c++)
@@ -2404,8 +2407,8 @@ namespace Can
 			roadSG->enabled = true;
 			roadSG->SetTransform(
 				p1 + glm::vec3{ 0.0f, 0.15f, 0.0f },
-				glm::vec3{ scale, 1.0f, 1.0f },
-				glm::vec3{ 0.0f, rot1, 0.0f }
+				glm::vec3{ 0.0f, rot1, 0.0f },
+				glm::vec3{ scale, 1.0f, 1.0f }
 			);
 
 			p1 = p2;
@@ -2783,8 +2786,8 @@ namespace Can
 				selected_road_segment,
 				m_Scene->MainApplication->roads[m_Type][2],
 				obj->position,
-				obj->scale,
-				obj->rotation
+				obj->rotation,
+				obj->scale
 			);
 			delete cos.end;
 			cos.end = end;
@@ -2803,8 +2806,8 @@ namespace Can
 				selected_road_segment,
 				m_Scene->MainApplication->roads[m_Type][2],
 				obj->position,
-				obj->scale,
-				obj->rotation
+				obj->rotation,
+				obj->scale
 			);
 			delete con.end;
 			con.end = end;
@@ -2842,8 +2845,8 @@ namespace Can
 		m_Type = type;
 		delete m_GuidelinesEnd;
 		delete m_GuidelinesStart;
-		m_GuidelinesStart = new Object(m_Scene->MainApplication->roads[m_Type][2], m_Scene->MainApplication->roads[m_Type][2], glm::vec3(0.0f), glm::vec3(1.0f), glm::vec3(0.0f));
-		m_GuidelinesEnd = new Object(m_Scene->MainApplication->roads[m_Type][2], m_Scene->MainApplication->roads[m_Type][2], glm::vec3(0.0f), glm::vec3(1.0f), glm::vec3(0.0f));
+		m_GuidelinesStart = new Object(m_Scene->MainApplication->roads[m_Type][2]);
+		m_GuidelinesEnd = new Object(m_Scene->MainApplication->roads[m_Type][2]);
 	}
 	void RoadManager::SetConstructionMode(RoadConstructionMode mode)
 	{
@@ -3113,7 +3116,7 @@ namespace Can
 			{
 				int t_index = car->t_index;
 				std::vector<float> ts{ 0 };
-				float lengthRoad = car->roadSegment->object->type->boundingBoxM.x - car->roadSegment->object->type->boundingBoxL.x;
+				float lengthRoad = car->roadSegment->road_type.length;
 				std::vector<glm::vec3> samples = Math::GetCubicCurveSamples(car->roadSegment->GetCurvePoints(), lengthRoad, ts);
 				if (t_index >= ts.size())
 				{
@@ -3181,7 +3184,6 @@ namespace Can
 				roadSegment,
 				m_Scene->MainApplication->roads[m_Type][2],
 				curvePoints[0],
-				glm::vec3(1.0f),
 				glm::vec3{
 					0.0f,
 					roadSegment->GetStartRotation().y + glm::radians(180.0f),
@@ -3332,7 +3334,7 @@ namespace Can
 			{
 				int t_index = car->t_index;
 				std::vector<float> ts{ 0 };
-				float lengthRoad = car->roadSegment->object->type->boundingBoxM.x - car->roadSegment->object->type->boundingBoxL.x;
+				float lengthRoad = car->roadSegment->road_type.length;
 				std::vector<glm::vec3> samples = Math::GetCubicCurveSamples(car->roadSegment->GetCurvePoints(), lengthRoad, ts);
 				if (t_index >= ts.size())
 				{
@@ -3400,7 +3402,6 @@ namespace Can
 				roadSegment,
 				m_Scene->MainApplication->roads[m_Type][2],
 				curvePoints[3],
-				glm::vec3(1.0f),
 				glm::vec3{
 					0.0f,
 					roadSegment->GetEndRotation().y + glm::radians(180.0f),
@@ -3441,7 +3442,6 @@ namespace Can
 						otherRoadSegment,
 						otherRoadSegment->Type[2],
 						junction->position,
-						glm::vec3(1.0f),
 						glm::vec3{
 							0.0f,
 							otherRoadSegment->GetStartRotation().y + glm::radians(180.0f),
@@ -3459,7 +3459,6 @@ namespace Can
 						otherRoadSegment,
 						otherRoadSegment->Type[2],
 						junction->position,
-						glm::vec3(1.0f),
 						glm::vec3{
 							0.0f,
 							otherRoadSegment->GetEndRotation().y + glm::radians(180.0f),
@@ -3505,7 +3504,6 @@ namespace Can
 						otherRoadSegment,
 						otherRoadSegment->Type[2],
 						junction->position,
-						glm::vec3(1.0f),
 						glm::vec3{
 							0.0f,
 							otherRoadSegment->GetStartRotation().y + glm::radians(180.0f),
@@ -3523,7 +3521,6 @@ namespace Can
 						otherRoadSegment,
 						otherRoadSegment->Type[2],
 						junction->position,
-						glm::vec3(1.0f),
 						glm::vec3{
 							0.0f,
 							otherRoadSegment->GetEndRotation().y + glm::radians(180.0f),
