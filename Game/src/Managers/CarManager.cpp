@@ -19,7 +19,7 @@ namespace Can
 	{
 	}
 
-	void CarManager::OnUpdate(glm::vec3& prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection)
+	void CarManager::OnUpdate(v3& prevLocation, const v3& cameraPosition, const v3& cameraDirection)
 	{
 		switch (m_ConstructionMode)
 		{
@@ -35,35 +35,37 @@ namespace Can
 			break;
 		}
 	}
-	void CarManager::OnUpdate_Adding(glm::vec3& prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection)
+	void CarManager::OnUpdate_Adding(v3& prevLocation, const v3& cameraPosition, const v3& cameraDirection)
 	{
-		m_SnappedRoadSegment = nullptr;
+		m_SnappedRoadSegment = -1;
 		m_Guideline->SetTransform(prevLocation);
 		Prefab* selectedCar = m_Guideline->prefab;
 
-		for (RoadSegment* roadSegment : m_Scene->m_RoadManager.GetRoadSegments())
+		u64 count = m_Scene->m_RoadManager.m_Segments.size();
+		for (u64 rsIndex = 0; rsIndex < count; rsIndex++)
 		{
-			float roadWidth = roadSegment->Type[0]->boundingBoxM.z - roadSegment->Type[0]->boundingBoxL.z;
-			float roadLength = roadSegment->Type[0]->boundingBoxM.x - roadSegment->Type[0]->boundingBoxL.x;
+			RoadSegment& rs = m_Scene->m_RoadManager.m_Segments[rsIndex];
+			float roadWidth = rs.road_type.width;
+			float roadLength = rs.road_type.length;
 			float snapDistance = roadWidth * 0.5f;
 
-			const std::array<glm::vec3, 4>& vs = roadSegment->GetCurvePoints();
-			std::array<std::array<glm::vec2, 3>, 2> roadPolygon = Math::GetBoundingBoxOfBezierCurve(vs, snapDistance);
+			const std::array<v3, 4>& vs = rs.GetCurvePoints();
+			std::array<std::array<v2, 3>, 2> roadPolygon = Math::GetBoundingBoxOfBezierCurve(vs, snapDistance);
 
-			if (Math::CheckPolygonPointCollision(roadPolygon, glm::vec2{ prevLocation.x, prevLocation.z }))
+			if (Math::CheckPolygonPointCollision(roadPolygon, v2{ prevLocation.x, prevLocation.z }))
 			{
 				std::vector<float> ts{ 0.0f };
-				std::vector<glm::vec3> ps = Math::GetCubicCurveSamples(vs, roadLength, ts);
-				size_t size = ps.size();
-				glm::vec3 p0 = ps[0];
-				for (size_t i = 1; i < size; i++)
+				std::vector<v3> ps = Math::GetCubicCurveSamples(vs, roadLength, ts);
+				u64 size = ps.size();
+				v3 p0 = ps[0];
+				for (u64 i = 1; i < size; i++)
 				{
-					glm::vec3 p1 = ps[i];
-					glm::vec3 dirToP1 = p1 - p0;
+					v3 p1 = ps[i];
+					v3 dirToP1 = p1 - p0;
 					dirToP1.y = 0.0f;
 					dirToP1 = glm::normalize(dirToP1);
 
-					glm::vec3 dirToPrev = prevLocation - p0;
+					v3 dirToPrev = prevLocation - p0;
 					float l1 = glm::length(dirToPrev);
 
 					float angle = glm::acos(glm::dot(dirToP1, dirToPrev) / l1);
@@ -74,12 +76,12 @@ namespace Can
 						float c = l1 * glm::cos(angle);
 						if (c >= -0.5f * roadLength && c <= 1.5f * roadLength) // needs lil' bit more length to each directions
 						{
-							prevLocation = roadSegment->GetStartPosition();
-							m_SnappedRoadSegment = roadSegment;
-							glm::vec3 r{
+							prevLocation = rs.GetStartPosition();
+							m_SnappedRoadSegment = rsIndex;
+							v3 r{
 								0.0f,
-								roadSegment->GetStartRotation().y + glm::radians(180.f),
-								roadSegment->GetStartRotation().x
+								rs.GetStartRotation().y + glm::radians(180.f),
+								rs.GetStartRotation().x
 							};
 							m_Guideline->SetTransform(prevLocation, r);
 							goto snapped;
@@ -89,10 +91,10 @@ namespace Can
 				}
 			}
 		}
-		snapped:
+	snapped:
 		int a = 1;
 	}
-	void CarManager::OnUpdate_Removing(glm::vec3& prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection)
+	void CarManager::OnUpdate_Removing(v3& prevLocation, const v3& cameraPosition, const v3& cameraDirection)
 	{
 		m_SelectedCarToRemove = m_Cars.end();
 
@@ -100,7 +102,7 @@ namespace Can
 		{
 			Car* car = *it;
 			Object* obj = car->object;
-			obj->tintColor = glm::vec4(1.0f);
+			obj->tintColor = v4(1.0f);
 
 			if (Helper::CheckBoundingBoxHit(
 				cameraPosition,
@@ -110,7 +112,7 @@ namespace Can
 			))
 			{
 				m_SelectedCarToRemove = it;
-				obj->tintColor = glm::vec4{ 1.0f, 0.3f, 0.2f, 1.0f };
+				obj->tintColor = v4{ 1.0f, 0.3f, 0.2f, 1.0f };
 				break;
 			}
 		}
@@ -135,12 +137,13 @@ namespace Can
 	}
 	bool CarManager::OnMousePressed_Adding()
 	{
-		if (m_SnappedRoadSegment != nullptr)
+		if (m_SnappedRoadSegment != -1)
 		{
-			std::vector<float> ts{0};
-			float lengthRoad = m_Scene->MainApplication->cars[m_Type]->boundingBoxM.x -	m_Scene->MainApplication->cars[m_Type]->boundingBoxL.x;
-			std::vector<glm::vec3> samples = Math::GetCubicCurveSamples(m_SnappedRoadSegment->GetCurvePoints(), lengthRoad, ts);
-			glm::vec3 targeT = samples[1];
+			auto& segments = m_Scene->m_RoadManager.m_Segments;
+			std::vector<float> ts{ 0 };
+			float lengthRoad = m_Scene->MainApplication->cars[m_Type]->boundingBoxM.x - m_Scene->MainApplication->cars[m_Type]->boundingBoxL.x;
+			std::vector<v3> samples = Math::GetCubicCurveSamples(segments[m_SnappedRoadSegment].GetCurvePoints(), lengthRoad, ts);
+			v3 targeT = samples[1];
 			Car* car = new Car(
 				m_Scene->MainApplication->cars[m_Type],
 				m_SnappedRoadSegment,
@@ -151,7 +154,7 @@ namespace Can
 				m_Guideline->rotation
 			);
 			m_Cars.push_back(car);
-			m_SnappedRoadSegment->Cars.push_back(car);
+			segments[m_SnappedRoadSegment].Cars.push_back(car);
 			ResetStates();
 			m_Guideline->enabled = true;
 		}
@@ -160,10 +163,10 @@ namespace Can
 	bool CarManager::OnMousePressed_Removing()
 	{
 		if (m_SelectedCarToRemove != m_Cars.end())
-		{	
+		{
 			Car* r_car = (*m_SelectedCarToRemove);
-			RoadSegment* rs = r_car->roadSegment;
-			rs->Cars.erase(std::find(rs->Cars.begin(), rs->Cars.end(), r_car));
+			RoadSegment& rs = m_Scene->m_RoadManager.m_Segments[r_car->roadSegment];
+			rs.Cars.erase(std::find(rs.Cars.begin(), rs.Cars.end(), r_car));
 			Object* car = r_car->object;
 			m_Cars.erase(m_SelectedCarToRemove);
 			m_SelectedCarToRemove = m_Cars.end();
@@ -172,7 +175,7 @@ namespace Can
 		return false;
 	}
 
-	void CarManager::SetType(size_t type)
+	void CarManager::SetType(u64 type)
 	{
 		m_Type = type;
 		delete m_Guideline;
@@ -203,10 +206,10 @@ namespace Can
 		m_SelectedCarToRemove = m_Cars.end();
 
 		for (Car* car : m_Cars)
-			car->object->tintColor = glm::vec4(1.0f);
+			car->object->tintColor = v4(1.0f);
 
 		m_Guideline->enabled = false;
-		m_Guideline->tintColor = glm::vec4(1.0f);
-		m_SnappedRoadSegment = nullptr;
+		m_Guideline->tintColor = v4(1.0f);
+		m_SnappedRoadSegment = -1;
 	}
 }

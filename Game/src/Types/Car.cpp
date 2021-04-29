@@ -7,12 +7,12 @@ namespace Can
 {
 	Car::Car(
 		Prefab* type,
-		RoadSegment* roadSegment,
-		size_t t_index,
+		s64 roadSegment,
+		u64 t_index,
 		float speed,
-		const glm::vec3& position,
-		const glm::vec3& target,
-		const glm::vec3& rotation
+		const v3& position,
+		const v3& target,
+		const v3& rotation
 	)
 		: roadSegment(roadSegment)
 		, t_index(t_index)

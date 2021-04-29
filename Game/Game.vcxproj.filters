@@ -14,10 +14,8 @@
   <ItemGroup>
     <ClInclude Include="src\Building.h" />
     <ClInclude Include="src\Debug.h" />
-    <ClInclude Include="src\End.h" />
     <ClInclude Include="src\GameApp.h" />
     <ClInclude Include="src\Helper.h" />
-    <ClInclude Include="src\Junction.h" />
     <ClInclude Include="src\Managers\BuildingManager.h">
       <Filter>Managers</Filter>
     </ClInclude>
@@ -36,20 +34,22 @@
     <ClInclude Include="src\Types\Car.h">
       <Filter>Types</Filter>
     </ClInclude>
+    <ClInclude Include="src\Types\RoadNode.h">
+      <Filter>Types</Filter>
+    </ClInclude>
     <ClInclude Include="src\Types\RoadSegment.h">
       <Filter>Types</Filter>
     </ClInclude>
+    <ClInclude Include="src\Types\RoadType.h">
+      <Filter>Types</Filter>
+    </ClInclude>
     <ClInclude Include="src\UIScene.h" />
-    <ClInclude Include="src\Types\RoadNode.h" />
-    <ClInclude Include="src\Types\RoadType.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Building.cpp" />
     <ClCompile Include="src\Debug.cpp" />
-    <ClCompile Include="src\End.cpp" />
     <ClCompile Include="src\GameApp.cpp" />
     <ClCompile Include="src\Helper.cpp" />
-    <ClCompile Include="src\Junction.cpp" />
     <ClCompile Include="src\Managers\BuildingManager.cpp">
       <Filter>Managers</Filter>
     </ClCompile>
@@ -68,10 +68,12 @@
     <ClCompile Include="src\Types\Car.cpp">
       <Filter>Types</Filter>
     </ClCompile>
+    <ClCompile Include="src\Types\RoadNode.cpp">
+      <Filter>Types</Filter>
+    </ClCompile>
     <ClCompile Include="src\Types\RoadSegment.cpp">
       <Filter>Types</Filter>
     </ClCompile>
     <ClCompile Include="src\UIScene.cpp" />
-    <ClCompile Include="src\Types\RoadNode.cpp" />
   </ItemGroup>
 </Project>

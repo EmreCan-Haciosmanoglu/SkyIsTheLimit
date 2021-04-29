@@ -5,6 +5,8 @@
 #include "Helper.h"
 #include "Can/Math.h"
 
+#include "Types/RoadNode.h"
+
 namespace Can
 {
 	GameScene* GameScene::ActiveGameScene = nullptr;
@@ -227,7 +229,7 @@ namespace Can
 			glm::vec3 unit = glm::normalize(ab);
 			float journeyLength = ts * car->speed;
 			float leftLenght = glm::length(ab);
-			RoadSegment* road = car->roadSegment;
+			RoadSegment& road = m_RoadManager.m_Segments[car->roadSegment];
 
 			if (car->inJunction)
 			{
@@ -258,48 +260,49 @@ namespace Can
 					car->position = car->target;
 					car->object->SetTransform(car->position);
 					std::vector<float> ts{ 0 };
-					float lengthRoad = road->road_type.length;
-					std::vector<glm::vec3> samples = Math::GetCubicCurveSamples(road->GetCurvePoints(), lengthRoad, ts);
+					float lengthRoad = road.road_type.length;
+					std::vector<glm::vec3> samples = Math::GetCubicCurveSamples(road.GetCurvePoints(), lengthRoad, ts);
 
 					if ((samples.size() - 2 == car->t_index && car->fromStart) || (1 == car->t_index && !car->fromStart))
 					{
 						//////new road
-						ConnectedObject& connecto = car->fromStart ? road->ConnectedObjectAtEnd : road->ConnectedObjectAtStart;
-						if (connecto.junction != nullptr)
+						u64 nodeIndex = car->fromStart ? road.EndNode : road.StartNode;
+						RoadNode& node = m_RoadManager.m_Nodes[nodeIndex];
+						if (node.roadSegments.size() > 1)
 						{
 							car->driftpoints[0] = car->position;
-							car->driftpoints[1] = connecto.junction->position;
+							car->driftpoints[1] = node.position;
 
-							std::vector<RoadSegment*>& roads = connecto.junction->connectedRoadSegments;
+							std::vector<u64>& roads = node.roadSegments;
 							int newRoadIndex = Utility::Random::Integer(roads.size());
-							RoadSegment* rs = car->roadSegment;
+							RoadSegment& rs = m_RoadManager.m_Segments[car->roadSegment];
 
-							while (rs == roads[newRoadIndex])
+							while (car->roadSegment == roads[newRoadIndex])
 							{
 								newRoadIndex = Utility::Random::Integer(roads.size());
 							}
 
-							rs->Cars.erase(std::find(rs->Cars.begin(), rs->Cars.end(), car));
+							rs.Cars.erase(std::find(rs.Cars.begin(), rs.Cars.end(), car));
 							car->roadSegment = roads[newRoadIndex];
 
-							car->roadSegment->Cars.push_back(car);
+							m_RoadManager.m_Segments[car->roadSegment].Cars.push_back(car);
 							std::vector<float> ts2{ 0 };
-							float lengthRoad2 = car->roadSegment->road_type.length;
-							std::vector<glm::vec3> samples2 = Math::GetCubicCurveSamples(car->roadSegment->GetCurvePoints(), lengthRoad2, ts2);
+							float lengthRoad2 = m_RoadManager.m_Segments[car->roadSegment].road_type.length;
+							std::vector<glm::vec3> samples2 = Math::GetCubicCurveSamples(m_RoadManager.m_Segments[car->roadSegment].GetCurvePoints(), lengthRoad2, ts2);
 
-							if (connecto.junction == car->roadSegment->ConnectedObjectAtStart.junction)
+							if (nodeIndex == m_RoadManager.m_Segments[car->roadSegment].StartNode)
 							{
 								car->t_index = 0;
 								car->target = samples2[1];
 								car->fromStart = true;
-								car->driftpoints[2] = car->roadSegment->GetStartPosition();
+								car->driftpoints[2] = m_RoadManager.m_Segments[car->roadSegment].GetStartPosition();
 							}
 							else
 							{
 								car->t_index = samples2.size();
 								car->target = samples2[samples2.size() - 1];
 								car->fromStart = false;
-								car->driftpoints[2] = car->roadSegment->GetEndPosition();
+								car->driftpoints[2] = m_RoadManager.m_Segments[car->roadSegment].GetEndPosition();
 							}
 							car->t = 0;
 							car->inJunction = true;

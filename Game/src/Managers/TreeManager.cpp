@@ -117,7 +117,7 @@ namespace Can
 		m_GuidelinePosition = prevLocation;
 
 		bool collidedWithRoad = false;
-		if (m_Scene->m_RoadManager.restrictions[2] && restrictions[0])
+		if ((m_Scene->m_RoadManager.restrictionFlags & 0x4/*Change with #define*/) && restrictions[0])
 		{
 			glm::vec2 pos{ m_Guideline->position.x, m_Guideline->position.z };
 			glm::vec2 A{ m_Guideline->prefab->boundingBoxL.x, m_Guideline->prefab->boundingBoxL.z };
@@ -136,10 +136,10 @@ namespace Can
 				std::array<glm::vec2,3>{A, C, D}
 			};
 
-			for (RoadSegment* roadSegment : m_Scene->m_RoadManager.GetRoadSegments())
+			for (RoadSegment& rs : m_Scene->m_RoadManager.m_Segments)
 			{
-				float roadPrefabWidth = roadSegment->Type[0]->boundingBoxM.z - roadSegment->Type[0]->boundingBoxL.z;
-				const std::array<glm::vec3, 4>& cps = roadSegment->GetCurvePoints();
+				float roadPrefabWidth = rs.road_type.width;
+				const std::array<glm::vec3, 4>& cps = rs.GetCurvePoints();
 				std::array<std::array<glm::vec2, 3>, 2> newRoadBoundingBox = Math::GetBoundingBoxOfBezierCurve(cps, roadPrefabWidth * 0.5f);
 
 				if (Math::CheckPolygonCollision(newRoadBoundingBox, polygonTree))

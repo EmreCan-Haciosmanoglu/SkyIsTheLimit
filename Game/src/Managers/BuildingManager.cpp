@@ -58,13 +58,13 @@ namespace Can
 		bool snappedToRoad = false;
 		if (snapOptions[0])
 		{
-			for (RoadSegment* roadSegment : m_Scene->m_RoadManager.GetRoadSegments())
+			for (RoadSegment& rs : m_Scene->m_RoadManager.m_Segments)
 			{
-				float roadWidth = roadSegment->Type[0]->boundingBoxM.z - roadSegment->Type[0]->boundingBoxL.z;
-				float roadLength = roadSegment->Type[0]->boundingBoxM.x - roadSegment->Type[0]->boundingBoxL.x;
+				float roadWidth = rs.road_type.width;
+				float roadLength = rs.road_type.length;
 				float snapDistance = buildingDepthFromCenter + (roadWidth * 0.5f);
 
-				const std::array<glm::vec3, 4>& vs = roadSegment->GetCurvePoints();
+				const std::array<glm::vec3, 4>& vs = rs.GetCurvePoints();
 				std::array<std::array<glm::vec2, 3>, 2> roadPolygon = Math::GetBoundingBoxOfBezierCurve(vs, snapDistance);
 
 				if (Math::CheckPolygonPointCollision(roadPolygon, glm::vec2{ prevLocation.x, prevLocation.z }))
@@ -95,7 +95,7 @@ namespace Can
 								glm::vec3 shiftDir{ -dirToP1.z, 0.0f, dirToP1.x };
 								glm::vec3 shiftAmount = ((float)r * 2.0f - 1.0f) * shiftDir * snapDistance;
 								prevLocation = p0 + (dirToP1 * c) + shiftAmount;
-								m_SnappedRoadSegment = roadSegment;
+								m_SnappedRoadSegment = nullptr;// roadSegment;
 								m_GuidelinePosition = prevLocation;
 								float rotationOffset = (float)(dirToP1.x < 0.0f) * glm::radians(180.0f);
 								float rotation = glm::atan(-dirToP1.z / dirToP1.x) + rotationOffset;
@@ -149,7 +149,7 @@ namespace Can
 		}
 
 		bool collidedWithRoad = false;
-		if (restrictions[0] && m_Scene->m_RoadManager.restrictions[2])
+		if (restrictions[0] && (m_Scene->m_RoadManager.restrictionFlags & 0x4/*change with #define*/))
 		{
 			glm::vec2 pos{ m_Guideline->position.x, m_Guideline->position.z };
 			glm::vec2 A{ m_Guideline->prefab->boundingBoxL.x, m_Guideline->prefab->boundingBoxL.z };
@@ -168,12 +168,12 @@ namespace Can
 				std::array<glm::vec2,3>{A, C, D}
 			};
 
-			for (RoadSegment* roadSegment : m_Scene->m_RoadManager.GetRoadSegments())
+			for (RoadSegment& rs: m_Scene->m_RoadManager.m_Segments)
 			{
-				if (roadSegment == m_SnappedRoadSegment)
+				if (/*rs*/ nullptr == m_SnappedRoadSegment)
 					continue;
-				float roadPrefabWidth = roadSegment->Type[0]->boundingBoxM.z - roadSegment->Type[0]->boundingBoxL.z;
-				const std::array<glm::vec3, 4>& cps = roadSegment->GetCurvePoints();
+				float roadPrefabWidth = rs.road_type.width;
+				const std::array<glm::vec3, 4>& cps = rs.GetCurvePoints();
 				std::array<std::array<glm::vec2, 3>, 2> newRoadBoundingBox = Math::GetBoundingBoxOfBezierCurve(cps, roadPrefabWidth * 0.5f);
 
 				if (Math::CheckPolygonCollision(newRoadBoundingBox, polygonBuilding))

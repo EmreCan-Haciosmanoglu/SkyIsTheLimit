@@ -6,23 +6,45 @@
 #include "Helper.h"
 #include "Can/Math.h"
 
+#include "GameApp.h"
+
 namespace Can
 {
-	RoadNode::RoadNode(const std::vector<RoadSegment*>& roadSegments, const glm::vec3& position)
+	RoadNode::RoadNode(const std::vector<u64>& roadSegments, const v3& position)
 		: roadSegments(roadSegments)
 		, position(position)
 	{
 		Reconstruct();
 	}
+	RoadNode::RoadNode(RoadNode&& other) 
+	{
+		std::cout << "moved" << std::endl;
+		object = other.object;
+		roadSegments = other.roadSegments;
+		position = other.position;
+		if (roadSegments.size() != 0 && other.object == nullptr)
+			std::cout << "Empty object" << std::endl;
+		if (roadSegments.size() != 0 && other.object->prefab == nullptr)
+			std::cout << "Empty prefab" << std::endl;
 
-	void RoadNode::AddRoadSegment(RoadSegment* roadSegment)
+		other.roadSegments.clear();
+		other.object = nullptr;
+	}
+	RoadNode::~RoadNode()
+	{
+		if (roadSegments.size() != 0 && object == nullptr)
+			std::cout << "Empty object" << std::endl;
+		delete object;
+	}
+
+	void RoadNode::AddRoadSegment(u64 roadSegment)
 	{
 		roadSegments.push_back(roadSegment);
 		Reconstruct();
 	}
-	void RoadNode::RemoveRoadSegment(RoadSegment* roadSegment)
+	void RoadNode::RemoveRoadSegment(u64 roadSegment)
 	{
-		std::vector<RoadSegment*>::iterator it = std::find(roadSegments.begin(), roadSegments.end(), roadSegment);
+		std::vector<u64>::iterator it = std::find(roadSegments.begin(), roadSegments.end(), roadSegment);
 		if (it != roadSegments.end())
 		{
 			roadSegments.erase(it);
@@ -33,54 +55,59 @@ namespace Can
 
 	void RoadNode::Reconstruct()
 	{
-		if (object)delete object;
+		if (roadSegments.size() == 0)
+			return;
 
-		RoadSegment* rs = roadSegments[0];
+		if (object) delete object;
+		auto& segments = GameScene::ActiveGameScene->m_RoadManager.m_Segments;
+		auto& nodes = GameScene::ActiveGameScene->m_RoadManager.m_Nodes;
+
+		RoadSegment& rs = segments[roadSegments[0]];
 		if (roadSegments.size() == 1)
 		{
-			glm::vec3 rotation = glm::vec3(0.0f);
-			if (this == rs->StartNode)
+			v3 rotation = v3(0.0f);
+			if (this == &nodes[rs.StartNode])
 			{
 				rotation = { 0.0f,
-					rs->GetStartRotation().y + glm::radians(180.0f),
-					rs->GetStartRotation().x
+					rs.GetStartRotation().y + glm::radians(180.0f),
+					rs.GetStartRotation().x
 				};
 			}
 			else
 			{
 				rotation = { 0.0f,
-					rs->GetEndRotation().y + glm::radians(180.0f),
-					rs->GetEndRotation().x
+					rs.GetEndRotation().y + glm::radians(180.0f),
+					rs.GetEndRotation().x
 				};
 			}
-			object = new Object(rs->road_type.end, position, rotation);
+			object = new Object(rs.road_type.end, position, rotation);
 			return;
 		}
 
 		std::sort(roadSegments.begin(), roadSegments.end(), Helper::sort_by_angle());
 
-		size_t count = roadSegments.size();
-		std::vector<glm::vec3> Intersections(count, { 0.0f, 0.0f, 0.0f });
+		u64 count = roadSegments.size();
+		std::vector<v3> Intersections(count, { 0.0f, 0.0f, 0.0f });
 
-		for (size_t i = 0; i < count; i++)
+		for (u64 i = 0; i < count; i++)
 		{
-			size_t next_i = (i + 1) % count;
+			u64 next_i = (i + 1) % count;
 
-			RoadSegment* rs1 = roadSegments[i];
-			RoadSegment* rs2 = roadSegments[next_i];
+			RoadSegment& rs1 = segments[roadSegments[i]];
+			RoadSegment& rs2 = segments[roadSegments[next_i]];
 
-			glm::vec3 r1Dir = this == rs1->StartNode ? rs1->GetStartDirection() : rs1->GetEndDirection();
-			glm::vec3 r2Dir = this == rs2->StartNode ? rs2->GetStartDirection() : rs2->GetEndDirection();
+			v3 r1Dir = this == &nodes[rs1.StartNode] ? rs1.GetStartDirection() : rs1.GetEndDirection();
+			v3 r2Dir = this == &nodes[rs2.StartNode] ? rs2.GetStartDirection() : rs2.GetEndDirection();
 			r1Dir.y = 0.0f;
 			r2Dir.y = 0.0f;
 
-			glm::vec3 shiftR1Dir = glm::normalize(glm::vec3{ +r1Dir.z, 0.0f, -r1Dir.x });
-			glm::vec3 shiftR2Dir = glm::normalize(glm::vec3{ -r2Dir.z, 0.0f, +r2Dir.x });
+			v3 shiftR1Dir = glm::normalize(v3{ +r1Dir.z, 0.0f, -r1Dir.x });
+			v3 shiftR2Dir = glm::normalize(v3{ -r2Dir.z, 0.0f, +r2Dir.x });
 
-			glm::vec3 shiftR1Amount = shiftR1Dir * (rs1->road_type.width * 0.5f);
-			glm::vec3 shiftR2Amount = shiftR2Dir * (rs2->road_type.width * 0.5f);
+			v3 shiftR1Amount = shiftR1Dir * (rs1.road_type.width * 0.5f);
+			v3 shiftR2Amount = shiftR2Dir * (rs2.road_type.width * 0.5f);
 
-			float angleDiff = glm::acos(std::min(glm::dot(shiftR1Dir, shiftR2Dir), 1.0f));
+			f32 angleDiff = glm::acos(std::min(glm::dot(shiftR1Dir, shiftR2Dir), 1.0f));
 			if (angleDiff < glm::radians(2.5f) && angleDiff > glm::radians(177.5f))
 			{
 				Intersections[i].x = position.x + shiftR1Amount.x;
@@ -88,7 +115,7 @@ namespace Can
 			}
 			else
 			{
-				glm::vec3 intersection = Helper::RayPlaneIntersection(
+				v3 intersection = Helper::RayPlaneIntersection(
 					position + shiftR1Amount,
 					r1Dir,
 					position + shiftR2Amount,
@@ -99,24 +126,24 @@ namespace Can
 			}
 		}
 
-		size_t indexCount = 0;
-		for (size_t i = 0; i < count; i++)
-			indexCount += roadSegments[i]->road_type.junction->indexCount;
+		u64 indexCount = 0;
+		for (u64 i = 0; i < count; i++)
+			indexCount += segments[roadSegments[i]].road_type.junction->indexCount;
 
 		TexturedObjectVertex* TOVertices = new TexturedObjectVertex[indexCount];
 		std::array<Ref<Texture2D>, MAX_TEXTURE_SLOTS> textures;
 		uint8_t textureSlotIndex = 0;
-		size_t oneVertexSize = sizeof(TexturedObjectVertex) / sizeof(float);
+		u64 oneVertexSize = sizeof(TexturedObjectVertex) / sizeof(f32);
 
-		size_t offset = 0;
-		for (size_t i = 0; i < count; i++)
+		u64 offset = 0;
+		for (u64 i = 0; i < count; i++)
 		{
-			RoadSegment* rs = roadSegments[i];
-			Prefab* prefab = rs->road_type.junction;
-			float* prefabVertices = prefab->vertices;
-			size_t prefabIndexCount = prefab->indexCount;
-			float halfWidth = rs->road_type.width * 0.5f;
-			float junction_length = rs->road_type.junction_length;
+			RoadSegment& rs = segments[roadSegments[i]];
+			Prefab* prefab = rs.road_type.junction;
+			f32* prefabVertices = prefab->vertices;
+			u64 prefabIndexCount = prefab->indexCount;
+			f32 halfWidth = rs.road_type.width * 0.5f;
+			f32 junction_length = rs.road_type.junction_length;
 
 
 			uint32_t textureIndex = 0 - 1;
@@ -130,55 +157,55 @@ namespace Can
 			}
 			if (textureIndex == (0 - 1))
 			{
-				textureIndex = (float)textureSlotIndex;
+				textureIndex = (f32)textureSlotIndex;
 				textures[textureSlotIndex] = prefab->textures[0];
 				textureSlotIndex++;
 			}
 
-			glm::vec3 intersection1 = Intersections[i];
-			glm::vec3 intersection2 = Intersections[((i - 1) + count) % count];
+			v3 intersection1 = Intersections[i];
+			v3 intersection2 = Intersections[((i - 1) + count) % count];
 
-			glm::vec3 RoadPos = this == rs->StartNode ? rs->GetCurvePoint(1) : rs->GetCurvePoint(2);
-			glm::vec3 RoadDir = this == rs->StartNode ? rs->GetStartDirection() : rs->GetEndDirection();
+			v3 RoadPos = this == &nodes[rs.StartNode] ? rs.GetCurvePoint(1) : rs.GetCurvePoint(2);
+			v3 RoadDir = this == &nodes[rs.StartNode] ? rs.GetStartDirection() : rs.GetEndDirection();
 			RoadDir.y = 0.0f;
 			RoadDir = glm::normalize(RoadDir);
 
-			glm::vec3 shiftAmount{ +RoadDir.z * halfWidth, 0.0f, -RoadDir.x * halfWidth };
+			v3 shiftAmount{ +RoadDir.z * halfWidth, 0.0f, -RoadDir.x * halfWidth };
 
-			glm::vec3 rp = RoadPos + shiftAmount;
-			glm::vec3 rn = RoadPos - shiftAmount;
+			v3 rp = RoadPos + shiftAmount;
+			v3 rn = RoadPos - shiftAmount;
 
-			glm::vec3 jp = position + shiftAmount;
-			glm::vec3 jn = position - shiftAmount;
+			v3 jp = position + shiftAmount;
+			v3 jn = position - shiftAmount;
 
-			float ljp = glm::length(rp - jp) - glm::length(rp - intersection1);
-			float ljn = glm::length(rn - jn) -glm::length(rn - intersection2);
-			//float ljp = glm::length(rp - intersection1);
-			//float ljn = glm::length(rn - intersection2);
+			f32 ljp = glm::length(rp - jp) - glm::length(rp - intersection1);
+			f32 ljn = glm::length(rn - jn) -glm::length(rn - intersection2);
+			//f32 ljp = glm::length(rp - intersection1);
+			//f32 ljn = glm::length(rn - intersection2);
 
-			float l = ljn > ljp ? ljn : ljp;
-			//float l = std::max(ljn, ljp);
-			//float l = ljn < ljp ? ljn : ljp;
-			//float l = std::min(ljn, ljp);
+			f32 l = ljn > ljp ? ljn : ljp;
+			//f32 l = std::max(ljn, ljp);
+			//f32 l = ljn < ljp ? ljn : ljp;
+			//f32 l = std::min(ljn, ljp);
 
-			float offsetl = l + junction_length;
-			glm::vec3 temp = position + RoadDir * offsetl;
-			rs->SetCurvePoint(3 * (size_t)(this != rs->StartNode), temp);
-			float lcp = glm::length((this == rs->StartNode) ? rs->GetCurvePoint(1) - rs->GetCurvePoint(0) : rs->GetCurvePoint(2) - rs->GetCurvePoint(3));
+			f32 offsetl = l + junction_length;
+			v3 temp = position + RoadDir * offsetl;
+			rs.SetCurvePoint(3 * (u64)(this != &nodes[rs.StartNode]), temp);
+			f32 lcp = glm::length((this == &nodes[rs.StartNode]) ? rs.GetCurvePoint(1) - rs.GetCurvePoint(0) : rs.GetCurvePoint(2) - rs.GetCurvePoint(3));
 			if (offsetl > lcp)
-				rs->SetCurvePoint(2 - (size_t)(this == rs->StartNode), temp + RoadDir * 0.1f);
+				rs.SetCurvePoint(2 - (u64)(this == &nodes[rs.StartNode]), temp + RoadDir * 0.1f);
 
-			float angle = this == rs->StartNode ? rs->GetStartRotation().y : rs->GetEndRotation().y;
-			for (size_t j = 0; j < prefabIndexCount; j++)
+			f32 angle = this == &nodes[rs.StartNode] ? rs.GetStartRotation().y : rs.GetEndRotation().y;
+			for (u64 j = 0; j < prefabIndexCount; j++)
 			{
-				size_t index = j * oneVertexSize;
-				glm::vec2 point{
+				u64 index = j * oneVertexSize;
+				v2 point{
 					prefabVertices[index + 0],
 					prefabVertices[index + 2]
 				};
 				if (point.x < 0.001f)
 				{
-					float percent = std::abs(point.y / halfWidth);
+					f32 percent = std::abs(point.y / halfWidth);
 					if (point.y < 0.001f)
 						point.x += percent * ljp;
 					else if (point.y > 0.001f)
@@ -189,7 +216,7 @@ namespace Can
 					point.x += l;
 				}
 
-				glm::vec2 rotatedPoint = Math::RotatePoint(point, -angle);
+				v2 rotatedPoint = Math::RotatePoint(point, -angle);
 
 				TOVertices[offset + j].Position.x = rotatedPoint.x;
 				TOVertices[offset + j].Position.y = prefabVertices[index + 1];
@@ -205,10 +232,10 @@ namespace Can
 		}
 		Prefab* newPrefab = new Prefab(
 			"",
-			roadSegments[0]->road_type.junction->shaderPath,
+			segments[roadSegments[0]].road_type.junction->shaderPath,
 			textures,
 			textureSlotIndex,
-			(float*)TOVertices,
+			(f32*)TOVertices,
 			indexCount,
 			indexCount * oneVertexSize
 		);

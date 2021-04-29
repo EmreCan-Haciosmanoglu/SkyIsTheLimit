@@ -9,16 +9,16 @@ namespace Can
 	public:
 		Car(
 			Prefab* type,
-			RoadSegment* roadSegment,
-			size_t t_index,
+			s64 roadSegment,
+			u64 t_index,
 			float speed,
 			const glm::vec3& position,
 			const glm::vec3& target,
 			const glm::vec3& rotation
 		);
 		~Car();
-		RoadSegment* roadSegment;
-		size_t t_index = 0;
+		s64 roadSegment;
+		u64 t_index = 0;
 		float speed = 100.0f;
 		float t = 0;
 		std::array<glm::vec3, 3> driftpoints;

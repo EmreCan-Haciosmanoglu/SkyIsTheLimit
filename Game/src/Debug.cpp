@@ -107,11 +107,11 @@ namespace Can
 		{
 			ImGui::Text("Road Construction Snap Options");
 			ImGui::BeginChild("Road Construction Snap Options", ImVec2(0, 135), true);
-			ImGui::Checkbox("Road", &roadManager->snapOptions[0]);
+			/*ImGui::Checkbox("Road", &roadManager->snapOptions[0]);
 			ImGui::Checkbox("Length", &roadManager->snapOptions[1]);
 			ImGui::Checkbox("Height", &roadManager->snapOptions[2]);
 			ImGui::Checkbox("Angle", &roadManager->snapOptions[3]);
-			ImGui::Checkbox("Grid", &roadManager->snapOptions[4]);
+			ImGui::Checkbox("Grid", &roadManager->snapOptions[4]);*/
 			ImGui::EndChild();
 		}
 		else if (gameScene->e_ConstructionMode == ConstructionMode::Building)
@@ -127,9 +127,9 @@ namespace Can
 		{
 			ImGui::Text("Road Construction Restriction Options");
 			ImGui::BeginChild("Road Construction Restriction Options", ImVec2(0, 85), true);
-			ImGui::Checkbox("Small angles", &roadManager->restrictions[0]);
+			/*ImGui::Checkbox("Small angles", &roadManager->restrictions[0]);
 			ImGui::Checkbox("Short lengths", &roadManager->restrictions[1]);
-			ImGui::Checkbox("Collisions", &roadManager->restrictions[2]);
+			ImGui::Checkbox("Collisions", &roadManager->restrictions[2]);*/
 			ImGui::EndChild();
 		}
 		else if (gameScene->e_ConstructionMode == ConstructionMode::Building)

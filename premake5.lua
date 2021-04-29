@@ -21,7 +21,8 @@ project "Game"
         "$(SolutionDir)Can/src",
         "$(SolutionDir)%{IncludeDir.imgui}",
         "$(SolutionDir)%{IncludeDir.glm}",
-        "$(SolutionDir)%{IncludeDir.EnTT}"
+        "$(SolutionDir)%{IncludeDir.EnTT}",
+        "$(SolutionDir)%{IncludeDir.FreeType}"
     }
     
     links

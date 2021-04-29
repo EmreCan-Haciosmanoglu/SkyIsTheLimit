@@ -23,17 +23,10 @@ namespace Can
 	struct SnapInformation
 	{
 		bool snapped = false;
-		
-		glm::vec3 location{ 0.0f, 0.0f, 0.0f};
-		
-		Junction* junction = nullptr;
-		End* end = nullptr;
-		RoadSegment* roadSegment = nullptr;
-
-		RoadSegment* segment = nullptr;
-		RoadNode* node = nullptr;
-		
-		float T = 0.0f;
+		v3 location{ 0.0f, 0.0f, 0.0f };
+		s64 segment = -1;
+		s64 node = -1;
+		f32 T = 0.0f;
 	};
 
 	class RoadManager
@@ -42,24 +35,24 @@ namespace Can
 		RoadManager(GameScene* scene);
 		~RoadManager();
 
-		void OnUpdate(glm::vec3& prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection);
-		void OnUpdate_Straight(glm::vec3& prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection);
-		void OnUpdate_QuadraticCurve(glm::vec3& prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection);
-		void OnUpdate_CubicCurve(glm::vec3& prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection);
-		void OnUpdate_Change(glm::vec3& prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection);
-		void OnUpdate_Destruction(glm::vec3& prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection);
+		void OnUpdate(v3& prevLocation, const v3& cameraPosition, const v3& cameraDirection);
+		void OnUpdate_Straight(v3& prevLocation, const v3& cameraPosition, const v3& cameraDirection);
+		void OnUpdate_QuadraticCurve(v3& prevLocation, const v3& cameraPosition, const v3& cameraDirection);
+		void OnUpdate_CubicCurve(v3& prevLocation, const v3& cameraPosition, const v3& cameraDirection);
+		void OnUpdate_Change(v3& prevLocation, const v3& cameraPosition, const v3& cameraDirection);
+		void OnUpdate_Destruction(v3& prevLocation, const v3& cameraPosition, const v3& cameraDirection);
 
-		void DrawStraightGuidelines(const glm::vec3& pointA, const glm::vec3& pointB);
-		void DrawCurvedGuidelines(const std::array<glm::vec3, 4>& curvePoints);
-		
-		bool CheckStraightRoadRoadCollision(const std::array<std::array<glm::vec2, 3>, 2>& polygon);
-		void CheckStraightRoadBuildingCollision(const std::array<std::array<glm::vec2, 3>, 2>& polygon);
-		void CheckStraightRoadTreeCollision(const std::array<std::array<glm::vec2, 3>, 2>& polygon);
-		
+		void DrawStraightGuidelines(const v3& pointA, const v3& pointB);
+		void DrawCurvedGuidelines(const std::array<v3, 4>& curvePoints);
+
+		bool CheckStraightRoadRoadCollision(const std::array<std::array<v2, 3>, 2>& polygon);
+		void CheckStraightRoadBuildingCollision(const std::array<std::array<v2, 3>, 2>& polygon);
+		void CheckStraightRoadTreeCollision(const std::array<std::array<v2, 3>, 2>& polygon);
+
 		// need template
-		bool CheckRoadRoadCollision(const std::array<std::array<glm::vec2, 3>, 2>& box, const std::array<std::array<glm::vec2, 3>, (10 - 1) * 2>& polygon);
-		void CheckRoadBuildingCollision(const std::array<std::array<glm::vec2, 3>, 2>& box, const std::array<std::array<glm::vec2, 3>, (10 - 1) * 2>& polygon);
-		void CheckRoadTreeCollision(const std::array<std::array<glm::vec2, 3>, 2>& box, const std::array<std::array<glm::vec2, 3>, (10 - 1) * 2>& polygon);
+		bool CheckRoadRoadCollision(const std::array<std::array<v2, 3>, 2>& box, const std::array<std::array<v2, 3>, (10 - 1) * 2>& polygon);
+		void CheckRoadBuildingCollision(const std::array<std::array<v2, 3>, 2>& box, const std::array<std::array<v2, 3>, (10 - 1) * 2>& polygon);
+		void CheckRoadTreeCollision(const std::array<std::array<v2, 3>, 2>& box, const std::array<std::array<v2, 3>, (10 - 1) * 2>& polygon);
 
 		bool OnMousePressed(MouseCode button);
 		bool OnMousePressed_Straight();
@@ -68,87 +61,94 @@ namespace Can
 		bool OnMousePressed_Change();
 		bool OnMousePressed_Destruction();
 
-		void SetType(size_t type);
-		inline size_t GetType() { return m_Type; }
+		void SetType(u64 type);
+		inline u64 GetType() { return m_Type; }
 
 		void SetConstructionMode(RoadConstructionMode mode);
 
 		inline const RoadConstructionMode GetConstructionMode() const { return m_ConstructionMode; }
 		inline RoadConstructionMode GetConstructionMode() { return m_ConstructionMode; }
 
-		inline const std::vector<RoadSegment*>& GetRoadSegments() const { return m_RoadSegments; }
-		inline std::vector<RoadSegment*>& GetRoadSegments() { return m_RoadSegments; }
+		//inline const std::vector<RoadSegment*>& GetRoadSegments() const { return m_RoadSegments; }
+		//inline std::vector<RoadSegment*>& GetRoadSegments() { return m_RoadSegments; }
 
-		void AddRoadSegment(const std::array<glm::vec3, 4>& curvePoints);
-		void RemoveRoadSegment(RoadSegment* roadSegment);
+		void AddRoadSegment(const std::array<v3, 4>& curvePoints);
+		void RemoveRoadSegment(u64 roadSIndex);
 
-		SnapInformation CheckSnapping(const glm::vec3& prevLocation);
+		SnapInformation CheckSnapping(const v3& prevLocation);
 
 		void ResetStates();
 	public:
 
-		std::array<bool, 5> snapOptions = { true, false, false, true, false };
+		u8 snapFlags = 0x1;
+#define SNAP_TO_ROAD    0x01
+#define SNAP_TO_LENGTH  0x02
+#define SNAP_TO_HEIGHT  0x04
+#define SNAP_TO_ANGLE   0x08
+#define SNAP_TO_GRID    0x10
+
+		/*std::array<bool, 5> snapOptions = { true, false, false, true, false };
 		// 0 : Roads
 		// 1 : Length
 		// 2 : Height
 		// 3 : Angle
 		// 4 : Grid
+		*/
+		u8 restrictionFlags = 0x0;
+#define RESTRICT_SMALL_ANGLES 0x1
+#define RESTRICT_SHORT_LENGTH 0x2
+#define RESTRICT_COLLISIONS   0x4
 
-		std::array<bool, 3> restrictions = { false, true, false };
+		/*std::array<bool, 3> restrictions = { false, true, false };
 		// 0 : Small Angle
 		// 1 : Short Length
 		// 2 : Collision
+		*/
+		std::array<u8, 4> cubicCurveOrder = { 0, 1, 2, 3 };
 
-		std::array<uint8_t, 4> cubicCurveOrder = { 0, 1, 2, 3 };
-
-	private:
 		GameScene* m_Scene = nullptr;
 		RoadConstructionMode m_ConstructionMode = RoadConstructionMode::None;
 
-		std::vector<RoadSegment*> m_RoadSegments{};
-		std::vector<Junction*> m_Junctions{};		// Change this to node instead?
-		std::vector<End*> m_Ends{};					// Change this to node instead?
+		std::vector<RoadSegment> m_Segments{};
+		std::vector<RoadNode> m_Nodes{};
 
 		int m_ConstructionPhase = 0;
-		bool b_ConstructionStartSnapped = false;
-		bool b_ConstructionEndSnapped = false;
 
 		// Transforms
-		std::array<glm::vec3, 4> m_ConstructionPositions = { 
-			glm::vec3(0.0f), 
-			glm::vec3(0.0f),
-			glm::vec3(0.0f),
-			glm::vec3(0.0f)
+		std::array<v3, 4> m_ConstructionPositions = {
+			v3(0.0f),
+			v3(0.0f),
+			v3(0.0f),
+			v3(0.0f)
 		};
 
 		// Start Snap
-		Junction* m_StartSnappedJunction = nullptr;
-		End* m_StartSnappedEnd = nullptr;
-		RoadSegment* m_StartSnappedRoadSegment = nullptr;
-		float m_StartSnappedRoadSegmentT = 0.0f;
+		bool b_ConstructionStartSnapped = false;
+		s64 m_StartSnappedSegment = -1;
+		s64 m_StartSnappedNode = -1;
+		f32 m_StartSnappedT = 0.0f;
 
 		// End Snap
-		Junction* m_EndSnappedJunction = nullptr;
-		End* m_EndSnappedEnd = nullptr;
-		RoadSegment* m_EndSnappedRoadSegment = nullptr;
-		float m_EndSnappedRoadSegmentT = 0.0f;
+		bool b_ConstructionEndSnapped = false;
+		s64 m_EndSnappedSegment = -1;
+		s64 m_EndSnappedNode = -1;
+		f32 m_EndSnappedT = 0.0f;
 
 		// Destruction Snap
-		Junction* m_DestructionSnappedJunction = nullptr;
-		End* m_DestructionSnappedEnd = nullptr;
-		RoadSegment* m_DestructionSnappedRoadSegment = nullptr;
+		s64 m_DestructionSegment = -1;
+		s64 m_DestructionNode = -1;
 
 		// Selection
-		RoadSegment* selected_road_segment = nullptr;
-		RoadNode* selected_road_node = nullptr;
+		s64 selected_road_segment = -1;
+		s64 selected_road_node = -1;
 
 		std::vector<std::vector<Object*>> m_Guidelines{};
-		std::vector<size_t> m_GuidelinesInUse{};
-		Object* m_GuidelinesStart = nullptr; // End /? Object
+		std::vector<u64> m_GuidelinesInUse{};
+		Object* m_GuidelinesStart = nullptr;
 		Object* m_GuidelinesEnd = nullptr;
 
 		bool b_ConstructionRestricted = false;
 
-		size_t m_Type = 0;
+		u64 m_Type = 0;
 	};
 }

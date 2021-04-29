@@ -6,21 +6,12 @@
 
 namespace Can
 {
-	class End;
 	class Car;
 	class Prefab;
 	class Object;
-	class Junction;
 	class Building;
 	class RoadSegment;
 	class RoadNode;
-
-	struct ConnectedObject
-	{
-		End* end = nullptr;
-		Junction* junction = nullptr;
-		RoadSegment* roadSegment = nullptr;
-	};
 
 	class RoadSegment
 	{
@@ -57,23 +48,21 @@ namespace Can
 		void CalcRotsAndDirs();
 
 	public:
-		std::array<Prefab*, 3> Type;
 		RoadType road_type{};
 		std::vector<Building*> Buildings = {};
 		std::vector<Car*> Cars = {};
 
-		ConnectedObject ConnectedObjectAtStart;
-		ConnectedObject ConnectedObjectAtEnd;
-
-		RoadNode* StartNode;
-		RoadNode* EndNode;
+		u64 StartNode;
+		u64 EndNode;
 
 		std::vector<glm::vec3> curve_samples{};
+		std::vector<float> curve_t_samples{};
 
 		Object* object = nullptr;
 
-	private:
 		std::array<glm::vec3, 4> CurvePoints;
+		std::array<std::array<glm::vec2, 3>, 2> bounding_box {};
+	private:
 
 		std::array<glm::vec3, 2> Directions;
 		std::array<glm::vec2, 2> Rotations{

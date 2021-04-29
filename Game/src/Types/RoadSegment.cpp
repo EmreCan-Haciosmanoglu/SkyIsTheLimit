@@ -10,9 +10,9 @@
 namespace Can
 {
 	RoadSegment::RoadSegment(const std::array<Prefab*, 3>& type, const std::array<glm::vec3, 4>& curvePoints)
-		: Type(type)
-		, CurvePoints(curvePoints)
+		: CurvePoints(curvePoints)
 	{
+		ChangeType(type);
 		CalcRotsAndDirs();
 		Construct();
 	}
@@ -23,19 +23,14 @@ namespace Can
 
 	void RoadSegment::Construct()
 	{
-		road_type.length = Type[0]->boundingBoxM.x - Type[0]->boundingBoxL.x;
-		//road_type.junction_length = Type[1]->boundingBoxM.x - Type[1]->boundingBoxL.x;
-		road_type.width = Type[0]->boundingBoxM.z - Type[0]->boundingBoxL.z;
-		road_type.road = Type[0];
-		road_type.junction = Type[1];
-		road_type.end= Type[2];
-
-		std::vector<float> samples = Math::GetCubicCurveSampleTs(CurvePoints, road_type.length);
+		bounding_box = Math::GetBoundingBoxOfBezierCurve(CurvePoints, road_type.width * 0.5f);
+		curve_t_samples.clear();
+		curve_t_samples = Math::GetCubicCurveSampleTs(CurvePoints, road_type.length);
 		curve_samples.clear();
-		size_t count = samples.size();
+		size_t count = curve_t_samples.size();
 
-		size_t prefabIndexCount = Type[0]->indexCount;
-		size_t indexCount = prefabIndexCount * count;
+		size_t prefabIndexCount = road_type.road->indexCount;
+		size_t indexCount = prefabIndexCount * (count-1);
 		size_t vertexCount = indexCount * (3 + 2 + 3);
 		TexturedObjectVertex* TOVertices = new TexturedObjectVertex[indexCount];
 
@@ -43,12 +38,12 @@ namespace Can
 		curve_samples.push_back(p1);
 		for (int c = 1; c < count; c++)
 		{
-			glm::vec3 p2 = Math::CubicCurve<float>(CurvePoints, samples[c]);
+			glm::vec3 p2 = Math::CubicCurve<float>(CurvePoints, curve_t_samples[c]);
 			glm::vec3 vec1 = p2 - p1;
 			float length = glm::length(vec1);
 			float scale = length / road_type.length;
 			glm::vec3 dir1 = vec1 / length;
-			glm::vec3 dir2 = (c < count - 1) ? glm::normalize((glm::vec3)Math::CubicCurve<float>(CurvePoints, samples[c + 1]) - p2) : -Directions[1];
+			glm::vec3 dir2 = (c < count - 1) ? glm::normalize((glm::vec3)Math::CubicCurve<float>(CurvePoints, curve_t_samples[c + 1]) - p2) : -Directions[1];
 
 			float rot1 = (dir1.z < 0.0f) ? glm::acos(-dir1.x) + glm::radians(180.f) : glm::acos(dir1.x);
 			float rot2 = (dir2.z < 0.0f) ? glm::acos(-dir2.x) + glm::radians(180.f) : glm::acos(dir2.x);
@@ -59,16 +54,16 @@ namespace Can
 			printf("rot2(%.3f) - rot1(%.3f) = %.3f\n", rot2, rot1, diff);
 			for (int i = 0; i < prefabIndexCount; i++)
 			{
-				size_t offset = c * prefabIndexCount + i;
+				size_t offset = (c-1) * prefabIndexCount + i;
 				size_t index = (size_t)i * 9;
 
 				glm::vec2 point{
-					Type[0]->vertices[index + 0] * scale,
-					Type[0]->vertices[index + 2]
+					road_type.road->vertices[index + 0] * scale,
+					road_type.road->vertices[index + 2]
 				};
 
 				glm::vec2 point2{
-					Type[0]->vertices[index + 0] * scale,
+					road_type.road->vertices[index + 0] * scale,
 					0.0f
 				};
 
@@ -80,17 +75,17 @@ namespace Can
 				point = Helper::RotateAPointAroundAPoint(point, Math::Lerp(0.0f, diff, t), point2);
 
 				TOVertices[offset].Position.x = point.x + p1.x - CurvePoints[0].x;
-				TOVertices[offset].Position.y = Type[0]->vertices[index + 1] + p1.y - CurvePoints[0].y;
+				TOVertices[offset].Position.y = road_type.road->vertices[index + 1] + p1.y - CurvePoints[0].y;
 				TOVertices[offset].Position.z = point.y + p1.z - CurvePoints[0].z;
-				TOVertices[offset].UV = *(glm::vec2*) & Type[0]->vertices[index + 3];
-				TOVertices[offset].Normal = *(glm::vec3*) & Type[0]->vertices[index + 5];
-				TOVertices[offset].TextureIndex = Type[0]->vertices[index + 8];
+				TOVertices[offset].UV = *(glm::vec2*) & road_type.road->vertices[index + 3];
+				TOVertices[offset].Normal = *(glm::vec3*) & road_type.road->vertices[index + 5];
+				TOVertices[offset].TextureIndex = road_type.road->vertices[index + 8];
 			}
 			p1 = p2;
 			curve_samples.push_back(p1);
 		}
 		printf("\n");
-		Prefab* newPrefab = new Prefab(Type[0]->objectPath, Type[0]->shaderPath, Type[0]->texturePath, (float*)TOVertices, indexCount);
+		Prefab* newPrefab = new Prefab(road_type.road->objectPath, road_type.road->shaderPath, road_type.road->texturePath, (float*)TOVertices, indexCount);
 
 		for (int c = 0; c < count; c++)
 		{
@@ -138,7 +133,7 @@ namespace Can
 
 	void RoadSegment::ReConstruct()
 	{
-		if(object) delete object;
+		if (object) delete object;
 
 		Construct();
 
@@ -172,7 +167,12 @@ namespace Can
 	}
 	void RoadSegment::ChangeType(const std::array<Prefab*, 3>& type)
 	{
-		Type = type;
+		road_type.road = type[0];
+		road_type.junction = type[1];
+		road_type.end = type[2];
+		road_type.length = road_type.road->boundingBoxM.x - road_type.road->boundingBoxL.x;
+		road_type.junction_length = road_type.junction->boundingBoxM.x - road_type.junction->boundingBoxL.x;
+		road_type.width = road_type.road->boundingBoxM.z - road_type.road->boundingBoxL.z;
 		ReConstruct();
 	}
 
