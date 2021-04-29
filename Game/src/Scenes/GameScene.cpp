@@ -11,10 +11,11 @@ namespace Can
 
 	GameScene::GameScene(GameApp* application)
 		: MainApplication(application)
-		, m_Terrain(new Object(MainApplication->terrainPrefab, MainApplication->terrainPrefab, { 0.0f, 0.0f, 0.0f, }, { 1.0f, 1.0f, 1.0f, }, { 0.0f, 0.0f, 0.0f, }))
+		, m_Terrain(new Object(MainApplication->terrainPrefab))
 		, m_RoadManager(this)
 		, m_TreeManager(this)
 		, m_BuildingManager(this)
+		, m_PersonManager(this)
 		, m_CarManager(this)
 		, m_MainCameraController(
 			45.0f,
@@ -257,7 +258,7 @@ namespace Can
 					car->position = car->target;
 					car->object->SetTransform(car->position);
 					std::vector<float> ts{ 0 };
-					float lengthRoad = road->object->type->boundingBoxM.x - road->object->type->boundingBoxL.x;
+					float lengthRoad = road->object->prefab->boundingBoxM.x - road->object->prefab->boundingBoxL.x;
 					std::vector<glm::vec3> samples = Math::GetCubicCurveSamples(road->GetCurvePoints(), lengthRoad, ts);
 
 					if ((samples.size() - 2 == car->t_index && car->fromStart) || (1 == car->t_index && !car->fromStart))
@@ -283,7 +284,7 @@ namespace Can
 
 							car->roadSegment->Cars.push_back(car);
 							std::vector<float> ts2{ 0 };
-							float lengthRoad2 = car->roadSegment->object->type->boundingBoxM.x - car->roadSegment->object->type->boundingBoxL.x;
+							float lengthRoad2 = car->roadSegment->object->prefab->boundingBoxM.x - car->roadSegment->object->prefab->boundingBoxL.x;
 							std::vector<glm::vec3> samples2 = Math::GetCubicCurveSamples(car->roadSegment->GetCurvePoints(), lengthRoad2, ts2);
 
 							if (connecto.junction == car->roadSegment->ConnectedObjectAtStart.junction)

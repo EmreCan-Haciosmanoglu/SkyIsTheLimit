@@ -4,6 +4,8 @@
 namespace Can
 {
 	class RoadSegment;
+	class Person;
+
 	class Building
 	{
 	public:
@@ -14,7 +16,9 @@ namespace Can
 	public:
 
 		RoadSegment* connectedRoadSegment;
+		std::vector<Person*> residents;
 		float snappedT = 0.0f;
+		u8 capacity = 0;
 
 		Object* object;
 		glm::vec3 position;

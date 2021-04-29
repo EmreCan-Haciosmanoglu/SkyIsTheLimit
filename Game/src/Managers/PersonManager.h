@@ -14,8 +14,10 @@ namespace Can
 
 		void Update(TimeStep ts);
 
+		Person* get_worklessPerson();
+
 
 		GameScene* m_Scene = nullptr;
-		std::vector<Person> m_People = {};
+		std::vector<Person*> m_People = {};
 	};
 }

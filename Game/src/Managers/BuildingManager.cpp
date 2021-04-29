@@ -2,6 +2,7 @@
 #include "BuildingManager.h"
 
 #include "Types/RoadSegment.h"
+#include "Types/Person.h"
 #include "Junction.h"
 #include "Building.h"
 #include "End.h"
@@ -19,7 +20,7 @@ namespace Can
 	BuildingManager::BuildingManager(GameScene* scene)
 		: m_Scene(scene)
 	{
-		m_Guideline = new Object(m_Scene->MainApplication->buildings[m_Type], m_Scene->MainApplication->buildings[m_Type], glm::vec3(0.0f), glm::vec3(1.0f), glm::vec3(0.0f), false);
+		m_Guideline = new Object(m_Scene->MainApplication->buildings[m_Type]);
 	}
 	BuildingManager::~BuildingManager()
 	{
@@ -50,7 +51,7 @@ namespace Can
 		m_Guideline->SetTransform(prevLocation);
 		m_GuidelinePosition = prevLocation;
 
-		Prefab* selectedBuilding = m_Guideline->type;
+		Prefab* selectedBuilding = m_Guideline->prefab;
 		float buildingWidth = selectedBuilding->boundingBoxM.z - selectedBuilding->boundingBoxL.z;
 		float buildingDepthFromCenter = -selectedBuilding->boundingBoxL.x;
 
@@ -295,10 +296,46 @@ namespace Can
 	{
 		if (!b_ConstructionRestricted)
 		{
-			Building* newBuilding = new Building(m_Guideline->type, m_SnappedRoadSegment, m_SnappedT, m_GuidelinePosition, m_GuidelineRotation);
+			Building* newBuilding = new Building(m_Guideline->prefab, m_SnappedRoadSegment, m_SnappedT, m_GuidelinePosition, m_GuidelineRotation);
+			bool ishome = Utility::Random::Float(1.0f)>0.5f;
 			if (m_SnappedRoadSegment)
 				m_SnappedRoadSegment->Buildings.push_back(newBuilding);
 			m_Buildings.push_back(newBuilding);
+
+			if (ishome)
+			{
+				m_HomeBuildings.push_back(newBuilding);
+				u8 domicilled = Utility::Random::Integer(3, 15);
+				newBuilding->capacity = domicilled;
+				auto& manager = m_Scene->m_PersonManager;
+				for (u64 i = 0; i < domicilled; i++)
+				{
+					Person* p = new Person(nullptr, 10);
+					p->home = newBuilding;
+					newBuilding->residents.push_back(p);
+
+					manager.m_People.push_back(p);
+					Building* work = getAvailableWorkBuilding();
+					p->work = work;
+				}
+			}
+			else
+			{
+				m_WorkBuildings.push_back(newBuilding);
+				u8 worker = Utility::Random::Integer(3, 5);
+				newBuilding->capacity = worker;
+				auto& manager = m_Scene->m_PersonManager;
+				for (u64 i = 0; i < worker; i++)
+				{
+
+					Person* p = manager.get_worklessPerson();
+					if (p)
+					{
+						p->work = newBuilding;
+					}
+				}
+
+			}
 			ResetStates();
 			m_Guideline->enabled = true;
 
@@ -356,7 +393,7 @@ namespace Can
 	{
 		m_Type = type;
 		delete m_Guideline;
-		m_Guideline = new Object(m_Scene->MainApplication->buildings[m_Type], m_Scene->MainApplication->buildings[m_Type], glm::vec3(0.0f), glm::vec3(1.0f), glm::vec3(0.0f));
+		m_Guideline = new Object(m_Scene->MainApplication->buildings[m_Type]);
 	}
 	void BuildingManager::SetConstructionMode(BuildingConstructionMode mode)
 	{
@@ -394,5 +431,16 @@ namespace Can
 
 		m_Guideline->enabled = false;
 		m_Guideline->tintColor = glm::vec4(1.0f);
+	}
+	Building* BuildingManager::getAvailableWorkBuilding()
+	{
+		for(Building* b : m_WorkBuildings)
+		{
+			if (b->capacity > b->residents.size())
+			{
+				return b;
+			}
+		}
+		return nullptr;
 	}
 }

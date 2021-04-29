@@ -19,15 +19,7 @@ namespace Can
 	class Person
 	{
 	public:
-		Person(
-			Prefab* type,
-			RoadSegment* roadSegment,
-			size_t t_index,
-			float speed,
-			const glm::vec3& position,
-			const glm::vec3& target,
-			const glm::vec3& rotation
-		);
+		Person(Prefab* type, float speed);
 		~Person() { delete object; }
 
 		// Simulation
