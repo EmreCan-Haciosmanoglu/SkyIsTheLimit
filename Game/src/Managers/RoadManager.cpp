@@ -40,6 +40,8 @@ namespace Can
 
 	void RoadManager::OnUpdate(v3& prevLocation, const v3& cameraPosition, const v3& cameraDirection)
 	{
+		if (Input::IsKeyPressed(KeyCode::O))
+			std::cout << "Manual debug break" << std::endl;
 		switch (m_ConstructionMode)
 		{
 		case RoadConstructionMode::None:
@@ -329,6 +331,9 @@ namespace Can
 				m_StartSnappedT = snapInformation.T;
 			}
 			m_ConstructionPositions[0] = prevLocation;
+			m_ConstructionPositions[1] = prevLocation;
+			m_ConstructionPositions[2] = prevLocation;
+			m_ConstructionPositions[3] = prevLocation;
 
 			m_GuidelinesStart->SetTransform(prevLocation + v3{ 0.0f, 0.15f, 0.0f }, { 0.0f, glm::radians(180.0f), 0.0f });
 			m_GuidelinesEnd->SetTransform(prevLocation + v3{ 0.0f, 0.15f, 0.0f }, v3(0.0f));
@@ -342,6 +347,8 @@ namespace Can
 				prevLocation.z = prevLocation.z - std::fmod(prevLocation.z, 0.5f) - 0.25f;
 			}
 
+			m_ConstructionPositions[1] = prevLocation;
+			m_ConstructionPositions[2] = prevLocation;
 			m_ConstructionPositions[3] = prevLocation;
 
 			bool angleIsRestricted = false;
@@ -393,6 +400,8 @@ namespace Can
 
 			if (snapFlags & SNAP_TO_HEIGHT)
 			{
+				m_ConstructionPositions[1].y = m_ConstructionPositions[0].y;
+				m_ConstructionPositions[2].y = m_ConstructionPositions[0].y;
 				m_ConstructionPositions[3].y = m_ConstructionPositions[0].y;
 				AB.y = 0.0f;
 			}
@@ -448,6 +457,8 @@ namespace Can
 					newAngle = angle + 2.5f - std::fmod(angle + 2.5f, 5.0f);
 				}
 				AB = glm::rotateY(AB, glm::radians(angle - newAngle));
+				m_ConstructionPositions[1] = m_ConstructionPositions[0] + AB;
+				m_ConstructionPositions[2] = m_ConstructionPositions[0] + AB;
 				m_ConstructionPositions[3] = m_ConstructionPositions[0] + AB;
 			}
 
@@ -2015,7 +2026,6 @@ namespace Can
 			curvePoints
 		));
 		u64 rsIndex = m_Segments.size() - 1;
-		RoadSegment& rs = m_Segments[rsIndex];
 
 		std::array<std::array<v2, 3>, 2> newRoadBoundingBox = Math::GetBoundingBoxOfBezierCurve(curvePoints, roadPrefabWidth * 0.5f);
 		std::array<std::array<v2, 3>, (10 - 1) * 2> newRoadBoundingPolygon = Math::GetBoundingPolygonOfBezierCurve<10, 10>(curvePoints, roadPrefabWidth * 0.5f);
@@ -2056,12 +2066,13 @@ namespace Can
 					{
 						if (building->connectedRoadSegment)
 						{
+							RoadSegment& rs = m_Segments[building->connectedRoadSegment];
 							auto it = std::find(
-								building->connectedRoadSegment->Buildings.begin(),
-								building->connectedRoadSegment->Buildings.end(),
+								rs.Buildings.begin(),
+								rs.Buildings.end(),
 								building
 							);
-							building->connectedRoadSegment->Buildings.erase(it);
+							rs.Buildings.erase(it);
 						}
 						buildings.erase(buildings.begin() + i);
 						delete building;
@@ -2106,11 +2117,19 @@ namespace Can
 		if (m_StartSnappedNode != -1)
 		{
 			RoadNode& node = m_Nodes[m_StartSnappedNode];
+			RoadSegment& rs = m_Segments[rsIndex];
 			rs.StartNode = m_StartSnappedNode;
-			node.AddRoadSegment(rsIndex);
+			node.AddRoadSegment({ rsIndex });
 		}
 		else if (m_StartSnappedSegment != -1)
 		{
+			m_Segments.push_back(RoadSegment(
+				m_Scene->MainApplication->roads[m_Type],
+				curvePoints
+			));
+			u64 newRSIndex = m_Segments.size() - 1;
+			RoadSegment& newRS = m_Segments[newRSIndex];
+
 			RoadSegment& segment = m_Segments[m_StartSnappedSegment];
 			std::array<v3, 4> curve1{
 				segment.GetCurvePoint(0),
@@ -2137,29 +2156,30 @@ namespace Can
 					segment.GetCurvePoint(2),
 					segment.GetCurvePoint(3)
 			}, m_StartSnappedT);
-
-			m_Segments.push_back(RoadSegment({
-				segment.road_type.road,
-				segment.road_type.junction,
-				segment.road_type.end
-				}, curve2));
-			u64 newRSIndex = m_Segments.size() - 1;
-			RoadSegment& newRS = m_Segments[newRSIndex];
+			newRS.ChangeType({ segment.road_type.road, segment.road_type.junction, segment.road_type.end });
+			newRS.SetCurvePoints(curve2);
 
 			segment.SetCurvePoints(curve1);
 
+			m_Nodes.push_back(RoadNode({}, curvePoints[0]));
 			RoadNode& endNode = m_Nodes[segment.EndNode];
 			RoadNode& startNode = m_Nodes[segment.StartNode];
 			endNode.RemoveRoadSegment(m_StartSnappedSegment);
-			endNode.AddRoadSegment(newRSIndex);
+			endNode.AddRoadSegment({ newRSIndex });
 			newRS.StartNode = segment.EndNode;
 
-			m_Nodes.push_back(RoadNode({ rsIndex , newRSIndex, (u64)m_StartSnappedSegment }, curvePoints[0]));
 			u64 nodeIndex = m_Nodes.size() - 1;
 			RoadNode& node = m_Nodes[nodeIndex];
+			node.index = nodeIndex;
+			RoadSegment& rs = m_Segments[rsIndex];
 			segment.EndNode = nodeIndex;
+			segment.ReConstruct();
 			newRS.EndNode = nodeIndex;
+			newRS.ReConstruct();
 			rs.StartNode = nodeIndex;
+			rs.ReConstruct();
+
+			node.AddRoadSegment({ (u64)m_StartSnappedSegment, newRSIndex, rsIndex });
 
 			for (u64 bIndex = 0; bIndex < segment.Buildings.size(); bIndex++)
 			{
@@ -2181,7 +2201,7 @@ namespace Can
 			for (u64 cIndex = 0; cIndex < segment.Cars.size(); cIndex++)
 			{
 				Car* car = segment.Cars[cIndex];
-				int t_index = car->t_index;
+				u64 t_index = car->t_index;
 				std::vector<f32> ts{ 0 };
 				f32 lengthRoad = segment.road_type.length;
 				std::vector<v3> samples = Math::GetCubicCurveSamples(segment.GetCurvePoints(), lengthRoad, ts);
@@ -2246,19 +2266,31 @@ namespace Can
 		}
 		else
 		{
+			RoadSegment& rs = m_Segments[rsIndex];
 			m_Nodes.push_back(RoadNode({}, curvePoints[0]));
-			rs.StartNode = m_Nodes.size() - 1;
-			m_Nodes[rs.StartNode].AddRoadSegment(rsIndex);
+			u64 nodeIndex = m_Nodes.size() - 1;
+			RoadNode& node = m_Nodes[nodeIndex];
+			rs.StartNode = nodeIndex;
+			node.index = nodeIndex;
+			node.AddRoadSegment({ rsIndex });
 		}
 
 		if (m_EndSnappedNode != -1)
 		{
+			RoadSegment& rs = m_Segments[rsIndex];
 			RoadNode& node = m_Nodes[m_EndSnappedNode];
 			rs.EndNode = m_EndSnappedNode;
-			node.AddRoadSegment(rsIndex);
+			node.AddRoadSegment({ rsIndex });
 		}
 		else if (m_EndSnappedSegment != -1)
 		{
+			m_Segments.push_back(RoadSegment(
+				m_Scene->MainApplication->roads[m_Type],
+				curvePoints
+			));
+			u64 newRSIndex = m_Segments.size() - 1;
+			RoadSegment& newRS = m_Segments[newRSIndex];
+
 			RoadSegment& segment = m_Segments[m_EndSnappedSegment];
 			std::array<v3, 4> curve1{
 				segment.GetCurvePoint(0),
@@ -2285,30 +2317,30 @@ namespace Can
 					segment.GetCurvePoint(2),
 					segment.GetCurvePoint(3)
 			}, m_EndSnappedT);
-
-			m_Segments.push_back(RoadSegment({
-				segment.road_type.road,
-				segment.road_type.junction,
-				segment.road_type.end
-				}, curve2));
-			u64 newRSIndex = m_Segments.size() - 1;
-			RoadSegment& newRS = m_Segments[newRSIndex];
+			newRS.ChangeType({ segment.road_type.road, segment.road_type.junction, segment.road_type.end });
+			newRS.SetCurvePoints(curve2);
 
 			segment.SetCurvePoints(curve1);
 
+			m_Nodes.push_back(RoadNode({ }, curvePoints[3]));
 			RoadNode& endNode = m_Nodes[segment.EndNode];
 			RoadNode& startNode = m_Nodes[segment.StartNode];
 			endNode.RemoveRoadSegment(m_EndSnappedSegment);
-			endNode.AddRoadSegment(newRSIndex);
+			endNode.AddRoadSegment({ newRSIndex });
 			newRS.StartNode = segment.EndNode;
 
-			m_Nodes.push_back(RoadNode({ rsIndex , newRSIndex, (u64)m_EndSnappedSegment }, curvePoints[3]));
 			u64 nodeIndex = m_Nodes.size() - 1;
 			RoadNode& node = m_Nodes[nodeIndex];
+			node.index = nodeIndex;
+			RoadSegment& rs = m_Segments[rsIndex];
 			segment.EndNode = nodeIndex;
+			segment.ReConstruct();
 			newRS.EndNode = nodeIndex;
-			rs.StartNode = nodeIndex;
+			newRS.ReConstruct();
+			rs.EndNode = nodeIndex;
+			rs.ReConstruct();
 
+			node.AddRoadSegment({ (u64)m_EndSnappedSegment, newRSIndex, rsIndex });
 			for (u64 bIndex = 0; bIndex < segment.Buildings.size(); bIndex++)
 			{
 				Building* building = segment.Buildings[bIndex];
@@ -2330,7 +2362,7 @@ namespace Can
 			for (u64 cIndex = 0; cIndex < segment.Cars.size(); cIndex++)
 			{
 				Car* car = segment.Cars[cIndex];
-				int t_index = car->t_index;
+				u64 t_index = car->t_index;
 				std::vector<f32> ts{ 0 };
 				f32 lengthRoad = segment.road_type.length;
 				std::vector<v3> samples = Math::GetCubicCurveSamples(segment.GetCurvePoints(), lengthRoad, ts);
@@ -2395,9 +2427,13 @@ namespace Can
 		}
 		else
 		{
-			m_Nodes.push_back(RoadNode({}, curvePoints[0]));
-			rs.EndNode = m_Nodes.size() - 1;
-			m_Nodes[rs.EndNode].AddRoadSegment(rsIndex);
+			RoadSegment& rs = m_Segments[rsIndex];
+			m_Nodes.push_back(RoadNode({}, curvePoints[3]));
+			u64 nodeIndex = m_Nodes.size() - 1;
+			RoadNode& node = m_Nodes[nodeIndex];
+			rs.EndNode = nodeIndex;
+			node.index = nodeIndex;
+			node.AddRoadSegment({ rsIndex });
 		}
 	}
 	void RoadManager::RemoveRoadSegment(u64 roadSegment)
@@ -2416,12 +2452,36 @@ namespace Can
 			delete car;
 		}
 
-		m_Nodes[rs.StartNode].RemoveRoadSegment(roadSegment);
-		m_Nodes[rs.EndNode].RemoveRoadSegment(roadSegment);
-		// Delete nodes if no member anymore
-		//
-		//
-		// - - - - - - - - -
+		RoadNode& startNode = m_Nodes[rs.StartNode];
+		startNode.RemoveRoadSegment(roadSegment);
+		if (startNode.roadSegments.size() == 0)
+		{
+			u64 count = m_Segments.size();
+			for (u64 rsIndex = 0; rsIndex < count; rsIndex++)
+			{
+				RoadSegment& segment = m_Segments[rsIndex];
+				if (segment.StartNode > rs.StartNode)
+					segment.StartNode--;
+				if (segment.EndNode > rs.StartNode)
+					segment.EndNode--;
+			}
+			m_Nodes.erase(std::find(m_Nodes.begin(), m_Nodes.end(), startNode));
+		}
+		RoadNode& endNode = m_Nodes[rs.EndNode];
+		endNode.RemoveRoadSegment(roadSegment);
+		if (endNode.roadSegments.size() == 0)
+		{
+			u64 count = m_Segments.size();
+			for (u64 rsIndex = 0; rsIndex < count; rsIndex++)
+			{
+				RoadSegment& segment = m_Segments[rsIndex];
+				if (segment.StartNode > rs.EndNode)
+					segment.StartNode--;
+				if (segment.EndNode > rs.EndNode)
+					segment.EndNode--;
+			}
+			m_Nodes.erase(std::find(m_Nodes.begin(), m_Nodes.end(), endNode));
+		}
 
 		u64 count = m_Nodes.size();
 		for (u64 nIndex = 0; nIndex < count; nIndex++)
@@ -2437,9 +2497,18 @@ namespace Can
 		for (u64 cIndex = 0; cIndex < count; cIndex++)
 		{
 			Car* car = cars[cIndex]; // well be changed to indices instead of pointers
-			if (car->roadSegment > roadSegment)
+			if ((u64)car->roadSegment > roadSegment)
 				car->roadSegment--;
 		}
+		auto& buildings = m_Scene->m_BuildingManager.GetBuildings();
+		count = buildings.size();
+		for (u64 bIndex = 0; bIndex < count; bIndex++)
+		{
+			Building* building = buildings[bIndex];
+			if ((u64)building->connectedRoadSegment > roadSegment)
+				building->connectedRoadSegment--;
+		}
+		m_Segments.erase(std::find(m_Segments.begin(), m_Segments.end(), rs));
 	}
 
 	SnapInformation RoadManager::CheckSnapping(const v3& prevLocation)
@@ -2452,7 +2521,7 @@ namespace Can
 		results.location = prevLocation;
 		v2 P{ prevLocation.x, prevLocation.z };
 
-		for (int64_t i = 0; i < m_Nodes.size(); i++)
+		for (u64 i = 0; i < m_Nodes.size(); i++)
 			if (glm::length(m_Nodes[i].position - prevLocation) < roadSegmentPrefabWidth)
 			{
 				results.location = m_Nodes[i].position;
@@ -2461,7 +2530,7 @@ namespace Can
 				return results;
 			}
 
-		for (int64_t i = 0; i < m_Segments.size(); i++)
+		for (u64 i = 0; i < m_Segments.size(); i++)
 			if (Math::CheckPolygonPointCollision(m_Segments[i].bounding_box, P))
 			{
 				f32 snapDist = (roadSegmentPrefabWidth + m_Segments[i].road_type.width) * 0.5f;

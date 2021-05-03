@@ -274,12 +274,12 @@ namespace Can
 							car->driftpoints[1] = node.position;
 
 							std::vector<u64>& roads = node.roadSegments;
-							int newRoadIndex = Utility::Random::Integer(roads.size());
+							int newRoadIndex = Utility::Random::Integer((int)roads.size());
 							RoadSegment& rs = m_RoadManager.m_Segments[car->roadSegment];
 
 							while (car->roadSegment == roads[newRoadIndex])
 							{
-								newRoadIndex = Utility::Random::Integer(roads.size());
+								newRoadIndex = Utility::Random::Integer((int)roads.size());
 							}
 
 							rs.Cars.erase(std::find(rs.Cars.begin(), rs.Cars.end(), car));

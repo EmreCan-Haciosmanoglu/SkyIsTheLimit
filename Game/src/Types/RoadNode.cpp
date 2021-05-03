@@ -16,30 +16,40 @@ namespace Can
 	{
 		Reconstruct();
 	}
-	RoadNode::RoadNode(RoadNode&& other) 
+	RoadNode::RoadNode(RoadNode&& other)
 	{
-		std::cout << "moved" << std::endl;
 		object = other.object;
 		roadSegments = other.roadSegments;
 		position = other.position;
-		if (roadSegments.size() != 0 && other.object == nullptr)
-			std::cout << "Empty object" << std::endl;
-		if (roadSegments.size() != 0 && other.object->prefab == nullptr)
-			std::cout << "Empty prefab" << std::endl;
+		index = other.index;
 
 		other.roadSegments.clear();
 		other.object = nullptr;
 	}
 	RoadNode::~RoadNode()
 	{
-		if (roadSegments.size() != 0 && object == nullptr)
-			std::cout << "Empty object" << std::endl;
+		if (object)
+			std::cout << "";
 		delete object;
 	}
 
-	void RoadNode::AddRoadSegment(u64 roadSegment)
+	RoadNode& RoadNode::operator=(RoadNode&& other)
 	{
-		roadSegments.push_back(roadSegment);
+		if (object) delete object;
+		object = other.object;
+		roadSegments = other.roadSegments;
+		position = other.position;
+		index = other.index;
+
+		other.roadSegments.clear();
+		other.object = nullptr;
+		return *this;
+	}
+
+	void RoadNode::AddRoadSegment(std::vector<u64> arr)
+	{
+		for (u64 i = 0; i < arr.size(); i++)
+			roadSegments.push_back(arr[i]);
 		Reconstruct();
 	}
 	void RoadNode::RemoveRoadSegment(u64 roadSegment)
@@ -66,7 +76,7 @@ namespace Can
 		if (roadSegments.size() == 1)
 		{
 			v3 rotation = v3(0.0f);
-			if (this == &nodes[rs.StartNode])
+			if (index == rs.StartNode)
 			{
 				rotation = { 0.0f,
 					rs.GetStartRotation().y + glm::radians(180.0f),
@@ -81,6 +91,7 @@ namespace Can
 				};
 			}
 			object = new Object(rs.road_type.end, position, rotation);
+			object->owns_prefab = false;
 			return;
 		}
 
@@ -96,8 +107,8 @@ namespace Can
 			RoadSegment& rs1 = segments[roadSegments[i]];
 			RoadSegment& rs2 = segments[roadSegments[next_i]];
 
-			v3 r1Dir = this == &nodes[rs1.StartNode] ? rs1.GetStartDirection() : rs1.GetEndDirection();
-			v3 r2Dir = this == &nodes[rs2.StartNode] ? rs2.GetStartDirection() : rs2.GetEndDirection();
+			v3 r1Dir = index == rs1.StartNode ? rs1.GetStartDirection() : rs1.GetEndDirection();
+			v3 r2Dir = index == rs2.StartNode ? rs2.GetStartDirection() : rs2.GetEndDirection();
 			r1Dir.y = 0.0f;
 			r2Dir.y = 0.0f;
 
@@ -119,7 +130,7 @@ namespace Can
 					position + shiftR1Amount,
 					r1Dir,
 					position + shiftR2Amount,
-					r2Dir);
+					shiftR2Dir);
 
 				Intersections[i].x = intersection.x;
 				Intersections[i].z = intersection.z;
@@ -146,7 +157,7 @@ namespace Can
 			f32 junction_length = rs.road_type.junction_length;
 
 
-			uint32_t textureIndex = 0 - 1;
+			f32 textureIndex = -1.0f;
 			for (uint8_t i = 0; i < textureSlotIndex; i++)
 			{
 				if (*(textures[i].get()) == *(prefab->textures[0].get()))
@@ -155,7 +166,7 @@ namespace Can
 					break;
 				}
 			}
-			if (textureIndex == (0 - 1))
+			if (textureIndex == -1.0f)
 			{
 				textureIndex = (f32)textureSlotIndex;
 				textures[textureSlotIndex] = prefab->textures[0];
@@ -165,8 +176,8 @@ namespace Can
 			v3 intersection1 = Intersections[i];
 			v3 intersection2 = Intersections[((i - 1) + count) % count];
 
-			v3 RoadPos = this == &nodes[rs.StartNode] ? rs.GetCurvePoint(1) : rs.GetCurvePoint(2);
-			v3 RoadDir = this == &nodes[rs.StartNode] ? rs.GetStartDirection() : rs.GetEndDirection();
+			v3 RoadPos = index == rs.StartNode ? rs.GetCurvePoint(1) : rs.GetCurvePoint(2);
+			v3 RoadDir = index == rs.StartNode ? rs.GetStartDirection() : rs.GetEndDirection();
 			RoadDir.y = 0.0f;
 			RoadDir = glm::normalize(RoadDir);
 
@@ -179,7 +190,7 @@ namespace Can
 			v3 jn = position - shiftAmount;
 
 			f32 ljp = glm::length(rp - jp) - glm::length(rp - intersection1);
-			f32 ljn = glm::length(rn - jn) -glm::length(rn - intersection2);
+			f32 ljn = glm::length(rn - jn) - glm::length(rn - intersection2);
 			//f32 ljp = glm::length(rp - intersection1);
 			//f32 ljn = glm::length(rn - intersection2);
 
@@ -190,12 +201,12 @@ namespace Can
 
 			f32 offsetl = l + junction_length;
 			v3 temp = position + RoadDir * offsetl;
-			rs.SetCurvePoint(3 * (u64)(this != &nodes[rs.StartNode]), temp);
-			f32 lcp = glm::length((this == &nodes[rs.StartNode]) ? rs.GetCurvePoint(1) - rs.GetCurvePoint(0) : rs.GetCurvePoint(2) - rs.GetCurvePoint(3));
+			rs.SetCurvePoint(3 * (u64)(index != rs.StartNode), temp);
+			f32 lcp = glm::length((index == rs.StartNode) ? rs.GetCurvePoint(1) - rs.GetCurvePoint(0) : rs.GetCurvePoint(2) - rs.GetCurvePoint(3));
 			if (offsetl > lcp)
-				rs.SetCurvePoint(2 - (u64)(this == &nodes[rs.StartNode]), temp + RoadDir * 0.1f);
+				rs.SetCurvePoint(2 - (u64)(index == rs.StartNode), temp + RoadDir * 0.1f);
 
-			f32 angle = this == &nodes[rs.StartNode] ? rs.GetStartRotation().y : rs.GetEndRotation().y;
+			f32 angle = index == rs.StartNode ? rs.GetStartRotation().y : rs.GetEndRotation().y;
 			for (u64 j = 0; j < prefabIndexCount; j++)
 			{
 				u64 index = j * oneVertexSize;

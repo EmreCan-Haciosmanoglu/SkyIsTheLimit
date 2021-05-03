@@ -20,7 +20,11 @@ namespace Can
 			const std::array<Prefab*, 3>& type,
 			const std::array<glm::vec3, 4>& curvePoints
 		);
+		RoadSegment(RoadSegment&& other);
 		~RoadSegment();
+
+		RoadSegment& operator=(RoadSegment&& other);
+		friend bool operator==(const RoadSegment& left, const RoadSegment& right) { return &left == &right; }
 
 		void ReConstruct();
 		void ChangeType(const std::array<Prefab*, 3>& type);
@@ -52,8 +56,8 @@ namespace Can
 		std::vector<Building*> Buildings = {};
 		std::vector<Car*> Cars = {};
 
-		u64 StartNode;
-		u64 EndNode;
+		u64 StartNode = (u64)-1;
+		u64 EndNode = (u64)-1;
 
 		std::vector<glm::vec3> curve_samples{};
 		std::vector<float> curve_t_samples{};
@@ -61,7 +65,7 @@ namespace Can
 		Object* object = nullptr;
 
 		std::array<glm::vec3, 4> CurvePoints;
-		std::array<std::array<glm::vec2, 3>, 2> bounding_box {};
+		std::array<std::array<glm::vec2, 3>, 2> bounding_box{};
 	private:
 
 		std::array<glm::vec3, 2> Directions;
@@ -69,7 +73,5 @@ namespace Can
 			glm::vec2(0.0f),
 			glm::vec2(0.0f)
 		};
-
-		float length = 0.0f; // ????
-	};
+};
 }

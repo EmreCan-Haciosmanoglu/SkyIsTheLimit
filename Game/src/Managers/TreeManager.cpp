@@ -34,7 +34,7 @@ namespace Can
 
 		size_t jump = 6;
 		float halfOffset = jump / (TERRAIN_SCALE_DOWN * 2.0f);
-
+		/*
 		for (size_t y = jump / 2; y < treeMap->GeHeight(); y += jump)
 		{
 			for (size_t x = jump / 2; x < treeMap->GetWidth(); x += jump)
@@ -88,7 +88,7 @@ namespace Can
 				}
 			}
 		}
-		std::cout << m_Trees.size() << " trees are generated!" << std::endl;
+		*/std::cout << m_Trees.size() << " trees are generated!" << std::endl;
 	}
 	TreeManager::~TreeManager()
 	{

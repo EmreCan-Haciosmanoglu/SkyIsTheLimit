@@ -12,13 +12,60 @@ namespace Can
 	RoadSegment::RoadSegment(const std::array<Prefab*, 3>& type, const std::array<glm::vec3, 4>& curvePoints)
 		: CurvePoints(curvePoints)
 	{
-		ChangeType(type);
 		CalcRotsAndDirs();
-		Construct();
+		ChangeType(type);
+	}
+	RoadSegment::RoadSegment(RoadSegment&& other)
+	{
+		road_type = other.road_type;
+		Buildings = other.Buildings;
+		Cars = other.Cars;
+		StartNode = other.StartNode;
+		EndNode = other.EndNode;
+		curve_samples = other.curve_samples;
+		curve_t_samples = other.curve_t_samples;
+		object = other.object;
+		CurvePoints = other.CurvePoints;
+		bounding_box = other.bounding_box;
+		Directions = other.Directions;
+		Rotations = other.Rotations;
+
+		other.object = nullptr;
+		other.curve_samples.clear();
+		other.curve_t_samples.clear();
+		other.Buildings.clear();
+		other.Cars.clear();
 	}
 	RoadSegment::~RoadSegment()
 	{
+		if (object)
+			std::cout << "";
 		delete object;
+	}
+
+	RoadSegment& RoadSegment::operator=(RoadSegment&& other)
+	{
+		if (object) delete object;
+		road_type = other.road_type;
+		Buildings = other.Buildings;
+		Cars = other.Cars;
+		StartNode = other.StartNode;
+		EndNode = other.EndNode;
+		curve_samples = other.curve_samples;
+		curve_t_samples = other.curve_t_samples;
+		object = other.object;
+		CurvePoints = other.CurvePoints;
+		bounding_box = other.bounding_box;
+		Directions = other.Directions;
+		Rotations = other.Rotations;
+
+		other.object = nullptr;
+		other.curve_samples.clear();
+		other.curve_t_samples.clear();
+		other.Buildings.clear();
+		other.Cars.clear();
+
+		return *this;
 	}
 
 	void RoadSegment::Construct()
@@ -51,7 +98,6 @@ namespace Can
 			float diffRot = glm::acos(glm::dot(dir1, dir2));
 			float diff = rot2 - rot1;
 			diff += (diff < -3.0f ? glm::radians(360.0f) : diff > 3.0f ? glm::radians(-360.0f) : 0.0f);
-			printf("rot2(%.3f) - rot1(%.3f) = %.3f\n", rot2, rot1, diff);
 			for (int i = 0; i < prefabIndexCount; i++)
 			{
 				size_t offset = (c-1) * prefabIndexCount + i;
@@ -84,7 +130,6 @@ namespace Can
 			p1 = p2;
 			curve_samples.push_back(p1);
 		}
-		printf("\n");
 		Prefab* newPrefab = new Prefab(road_type.road->objectPath, road_type.road->shaderPath, road_type.road->texturePath, (float*)TOVertices, indexCount);
 
 		for (int c = 0; c < count; c++)
@@ -133,8 +178,14 @@ namespace Can
 
 	void RoadSegment::ReConstruct()
 	{
-		if (object) delete object;
-
+		if (object)
+		{
+			delete object;
+		}
+		else
+		{
+			std::cout << "initial" << std::endl;
+		}
 		Construct();
 
 		/* Update Later

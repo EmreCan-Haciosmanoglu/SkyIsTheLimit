@@ -1499,7 +1499,7 @@ namespace Can
 
 		for (entt::entity e : view)
 			m_Scene->m_Registry.get<OnDragCallbackComponent>(e)();
-		char fpsText[10];
+		char fpsText[15];
 		sprintf(fpsText, "FPS:%3.2f", (1.0f / ts));
 		Renderer2D::DrawText(
 			fpsText,

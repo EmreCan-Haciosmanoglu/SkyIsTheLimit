@@ -48,43 +48,31 @@ namespace Can::Helper
 			auto& segments = GameScene::ActiveGameScene->m_RoadManager.m_Segments;
 			RoadSegment& rs1 = segments[roadSegment1];
 			RoadSegment& rs2 = segments[roadSegment2];
-			float roadSegmentR1 = 0.001f;
-			float roadSegmentR2 = 0.002f;
-			if (
-				rs1.EndNode != -1 &&
-				rs2.EndNode != -1 &&
-				rs1.EndNode == rs2.EndNode
-				)
+			float roadSegmentR1 = 0.002f;
+			float roadSegmentR2 = 0.001f;
+			if (rs1.EndNode == rs2.EndNode)
 			{
 				roadSegmentR1 = rs1.GetEndRotation().y;
 				roadSegmentR2 = rs2.GetEndRotation().y;
 			}
-			else if (
-				rs1.EndNode != -1 &&
-				rs2.StartNode != -1 &&
-				rs1.EndNode == rs2.StartNode
-				)
+			else if (rs1.EndNode == rs2.StartNode)
 			{
 				roadSegmentR1 = rs1.GetEndRotation().y;
 				roadSegmentR2 = rs2.GetStartRotation().y;
 			}
-			else if (
-				rs1.StartNode != -1 &&
-				rs2.EndNode != -1 &&
-				rs1.StartNode == rs2.EndNode
-				)
+			else if (rs1.StartNode == rs2.EndNode)
 			{
 				roadSegmentR1 = rs1.GetStartRotation().y;
 				roadSegmentR2 = rs2.GetEndRotation().y;
 			}
-			else if (
-				rs1.StartNode != -1 &&
-				rs2.StartNode != -1 &&
-				rs1.StartNode == rs2.StartNode
-				)
+			else if (rs1.StartNode == rs2.StartNode)
 			{
 				roadSegmentR1 = rs1.GetStartRotation().y;
 				roadSegmentR2 = rs2.GetStartRotation().y;
+			}
+			else
+			{
+				std::cout << "Why are you here" << std::endl;
 			}
 			roadSegmentR1 = std::fmod(roadSegmentR1 + glm::radians(360.0f), glm::radians(360.0f));
 			roadSegmentR2 = std::fmod(roadSegmentR2 + glm::radians(360.0f), glm::radians(360.0f));
