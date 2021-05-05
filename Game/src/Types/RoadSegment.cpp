@@ -16,20 +16,19 @@ namespace Can
 		ChangeType(type);
 	}
 	RoadSegment::RoadSegment(RoadSegment&& other)
+		: road_type(other.road_type)
+		, Buildings(other.Buildings)
+		, Cars(other.Cars)
+		, StartNode(other.StartNode)
+		, EndNode(other.EndNode)
+		, curve_samples(other.curve_samples)
+		, curve_t_samples(other.curve_t_samples)
+		, object(other.object)
+		, CurvePoints(other.CurvePoints)
+		, bounding_box(other.bounding_box)
+		, Directions(other.Directions)
+		, Rotations(other.Rotations)
 	{
-		road_type = other.road_type;
-		Buildings = other.Buildings;
-		Cars = other.Cars;
-		StartNode = other.StartNode;
-		EndNode = other.EndNode;
-		curve_samples = other.curve_samples;
-		curve_t_samples = other.curve_t_samples;
-		object = other.object;
-		CurvePoints = other.CurvePoints;
-		bounding_box = other.bounding_box;
-		Directions = other.Directions;
-		Rotations = other.Rotations;
-
 		other.object = nullptr;
 		other.curve_samples.clear();
 		other.curve_t_samples.clear();
@@ -77,7 +76,7 @@ namespace Can
 		size_t count = curve_t_samples.size();
 
 		size_t prefabIndexCount = road_type.road->indexCount;
-		size_t indexCount = prefabIndexCount * (count-1);
+		size_t indexCount = prefabIndexCount * (count - 1);
 		size_t vertexCount = indexCount * (3 + 2 + 3);
 		TexturedObjectVertex* TOVertices = new TexturedObjectVertex[indexCount];
 
@@ -100,7 +99,7 @@ namespace Can
 			diff += (diff < -3.0f ? glm::radians(360.0f) : diff > 3.0f ? glm::radians(-360.0f) : 0.0f);
 			for (int i = 0; i < prefabIndexCount; i++)
 			{
-				size_t offset = (c-1) * prefabIndexCount + i;
+				size_t offset = (c - 1) * prefabIndexCount + i;
 				size_t index = (size_t)i * 9;
 
 				glm::vec2 point{
@@ -179,13 +178,8 @@ namespace Can
 	void RoadSegment::ReConstruct()
 	{
 		if (object)
-		{
 			delete object;
-		}
-		else
-		{
-			std::cout << "initial" << std::endl;
-		}
+
 		Construct();
 
 		/* Update Later

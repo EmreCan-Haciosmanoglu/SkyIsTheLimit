@@ -118,7 +118,7 @@ namespace Can
 
 		if (snapOptions[1])
 		{
-			if (m_SnappedRoadSegment)
+			if (m_SnappedRoadSegment != -1)
 			{
 				v2 boundingL{ m_Guideline->prefab->boundingBoxL.x, m_Guideline->prefab->boundingBoxL.z };
 				v2 boundingM{ m_Guideline->prefab->boundingBoxM.x, m_Guideline->prefab->boundingBoxM.z };

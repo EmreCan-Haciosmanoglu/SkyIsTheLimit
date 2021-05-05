@@ -17,12 +17,11 @@ namespace Can
 		Reconstruct();
 	}
 	RoadNode::RoadNode(RoadNode&& other)
+		: object(other.object)
+		, roadSegments(other.roadSegments)
+		, position(other.position)
+		, index(other.index)
 	{
-		object = other.object;
-		roadSegments = other.roadSegments;
-		position = other.position;
-		index = other.index;
-
 		other.roadSegments.clear();
 		other.object = nullptr;
 	}
@@ -119,7 +118,7 @@ namespace Can
 			v3 shiftR2Amount = shiftR2Dir * (rs2.road_type.width * 0.5f);
 
 			f32 angleDiff = glm::acos(std::min(glm::dot(shiftR1Dir, shiftR2Dir), 1.0f));
-			if (angleDiff < glm::radians(2.5f) && angleDiff > glm::radians(177.5f))
+			if (angleDiff < glm::radians(2.5f) || angleDiff > glm::radians(177.5f))
 			{
 				Intersections[i].x = position.x + shiftR1Amount.x;
 				Intersections[i].z = position.z + shiftR1Amount.z;

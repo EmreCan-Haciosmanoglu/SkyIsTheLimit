@@ -837,7 +837,7 @@ namespace Can
 			b_ConstructionRestricted |= angleIsRestricted;
 			b_ConstructionRestricted |= lengthIsRestricted;
 			b_ConstructionRestricted |= collisionIsRestricted;
-			DrawStraightGuidelines(m_ConstructionPositions[0], m_ConstructionPositions[3]);
+			DrawStraightGuidelines(m_ConstructionPositions[0], m_ConstructionPositions[cubicCurveOrder[1]]);
 
 		}
 		else if (m_ConstructionPhase == 2)
