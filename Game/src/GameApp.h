@@ -5,6 +5,8 @@
 #include "UIScene.h"
 #include "Debug.h"
 
+#include "Types/RoadType.h"
+
 namespace Can
 {
 	class GameApp : public Can::Application
@@ -16,7 +18,8 @@ namespace Can
 	private:
 		std::vector<Prefab*> LoadPrefabs(const std::string& folder, const std::string& filter);
 
-		void LoadRoads();
+		void LoadRoadTypes();
+		//void LoadRoads();
 		void LoadBuildings();
 		void LoadTrees();
 		void LoadCars();
@@ -43,8 +46,8 @@ namespace Can
 		Ref<Texture2D> fourTimesSpeedTexture;	// Put better name
 
 
-
-		std::vector<std::array<Prefab*, 3>> roads;
+		std::vector<RoadType> road_types;
+		//std::vector<std::array<Prefab*, 3>> roads;
 		// 0 => Road
 		// 1 => Junction
 		// 2 => End

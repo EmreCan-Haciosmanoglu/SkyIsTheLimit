@@ -20,17 +20,19 @@ namespace Can
 	RoadManager::RoadManager(GameScene* scene)
 		: m_Scene(scene)
 	{
-		m_GuidelinesStart = new Object(m_Scene->MainApplication->roads[m_Type][2]);
+		const RoadType& type = m_Scene->MainApplication->road_types[m_Type];
+		m_GuidelinesStart = new Object(type.asymmetric?type.end_mirror: type.end);
 		m_GuidelinesStart->enabled = false;
-		m_GuidelinesEnd = new Object(m_Scene->MainApplication->roads[m_Type][2]);
+		m_GuidelinesEnd = new Object(type.end);
 		m_GuidelinesEnd->enabled = false;
 
-		u64 roadTypeCount = m_Scene->MainApplication->roads.size();
+		u64 roadTypeCount = m_Scene->MainApplication->road_types.size();
 		for (u64 i = 0; i < roadTypeCount; i++)
 		{
 			m_GuidelinesInUse.push_back(0);
 			m_Guidelines.push_back({});
-			m_Guidelines[i].push_back(new Object(m_Scene->MainApplication->roads[i][0]));
+			const RoadType& t = m_Scene->MainApplication->road_types[i];
+			m_Guidelines[i].push_back(new Object(t.road));
 			m_Guidelines[i][0]->enabled = false;
 		}
 	}
@@ -65,7 +67,7 @@ namespace Can
 	}
 	void RoadManager::OnUpdate_Straight(v3& prevLocation, const v3& cameraPosition, const v3& cameraDirection)
 	{
-		Prefab* selectedRoad = m_Scene->MainApplication->roads[m_Type][0];
+		Prefab* selectedRoad = m_Scene->MainApplication->road_types[m_Type].road;
 		f32 roadPrefabWidth = selectedRoad->boundingBoxM.z - selectedRoad->boundingBoxL.z;
 		f32 roadPrefabLength = selectedRoad->boundingBoxM.x - selectedRoad->boundingBoxL.x;
 
@@ -304,7 +306,7 @@ namespace Can
 	}
 	void RoadManager::OnUpdate_QuadraticCurve(v3& prevLocation, const v3& cameraPosition, const v3& cameraDirection)
 	{
-		Prefab* selectedRoad = m_Scene->MainApplication->roads[m_Type][0];
+		Prefab* selectedRoad = m_Scene->MainApplication->road_types[m_Type].road;
 		f32 roadPrefabWidth = selectedRoad->boundingBoxM.z - selectedRoad->boundingBoxL.z;
 		f32 roadPrefabLength = selectedRoad->boundingBoxM.x - selectedRoad->boundingBoxL.x;
 
@@ -641,7 +643,7 @@ namespace Can
 	}
 	void RoadManager::OnUpdate_CubicCurve(v3& prevLocation, const v3& cameraPosition, const v3& cameraDirection)
 	{
-		Prefab* selectedRoad = m_Scene->MainApplication->roads[m_Type][0];
+		Prefab* selectedRoad = m_Scene->MainApplication->road_types[m_Type].road;
 		f32 roadPrefabWidth = selectedRoad->boundingBoxM.z - selectedRoad->boundingBoxL.z;
 		f32 roadPrefabLength = selectedRoad->boundingBoxM.x - selectedRoad->boundingBoxL.x;
 
@@ -1387,16 +1389,16 @@ namespace Can
 			m_Segments[selected_road_segment].object->SetTransform(m_Segments[selected_road_segment].GetStartPosition());
 
 		v2 prevLoc2D{ prevLocation.x, prevLocation.z };
-		Prefab* roadType = m_Scene->MainApplication->roads[m_Type][0];
+		Prefab* roadType = m_Scene->MainApplication->road_types[m_Type].road;
 		u64 size = m_Segments.size();
 		for (u64 rsIndex = 0; rsIndex < size; rsIndex++)
 		{
 			RoadSegment& rs = m_Segments[rsIndex];
-			if (rs.road_type.road == roadType)
+			if (rs.type.road == roadType)
 				continue;
 
-			f32 rsl = rs.road_type.length;
-			f32 snapDist = rs.road_type.width * 0.5f;
+			f32 rsl = rs.type.road_length;
+			f32 snapDist = rs.type.road_width * 0.5f;
 			const std::array<v3, 4>& cps = rs.GetCurvePoints();
 			std::array<std::array<v2, 3>, 2> rsBoundingBox = Math::GetBoundingBoxOfBezierCurve(cps, snapDist);
 			bool colidedWithBoundingBox = Math::CheckPolygonPointCollision(rsBoundingBox, prevLoc2D);
@@ -1491,7 +1493,7 @@ namespace Can
 
 	void RoadManager::DrawStraightGuidelines(const v3& pointA, const v3& pointB)
 	{
-		Prefab* selectedRoad = m_Scene->MainApplication->roads[m_Type][0];
+		Prefab* selectedRoad = m_Scene->MainApplication->road_types[m_Type].road;
 		f32 roadPrefabLength = selectedRoad->boundingBoxM.x - selectedRoad->boundingBoxL.x;
 
 		v3 AB = pointB - pointA;
@@ -1519,7 +1521,7 @@ namespace Can
 		m_GuidelinesInUse[m_Type] += countAB;
 		if (m_GuidelinesInUse[m_Type] > m_Guidelines[m_Type].size())
 			for (u64 j = m_Guidelines[m_Type].size(); j < m_GuidelinesInUse[m_Type]; j++)
-				m_Guidelines[m_Type].push_back(new Object(m_Scene->MainApplication->roads[m_Type][0]));
+				m_Guidelines[m_Type].push_back(new Object(m_Scene->MainApplication->road_types[m_Type].road));
 
 		for (u64 j = 0; j < countAB; j++)
 		{
@@ -1550,7 +1552,7 @@ namespace Can
 	}
 	void RoadManager::DrawCurvedGuidelines(const std::array<v3, 4>& curvePoints)
 	{
-		Prefab* selectedRoad = m_Scene->MainApplication->roads[m_Type][0];
+		Prefab* selectedRoad = m_Scene->MainApplication->road_types[m_Type].road;
 		f32 roadPrefabWidth = selectedRoad->boundingBoxM.z - selectedRoad->boundingBoxL.z;
 		f32 roadPrefabLength = selectedRoad->boundingBoxM.x - selectedRoad->boundingBoxL.x;
 
@@ -1592,7 +1594,7 @@ namespace Can
 
 		if (m_GuidelinesInUse[m_Type] > m_Guidelines[m_Type].size())
 			for (u64 j = m_Guidelines[m_Type].size(); j < m_GuidelinesInUse[m_Type]; j++)
-				m_Guidelines[m_Type].push_back(new Object(m_Scene->MainApplication->roads[m_Type][0]));
+				m_Guidelines[m_Type].push_back(new Object(m_Scene->MainApplication->road_types[m_Type].road));
 
 		v3 p1 = curvePoints[0];
 		for (int c = 0; c < count; c++)
@@ -1646,7 +1648,7 @@ namespace Can
 					continue;
 			}
 			RoadSegment& rs = m_Segments[rsIndex];
-			f32 halfWidth = rs.road_type.width * 0.5f;
+			f32 halfWidth = rs.type.road_width * 0.5f;
 
 			std::array<std::array<v2, 3>, 2> oldRoadPolygon = Math::GetBoundingBoxOfBezierCurve(rs.GetCurvePoints(), halfWidth);
 
@@ -1736,7 +1738,7 @@ namespace Can
 					continue;
 			}
 			RoadSegment& rs = m_Segments[rsIndex];
-			f32 halfWidth = rs.road_type.width * 0.5f;
+			f32 halfWidth = rs.type.road_width * 0.5f;
 
 			std::array<std::array<v2, 3>, 2> oldRoadBoundingBox = Math::GetBoundingBoxOfBezierCurve(rs.GetCurvePoints(), halfWidth);
 
@@ -1959,10 +1961,7 @@ namespace Can
 		if (selected_road_segment != -1)
 			return false;
 		RoadSegment& rs = m_Segments[selected_road_segment];
-
-		rs.road_type.road = m_Scene->MainApplication->roads[m_Type][0];
-		rs.road_type.junction = m_Scene->MainApplication->roads[m_Type][1];
-		rs.road_type.end = m_Scene->MainApplication->roads[m_Type][2];
+		rs.SetType(m_Scene->MainApplication->road_types[m_Type]);
 
 		m_Nodes[rs.StartNode].Reconstruct();
 		m_Nodes[rs.EndNode].Reconstruct();
@@ -1990,8 +1989,10 @@ namespace Can
 		m_Type = type;
 		delete m_GuidelinesEnd;
 		delete m_GuidelinesStart;
-		m_GuidelinesStart = new Object(m_Scene->MainApplication->roads[m_Type][2]);
-		m_GuidelinesEnd = new Object(m_Scene->MainApplication->roads[m_Type][2]);
+
+		const RoadType& t = m_Scene->MainApplication->road_types[m_Type];
+		m_GuidelinesStart = new Object(t.asymmetric ? t.end_mirror : t.end);
+		m_GuidelinesEnd = new Object(t.end);
 	}
 	void RoadManager::SetConstructionMode(RoadConstructionMode mode)
 	{
@@ -2019,10 +2020,10 @@ namespace Can
 
 	void RoadManager::AddRoadSegment(const std::array<v3, 4>& curvePoints)
 	{
-		Prefab* selectedRoad = m_Scene->MainApplication->roads[m_Type][0];
+		Prefab* selectedRoad = m_Scene->MainApplication->road_types[m_Type].road;
 		f32 roadPrefabWidth = selectedRoad->boundingBoxM.z - selectedRoad->boundingBoxL.z;
 		m_Segments.push_back(RoadSegment(
-			m_Scene->MainApplication->roads[m_Type],
+			m_Scene->MainApplication->road_types[m_Type],
 			curvePoints
 		));
 		u64 rsIndex = m_Segments.size() - 1;
@@ -2124,7 +2125,7 @@ namespace Can
 		else if (m_StartSnappedSegment != -1)
 		{
 			m_Segments.push_back(RoadSegment(
-				m_Scene->MainApplication->roads[m_Type],
+				m_Scene->MainApplication->road_types[m_Type],
 				curvePoints
 			));
 			u64 newRSIndex = m_Segments.size() - 1;
@@ -2156,7 +2157,7 @@ namespace Can
 					segment.GetCurvePoint(2),
 					segment.GetCurvePoint(3)
 			}, m_StartSnappedT);
-			newRS.ChangeType({ segment.road_type.road, segment.road_type.junction, segment.road_type.end });
+			newRS.SetType(segment.type);
 			newRS.SetCurvePoints(curve2);
 
 			segment.SetCurvePoints(curve1);
@@ -2165,8 +2166,8 @@ namespace Can
 			RoadNode& endNode = m_Nodes[segment.EndNode];
 			RoadNode& startNode = m_Nodes[segment.StartNode];
 			endNode.RemoveRoadSegment(m_StartSnappedSegment);
-			endNode.AddRoadSegment({ newRSIndex });
 			newRS.StartNode = segment.EndNode;
+			endNode.AddRoadSegment({ newRSIndex });
 
 			u64 nodeIndex = m_Nodes.size() - 1;
 			RoadNode& node = m_Nodes[nodeIndex];
@@ -2203,7 +2204,7 @@ namespace Can
 				Car* car = segment.Cars[cIndex];
 				u64 t_index = car->t_index;
 				std::vector<f32> ts{ 0 };
-				f32 lengthRoad = segment.road_type.length;
+				f32 lengthRoad = segment.type.road_length;
 				std::vector<v3> samples = Math::GetCubicCurveSamples(segment.GetCurvePoints(), lengthRoad, ts);
 				if (t_index >= ts.size())
 				{
@@ -2285,7 +2286,7 @@ namespace Can
 		else if (m_EndSnappedSegment != -1)
 		{
 			m_Segments.push_back(RoadSegment(
-				m_Scene->MainApplication->roads[m_Type],
+				m_Scene->MainApplication->road_types[m_Type],
 				curvePoints
 			));
 			u64 newRSIndex = m_Segments.size() - 1;
@@ -2317,7 +2318,7 @@ namespace Can
 					segment.GetCurvePoint(2),
 					segment.GetCurvePoint(3)
 			}, m_EndSnappedT);
-			newRS.ChangeType({ segment.road_type.road, segment.road_type.junction, segment.road_type.end });
+			newRS.SetType(segment.type);
 			newRS.SetCurvePoints(curve2);
 
 			segment.SetCurvePoints(curve1);
@@ -2326,8 +2327,8 @@ namespace Can
 			RoadNode& endNode = m_Nodes[segment.EndNode];
 			RoadNode& startNode = m_Nodes[segment.StartNode];
 			endNode.RemoveRoadSegment(m_EndSnappedSegment);
-			endNode.AddRoadSegment({ newRSIndex });
 			newRS.StartNode = segment.EndNode;
+			endNode.AddRoadSegment({ newRSIndex });
 
 			u64 nodeIndex = m_Nodes.size() - 1;
 			RoadNode& node = m_Nodes[nodeIndex];
@@ -2364,7 +2365,7 @@ namespace Can
 				Car* car = segment.Cars[cIndex];
 				u64 t_index = car->t_index;
 				std::vector<f32> ts{ 0 };
-				f32 lengthRoad = segment.road_type.length;
+				f32 lengthRoad = segment.type.road_length;
 				std::vector<v3> samples = Math::GetCubicCurveSamples(segment.GetCurvePoints(), lengthRoad, ts);
 				if (t_index >= ts.size())
 				{
@@ -2445,7 +2446,6 @@ namespace Can
 			m_Scene->m_BuildingManager.GetBuildings().erase(std::find(m_Scene->m_BuildingManager.GetBuildings().begin(), m_Scene->m_BuildingManager.GetBuildings().end(), building));
 			delete building;
 		}
-
 		for (Car* car : rs.Cars)
 		{
 			m_Scene->m_CarManager.GetCars().erase(std::find(m_Scene->m_CarManager.GetCars().begin(), m_Scene->m_CarManager.GetCars().end(), car));
@@ -2487,8 +2487,8 @@ namespace Can
 		for (u64 nIndex = 0; nIndex < count; nIndex++)
 		{
 			RoadNode& node = m_Nodes[nIndex];
-			u64 count = node.roadSegments.size();
-			for (u64 i = 0; i < count; i++)
+			u64 c = node.roadSegments.size();
+			for (u64 i = 0; i < c; i++)
 				if (node.roadSegments[i] > roadSegment)
 					node.roadSegments[i]--;
 		}
@@ -2513,7 +2513,7 @@ namespace Can
 
 	SnapInformation RoadManager::CheckSnapping(const v3& prevLocation)
 	{
-		Prefab* selectedRoad = m_Scene->MainApplication->roads[m_Type][0];
+		Prefab* selectedRoad = m_Scene->MainApplication->road_types[m_Type].road;
 		f32 roadSegmentPrefabWidth = selectedRoad->boundingBoxM.z - selectedRoad->boundingBoxL.z;
 		f32 roadPrefabLength = selectedRoad->boundingBoxM.x - selectedRoad->boundingBoxL.x;
 
@@ -2533,7 +2533,7 @@ namespace Can
 		for (u64 i = 0; i < m_Segments.size(); i++)
 			if (Math::CheckPolygonPointCollision(m_Segments[i].bounding_box, P))
 			{
-				f32 snapDist = (roadSegmentPrefabWidth + m_Segments[i].road_type.width) * 0.5f;
+				f32 snapDist = (roadSegmentPrefabWidth + m_Segments[i].type.road_width) * 0.5f;
 				u64 curve_samples_size = m_Segments[i].curve_samples.size();
 				CAN_ASSERT(curve_samples_size > 1, "Samples size can't be smaller than 2");
 				v3 point0 = m_Segments[i].curve_samples[0];
@@ -2554,7 +2554,7 @@ namespace Can
 					if (dist < snapDist)
 					{
 						f32 c = len * glm::cos(angle);
-						if (c >= -0.5f * m_Segments[i].road_type.width && c <= lenr + 0.5f * m_Segments[i].road_type.width)
+						if (c >= -0.5f * m_Segments[i].type.road_width && c <= lenr + 0.5f * m_Segments[i].type.road_width)
 						{
 
 							f32 t = std::max(0.0f, std::min(1.0f, glm::cos(angle)));

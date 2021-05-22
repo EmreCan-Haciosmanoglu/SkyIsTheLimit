@@ -17,7 +17,7 @@ namespace Can
 	{
 	public:
 		RoadSegment(
-			const std::array<Prefab*, 3>& type,
+			const RoadType& type,
 			const std::array<glm::vec3, 4>& curvePoints
 		);
 		RoadSegment(RoadSegment&& other);
@@ -27,7 +27,7 @@ namespace Can
 		friend bool operator==(const RoadSegment& left, const RoadSegment& right) { return &left == &right; }
 
 		void ReConstruct();
-		void ChangeType(const std::array<Prefab*, 3>& type);
+		void SetType(const RoadType& type) { this->type = type; ReConstruct(); }
 
 		inline const std::array<glm::vec3, 4>& GetCurvePoints() const { return CurvePoints; }
 		inline const glm::vec3& GetCurvePoint(size_t index) const { return CurvePoints[index]; }
@@ -52,7 +52,7 @@ namespace Can
 		void CalcRotsAndDirs();
 
 	public:
-		RoadType road_type{};
+		RoadType type{};
 		std::vector<Building*> Buildings = {};
 		std::vector<Car*> Cars = {};
 

@@ -45,8 +45,8 @@ namespace Can
 		for (u64 rsIndex = 0; rsIndex < count; rsIndex++)
 		{
 			RoadSegment& rs = m_Scene->m_RoadManager.m_Segments[rsIndex];
-			float roadWidth = rs.road_type.width;
-			float roadLength = rs.road_type.length;
+			float roadWidth = rs.type.road_width;
+			float roadLength = rs.type.road_length;
 			float snapDistance = roadWidth * 0.5f;
 
 			const std::array<v3, 4>& vs = rs.GetCurvePoints();

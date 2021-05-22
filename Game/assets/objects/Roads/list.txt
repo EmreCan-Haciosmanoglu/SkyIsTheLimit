@@ -33,7 +33,7 @@ Thumbnail:Thumbnail_02.png
 END
 START
 Name:Asymetric 1-2-lane Road
-Asym:False
+Asym:True
 Road_Object:road_03.obj
 Road_Texture:road_03.png
 Junc_Object:junction_03.obj

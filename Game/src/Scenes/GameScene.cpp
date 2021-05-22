@@ -260,7 +260,7 @@ namespace Can
 					car->position = car->target;
 					car->object->SetTransform(car->position);
 					std::vector<float> ts{ 0 };
-					float lengthRoad = road.road_type.length;
+					float lengthRoad = road.type.road_length;
 					std::vector<glm::vec3> samples = Math::GetCubicCurveSamples(road.GetCurvePoints(), lengthRoad, ts);
 
 					if ((samples.size() - 2 == car->t_index && car->fromStart) || (1 == car->t_index && !car->fromStart))
@@ -287,7 +287,7 @@ namespace Can
 
 							m_RoadManager.m_Segments[car->roadSegment].Cars.push_back(car);
 							std::vector<float> ts2{ 0 };
-							float lengthRoad2 = m_RoadManager.m_Segments[car->roadSegment].road_type.length;
+							float lengthRoad2 = m_RoadManager.m_Segments[car->roadSegment].type.road_length;
 							std::vector<glm::vec3> samples2 = Math::GetCubicCurveSamples(m_RoadManager.m_Segments[car->roadSegment].GetCurvePoints(), lengthRoad2, ts2);
 
 							if (nodeIndex == m_RoadManager.m_Segments[car->roadSegment].StartNode)

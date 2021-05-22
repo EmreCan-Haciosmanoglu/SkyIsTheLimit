@@ -138,7 +138,7 @@ namespace Can
 
 			for (RoadSegment& rs : m_Scene->m_RoadManager.m_Segments)
 			{
-				float roadPrefabWidth = rs.road_type.width;
+				float roadPrefabWidth = rs.type.road_width;
 				const std::array<glm::vec3, 4>& cps = rs.GetCurvePoints();
 				std::array<std::array<glm::vec2, 3>, 2> newRoadBoundingBox = Math::GetBoundingBoxOfBezierCurve(cps, roadPrefabWidth * 0.5f);
 

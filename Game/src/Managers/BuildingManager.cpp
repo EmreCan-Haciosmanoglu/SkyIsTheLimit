@@ -63,8 +63,8 @@ namespace Can
 			for(u64 rsIndex = 0; rsIndex<count; rsIndex++)
 			{
 				RoadSegment& rs = segments[rsIndex];
-				float roadWidth = rs.road_type.width;
-				float roadLength = rs.road_type.length;
+				float roadWidth = rs.type.road_width;
+				float roadLength = rs.type.road_length;
 				float snapDistance = buildingDepthFromCenter + (roadWidth * 0.5f);
 
 				const std::array<v3, 4>& vs = rs.GetCurvePoints();
@@ -179,7 +179,7 @@ namespace Can
 				RoadSegment& rs = segments[rsIndex];
 				if (rsIndex == m_SnappedRoadSegment)
 					continue;
-				float roadPrefabWidth = rs.road_type.width;
+				float roadPrefabWidth = rs.type.road_width;
 				const std::array<v3, 4>& cps = rs.GetCurvePoints();
 				std::array<std::array<v2, 3>, 2> newRoadBoundingBox = Math::GetBoundingBoxOfBezierCurve(cps, roadPrefabWidth * 0.5f);
 

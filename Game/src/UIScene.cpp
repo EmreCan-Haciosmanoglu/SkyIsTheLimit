@@ -1302,7 +1302,7 @@ namespace Can
 		std::vector<std::string> cartumbnailimagefiles = Helper::GetFiles(pathc, "Thumbnail_", ".png");
 
 		/*Buttons in the Roads panel*/ {
-			size_t roadCount = m_Parent->roads.size();
+			size_t roadCount = m_Parent->road_types.size();
 			ChildrenComponent& children = m_Scene->m_Registry.get_or_emplace<ChildrenComponent>(m_ScrollViewRoads->entityID, std::vector<entt::entity>{});
 			for (size_t i = 0; i < roadCount; i++)
 			{
