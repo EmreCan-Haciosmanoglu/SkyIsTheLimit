@@ -59,9 +59,9 @@ namespace Can
 		Button* m_UpgradeBuildingButton = nullptr;
 		Button* m_CancelBuildingButton = nullptr;
 
-		Button* m_AddTreePanelButton = nullptr;
-		Button* m_RemoveTreePanelButton = nullptr;
-		Button* m_CancelTreePanelButton = nullptr;
+		Button* m_AddTreeButton = nullptr;
+		Button* m_RemoveTreeButton = nullptr;
+		Button* m_CancelTreeButton = nullptr;
 
 		ScrollView* m_ScrollViewRoads = nullptr;
 		ScrollView* m_ScrollViewBuildings = nullptr;
