@@ -55,6 +55,12 @@ namespace Can
 
 	GameApp::~GameApp()
 	{
+		PopLayer(gameScene);
+		delete gameScene;
+		PopOverlay(uiScene);
+		delete uiScene;
+		PopOverlay(debugScene);
+		delete debugScene;
 	}
 
 	void GameApp::LoadRoadTypes()
@@ -108,7 +114,8 @@ namespace Can
 
 				// bool s for if key pair exist
 
-				RoadType type = RoadType();
+				road_types.push_back(RoadType());
+				RoadType& type = road_types[road_types.size() - 1];
 
 				while (std::getline(file, line))
 				{
@@ -129,8 +136,7 @@ namespace Can
 						type.road_width = type.road->boundingBoxM.z - type.road->boundingBoxL.z;
 						type.road_length = type.road->boundingBoxM.x - type.road->boundingBoxL.x;
 						type.junction_length = type.junction->boundingBoxM.x - type.junction->boundingBoxL.x;
-						road_types.push_back(type);
-						/*clearing for next road*/{
+						/*clearing for next road*/ {
 							name = "";
 							asym = "";
 							road_obj = path_to_roads;
@@ -143,7 +149,7 @@ namespace Can
 							end_png = path_to_roads;
 							end_mirror_obj = path_to_roads;
 							end_mirror_png = path_to_roads;
-							thumbnail_png = path_to_roads; 
+							thumbnail_png = path_to_roads;
 						}
 					}
 					std::string::iterator seperator = std::find(line.begin(), line.end(), ':');
