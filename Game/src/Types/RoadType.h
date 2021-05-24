@@ -15,14 +15,15 @@ namespace Can
 		//    or road, railway, route for ship|plane|helicopter|*, *
 		//    or car lane, bike lane, side walk, median, trees, parking, *
 	};
-	struct RoadType
+	class RoadType
 	{
+	public:
 		std::string name = "Unnamed Road";
 		
-		Prefab* road;
-		Prefab* junction;
+		Prefab* road = nullptr;
+		Prefab* junction = nullptr;
 		Prefab* junction_mirror = nullptr;
-		Prefab* end;
+		Prefab* end = nullptr;
 		Prefab* end_mirror = nullptr;
 		Ref<Texture2D> thumbnail;
 

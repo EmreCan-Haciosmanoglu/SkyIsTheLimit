@@ -723,11 +723,13 @@ namespace Can
 		};
 		m_ScrollViewCars = new ScrollView(scrollViewCarsParams, scrollBarCarsParams);
 
+		v2 roadConstructionModeButtonsSize(0.8f);
+		f32 padding = 0.2f;
 		ButtonConstructorParameters straightRoadButtonParams = ButtonConstructorParameters{
 					m_Scene->m_Registry,
 					m_PanelRoads->entityID,
 					glm::vec3{1.0f, height - 5.0f, 0.01f},
-					glm::vec2(0.8f),
+					roadConstructionModeButtonsSize,
 					glm::vec4(1.0f),
 					m_Parent->straightTexture,
 					[this]() {
@@ -755,8 +757,8 @@ namespace Can
 		ButtonConstructorParameters quadraticRoadButtonParams = ButtonConstructorParameters{
 					m_Scene->m_Registry,
 					m_PanelRoads->entityID,
-					glm::vec3{2.0f, height - 5.0f, 0.01f},
-					glm::vec2(0.8f),
+					glm::vec3{1.0f + (roadConstructionModeButtonsSize.x + padding) * 1.0f, height - 5.0f, 0.01f},
+					roadConstructionModeButtonsSize,
 					glm::vec4(1.0f),
 					m_Parent->quadraticTexture,
 					[this]() {
@@ -784,8 +786,8 @@ namespace Can
 		ButtonConstructorParameters cubic1234RoadButtonParams = ButtonConstructorParameters{
 					m_Scene->m_Registry,
 					m_PanelRoads->entityID,
-					glm::vec3{3.0f, (height - 5.0f) + 0.0f, 0.01f},
-					glm::vec2(0.8f),
+					glm::vec3{1.0f + (roadConstructionModeButtonsSize.x + padding) * 2.0f, (height - 5.0f), 0.01f},
+					roadConstructionModeButtonsSize,
 					glm::vec4(1.0f),
 					m_Parent->cubic1234Texture,
 					[this]() {
@@ -814,8 +816,8 @@ namespace Can
 		ButtonConstructorParameters cubic1243RoadButtonParams = ButtonConstructorParameters{
 					m_Scene->m_Registry,
 					m_PanelRoads->entityID,
-					glm::vec3{3.0f, (height - 5.0f) + 1.0f, 0.01f},
-					glm::vec2(0.8f),
+					glm::vec3{1.0f + (roadConstructionModeButtonsSize.x + padding) * 2.0f, (height - 5.0f) + (roadConstructionModeButtonsSize.y + padding) * 1.0f, 0.01f},
+					roadConstructionModeButtonsSize,
 					glm::vec4(1.0f),
 					m_Parent->cubic1243Texture,
 					[this]() {
@@ -844,8 +846,8 @@ namespace Can
 		ButtonConstructorParameters cubic1342RoadButtonParams = ButtonConstructorParameters{
 					m_Scene->m_Registry,
 					m_PanelRoads->entityID,
-					glm::vec3{3.0f, (height - 5.0f) + 2.0f, 0.01f},
-					glm::vec2(0.8f),
+					glm::vec3{1.0f + (roadConstructionModeButtonsSize.x + padding) * 2.0f, (height - 5.0f) + (roadConstructionModeButtonsSize.y + padding) * 2.0f, 0.01f},
+					roadConstructionModeButtonsSize,
 					glm::vec4(1.0f),
 					m_Parent->cubic1342Texture,
 					[this]() {
@@ -874,8 +876,8 @@ namespace Can
 		ButtonConstructorParameters cubic1432RoadButtonParams = ButtonConstructorParameters{
 					m_Scene->m_Registry,
 					m_PanelRoads->entityID,
-					glm::vec3{3.0f, (height - 5.0f) + 3.0f, 0.01f},
-					glm::vec2(0.8f),
+					glm::vec3{1.0f + (roadConstructionModeButtonsSize.x + padding) * 2.0f, (height - 5.0f) + (roadConstructionModeButtonsSize.y + padding) * 3.0f, 0.01f},
+					roadConstructionModeButtonsSize,
 					glm::vec4(1.0f),
 					m_Parent->cubic1432Texture,
 					[this]() {
@@ -904,8 +906,8 @@ namespace Can
 		ButtonConstructorParameters destructRoadButtonParams = ButtonConstructorParameters{
 					m_Scene->m_Registry,
 					m_PanelRoads->entityID,
-					glm::vec3{4.0f, height - 5.0f, 0.01f},
-					glm::vec2(0.8f),
+					glm::vec3{1.0f + (roadConstructionModeButtonsSize.x + padding) * 3.0f, height - 5.0f, 0.01f},
+					roadConstructionModeButtonsSize,
 					glm::vec4(1.0f),
 					m_Parent->removeTexture,
 					[this]() {
@@ -933,8 +935,8 @@ namespace Can
 		ButtonConstructorParameters changeRoadButtonParams = ButtonConstructorParameters{
 					m_Scene->m_Registry,
 					m_PanelRoads->entityID,
-					glm::vec3{5.0f, height - 5.0f, 0.01f},
-					glm::vec2(0.8f),
+					glm::vec3{1.0f + (roadConstructionModeButtonsSize.x + padding) * 4.0f, height - 5.0f, 0.01f},
+					roadConstructionModeButtonsSize,
 					glm::vec4(1.0f),
 					m_Parent->changeTexture,
 					[this]() {
@@ -962,8 +964,8 @@ namespace Can
 		ButtonConstructorParameters cancelRoadButtonParams = ButtonConstructorParameters{
 					m_Scene->m_Registry,
 					m_PanelRoads->entityID,
-					glm::vec3{6.0f, height - 5.0f, 0.01f},
-					glm::vec2(0.8f),
+					glm::vec3{1.0f + (roadConstructionModeButtonsSize.x + padding) * 5.0f, height - 5.0f, 0.01f},
+					roadConstructionModeButtonsSize,
 					glm::vec4(1.0f),
 					m_Parent->cancelTexture,
 					[this]() {
@@ -1199,135 +1201,135 @@ namespace Can
 				0.2f
 			};
 			m_ButtonTools_01 = new Button(buttonTools_01Params);
-			ButtonConstructorParameters buttonTools_02Params = ButtonConstructorParameters{ 
-				m_Scene->m_Registry, 
-				m_PanelTools->entityID, 
-				glm::vec3{ 2.0f, 2.0f, 0.0011f }, 
-				buttonSize, 
-				buttonColor, 
+			ButtonConstructorParameters buttonTools_02Params = ButtonConstructorParameters{
+				m_Scene->m_Registry,
+				m_PanelTools->entityID,
+				glm::vec3{ 2.0f, 2.0f, 0.0011f },
+				buttonSize,
+				buttonColor,
 				nullptr,
-				[]() {std::cout << "You clicked the 2nd Button inside the tools panel!" << std::endl; }, 
+				[]() {std::cout << "You clicked the 2nd Button inside the tools panel!" << std::endl; },
 				0.2f
 			};
 			m_ButtonTools_02 = new Button(buttonTools_02Params);
-			ButtonConstructorParameters buttonTools_03Params = ButtonConstructorParameters{ 
-				m_Scene->m_Registry, 
-				m_PanelTools->entityID, 
-				glm::vec3{ 0.75f, 3.25f, 0.0011f }, 
-				buttonSize, 
-				buttonColor, 
+			ButtonConstructorParameters buttonTools_03Params = ButtonConstructorParameters{
+				m_Scene->m_Registry,
+				m_PanelTools->entityID,
+				glm::vec3{ 0.75f, 3.25f, 0.0011f },
+				buttonSize,
+				buttonColor,
 				nullptr,
-				[]() {std::cout << "You clicked the 3rd Button inside the tools panel!" << std::endl; }, 
+				[]() {std::cout << "You clicked the 3rd Button inside the tools panel!" << std::endl; },
 				0.2f
 			};
 			m_ButtonTools_03 = new Button(buttonTools_03Params);
-			ButtonConstructorParameters buttonTools_04Params = ButtonConstructorParameters{ 
-				m_Scene->m_Registry, 
-				m_PanelTools->entityID, 
+			ButtonConstructorParameters buttonTools_04Params = ButtonConstructorParameters{
+				m_Scene->m_Registry,
+				m_PanelTools->entityID,
 				glm::vec3{ 2.0f, 3.25f, 0.0011f },
-				buttonSize, 
-				buttonColor, 
+				buttonSize,
+				buttonColor,
 				nullptr,
-				[]() {std::cout << "You clicked the 4th Button inside the tools panel!" << std::endl; }, 
+				[]() {std::cout << "You clicked the 4th Button inside the tools panel!" << std::endl; },
 				0.2f
 			};
 			m_ButtonTools_04 = new Button(buttonTools_04Params);
-			ButtonConstructorParameters buttonTools_05Params = ButtonConstructorParameters{ 
-				m_Scene->m_Registry, 
-				m_PanelTools->entityID, 
-				glm::vec3{ 0.75f, 4.5f, 0.0011f }, 
-				buttonSize, 
-				buttonColor, 
+			ButtonConstructorParameters buttonTools_05Params = ButtonConstructorParameters{
+				m_Scene->m_Registry,
+				m_PanelTools->entityID,
+				glm::vec3{ 0.75f, 4.5f, 0.0011f },
+				buttonSize,
+				buttonColor,
 				nullptr,
-				[]() {std::cout << "You clicked the 5th Button inside the tools panel!" << std::endl; }, 
+				[]() {std::cout << "You clicked the 5th Button inside the tools panel!" << std::endl; },
 				0.2f
 			};
 			m_ButtonTools_05 = new Button(buttonTools_05Params);
-			ButtonConstructorParameters buttonTools_06Params = ButtonConstructorParameters{ 
-				m_Scene->m_Registry, 
-				m_PanelTools->entityID, 
-				glm::vec3{ 2.0f, 4.5, 0.0011f }, 
-				buttonSize, 
-				buttonColor, 
+			ButtonConstructorParameters buttonTools_06Params = ButtonConstructorParameters{
+				m_Scene->m_Registry,
+				m_PanelTools->entityID,
+				glm::vec3{ 2.0f, 4.5, 0.0011f },
+				buttonSize,
+				buttonColor,
 				nullptr,
-				[]() {std::cout << "You clicked the 6th Button inside the tools panel!" << std::endl; }, 
+				[]() {std::cout << "You clicked the 6th Button inside the tools panel!" << std::endl; },
 				0.2f
 			};
 			m_ButtonTools_06 = new Button(buttonTools_06Params);
-			ButtonConstructorParameters buttonTools_07Params = ButtonConstructorParameters{ 
-				m_Scene->m_Registry, 
-				m_PanelTools->entityID, 
-				glm::vec3{ 0.75f, 5.75, 0.0011f }, 
-				buttonSize, 
-				buttonColor, 
+			ButtonConstructorParameters buttonTools_07Params = ButtonConstructorParameters{
+				m_Scene->m_Registry,
+				m_PanelTools->entityID,
+				glm::vec3{ 0.75f, 5.75, 0.0011f },
+				buttonSize,
+				buttonColor,
 				nullptr,
-				[]() {std::cout << "You clicked the 7th Button inside the tools panel!" << std::endl; }, 
+				[]() {std::cout << "You clicked the 7th Button inside the tools panel!" << std::endl; },
 				0.2f
 			};
 			m_ButtonTools_07 = new Button(buttonTools_07Params);
-			ButtonConstructorParameters buttonTools_08Params = ButtonConstructorParameters{ 
-				m_Scene->m_Registry, 
-				m_PanelTools->entityID, 
-				glm::vec3{ 2.0f, 5.75, 0.0011f }, 
+			ButtonConstructorParameters buttonTools_08Params = ButtonConstructorParameters{
+				m_Scene->m_Registry,
+				m_PanelTools->entityID,
+				glm::vec3{ 2.0f, 5.75, 0.0011f },
 				buttonSize,
-				buttonColor, 
+				buttonColor,
 				nullptr,
-				[]() {std::cout << "You clicked the 8th Button inside the tools panel!" << std::endl; }, 
+				[]() {std::cout << "You clicked the 8th Button inside the tools panel!" << std::endl; },
 				0.2f
 			};
 			m_ButtonTools_08 = new Button(buttonTools_08Params);
-			ButtonConstructorParameters buttonTools_09Params = ButtonConstructorParameters{ 
-				m_Scene->m_Registry, 
-				m_PanelTools->entityID, 
-				glm::vec3{ 0.75f, 7.0f, 0.0011f }, 
-				buttonSize, 
-				buttonColor, 
+			ButtonConstructorParameters buttonTools_09Params = ButtonConstructorParameters{
+				m_Scene->m_Registry,
+				m_PanelTools->entityID,
+				glm::vec3{ 0.75f, 7.0f, 0.0011f },
+				buttonSize,
+				buttonColor,
 				nullptr,
-				[]() {std::cout << "You clicked the 9th Button inside the tools panel!" << std::endl; }, 
+				[]() {std::cout << "You clicked the 9th Button inside the tools panel!" << std::endl; },
 				0.2f
 			};
 			m_ButtonTools_09 = new Button(buttonTools_09Params);
-			ButtonConstructorParameters buttonTools_10Params = ButtonConstructorParameters{ 
+			ButtonConstructorParameters buttonTools_10Params = ButtonConstructorParameters{
 				m_Scene->m_Registry,
-				m_PanelTools->entityID, 
-				glm::vec3{ 2.0f, 7.0f, 0.0011f }, 
-				buttonSize, 
-				buttonColor, 
+				m_PanelTools->entityID,
+				glm::vec3{ 2.0f, 7.0f, 0.0011f },
+				buttonSize,
+				buttonColor,
 				nullptr,
-				[]() {std::cout << "You clicked the 10th Button inside the tools panel!" << std::endl; }, 
+				[]() {std::cout << "You clicked the 10th Button inside the tools panel!" << std::endl; },
 				0.2f
 			};
 			m_ButtonTools_10 = new Button(buttonTools_10Params);
-			ButtonConstructorParameters buttonTools_11Params = ButtonConstructorParameters{ 
-				m_Scene->m_Registry, 
-				m_PanelTools->entityID, 
-				glm::vec3{ 0.75f, 8.25, 0.0011f }, 
+			ButtonConstructorParameters buttonTools_11Params = ButtonConstructorParameters{
+				m_Scene->m_Registry,
+				m_PanelTools->entityID,
+				glm::vec3{ 0.75f, 8.25, 0.0011f },
 				buttonSize,
-				buttonColor, 
+				buttonColor,
 				nullptr,
 				[]() {std::cout << "You clicked the 11th Button inside the tools panel!" << std::endl; },
 				0.2f
 			};
 			m_ButtonTools_11 = new Button(buttonTools_11Params);
-			ButtonConstructorParameters buttonTools_12Params = ButtonConstructorParameters{ 
-				m_Scene->m_Registry, 
-				m_PanelTools->entityID, 
-				glm::vec3{ 2.0f, 8.25, 0.0011f }, 
-				buttonSize, 
-				buttonColor, 
+			ButtonConstructorParameters buttonTools_12Params = ButtonConstructorParameters{
+				m_Scene->m_Registry,
+				m_PanelTools->entityID,
+				glm::vec3{ 2.0f, 8.25, 0.0011f },
+				buttonSize,
+				buttonColor,
 				nullptr,
-				[]() {std::cout << "You clicked the 12th Button inside the tools panel!" << std::endl; }, 
+				[]() {std::cout << "You clicked the 12th Button inside the tools panel!" << std::endl; },
 				0.2f
 			};
 			m_ButtonTools_12 = new Button(buttonTools_12Params);
-			ButtonConstructorParameters buttonTools_13Params = ButtonConstructorParameters{ 
+			ButtonConstructorParameters buttonTools_13Params = ButtonConstructorParameters{
 				m_Scene->m_Registry,
-				m_PanelTools->entityID, 
-				glm::vec3{ 0.75f, 9.5, 0.0011f }, 
-				buttonSize, 
-				buttonColor, 
+				m_PanelTools->entityID,
+				glm::vec3{ 0.75f, 9.5, 0.0011f },
+				buttonSize,
+				buttonColor,
 				nullptr,
-				[]() {std::cout << "You clicked the 13th Button inside the tools panel!" << std::endl; }, 
+				[]() {std::cout << "You clicked the 13th Button inside the tools panel!" << std::endl; },
 				0.2f
 			};
 			m_ButtonTools_13 = new Button(buttonTools_13Params);
@@ -1360,7 +1362,7 @@ namespace Can
 			};
 			m_Scene->m_Registry.emplace<ChildrenComponent>(m_PanelTools->entityID, toolsButtonList);
 		}
-		/*Buttons in the Needs panel*/ {
+		/*Buttons in the needs panel*/{
 			glm::vec2 buttonSize{ 1.0f, 1.0f };
 			glm::vec4 buttonColor{ 1.0f, 1.0f, 1.0f, 1.0f };
 			ButtonConstructorParameters buttonNeeds_01Params = ButtonConstructorParameters{
@@ -1677,22 +1679,48 @@ namespace Can
 
 	UIScene::~UIScene()
 	{
+		delete m_ButtonPause;
+		delete m_ButtonNormal;
+		delete m_Button2Times;
+		delete m_Button4Times;
 
 		delete m_ButtonRoads;
 		delete m_ButtonBuildings;
 		delete m_ButtonTrees;
+		delete m_ButtonCars;
 		delete m_ButtonNeeds;
 		delete m_ButtonTools;
 
 		delete m_PanelRoads;
 		delete m_PanelBuildings;
 		delete m_PanelTrees;
+		delete m_PanelCars;
 		delete m_PanelNeeds;
 		delete m_PanelTools;
+
+		delete m_StraightRoadButton;
+		delete m_QuadraticRoadButton;
+		delete m_Cubic1234RoadButton;
+		delete m_Cubic1243RoadButton;
+		delete m_Cubic1342RoadButton;
+		delete m_Cubic1432RoadButton;
+		delete m_DestructRoadButton;
+		delete m_ChangeRoadButton;
+		delete m_CancelRoadButton;
+
+		delete m_ConstructBuildingButton;
+		delete m_DestructBuildingButton;
+		delete m_UpgradeBuildingButton;
+		delete m_CancelBuildingButton;
+
+		delete m_AddTreeButton;
+		delete m_RemoveTreeButton;
+		delete m_CancelTreeButton;
 
 		delete m_ScrollViewRoads;
 		delete m_ScrollViewBuildings;
 		delete m_ScrollViewTrees;
+		delete m_ScrollViewCars;
 
 		delete m_ButtonTools_01;
 		delete m_ButtonTools_02;
@@ -1725,10 +1753,38 @@ namespace Can
 		delete m_ButtonNeeds_14;
 
 
-		//Delete lists??
-		// delete[] m_RoadPanelButtonList;
-		// delete[] m_BuildingPanelButtonList;
-		// delete[] m_TreePanelButtonList;
+		u64 index = m_RoadPanelButtonList.size();
+		while (index != 0)
+		{
+			index--;
+			Button* b = m_RoadPanelButtonList[index];
+			m_RoadPanelButtonList.pop_back();
+			delete b;
+		}
+		index = m_BuildingPanelButtonList.size();
+		while (index != 0)
+		{
+			index--;
+			Button* b = m_BuildingPanelButtonList[index];
+			m_BuildingPanelButtonList.pop_back();
+			delete b;
+		}
+		index = m_TreePanelButtonList.size();
+		while (index != 0)
+		{
+			index--;
+			Button* b = m_TreePanelButtonList[index];
+			m_TreePanelButtonList.pop_back();
+			delete b;
+		}
+		index = m_CarPanelButtonList.size();
+		while (index != 0)
+		{
+			index--;
+			Button* b = m_CarPanelButtonList[index];
+			m_CarPanelButtonList.pop_back();
+			delete b;
+		}
 
 		delete m_Scene;
 	}

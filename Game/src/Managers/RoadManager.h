@@ -80,7 +80,7 @@ namespace Can
 		void ResetStates();
 	public:
 
-		u8 snapFlags = 0x1;
+		u8 snapFlags = 0b01001;
 #define SNAP_TO_ROAD    0x01
 #define SNAP_TO_LENGTH  0x02
 #define SNAP_TO_HEIGHT  0x04
@@ -94,7 +94,7 @@ namespace Can
 		// 3 : Angle
 		// 4 : Grid
 		*/
-		u8 restrictionFlags = 0x0;
+		u8 restrictionFlags = 0b111;
 #define RESTRICT_SMALL_ANGLES 0x1
 #define RESTRICT_SHORT_LENGTH 0x2
 #define RESTRICT_COLLISIONS   0x4
