@@ -3,9 +3,7 @@
 
 #include "Types/RoadSegment.h"
 #include "Types/RoadNode.h"
-#include "Junction.h"
 #include "Building.h"
-#include "End.h"
 
 #include "GameApp.h"
 #include "Scenes/GameScene.h"
@@ -42,8 +40,6 @@ namespace Can
 
 	void RoadManager::OnUpdate(v3& prevLocation, const v3& cameraPosition, const v3& cameraDirection)
 	{
-		if (Input::IsKeyPressed(KeyCode::O))
-			std::cout << "Manual debug break" << std::endl;
 		switch (m_ConstructionMode)
 		{
 		case RoadConstructionMode::None:
@@ -137,9 +133,10 @@ namespace Can
 						dirToOldRS = glm::normalize(dirToOldRS);
 
 						f32 dotResult = glm::dot(dirToNewRS, dirToOldRS);
+						dotResult /= glm::length(dirToNewRS) * glm::length(dirToOldRS);
 						dotResult = std::max(-1.0f, std::min(1.0f, dotResult));
 						f32 angle = glm::acos(dotResult);
-						if (angle < glm::radians(60.0f))
+						if (angle < glm::radians(30.0f))
 						{
 							angleIsRestricted = true;
 							break;
@@ -152,6 +149,7 @@ namespace Can
 					v3 tangent = Math::CubicCurveTangent(rs.GetCurvePoints(), m_StartSnappedT);
 
 					f32 dotResult = glm::dot(dirToNewRS, tangent);
+					dotResult /= glm::length(dirToNewRS) * glm::length(tangent);
 					dotResult = std::max(-1.0f, std::min(1.0f, dotResult));
 					f32 angle = glm::acos(dotResult);
 
@@ -171,9 +169,10 @@ namespace Can
 						dirToOldRS = glm::normalize(dirToOldRS);
 
 						f32 dotResult = glm::dot(dirToNewRS, dirToOldRS);
+						dotResult /= glm::length(dirToNewRS) * glm::length(dirToOldRS);
 						dotResult = std::max(-1.0f, std::min(1.0f, dotResult));
 						f32 angle = glm::acos(dotResult);
-						if (angle < glm::radians(60.0f))
+						if (angle < glm::radians(30.0f))
 						{
 							angleIsRestricted = true;
 							break;
@@ -186,6 +185,7 @@ namespace Can
 					v3 tangent = Math::CubicCurveTangent(rs.GetCurvePoints(), m_EndSnappedT);
 
 					f32 dotResult = glm::dot(dirToNewRS, tangent);
+					dotResult /= glm::length(dirToNewRS) * glm::length(tangent);
 					dotResult = std::max(-1.0f, std::min(1.0f, dotResult));
 					f32 angle = glm::acos(dotResult);
 
@@ -303,7 +303,7 @@ namespace Can
 					std::array<v2,3>{ P2, P3, P4}
 			};
 
-			bool lengthIsRestricted = (restrictionFlags & RESTRICT_SHORT_LENGTH) && (glm::length(AD) < (2.0f * roadPrefabLength));
+			bool lengthIsRestricted = (restrictionFlags & RESTRICT_SHORT_LENGTH) && (glm::length(AB) < (2.0f * roadPrefabLength));
 			bool collisionIsRestricted = (restrictionFlags & RESTRICT_COLLISIONS) ? CheckStraightRoadRoadCollision(newRoadPolygon) : false;
 
 			if (m_Scene->m_BuildingManager.restrictions[0] && (restrictionFlags & RESTRICT_COLLISIONS))
@@ -386,6 +386,7 @@ namespace Can
 						dirToOldRS = glm::normalize(dirToOldRS);
 
 						f32 dotResult = glm::dot(dirToNewRS, dirToOldRS);
+						dotResult /= glm::length(dirToNewRS) * glm::length(dirToOldRS);
 						dotResult = std::max(-1.0f, std::min(1.0f, dotResult));
 						f32 angle = glm::acos(dotResult);
 						if (angle < glm::radians(60.0f))
@@ -401,6 +402,7 @@ namespace Can
 					v3 tangent = Math::CubicCurveTangent(rs.GetCurvePoints(), m_StartSnappedT);
 
 					f32 dotResult = glm::dot(dirToNewRS, tangent);
+					dotResult /= glm::length(dirToNewRS) * glm::length(tangent);
 					dotResult = std::max(-1.0f, std::min(1.0f, dotResult));
 					f32 angle = glm::acos(dotResult);
 
@@ -426,7 +428,7 @@ namespace Can
 				f32 newAngle = 0.0f;
 				f32 endAngle = glm::degrees(rotEnd);
 				f32 angle = 0.0f;
-				v3 crossProduct;
+				v3 crossProduct = v3(0.0f, 1.0f, 0.0f);
 				if (m_StartSnappedNode != -1)
 				{
 					RoadNode& node = m_Nodes[m_StartSnappedNode];
@@ -524,6 +526,8 @@ namespace Can
 		else if (m_ConstructionPhase == 2)
 		{
 			b_ConstructionRestricted = false;
+			if (Input::IsKeyPressed(KeyCode::O))
+				std::cout << "Manual debug break" << std::endl;
 			if (snapFlags & SNAP_TO_GRID)
 			{
 				prevLocation.x = prevLocation.x - std::fmod(prevLocation.x, 0.5f) + 0.25f;
@@ -577,6 +581,7 @@ namespace Can
 						dirToOldRS = glm::normalize(dirToOldRS);
 
 						f32 dotResult = glm::dot(dirToNewRS, dirToOldRS);
+						dotResult /= glm::length(dirToNewRS) * glm::length(dirToOldRS);
 						dotResult = std::max(-1.0f, std::min(1.0f, dotResult));
 						f32 angle = glm::acos(dotResult);
 						if (angle < glm::radians(60.0f))
@@ -592,6 +597,7 @@ namespace Can
 					v3 tangent = Math::CubicCurveTangent(rs.GetCurvePoints(), m_StartSnappedT);
 
 					f32 dotResult = glm::dot(dirToNewRS, tangent);
+					dotResult /= glm::length(dirToNewRS) * glm::length(tangent);
 					dotResult = std::max(-1.0f, std::min(1.0f, dotResult));
 					f32 angle = glm::acos(dotResult);
 
@@ -614,6 +620,7 @@ namespace Can
 						dirToOldRS = glm::normalize(dirToOldRS);
 
 						f32 dotResult = glm::dot(dirToNewRS, dirToOldRS);
+						dotResult /= glm::length(dirToNewRS) * glm::length(dirToOldRS);
 						dotResult = std::max(-1.0f, std::min(1.0f, dotResult));
 						f32 angle = glm::acos(dotResult);
 						if (angle < glm::radians(60.0f))
@@ -629,6 +636,7 @@ namespace Can
 					v3 tangent = Math::CubicCurveTangent(rs.GetCurvePoints(), m_EndSnappedT);
 
 					f32 dotResult = glm::dot(dirToNewRS, tangent);
+					dotResult /= glm::length(dirToNewRS) * glm::length(tangent);
 					dotResult = std::max(-1.0f, std::min(1.0f, dotResult));
 					f32 angle = glm::acos(dotResult);
 
@@ -639,6 +647,7 @@ namespace Can
 				v3 dirToStart = m_ConstructionPositions[2] - m_ConstructionPositions[0];
 
 				f32 dotResult = glm::dot(dirToEnd, dirToStart);
+				dotResult /= glm::length(dirToEnd) * glm::length(dirToStart);
 				dotResult = std::max(-1.0f, std::min(1.0f, dotResult));
 				f32 angle = glm::acos(dotResult);
 
@@ -740,6 +749,7 @@ namespace Can
 						dirToOldRS = glm::normalize(dirToOldRS);
 
 						f32 dotResult = glm::dot(dirToNewRS, dirToOldRS);
+						dotResult /= glm::length(dirToNewRS) * glm::length(dirToOldRS);
 						dotResult = std::max(-1.0f, std::min(1.0f, dotResult));
 						f32 angle = glm::acos(dotResult);
 						if (angle < glm::radians(60.0f))
@@ -755,6 +765,7 @@ namespace Can
 					v3 tangent = Math::CubicCurveTangent(rs.GetCurvePoints(), m_StartSnappedT);
 
 					f32 dotResult = glm::dot(dirToNewRS, tangent);
+					dotResult /= glm::length(dirToNewRS) * glm::length(tangent);
 					dotResult = std::max(-1.0f, std::min(1.0f, dotResult));
 					f32 angle = glm::acos(dotResult);
 
@@ -786,7 +797,7 @@ namespace Can
 				f32 newAngle = 0.0f;
 				f32 endAngle = glm::degrees(rotEnd);
 				f32 angle = 0.0f;
-				v3 crossProduct;
+				v3 crossProduct = v3(0.0f, 1.0f, 0.0f);
 				if (m_StartSnappedNode != -1)
 				{
 					RoadNode& node = m_Nodes[m_StartSnappedNode];
@@ -923,6 +934,7 @@ namespace Can
 							dirToOldRS = glm::normalize(dirToOldRS);
 
 							f32 dotResult = glm::dot(dirToNewRS, dirToOldRS);
+							dotResult /= glm::length(dirToNewRS) * glm::length(dirToOldRS);
 							dotResult = std::max(-1.0f, std::min(1.0f, dotResult));
 							f32 angle = glm::acos(dotResult);
 							if (angle < glm::radians(60.0f))
@@ -938,6 +950,7 @@ namespace Can
 						v3 tangent = Math::CubicCurveTangent(rs.GetCurvePoints(), m_StartSnappedT);
 
 						f32 dotResult = glm::dot(dirToNewRS, tangent);
+						dotResult /= glm::length(dirToNewRS) * glm::length(tangent);
 						dotResult = std::max(-1.0f, std::min(1.0f, dotResult));
 						f32 angle = glm::acos(dotResult);
 
@@ -961,6 +974,7 @@ namespace Can
 							dirToOldRS = glm::normalize(dirToOldRS);
 
 							f32 dotResult = glm::dot(dirToNewRS, dirToOldRS);
+							dotResult /= glm::length(dirToNewRS) * glm::length(dirToOldRS);
 							dotResult = std::max(-1.0f, std::min(1.0f, dotResult));
 							f32 angle = glm::acos(dotResult);
 							if (angle < glm::radians(60.0f))
@@ -976,6 +990,7 @@ namespace Can
 						v3 tangent = Math::CubicCurveTangent(rs.GetCurvePoints(), m_EndSnappedT);
 
 						f32 dotResult = glm::dot(dirToNewRS, tangent);
+						dotResult /= glm::length(dirToNewRS) * glm::length(tangent);
 						dotResult = std::max(-1.0f, std::min(1.0f, dotResult));
 						f32 angle = glm::acos(dotResult);
 
@@ -1026,7 +1041,7 @@ namespace Can
 					f32 newAngle = 0.0f;
 					f32 endAngle = glm::degrees(rotation1);
 					f32 angle = 0.0f;
-					v3 crossProduct;
+					v3 crossProduct = v3(0.0f, 1.0f, 0.0f);
 					if (m_StartSnappedNode != -1)
 					{
 						RoadNode& node = m_Nodes[m_StartSnappedNode];
@@ -1093,7 +1108,7 @@ namespace Can
 					f32 newAngle = 0.0f;
 					f32 endAngle = glm::degrees(rotation1);
 					f32 angle = 0.0f;
-					v3 crossProduct;
+					v3 crossProduct = v3(0.0f, 1.0f, 0.0f);
 					if (m_EndSnappedNode != -1)
 					{
 						RoadNode& node = m_Nodes[m_EndSnappedNode];
@@ -1222,6 +1237,7 @@ namespace Can
 						dirToOldRS = glm::normalize(dirToOldRS);
 
 						f32 dotResult = glm::dot(dirToNewRS, dirToOldRS);
+						dotResult /= glm::length(dirToNewRS) * glm::length(dirToOldRS);
 						dotResult = std::max(-1.0f, std::min(1.0f, dotResult));
 						f32 angle = glm::acos(dotResult);
 						if (angle < glm::radians(60.0f))
@@ -1237,6 +1253,7 @@ namespace Can
 					v3 tangent = Math::CubicCurveTangent(rs.GetCurvePoints(), m_StartSnappedT);
 
 					f32 dotResult = glm::dot(dirToNewRS, tangent);
+					dotResult /= glm::length(dirToNewRS) * glm::length(tangent);
 					dotResult = std::max(-1.0f, std::min(1.0f, dotResult));
 					f32 angle = glm::acos(dotResult);
 
@@ -1258,6 +1275,7 @@ namespace Can
 						dirToOldRS = glm::normalize(dirToOldRS);
 
 						f32 dotResult = glm::dot(dirToNewRS, dirToOldRS);
+						dotResult /= glm::length(dirToNewRS) * glm::length(dirToOldRS);
 						dotResult = std::max(-1.0f, std::min(1.0f, dotResult));
 						f32 angle = glm::acos(dotResult);
 						if (angle < glm::radians(60.0f))
@@ -1273,6 +1291,7 @@ namespace Can
 					v3 tangent = Math::CubicCurveTangent(rs.GetCurvePoints(), m_EndSnappedT);
 
 					f32 dotResult = glm::dot(dirToNewRS, tangent);
+					dotResult /= glm::length(dirToNewRS) * glm::length(tangent);
 					dotResult = std::max(-1.0f, std::min(1.0f, dotResult));
 					f32 angle = glm::acos(dotResult);
 
@@ -1322,7 +1341,7 @@ namespace Can
 					f32 newAngle = 0.0f;
 					f32 endAngle = glm::degrees(rotation1);
 					f32 angle = 0.0f;
-					v3 crossProduct;
+					v3 crossProduct = v3(0.0f, 1.0f, 0.0f);
 					if (m_StartSnappedNode != -1)
 					{
 						RoadNode& node = m_Nodes[m_StartSnappedNode];
@@ -1389,7 +1408,7 @@ namespace Can
 					f32 newAngle = 0.0f;
 					f32 endAngle = glm::degrees(rotation1);
 					f32 angle = 0.0f;
-					v3 crossProduct;
+					v3 crossProduct = v3(0.0f, 1.0f, 0.0f);
 					if (m_EndSnappedNode != -1)
 					{
 						RoadNode& node = m_Nodes[m_EndSnappedNode];
@@ -1467,6 +1486,7 @@ namespace Can
 			if (m_Scene->m_TreeManager.restrictions[0] && (restrictionFlags & RESTRICT_COLLISIONS))
 				CheckRoadTreeCollision(newRoadBoundingBox, newRoadBoundingPolygon);
 
+			
 			b_ConstructionRestricted |= angleIsRestricted;
 			b_ConstructionRestricted |= lengthIsRestricted;
 			b_ConstructionRestricted |= collisionIsRestricted;
@@ -1963,6 +1983,8 @@ namespace Can
 	}
 	bool RoadManager::OnMousePressed_Straight()
 	{
+		if (b_ConstructionRestricted)
+			return false;
 		m_ConstructionPhase++;
 
 		if (m_ConstructionPhase > 1)
@@ -1996,6 +2018,8 @@ namespace Can
 	}
 	bool RoadManager::OnMousePressed_QuadraticCurve()
 	{
+		if (b_ConstructionRestricted)
+			return false;
 		m_ConstructionPhase++;
 
 		if (m_ConstructionPhase > 2)
@@ -2025,6 +2049,8 @@ namespace Can
 	}
 	bool RoadManager::OnMousePressed_CubicCurve()
 	{
+		if (b_ConstructionRestricted)
+			return false;
 		m_ConstructionPhase++;
 
 		if (m_ConstructionPhase > 3)

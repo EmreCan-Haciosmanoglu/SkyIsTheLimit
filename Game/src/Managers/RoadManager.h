@@ -7,8 +7,6 @@ namespace Can
 	class GameScene;
 	class RoadSegment;
 	class RoadNode;
-	class Junction;
-	class End;
 
 	enum class RoadConstructionMode
 	{
