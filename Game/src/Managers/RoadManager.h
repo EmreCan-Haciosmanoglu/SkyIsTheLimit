@@ -76,6 +76,9 @@ namespace Can
 		SnapInformation CheckSnapping(const v3& prevLocation);
 
 		void ResetStates();
+	private:
+		v3 SnapToGrid(const v3& prevLocation);
+
 	public:
 
 		u8 snapFlags = 0b01001;

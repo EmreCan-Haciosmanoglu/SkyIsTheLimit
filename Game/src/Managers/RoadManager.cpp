@@ -69,11 +69,7 @@ namespace Can
 
 		if (m_ConstructionPhase == 0)
 		{
-			if (snapFlags & SNAP_TO_GRID)
-			{
-				prevLocation.x = prevLocation.x - std::fmod(prevLocation.x, 0.5f) + 0.25f;
-				prevLocation.z = prevLocation.z - std::fmod(prevLocation.z, 0.5f) - 0.25f;
-			}
+			prevLocation = SnapToGrid(prevLocation);
 			if (snapFlags & SNAP_TO_ROAD)
 			{
 				SnapInformation snapInformation = CheckSnapping(prevLocation);
@@ -97,11 +93,7 @@ namespace Can
 				inUse = 0;
 
 			b_ConstructionRestricted = false;
-			if (snapFlags & SNAP_TO_GRID)
-			{
-				prevLocation.x = prevLocation.x - std::fmod(prevLocation.x, 0.5f) + 0.25f;
-				prevLocation.z = prevLocation.z - std::fmod(prevLocation.z, 0.5f) - 0.25f;
-			}
+			prevLocation = SnapToGrid(prevLocation);
 			if (snapFlags & SNAP_TO_ROAD)
 			{
 				SnapInformation snapInformation = CheckSnapping(prevLocation);
@@ -332,11 +324,7 @@ namespace Can
 
 		if (m_ConstructionPhase == 0)
 		{
-			if (snapFlags & SNAP_TO_GRID)
-			{
-				prevLocation.x = prevLocation.x - std::fmod(prevLocation.x, 0.5f) + 0.25f;
-				prevLocation.z = prevLocation.z - std::fmod(prevLocation.z, 0.5f) - 0.25f;
-			}
+			prevLocation = SnapToGrid(prevLocation);
 			if (snapFlags & SNAP_TO_ROAD)
 			{
 				SnapInformation snapInformation = CheckSnapping(prevLocation);
@@ -357,11 +345,7 @@ namespace Can
 		else if (m_ConstructionPhase == 1)
 		{
 			b_ConstructionRestricted = false;
-			if (snapFlags & SNAP_TO_GRID)
-			{
-				prevLocation.x = prevLocation.x - std::fmod(prevLocation.x, 0.5f) + 0.25f;
-				prevLocation.z = prevLocation.z - std::fmod(prevLocation.z, 0.5f) - 0.25f;
-			}
+			prevLocation = SnapToGrid(prevLocation);
 
 			m_ConstructionPositions[1] = prevLocation;
 			m_ConstructionPositions[2] = prevLocation;
@@ -528,11 +512,7 @@ namespace Can
 			b_ConstructionRestricted = false;
 			if (Input::IsKeyPressed(KeyCode::O))
 				std::cout << "Manual debug break" << std::endl;
-			if (snapFlags & SNAP_TO_GRID)
-			{
-				prevLocation.x = prevLocation.x - std::fmod(prevLocation.x, 0.5f) + 0.25f;
-				prevLocation.z = prevLocation.z - std::fmod(prevLocation.z, 0.5f) - 0.25f;
-			}
+			prevLocation = SnapToGrid(prevLocation);
 			if (snapFlags & SNAP_TO_ROAD)
 			{
 				SnapInformation snapInformation = CheckSnapping(prevLocation);
@@ -691,11 +671,7 @@ namespace Can
 
 		if (m_ConstructionPhase == 0)
 		{
-			if (snapFlags & SNAP_TO_GRID)
-			{
-				prevLocation.x = prevLocation.x - std::fmod(prevLocation.x, 0.5f) + 0.25f;
-				prevLocation.z = prevLocation.z - std::fmod(prevLocation.z, 0.5f) - 0.25f;
-			}
+			prevLocation = SnapToGrid(prevLocation);
 			if (snapFlags & SNAP_TO_ROAD)
 			{
 				SnapInformation snapInformation = CheckSnapping(prevLocation);
@@ -713,11 +689,7 @@ namespace Can
 		else if (m_ConstructionPhase == 1)
 		{
 			b_ConstructionRestricted = false;
-			if (snapFlags & SNAP_TO_GRID)
-			{
-				prevLocation.x = prevLocation.x - std::fmod(prevLocation.x, 0.5f) + 0.25f;
-				prevLocation.z = prevLocation.z - std::fmod(prevLocation.z, 0.5f) - 0.25f;
-			}
+			prevLocation = SnapToGrid(prevLocation);
 			if ((snapFlags & SNAP_TO_ROAD) && cubicCurveOrder[1] == 3)
 			{
 				SnapInformation snapInformation = CheckSnapping(prevLocation);
@@ -895,11 +867,7 @@ namespace Can
 		else if (m_ConstructionPhase == 2)
 		{
 			b_ConstructionRestricted = false;
-			if (snapFlags & SNAP_TO_GRID)
-			{
-				prevLocation.x = prevLocation.x - std::fmod(prevLocation.x, 0.5f) + 0.25f;
-				prevLocation.z = prevLocation.z - std::fmod(prevLocation.z, 0.5f) - 0.25f;
-			}
+			prevLocation = SnapToGrid(prevLocation);
 			if (cubicCurveOrder[2] == 3 && (snapFlags & SNAP_TO_ROAD))
 			{
 				SnapInformation snapInformation = CheckSnapping(prevLocation);
@@ -1202,11 +1170,7 @@ namespace Can
 		else if (m_ConstructionPhase == 3)
 		{
 			b_ConstructionRestricted = false;
-			if (snapFlags & SNAP_TO_GRID)
-			{
-				prevLocation.x = prevLocation.x - std::fmod(prevLocation.x, 0.5f) + 0.25f;
-				prevLocation.z = prevLocation.z - std::fmod(prevLocation.z, 0.5f) - 0.25f;
-			}
+			prevLocation = SnapToGrid(prevLocation);
 			if ((cubicCurveOrder[3] == 3) && (snapFlags & SNAP_TO_ROAD))
 			{
 				SnapInformation snapInformation = CheckSnapping(prevLocation);
@@ -1486,7 +1450,7 @@ namespace Can
 			if (m_Scene->m_TreeManager.restrictions[0] && (restrictionFlags & RESTRICT_COLLISIONS))
 				CheckRoadTreeCollision(newRoadBoundingBox, newRoadBoundingPolygon);
 
-			
+
 			b_ConstructionRestricted |= angleIsRestricted;
 			b_ConstructionRestricted |= lengthIsRestricted;
 			b_ConstructionRestricted |= collisionIsRestricted;
@@ -2739,5 +2703,15 @@ namespace Can
 
 		m_GuidelinesStart->tintColor = v4(1.0f);
 		m_GuidelinesEnd->tintColor = v4(1.0f);
+	}
+	v3 RoadManager::SnapToGrid(const v3& prevLocation)
+	{
+		v3 result = prevLocation;
+		if (snapFlags & SNAP_TO_GRID)
+		{
+			result.x = prevLocation.x - std::fmod(prevLocation.x, 0.5f) + 0.25f;
+			result.z = prevLocation.z - std::fmod(prevLocation.z, 0.5f) - 0.25f;
+		}
+		return result;
 	}
 }
