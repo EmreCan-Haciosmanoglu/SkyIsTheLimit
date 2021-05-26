@@ -79,11 +79,7 @@ namespace Can
 		}
 		else
 		{
-			for (std::vector<Object*>& os : m_Guidelines)
-				for (Object* rsg : os)
-					rsg->enabled = false;
-			for (u64& inUse : m_GuidelinesInUse)
-				inUse = 0;
+			ResetGuideLines();
 
 			b_ConstructionRestricted = false;
 			prevLocation = SnapToGrid(prevLocation);
@@ -301,11 +297,7 @@ namespace Can
 		f32 roadPrefabWidth = selectedRoad->boundingBoxM.z - selectedRoad->boundingBoxL.z;
 		f32 roadPrefabLength = selectedRoad->boundingBoxM.x - selectedRoad->boundingBoxL.x;
 
-		for (std::vector<Object*>& os : m_Guidelines)
-			for (Object* rsg : os)
-				rsg->enabled = false;
-		for (u64& inUse : m_GuidelinesInUse)
-			inUse = 0;
+		ResetGuideLines();
 
 		if (m_ConstructionPhase == 0)
 		{
@@ -631,11 +623,7 @@ namespace Can
 		f32 roadPrefabWidth = selectedRoad->boundingBoxM.z - selectedRoad->boundingBoxL.z;
 		f32 roadPrefabLength = selectedRoad->boundingBoxM.x - selectedRoad->boundingBoxL.x;
 
-		for (std::vector<Object*>& os : m_Guidelines)
-			for (Object* rg : os)
-				rg->enabled = false;
-		for (u64& inUse : m_GuidelinesInUse)
-			inUse = 0;
+		ResetGuideLines();
 
 		if (m_ConstructionPhase == 0)
 		{
@@ -2639,11 +2627,7 @@ namespace Can
 			node.object->SetTransform(node.position);
 		}
 
-		for (std::vector<Object*>& os : m_Guidelines)
-			for (Object* rg : os)
-				rg->enabled = false;
-		for (u64& inUse : m_GuidelinesInUse)
-			inUse = 0;
+		ResetGuideLines();
 
 		m_GuidelinesStart->enabled = false;
 		m_GuidelinesEnd->enabled = false;
@@ -2651,6 +2635,7 @@ namespace Can
 		m_GuidelinesStart->tintColor = v4(1.0f);
 		m_GuidelinesEnd->tintColor = v4(1.0f);
 	}
+
 	v3 RoadManager::SnapToGrid(const v3& prevLocation)
 	{
 		v3 result = prevLocation;
@@ -2684,5 +2669,13 @@ namespace Can
 			}
 		}
 		return result;
+	}
+	void RoadManager::ResetGuideLines()
+	{
+		for (std::vector<Object*>& os : m_Guidelines)
+			for (Object* rsg : os)
+				rsg->enabled = false;
+		for (u64& inUse : m_GuidelinesInUse)
+			inUse = 0;
 	}
 }

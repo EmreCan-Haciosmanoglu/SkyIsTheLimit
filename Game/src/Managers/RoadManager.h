@@ -79,6 +79,7 @@ namespace Can
 	private:
 		v3 SnapToGrid(const v3& prevLocation);
 		v3 SnapToRoad(const v3& prevLocation, bool isStart);
+		void ResetGuideLines();
 
 	public:
 
@@ -89,23 +90,11 @@ namespace Can
 #define SNAP_TO_ANGLE   0x08
 #define SNAP_TO_GRID    0x10
 
-		/*std::array<bool, 5> snapOptions = { true, false, false, true, false };
-		// 0 : Roads
-		// 1 : Length
-		// 2 : Height
-		// 3 : Angle
-		// 4 : Grid
-		*/
 		u8 restrictionFlags = 0b111;
 #define RESTRICT_SMALL_ANGLES 0x1
 #define RESTRICT_SHORT_LENGTH 0x2
 #define RESTRICT_COLLISIONS   0x4
 
-		/*std::array<bool, 3> restrictions = { false, true, false };
-		// 0 : Small Angle
-		// 1 : Short Length
-		// 2 : Collision
-		*/
 		std::array<u8, 4> cubicCurveOrder = { 0, 1, 2, 3 };
 
 		GameScene* m_Scene = nullptr;
