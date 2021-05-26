@@ -80,6 +80,7 @@ namespace Can
 		v3 SnapToGrid(const v3& prevLocation);
 		v3 SnapToRoad(const v3& prevLocation, bool isStart);
 		void ResetGuideLines();
+		bool RestrictSmallAngles(const v3& locStart, bool start, const v3& locEnd, bool end);
 
 	public:
 
