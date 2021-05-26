@@ -82,6 +82,10 @@ namespace Can
 
 		glm::vec3 p1 = CurvePoints[0];
 		curve_samples.push_back(p1);
+
+		glm::vec3 dirTemp = glm::normalize(CurvePoints[1] - p1);
+		float rotTemp = (dirTemp.z < 0.0f) ? glm::acos(-dirTemp.x) + glm::radians(180.f) : glm::acos(dirTemp.x);
+
 		for (int c = 1; c < count; c++)
 		{
 			glm::vec3 p2 = Math::CubicCurve<float>(CurvePoints, curve_t_samples[c]);
@@ -115,7 +119,10 @@ namespace Can
 				float t = point.x / (type.road_length * scale);
 				t = t < 0.01f ? 0.0f : (t > 0.99f ? 1.0f : t);
 
-				point = Helper::RotateAPointAroundAPoint(point, rot1);
+				if (c == 1 && type.road->vertices[index + 0] < 0.01f)
+					point = Helper::RotateAPointAroundAPoint(point, rotTemp);
+				else
+					point = Helper::RotateAPointAroundAPoint(point, rot1);
 				point2 = Helper::RotateAPointAroundAPoint(point2, rot1);
 				point = Helper::RotateAPointAroundAPoint(point, Math::Lerp(0.0f, diff, t), point2);
 
@@ -131,7 +138,7 @@ namespace Can
 		}
 		Prefab* newPrefab = new Prefab(type.road->objectPath, type.road->shaderPath, type.road->texturePath, (float*)TOVertices, indexCount);
 
-		for (int c = 0; c < count-1; c++)
+		for (int c = 0; c < count - 1; c++)
 		{
 			glm::vec3 p2 = Math::CubicCurve<float>(CurvePoints, (c + 1.0f) / count);
 			glm::vec3 vec = p2 - p1;
