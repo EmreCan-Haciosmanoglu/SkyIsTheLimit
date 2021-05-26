@@ -78,6 +78,7 @@ namespace Can
 		void ResetStates();
 	private:
 		v3 SnapToGrid(const v3& prevLocation);
+		v3 SnapToRoad(const v3& prevLocation, bool isStart);
 
 	public:
 

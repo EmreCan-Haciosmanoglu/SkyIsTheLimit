@@ -70,15 +70,8 @@ namespace Can
 		if (m_ConstructionPhase == 0)
 		{
 			prevLocation = SnapToGrid(prevLocation);
-			if (snapFlags & SNAP_TO_ROAD)
-			{
-				SnapInformation snapInformation = CheckSnapping(prevLocation);
-				prevLocation = snapInformation.location;
-				b_ConstructionStartSnapped = snapInformation.snapped;
-				m_StartSnappedSegment = snapInformation.segment;
-				m_StartSnappedNode = snapInformation.node;
-				m_StartSnappedT = snapInformation.T;
-			}
+			prevLocation = SnapToRoad(prevLocation, true);
+
 			m_ConstructionPositions[0] = prevLocation;
 
 			m_GuidelinesStart->SetTransform(prevLocation + v3{ 0.0f, 0.15f, 0.0f }, v3{ 0.0f, glm::radians(180.0f), 0.0f });
@@ -94,15 +87,7 @@ namespace Can
 
 			b_ConstructionRestricted = false;
 			prevLocation = SnapToGrid(prevLocation);
-			if (snapFlags & SNAP_TO_ROAD)
-			{
-				SnapInformation snapInformation = CheckSnapping(prevLocation);
-				prevLocation = snapInformation.location;
-				b_ConstructionEndSnapped = snapInformation.snapped;
-				m_EndSnappedSegment = snapInformation.segment;
-				m_EndSnappedNode = snapInformation.node;
-				m_EndSnappedT = snapInformation.T;
-			}
+			prevLocation = SnapToRoad(prevLocation, false);
 
 			m_ConstructionPositions[3] = prevLocation;
 
@@ -325,15 +310,8 @@ namespace Can
 		if (m_ConstructionPhase == 0)
 		{
 			prevLocation = SnapToGrid(prevLocation);
-			if (snapFlags & SNAP_TO_ROAD)
-			{
-				SnapInformation snapInformation = CheckSnapping(prevLocation);
-				prevLocation = snapInformation.location;
-				b_ConstructionStartSnapped = snapInformation.snapped;
-				m_StartSnappedSegment = snapInformation.segment;
-				m_StartSnappedNode = snapInformation.node;
-				m_StartSnappedT = snapInformation.T;
-			}
+			prevLocation = SnapToRoad(prevLocation, true);
+
 			m_ConstructionPositions[0] = prevLocation;
 			m_ConstructionPositions[1] = prevLocation;
 			m_ConstructionPositions[2] = prevLocation;
@@ -510,18 +488,8 @@ namespace Can
 		else if (m_ConstructionPhase == 2)
 		{
 			b_ConstructionRestricted = false;
-			if (Input::IsKeyPressed(KeyCode::O))
-				std::cout << "Manual debug break" << std::endl;
 			prevLocation = SnapToGrid(prevLocation);
-			if (snapFlags & SNAP_TO_ROAD)
-			{
-				SnapInformation snapInformation = CheckSnapping(prevLocation);
-				prevLocation = snapInformation.location;
-				b_ConstructionStartSnapped = snapInformation.snapped;
-				m_EndSnappedSegment = snapInformation.segment;
-				m_EndSnappedNode = snapInformation.node;
-				m_EndSnappedT = snapInformation.T;
-			}
+			prevLocation = SnapToRoad(prevLocation, false);
 
 			m_ConstructionPositions[3] = prevLocation;
 
@@ -672,15 +640,8 @@ namespace Can
 		if (m_ConstructionPhase == 0)
 		{
 			prevLocation = SnapToGrid(prevLocation);
-			if (snapFlags & SNAP_TO_ROAD)
-			{
-				SnapInformation snapInformation = CheckSnapping(prevLocation);
-				prevLocation = snapInformation.location;
-				b_ConstructionStartSnapped = snapInformation.snapped;
-				m_StartSnappedSegment = snapInformation.segment;
-				m_StartSnappedNode = snapInformation.node;
-				m_StartSnappedT = snapInformation.T;
-			}
+			prevLocation = SnapToRoad(prevLocation, true);
+
 			m_ConstructionPositions[0] = prevLocation;
 
 			m_GuidelinesStart->SetTransform(prevLocation + v3{ 0.0f, 0.15f, 0.0f }, v3{ 0.0f, glm::radians(180.0f), 0.0f });
@@ -690,17 +651,13 @@ namespace Can
 		{
 			b_ConstructionRestricted = false;
 			prevLocation = SnapToGrid(prevLocation);
-			if ((snapFlags & SNAP_TO_ROAD) && cubicCurveOrder[1] == 3)
-			{
-				SnapInformation snapInformation = CheckSnapping(prevLocation);
-				prevLocation = snapInformation.location;
-				b_ConstructionEndSnapped = snapInformation.snapped;
-				m_EndSnappedSegment = snapInformation.segment;
-				m_EndSnappedNode = snapInformation.node;
-				m_EndSnappedT = snapInformation.T;
-			}
+			if (cubicCurveOrder[1] == 3)
+				prevLocation = SnapToRoad(prevLocation, false);
 
 			m_ConstructionPositions[cubicCurveOrder[1]] = prevLocation;
+
+			if (Input::IsKeyPressed(KeyCode::O))
+				std::cout << "Manual debug break" << std::endl;
 
 			bool angleIsRestricted = false;
 			if ((cubicCurveOrder[1] == 1) && (restrictionFlags & RESTRICT_SMALL_ANGLES))
@@ -828,7 +785,7 @@ namespace Can
 				}
 				f32 angleDiff = crossProduct.y > 0.0 ? glm::radians(newAngle - angle) : glm::radians(angle - newAngle);
 				AB = glm::rotateY(AB, angleDiff);
-				m_ConstructionPositions[3] = m_ConstructionPositions[0] + AB;
+				m_ConstructionPositions[1] = m_ConstructionPositions[0] + AB;
 			}
 
 			v2 A = v2{ m_ConstructionPositions[cubicCurveOrder[0]].x, m_ConstructionPositions[cubicCurveOrder[0]].z };
@@ -850,7 +807,7 @@ namespace Can
 					std::array<v2,3>{ P2, P3, P4}
 			};
 
-			bool lengthIsRestricted = (restrictionFlags & RESTRICT_SHORT_LENGTH) && glm::length(AD) < 2.0f * roadPrefabLength;
+			bool lengthIsRestricted = (restrictionFlags & RESTRICT_SHORT_LENGTH) && glm::length(AB) < 2.0f * roadPrefabLength;
 			bool collisionIsRestricted = (restrictionFlags & RESTRICT_COLLISIONS) ? CheckStraightRoadRoadCollision(newRoadPolygon) : false;
 
 			if (m_Scene->m_BuildingManager.restrictions[0] && (restrictionFlags & RESTRICT_COLLISIONS))
@@ -868,15 +825,8 @@ namespace Can
 		{
 			b_ConstructionRestricted = false;
 			prevLocation = SnapToGrid(prevLocation);
-			if (cubicCurveOrder[2] == 3 && (snapFlags & SNAP_TO_ROAD))
-			{
-				SnapInformation snapInformation = CheckSnapping(prevLocation);
-				prevLocation = snapInformation.location;
-				b_ConstructionEndSnapped = snapInformation.snapped;
-				m_EndSnappedSegment = snapInformation.segment;
-				m_EndSnappedNode = snapInformation.node;
-				m_EndSnappedT = snapInformation.T;
-			}
+			if (cubicCurveOrder[2] == 3)
+				prevLocation = SnapToRoad(prevLocation, false);
 
 			m_ConstructionPositions[cubicCurveOrder[2]] = prevLocation;
 			m_ConstructionPositions[cubicCurveOrder[3]] = prevLocation;
@@ -1171,15 +1121,8 @@ namespace Can
 		{
 			b_ConstructionRestricted = false;
 			prevLocation = SnapToGrid(prevLocation);
-			if ((cubicCurveOrder[3] == 3) && (snapFlags & SNAP_TO_ROAD))
-			{
-				SnapInformation snapInformation = CheckSnapping(prevLocation);
-				prevLocation = snapInformation.location;
-				b_ConstructionEndSnapped = snapInformation.snapped;
-				m_EndSnappedSegment = snapInformation.segment;
-				m_EndSnappedNode = snapInformation.node;
-				m_EndSnappedT = snapInformation.T;
-			}
+			if (cubicCurveOrder[3] == 3)
+				prevLocation = SnapToRoad(prevLocation, false);
 
 			m_ConstructionPositions[cubicCurveOrder[3]] = prevLocation;
 
@@ -2711,6 +2654,30 @@ namespace Can
 		{
 			result.x = prevLocation.x - std::fmod(prevLocation.x, 0.5f) + 0.25f;
 			result.z = prevLocation.z - std::fmod(prevLocation.z, 0.5f) - 0.25f;
+		}
+		return result;
+	}
+	v3 RoadManager::SnapToRoad(const v3& prevLocation, bool isStart)
+	{
+		v3 result = prevLocation;
+		if (snapFlags & SNAP_TO_ROAD)
+		{
+			SnapInformation snapInformation = CheckSnapping(prevLocation);
+			result = snapInformation.location;
+			if (isStart)
+			{
+				b_ConstructionStartSnapped = snapInformation.snapped;
+				m_StartSnappedSegment = snapInformation.segment;
+				m_StartSnappedNode = snapInformation.node;
+				m_StartSnappedT = snapInformation.T;
+			}
+			else
+			{
+				b_ConstructionEndSnapped = snapInformation.snapped;
+				m_EndSnappedSegment = snapInformation.segment;
+				m_EndSnappedNode = snapInformation.node;
+				m_EndSnappedT = snapInformation.T;
+			}
 		}
 		return result;
 	}
