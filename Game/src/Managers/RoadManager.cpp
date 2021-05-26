@@ -2489,6 +2489,8 @@ namespace Can
 				if (segment.EndNode > rs.StartNode)
 					segment.EndNode--;
 			}
+			for (u64 i = rs.StartNode; i < m_Nodes.size(); i++)
+				m_Nodes[i].index--;
 			m_Nodes.erase(std::find(m_Nodes.begin(), m_Nodes.end(), startNode));
 		}
 		RoadNode& endNode = m_Nodes[rs.EndNode];
@@ -2504,6 +2506,8 @@ namespace Can
 				if (segment.EndNode > rs.EndNode)
 					segment.EndNode--;
 			}
+			for (u64 i = rs.EndNode; i < m_Nodes.size(); i++)
+				m_Nodes[i].index--;
 			m_Nodes.erase(std::find(m_Nodes.begin(), m_Nodes.end(), endNode));
 		}
 
