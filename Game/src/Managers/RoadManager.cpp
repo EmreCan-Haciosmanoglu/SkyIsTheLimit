@@ -69,8 +69,8 @@ namespace Can
 
 		if (m_ConstructionPhase == 0)
 		{
-			prevLocation = SnapToGrid(prevLocation);
-			prevLocation = SnapToRoad(prevLocation, true);
+			SnapToGrid(prevLocation);
+			SnapToRoad(prevLocation, true);
 
 			m_ConstructionPositions[0] = prevLocation;
 
@@ -82,8 +82,8 @@ namespace Can
 			ResetGuideLines();
 
 			b_ConstructionRestricted = false;
-			prevLocation = SnapToGrid(prevLocation);
-			prevLocation = SnapToRoad(prevLocation, false);
+			SnapToGrid(prevLocation);
+			SnapToRoad(prevLocation, false);
 
 			m_ConstructionPositions[3] = prevLocation;
 
@@ -106,79 +106,9 @@ namespace Can
 					AB = length * glm::normalize(AB);
 					m_ConstructionPositions[3] = m_ConstructionPositions[0] + AB;
 				}
-				if (snapFlags & SNAP_TO_HEIGHT)
-				{
-					m_ConstructionPositions[3].y = m_ConstructionPositions[0].y;
-					AB.y = 0.0f;
-				}
-				if ((snapFlags & SNAP_TO_ANGLE) && (glm::length(AB) > 0.5f))
-				{
-					f32 newAngle = 0.0f;
-					f32 endAngle = glm::degrees(rotEnd);
-					f32 angle = 0.0f;
-					v3 crossProduct = v3(0.0f, 1.0f, 0.0f);
-					if (m_StartSnappedNode != -1)
-					{
-						RoadNode& node = m_Nodes[m_StartSnappedNode];
-						f32 minAngle = 180.0f;
-						for (u64 rsIndex : node.roadSegments)
-						{
-							RoadSegment& rs = m_Segments[rsIndex];
-							v3 dir = rs.StartNode == m_StartSnappedNode ? rs.GetStartDirection() : rs.GetEndDirection();
-
-							f32 dotResult = glm::dot(dir, AB);
-							dotResult = std::max(-1.0f, std::min(1.0f, (dotResult / (glm::length(dir) * glm::length(AB)))));
-							newAngle = glm::degrees(glm::acos(dotResult));
-
-							if (newAngle < minAngle)
-							{
-								minAngle = newAngle;
-								crossProduct = glm::cross(dir, AB);
-							}
-						}
-						angle = minAngle;
-						if (angle < 30.0f)
-							newAngle = 30.0f;
-						else if (angle > 80.0f && angle < 100.0f)
-							newAngle = 90.0f;
-						else if (angle > 170.0f)
-							newAngle = 180.0f;
-						else if (Input::IsKeyPressed(KeyCode::LeftControl))
-							newAngle = angle + 2.5f - std::fmod(angle + 2.5f, 5.0f);
-						else
-							newAngle = angle;
-					}
-					else if (m_StartSnappedSegment != -1)
-					{
-						RoadSegment& segment = m_Segments[m_StartSnappedSegment];
-						v3 tangent = Math::CubicCurveTangent(segment.GetCurvePoints(), m_StartSnappedT);
-						crossProduct = glm::cross(tangent, AB);
-
-						f32 dotResult = glm::dot(tangent, AB);
-						dotResult = std::max(-1.0f, std::min(1.0f, (dotResult / (glm::length(tangent) * glm::length(AB)))));
-						angle = glm::degrees(glm::acos(dotResult));
-
-
-						if (angle < 30.0f)
-							newAngle = 30.0f;
-						else if (angle > 80.0f && angle < 100.0f)
-							newAngle = 90.0f;
-						else if (angle > 150.0f)
-							newAngle = 150.0f;
-						else if (Input::IsKeyPressed(KeyCode::LeftControl))
-							newAngle = angle + 2.5f - std::fmod(angle + 2.5f, 5.0f);
-						else
-							newAngle = angle;
-					}
-					else if (Input::IsKeyPressed(KeyCode::LeftControl))
-					{
-						f32 angle = std::fmod(endAngle + 720.0f, 360.0f);
-						newAngle = angle + 2.5f - std::fmod(angle + 2.5f, 5.0f);
-					}
-					f32 angleDiff = crossProduct.y > 0.0 ? glm::radians(newAngle - angle) : glm::radians(angle - newAngle);
-					AB = glm::rotateY(AB, angleDiff);
-					m_ConstructionPositions[3] = m_ConstructionPositions[0] + AB;
-				}
+				SnapToHeight({ 3 }, 0, AB);
+				SnapToAngle(AB, m_StartSnappedNode, m_StartSnappedSegment);
+				m_ConstructionPositions[3] = m_ConstructionPositions[0] + AB;
 			}
 
 			v2 A = v2{ m_ConstructionPositions[0].x, m_ConstructionPositions[0].z };
@@ -225,8 +155,8 @@ namespace Can
 
 		if (m_ConstructionPhase == 0)
 		{
-			prevLocation = SnapToGrid(prevLocation);
-			prevLocation = SnapToRoad(prevLocation, true);
+			SnapToGrid(prevLocation);
+			SnapToRoad(prevLocation, true);
 
 			m_ConstructionPositions[0] = prevLocation;
 			m_ConstructionPositions[1] = prevLocation;
@@ -239,7 +169,7 @@ namespace Can
 		else if (m_ConstructionPhase == 1)
 		{
 			b_ConstructionRestricted = false;
-			prevLocation = SnapToGrid(prevLocation);
+			SnapToGrid(prevLocation);
 
 			m_ConstructionPositions[1] = prevLocation;
 			m_ConstructionPositions[2] = prevLocation;
@@ -254,82 +184,11 @@ namespace Can
 			f32 rotEnd = glm::atan(-AB.z / AB.x) + rotOffset;
 			f32 rotStart = rotEnd + glm::radians(180.0f);
 
-			if (snapFlags & SNAP_TO_HEIGHT)
-			{
-				m_ConstructionPositions[1].y = m_ConstructionPositions[0].y;
-				m_ConstructionPositions[2].y = m_ConstructionPositions[0].y;
-				m_ConstructionPositions[3].y = m_ConstructionPositions[0].y;
-				AB.y = 0.0f;
-			}
-			if ((snapFlags & SNAP_TO_ANGLE) && (glm::length(AB) > 0.5f))
-			{
-				f32 newAngle = 0.0f;
-				f32 endAngle = glm::degrees(rotEnd);
-				f32 angle = 0.0f;
-				v3 crossProduct = v3(0.0f, 1.0f, 0.0f);
-				if (m_StartSnappedNode != -1)
-				{
-					RoadNode& node = m_Nodes[m_StartSnappedNode];
-					f32 minAngle = 180.0f;
-					for (u64 rsIndex : node.roadSegments)
-					{
-						RoadSegment& rs = m_Segments[rsIndex];
-						v3 dir = rs.StartNode == m_StartSnappedNode ? rs.GetStartDirection() : rs.GetEndDirection();
-
-						f32 dotResult = glm::dot(dir, AB);
-						dotResult = std::max(-1.0f, std::min(1.0f, (dotResult / (glm::length(dir) * glm::length(AB)))));
-						newAngle = glm::degrees(glm::acos(dotResult));
-
-						if (newAngle < minAngle)
-						{
-							minAngle = newAngle;
-							crossProduct = glm::cross(dir, AB);
-						}
-					}
-					angle = minAngle;
-					if (angle < 30.0f)
-						newAngle = 30.0f;
-					else if (angle > 80.0f && angle < 100.0f)
-						newAngle = 90.0f;
-					else if (angle > 170.0f)
-						newAngle = 180.0f;
-					else if (Input::IsKeyPressed(KeyCode::LeftControl))
-						newAngle = angle + 2.5f - std::fmod(angle + 2.5f, 5.0f);
-					else
-						newAngle = angle;
-				}
-				else if (m_StartSnappedSegment != -1)
-				{
-					RoadSegment& segment = m_Segments[m_StartSnappedSegment];
-					v3 tangent = Math::CubicCurveTangent(segment.GetCurvePoints(), m_StartSnappedT);
-					crossProduct = glm::cross(tangent, AB);
-
-					f32 dotResult = glm::dot(tangent, AB);
-					dotResult = std::max(-1.0f, std::min(1.0f, (dotResult / (glm::length(tangent) * glm::length(AB)))));
-					angle = glm::degrees(glm::acos(dotResult));
-
-					if (angle < 30.0f)
-						newAngle = 30.0f;
-					else if (angle > 80.0f && angle < 100.0f)
-						newAngle = 90.0f;
-					else if (angle > 150.0f)
-						newAngle = 150.0f;
-					else if (Input::IsKeyPressed(KeyCode::LeftControl))
-						newAngle = angle + 2.5f - std::fmod(angle + 2.5f, 5.0f);
-					else
-						newAngle = angle;
-				}
-				else if (Input::IsKeyPressed(KeyCode::LeftControl))
-				{
-					f32 angle = std::fmod(endAngle + 720.0f, 360.0f);
-					newAngle = angle + 2.5f - std::fmod(angle + 2.5f, 5.0f);
-				}
-				f32 angleDiff = crossProduct.y > 0.0 ? glm::radians(newAngle - angle) : glm::radians(angle - newAngle);
-				AB = glm::rotateY(AB, angleDiff);
-				m_ConstructionPositions[1] = m_ConstructionPositions[0] + AB;
-				m_ConstructionPositions[2] = m_ConstructionPositions[0] + AB;
-				m_ConstructionPositions[3] = m_ConstructionPositions[0] + AB;
-			}
+			SnapToHeight({ 1, 2, 3 }, 0, AB);
+			SnapToAngle(AB, m_StartSnappedNode, m_StartSnappedSegment);
+			m_ConstructionPositions[1] = m_ConstructionPositions[0] + AB;
+			m_ConstructionPositions[2] = m_ConstructionPositions[0] + AB;
+			m_ConstructionPositions[3] = m_ConstructionPositions[0] + AB;
 
 			v2 A = v2{ m_ConstructionPositions[0].x, m_ConstructionPositions[0].z };
 			v2 D = v2{ m_ConstructionPositions[3].x, m_ConstructionPositions[3].z };
@@ -364,14 +223,14 @@ namespace Can
 		else if (m_ConstructionPhase == 2)
 		{
 			b_ConstructionRestricted = false;
-			prevLocation = SnapToGrid(prevLocation);
-			prevLocation = SnapToRoad(prevLocation, false);
+			SnapToGrid(prevLocation);
+			SnapToRoad(prevLocation, false);
 
 			m_ConstructionPositions[3] = prevLocation;
 
-			if (!b_ConstructionEndSnapped && (snapFlags & SNAP_TO_HEIGHT))
-				m_ConstructionPositions[3].y = m_ConstructionPositions[0].y;
-
+			if (!b_ConstructionEndSnapped)
+				SnapToHeight({ 3 }, 0, v3(0.0f));
+			// SnapToAngle For center angle
 			/***Magic***/ {
 				v2 Cd{ m_ConstructionPositions[1].x, m_ConstructionPositions[1].z };
 				v2 A{ m_ConstructionPositions[0].x, m_ConstructionPositions[0].z };
@@ -435,8 +294,8 @@ namespace Can
 
 		if (m_ConstructionPhase == 0)
 		{
-			prevLocation = SnapToGrid(prevLocation);
-			prevLocation = SnapToRoad(prevLocation, true);
+			SnapToGrid(prevLocation);
+			SnapToRoad(prevLocation, true);
 
 			m_ConstructionPositions[0] = prevLocation;
 
@@ -446,14 +305,12 @@ namespace Can
 		else if (m_ConstructionPhase == 1)
 		{
 			b_ConstructionRestricted = false;
-			prevLocation = SnapToGrid(prevLocation);
+			SnapToGrid(prevLocation);
 			if (cubicCurveOrder[1] == 3)
-				prevLocation = SnapToRoad(prevLocation, false);
+				SnapToRoad(prevLocation, false);
 
 			m_ConstructionPositions[cubicCurveOrder[1]] = prevLocation;
 
-			if (Input::IsKeyPressed(KeyCode::O))
-				std::cout << "Manual debug break" << std::endl;
 
 			// TODO: After angle snapping
 			bool angleIsRestricted = false;
@@ -474,75 +331,11 @@ namespace Can
 
 				m_ConstructionPositions[1] = m_ConstructionPositions[0] + AB;
 			}
-			if ((snapFlags & SNAP_TO_HEIGHT) && !b_ConstructionEndSnapped)
+			if (!b_ConstructionEndSnapped)
+				SnapToHeight({ cubicCurveOrder[1] }, 0, AB);
+			if (cubicCurveOrder[1] == 1)
 			{
-				m_ConstructionPositions[cubicCurveOrder[1]].y = m_ConstructionPositions[0].y;
-				AB.y = 0.0f;
-			}
-			if ((snapFlags & SNAP_TO_ANGLE) && cubicCurveOrder[1] == 1 && glm::length(AB) > 0.5f)
-			{
-				f32 newAngle = 0.0f;
-				f32 endAngle = glm::degrees(rotEnd);
-				f32 angle = 0.0f;
-				v3 crossProduct = v3(0.0f, 1.0f, 0.0f);
-				if (m_StartSnappedNode != -1)
-				{
-					RoadNode& node = m_Nodes[m_StartSnappedNode];
-					f32 minAngle = 180.0f;
-					for (u64 rsIndex : node.roadSegments)
-					{
-						RoadSegment& rs = m_Segments[rsIndex];
-						v3 dir = rs.StartNode == m_StartSnappedNode ? rs.GetStartDirection() : rs.GetEndDirection();
-
-						f32 dotResult = glm::dot(dir, AB);
-						dotResult = std::max(-1.0f, std::min(1.0f, (dotResult / (glm::length(dir) * glm::length(AB)))));
-						newAngle = glm::degrees(glm::acos(dotResult));
-
-						if (newAngle < minAngle)
-						{
-							minAngle = newAngle;
-							crossProduct = glm::cross(dir, AB);
-						}
-					}
-					angle = minAngle;
-					if (angle < 30.0f)
-						newAngle = 30.0f;
-					else if (angle > 80.0f && angle < 100.0f)
-						newAngle = 90.0f;
-					else if (angle > 170.0f)
-						newAngle = 180.0f;
-					else if (Input::IsKeyPressed(KeyCode::LeftControl))
-						newAngle = angle + 2.5f - std::fmod(angle + 2.5f, 5.0f);
-					else
-						newAngle = angle;
-				}
-				else if (m_StartSnappedSegment != -1)
-				{
-					RoadSegment& segment = m_Segments[m_StartSnappedSegment];
-					v3 tangent = Math::CubicCurveTangent(segment.GetCurvePoints(), m_StartSnappedT);
-					crossProduct = glm::cross(tangent, AB);
-
-					f32 dotResult = glm::dot(tangent, AB);
-					dotResult = std::max(-1.0f, std::min(1.0f, (dotResult / (glm::length(tangent) * glm::length(AB)))));
-					angle = glm::degrees(glm::acos(dotResult));
-					if (angle < 30.0f)
-						newAngle = 30.0f;
-					else if (angle > 80.0f && angle < 100.0f)
-						newAngle = 90.0f;
-					else if (angle > 150.0f)
-						newAngle = 150.0f;
-					else if (Input::IsKeyPressed(KeyCode::LeftControl))
-						newAngle = angle + 2.5f - std::fmod(angle + 2.5f, 5.0f);
-					else
-						newAngle = angle;
-				}
-				else if (Input::IsKeyPressed(KeyCode::LeftControl))
-				{
-					f32 angle = std::fmod(endAngle + 720.0f, 360.0f);
-					newAngle = angle + 2.5f - std::fmod(angle + 2.5f, 5.0f);
-				}
-				f32 angleDiff = crossProduct.y > 0.0 ? glm::radians(newAngle - angle) : glm::radians(angle - newAngle);
-				AB = glm::rotateY(AB, angleDiff);
+				SnapToAngle(AB, m_StartSnappedNode, m_StartSnappedSegment);
 				m_ConstructionPositions[1] = m_ConstructionPositions[0] + AB;
 			}
 
@@ -582,9 +375,9 @@ namespace Can
 		else if (m_ConstructionPhase == 2)
 		{
 			b_ConstructionRestricted = false;
-			prevLocation = SnapToGrid(prevLocation);
+			SnapToGrid(prevLocation);
 			if (cubicCurveOrder[2] == 3)
-				prevLocation = SnapToRoad(prevLocation, false);
+				SnapToRoad(prevLocation, false);
 
 			m_ConstructionPositions[cubicCurveOrder[2]] = prevLocation;
 			m_ConstructionPositions[cubicCurveOrder[3]] = prevLocation;
@@ -619,154 +412,19 @@ namespace Can
 					m_ConstructionPositions[2] = m_ConstructionPositions[3] + AB2;
 				}
 			}
-			if ((snapFlags & SNAP_TO_HEIGHT) && !b_ConstructionEndSnapped)
+			if (!b_ConstructionEndSnapped)
+				SnapToHeight({ cubicCurveOrder[2] }, 0, v3(0.0f));
+			if (cubicCurveOrder[2] == 1)
 			{
-				m_ConstructionPositions[cubicCurveOrder[2]].y = m_ConstructionPositions[0].y;
+				v3 AB = m_ConstructionPositions[1] - m_ConstructionPositions[0];
+				SnapToAngle(AB, m_StartSnappedNode, m_StartSnappedSegment);
+				m_ConstructionPositions[1] = m_ConstructionPositions[0] + AB;
 			}
-			if (snapFlags & SNAP_TO_ANGLE)
+			else if (cubicCurveOrder[3] == 1 && cubicCurveOrder[2] == 2)
 			{
-				v3 AB1 = m_ConstructionPositions[1] - m_ConstructionPositions[0];
-				f32 rotation1 = glm::atan(-AB1.z / AB1.x) + (f32)(AB1.x < 0.0f) * glm::radians(180.0f);
-				f32 length1 = glm::length(AB1);
-
-				v3 AB2 = m_ConstructionPositions[2] - m_ConstructionPositions[3];
-				f32 rotation2 = glm::atan(-AB2.z / AB2.x) + (f32)(AB2.x < 0.0f) * glm::radians(180.0f);
-				f32 length2 = glm::length(AB2);
-
-				if (cubicCurveOrder[2] == 1 && length1 > 0.1f)
-				{
-					f32 newAngle = 0.0f;
-					f32 endAngle = glm::degrees(rotation1);
-					f32 angle = 0.0f;
-					v3 crossProduct = v3(0.0f, 1.0f, 0.0f);
-					if (m_StartSnappedNode != -1)
-					{
-						RoadNode& node = m_Nodes[m_StartSnappedNode];
-						f32 minAngle = 180.0f;
-						for (u64 rsIndex : node.roadSegments)
-						{
-							RoadSegment& rs = m_Segments[rsIndex];
-							v3 dir = rs.StartNode == m_StartSnappedNode ? rs.GetStartDirection() : rs.GetEndDirection();
-
-							f32 dotResult = glm::dot(dir, AB1);
-							dotResult = std::max(-1.0f, std::min(1.0f, (dotResult / (glm::length(dir) * glm::length(AB1)))));
-							newAngle = glm::degrees(glm::acos(dotResult));
-
-							if (newAngle < minAngle)
-							{
-								minAngle = newAngle;
-								crossProduct = glm::cross(dir, AB1);
-							}
-						}
-						angle = minAngle;
-						if (angle < 30.0f)
-							newAngle = 30.0f;
-						else if (angle > 80.0f && angle < 100.0f)
-							newAngle = 90.0f;
-						else if (angle > 170.0f)
-							newAngle = 180.0f;
-						else if (Input::IsKeyPressed(KeyCode::LeftControl))
-							newAngle = angle + 2.5f - std::fmod(angle + 2.5f, 5.0f);
-						else
-							newAngle = angle;
-					}
-					else if (m_StartSnappedSegment != -1)
-					{
-						RoadSegment& segment = m_Segments[m_StartSnappedSegment];
-						v3 tangent = Math::CubicCurveTangent(segment.GetCurvePoints(), m_StartSnappedT);
-						crossProduct = glm::cross(tangent, AB1);
-
-						f32 dotResult = glm::dot(tangent, AB1);
-						dotResult = std::max(-1.0f, std::min(1.0f, (dotResult / (glm::length(tangent) * glm::length(AB1)))));
-						angle = glm::degrees(glm::acos(dotResult));
-
-						if (angle < 30.0f)
-							newAngle = 30.0f;
-						else if (angle > 80.0f && angle < 100.0f)
-							newAngle = 90.0f;
-						else if (angle > 150.0f)
-							newAngle = 150.0f;
-						else if (Input::IsKeyPressed(KeyCode::LeftControl))
-							newAngle = angle + 2.5f - std::fmod(angle + 2.5f, 5.0f);
-						else
-							newAngle = angle;
-					}
-					else if (Input::IsKeyPressed(KeyCode::LeftControl))
-					{
-						f32 angle = std::fmod(endAngle + 720.0f, 360.0f);
-						newAngle = angle + 2.5f - std::fmod(angle + 2.5f, 5.0f);
-					}
-					f32 angleDiff = crossProduct.y > 0.0 ? glm::radians(newAngle - angle) : glm::radians(angle - newAngle);
-					AB1 = glm::rotateY(AB1, angleDiff);
-					m_ConstructionPositions[1] = m_ConstructionPositions[0] + AB1;
-				}
-				else if (cubicCurveOrder[3] == 1 && cubicCurveOrder[2] == 2 && length2 > 0.1f)
-				{
-					f32 newAngle = 0.0f;
-					f32 endAngle = glm::degrees(rotation1);
-					f32 angle = 0.0f;
-					v3 crossProduct = v3(0.0f, 1.0f, 0.0f);
-					if (m_EndSnappedNode != -1)
-					{
-						RoadNode& node = m_Nodes[m_EndSnappedNode];
-						f32 minAngle = 180.0f;
-						for (u64 rsIndex : node.roadSegments)
-						{
-							RoadSegment& rs = m_Segments[rsIndex];
-							v3 dir = rs.StartNode == m_StartSnappedNode ? rs.GetStartDirection() : rs.GetEndDirection();
-
-							f32 dotResult = glm::dot(dir, AB2);
-							dotResult = std::max(-1.0f, std::min(1.0f, (dotResult / (glm::length(dir) * glm::length(AB2)))));
-							newAngle = glm::degrees(glm::acos(dotResult));
-
-							if (newAngle < minAngle)
-							{
-								minAngle = newAngle;
-								crossProduct = glm::cross(dir, AB2);
-							}
-						}
-						angle = minAngle;
-						if (angle < 30.0f)
-							newAngle = 30.0f;
-						else if (angle > 80.0f && angle < 100.0f)
-							newAngle = 90.0f;
-						else if (angle > 170.0f)
-							newAngle = 180.0f;
-						else if (Input::IsKeyPressed(KeyCode::LeftControl))
-							newAngle = angle + 2.5f - std::fmod(angle + 2.5f, 5.0f);
-						else
-							newAngle = angle;
-					}
-					else if (m_EndSnappedSegment != -1)
-					{
-						RoadSegment& segment = m_Segments[m_EndSnappedSegment];
-						v3 tangent = Math::CubicCurveTangent(segment.GetCurvePoints(), m_EndSnappedT);
-						crossProduct = glm::cross(tangent, AB2);
-
-						f32 dotResult = glm::dot(tangent, AB2);
-						dotResult = std::max(-1.0f, std::min(1.0f, (dotResult / (glm::length(tangent) * glm::length(AB2)))));
-						angle = glm::degrees(glm::acos(dotResult));
-
-						if (angle < 30.0f)
-							newAngle = 30.0f;
-						else if (angle > 80.0f && angle < 100.0f)
-							newAngle = 90.0f;
-						else if (angle > 150.0f)
-							newAngle = 150.0f;
-						else if (Input::IsKeyPressed(KeyCode::LeftControl))
-							newAngle = angle + 2.5f - std::fmod(angle + 2.5f, 5.0f);
-						else
-							newAngle = angle;
-					}
-					else if (Input::IsKeyPressed(KeyCode::LeftControl))
-					{
-						f32 angle = std::fmod(endAngle + 720.0f, 360.0f);
-						newAngle = angle + 2.5f - std::fmod(angle + 2.5f, 5.0f);
-					}
-					f32 angleDiff = crossProduct.y > 0.0 ? glm::radians(newAngle - angle) : glm::radians(angle - newAngle);
-					AB2 = glm::rotateY(AB2, angleDiff);
-					m_ConstructionPositions[2] = m_ConstructionPositions[3] + AB2;
-				}
+				v3 AB = m_ConstructionPositions[2] - m_ConstructionPositions[3];
+				SnapToAngle(AB, m_EndSnappedNode, m_EndSnappedSegment);
+				m_ConstructionPositions[2] = m_ConstructionPositions[3] + AB;
 			}
 
 			// needs some attention
@@ -799,9 +457,9 @@ namespace Can
 		else if (m_ConstructionPhase == 3)
 		{
 			b_ConstructionRestricted = false;
-			prevLocation = SnapToGrid(prevLocation);
+			SnapToGrid(prevLocation);
 			if (cubicCurveOrder[3] == 3)
-				prevLocation = SnapToRoad(prevLocation, false);
+				SnapToRoad(prevLocation, false);
 
 			m_ConstructionPositions[cubicCurveOrder[3]] = prevLocation;
 
@@ -831,154 +489,20 @@ namespace Can
 					m_ConstructionPositions[2] = m_ConstructionPositions[3] + AB2;
 				}
 			}
-			if ((snapFlags & SNAP_TO_HEIGHT) && !b_ConstructionEndSnapped)
+			if (!b_ConstructionEndSnapped)
+				SnapToHeight({ cubicCurveOrder[3] }, 0, v3(0.0f));
+
+			if (cubicCurveOrder[3] == 1)
 			{
-				m_ConstructionPositions[cubicCurveOrder[3]].y = m_ConstructionPositions[0].y;
+				v3 AB = m_ConstructionPositions[1] - m_ConstructionPositions[0];
+				SnapToAngle(AB, m_StartSnappedNode, m_StartSnappedSegment);
+				m_ConstructionPositions[1] = m_ConstructionPositions[0] + AB;
 			}
-			if (snapFlags & SNAP_TO_ANGLE)
+			else if (cubicCurveOrder[3] == 2)
 			{
-				v3 AB1 = m_ConstructionPositions[1] - m_ConstructionPositions[0];
-				f32 rotation1 = glm::atan(-AB1.z / AB1.x) + (f32)(AB1.x < 0.0f) * glm::radians(180.0f);
-				f32 length1 = glm::length(AB1);
-
-				v3 AB2 = m_ConstructionPositions[2] - m_ConstructionPositions[3];
-				f32 rotation2 = glm::atan(-AB2.z / AB2.x) + (f32)(AB2.x < 0.0f) * glm::radians(180.0f);
-				f32 length2 = glm::length(AB2);
-
-				if (cubicCurveOrder[3] == 1 && length1 > 0.1f)
-				{
-					f32 newAngle = 0.0f;
-					f32 endAngle = glm::degrees(rotation1);
-					f32 angle = 0.0f;
-					v3 crossProduct = v3(0.0f, 1.0f, 0.0f);
-					if (m_StartSnappedNode != -1)
-					{
-						RoadNode& node = m_Nodes[m_StartSnappedNode];
-						f32 minAngle = 180.0f;
-						for (u64 rsIndex : node.roadSegments)
-						{
-							RoadSegment& rs = m_Segments[rsIndex];
-							v3 dir = rs.StartNode == m_StartSnappedNode ? rs.GetStartDirection() : rs.GetEndDirection();
-
-							f32 dotResult = glm::dot(dir, AB1);
-							dotResult = std::max(-1.0f, std::min(1.0f, (dotResult / (glm::length(dir) * glm::length(AB1)))));
-							newAngle = glm::degrees(glm::acos(dotResult));
-
-							if (newAngle < minAngle)
-							{
-								minAngle = newAngle;
-								crossProduct = glm::cross(dir, AB1);
-							}
-						}
-						angle = minAngle;
-						if (angle < 30.0f)
-							newAngle = 30.0f;
-						else if (angle > 80.0f && angle < 100.0f)
-							newAngle = 90.0f;
-						else if (angle > 170.0f)
-							newAngle = 180.0f;
-						else if (Input::IsKeyPressed(KeyCode::LeftControl))
-							newAngle = angle + 2.5f - std::fmod(angle + 2.5f, 5.0f);
-						else
-							newAngle = angle;
-					}
-					else if (m_StartSnappedSegment != -1)
-					{
-						RoadSegment& segment = m_Segments[m_StartSnappedSegment];
-						v3 tangent = Math::CubicCurveTangent(segment.GetCurvePoints(), m_StartSnappedT);
-						crossProduct = glm::cross(tangent, AB1);
-
-						f32 dotResult = glm::dot(tangent, AB1);
-						dotResult = std::max(-1.0f, std::min(1.0f, (dotResult / (glm::length(tangent) * glm::length(AB1)))));
-						angle = glm::degrees(glm::acos(dotResult));
-
-						if (angle < 30.0f)
-							newAngle = 30.0f;
-						else if (angle > 80.0f && angle < 100.0f)
-							newAngle = 90.0f;
-						else if (angle > 150.0f)
-							newAngle = 150.0f;
-						else if (Input::IsKeyPressed(KeyCode::LeftControl))
-							newAngle = angle + 2.5f - std::fmod(angle + 2.5f, 5.0f);
-						else
-							newAngle = angle;
-					}
-					else if (Input::IsKeyPressed(KeyCode::LeftControl))
-					{
-						f32 angle = std::fmod(endAngle + 720.0f, 360.0f);
-						newAngle = angle + 2.5f - std::fmod(angle + 2.5f, 5.0f);
-					}
-					f32 angleDiff = crossProduct.y > 0.0 ? glm::radians(newAngle - angle) : glm::radians(angle - newAngle);
-					AB1 = glm::rotateY(AB1, angleDiff);
-					m_ConstructionPositions[1] = m_ConstructionPositions[0] + AB1;
-				}
-				else if (cubicCurveOrder[3] == 2 && length2 > 0.1f)
-				{
-					f32 newAngle = 0.0f;
-					f32 endAngle = glm::degrees(rotation1);
-					f32 angle = 0.0f;
-					v3 crossProduct = v3(0.0f, 1.0f, 0.0f);
-					if (m_EndSnappedNode != -1)
-					{
-						RoadNode& node = m_Nodes[m_EndSnappedNode];
-						f32 minAngle = 180.0f;
-						for (u64 rsIndex : node.roadSegments)
-						{
-							RoadSegment& rs = m_Segments[rsIndex];
-							v3 dir = rs.StartNode == m_StartSnappedNode ? rs.GetStartDirection() : rs.GetEndDirection();
-
-							f32 dotResult = glm::dot(dir, AB2);
-							dotResult = std::max(-1.0f, std::min(1.0f, (dotResult / (glm::length(dir) * glm::length(AB2)))));
-							newAngle = glm::degrees(glm::acos(dotResult));
-
-							if (newAngle < minAngle)
-							{
-								minAngle = newAngle;
-								crossProduct = glm::cross(dir, AB2);
-							}
-						}
-						angle = minAngle;
-						if (angle < 30.0f)
-							newAngle = 30.0f;
-						else if (angle > 80.0f && angle < 100.0f)
-							newAngle = 90.0f;
-						else if (angle > 170.0f)
-							newAngle = 180.0f;
-						else if (Input::IsKeyPressed(KeyCode::LeftControl))
-							newAngle = angle + 2.5f - std::fmod(angle + 2.5f, 5.0f);
-						else
-							newAngle = angle;
-					}
-					else if (m_EndSnappedSegment != -1)
-					{
-						RoadSegment& segment = m_Segments[m_EndSnappedSegment];
-						v3 tangent = Math::CubicCurveTangent(segment.GetCurvePoints(), m_EndSnappedT);
-						crossProduct = glm::cross(tangent, AB2);
-
-						f32 dotResult = glm::dot(tangent, AB2);
-						dotResult = std::max(-1.0f, std::min(1.0f, (dotResult / (glm::length(tangent) * glm::length(AB2)))));
-						angle = glm::degrees(glm::acos(dotResult));
-
-						if (angle < 30.0f)
-							newAngle = 30.0f;
-						else if (angle > 80.0f && angle < 100.0f)
-							newAngle = 90.0f;
-						else if (angle > 150.0f)
-							newAngle = 150.0f;
-						else if (Input::IsKeyPressed(KeyCode::LeftControl))
-							newAngle = angle + 2.5f - std::fmod(angle + 2.5f, 5.0f);
-						else
-							newAngle = angle;
-					}
-					else if (Input::IsKeyPressed(KeyCode::LeftControl))
-					{
-						f32 angle = std::fmod(endAngle + 720.0f, 360.0f);
-						newAngle = angle + 2.5f - std::fmod(angle + 2.5f, 5.0f);
-					}
-					f32 angleDiff = crossProduct.y > 0.0 ? glm::radians(newAngle - angle) : glm::radians(angle - newAngle);
-					AB2 = glm::rotateY(AB2, angleDiff);
-					m_ConstructionPositions[2] = m_ConstructionPositions[3] + AB2;
-				}
+				v3 AB = m_ConstructionPositions[2] - m_ConstructionPositions[3];
+				SnapToAngle(AB, m_EndSnappedNode, m_EndSnappedSegment);
+				m_ConstructionPositions[2] = m_ConstructionPositions[3] + AB;
 			}
 
 			std::array<std::array<v2, 3>, 2> newRoadBoundingBox = Math::GetBoundingBoxOfBezierCurve(m_ConstructionPositions, roadPrefabWidth * 0.5f);
@@ -2250,23 +1774,20 @@ namespace Can
 		m_GuidelinesEnd->tintColor = v4(1.0f);
 	}
 
-	v3 RoadManager::SnapToGrid(const v3& prevLocation)
+	void RoadManager::SnapToGrid(v3& prevLocation)
 	{
-		v3 result = prevLocation;
 		if (snapFlags & SNAP_TO_GRID)
 		{
-			result.x = prevLocation.x - std::fmod(prevLocation.x, 0.5f) + 0.25f;
-			result.z = prevLocation.z - std::fmod(prevLocation.z, 0.5f) - 0.25f;
+			prevLocation.x = prevLocation.x - std::fmod(prevLocation.x, 0.5f) + 0.25f;
+			prevLocation.z = prevLocation.z - std::fmod(prevLocation.z, 0.5f) - 0.25f;
 		}
-		return result;
 	}
-	v3 RoadManager::SnapToRoad(const v3& prevLocation, bool isStart)
+	void RoadManager::SnapToRoad(v3& prevLocation, bool isStart)
 	{
-		v3 result = prevLocation;
 		if (snapFlags & SNAP_TO_ROAD)
 		{
 			SnapInformation snapInformation = CheckSnapping(prevLocation);
-			result = snapInformation.location;
+			prevLocation = snapInformation.location;
 			if (isStart)
 			{
 				b_ConstructionStartSnapped = snapInformation.snapped;
@@ -2282,7 +1803,89 @@ namespace Can
 				m_EndSnappedT = snapInformation.T;
 			}
 		}
-		return result;
+	}
+	void RoadManager::SnapToHeight(const std::vector<u8>& indices, u8 index, v3& AB)
+	{
+		if (snapFlags & SNAP_TO_HEIGHT)
+		{
+			for (u8 i = 0; i < indices.size(); i++)
+				m_ConstructionPositions[indices[i]].y = m_ConstructionPositions[index].y;
+			AB.y = 0.0f;
+		}
+	}
+	void RoadManager::SnapToAngle(v3& AB, s64 snappedNode, s64 snappedRoadSegment)
+	{
+		if (snapFlags & SNAP_TO_ANGLE)
+		{
+			f32 rotation1 = glm::atan(-AB.z / AB.x) + (f32)(AB.x < 0.0f) * glm::radians(180.0f);
+			f32 length1 = glm::length(AB);
+			if (length1 > 0.1f)
+			{
+				f32 newAngle = 0.0f;
+				f32 endAngle = glm::degrees(rotation1);
+				f32 angle = 0.0f;
+				v3 crossProduct = v3(0.0f, 1.0f, 0.0f);
+				if (snappedNode != -1)
+				{
+					RoadNode& node = m_Nodes[snappedNode];
+					f32 minAngle = 180.0f;
+					for (u64 rsIndex : node.roadSegments)
+					{
+						RoadSegment& rs = m_Segments[rsIndex];
+						v3 dir = rs.StartNode == snappedNode ? rs.GetStartDirection() : rs.GetEndDirection();
+
+						f32 dotResult = glm::dot(dir, AB);
+						dotResult = std::max(-1.0f, std::min(1.0f, (dotResult / (glm::length(dir) * glm::length(AB)))));
+						newAngle = glm::degrees(glm::acos(dotResult));
+
+						if (newAngle < minAngle)
+						{
+							minAngle = newAngle;
+							crossProduct = glm::cross(dir, AB);
+						}
+					}
+					angle = minAngle;
+					if (angle < 30.0f)
+						newAngle = 30.0f;
+					else if (angle > 80.0f && angle < 100.0f)
+						newAngle = 90.0f;
+					else if (angle > 170.0f)
+						newAngle = 180.0f;
+					else if (Input::IsKeyPressed(KeyCode::LeftControl))
+						newAngle = angle + 2.5f - std::fmod(angle + 2.5f, 5.0f);
+					else
+						newAngle = angle;
+				}
+				else if (snappedRoadSegment != -1)
+				{
+					RoadSegment& segment = m_Segments[snappedRoadSegment];
+					v3 tangent = Math::CubicCurveTangent(segment.GetCurvePoints(), m_StartSnappedT);
+					crossProduct = glm::cross(tangent, AB);
+
+					f32 dotResult = glm::dot(tangent, AB);
+					dotResult = std::max(-1.0f, std::min(1.0f, (dotResult / (glm::length(tangent) * glm::length(AB)))));
+					angle = glm::degrees(glm::acos(dotResult));
+
+					if (angle < 30.0f)
+						newAngle = 30.0f;
+					else if (angle > 80.0f && angle < 100.0f)
+						newAngle = 90.0f;
+					else if (angle > 150.0f)
+						newAngle = 150.0f;
+					else if (Input::IsKeyPressed(KeyCode::LeftControl))
+						newAngle = angle + 2.5f - std::fmod(angle + 2.5f, 5.0f);
+					else
+						newAngle = angle;
+				}
+				else if (Input::IsKeyPressed(KeyCode::LeftControl))
+				{
+					f32 angle = std::fmod(endAngle + 720.0f, 360.0f);
+					newAngle = angle + 2.5f - std::fmod(angle + 2.5f, 5.0f);
+				}
+				f32 angleDiff = crossProduct.y > 0.0 ? glm::radians(newAngle - angle) : glm::radians(angle - newAngle);
+				AB = glm::rotateY(AB, angleDiff);
+			}
+		}
 	}
 	void RoadManager::ResetGuideLines()
 	{

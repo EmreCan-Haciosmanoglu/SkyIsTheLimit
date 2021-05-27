@@ -77,8 +77,10 @@ namespace Can
 
 		void ResetStates();
 	private:
-		v3 SnapToGrid(const v3& prevLocation);
-		v3 SnapToRoad(const v3& prevLocation, bool isStart);
+		void SnapToGrid(v3& prevLocation);
+		void SnapToRoad(v3& prevLocation, bool isStart);
+		void SnapToHeight(const std::vector<u8>& indices, u8 index, v3& AB);
+		void SnapToAngle(v3& AB, s64 snappedNode, s64 snappedRoadSegment);
 		void ResetGuideLines();
 		bool RestrictSmallAngles(const v3& locStart, bool start, const v3& locEnd, bool end);
 
