@@ -87,8 +87,10 @@ namespace Can
 
 			m_ConstructionPositions[3] = prevLocation;
 
-			// TODO: After angle snapping
-			bool angleIsRestricted = RestrictSmallAngles(m_ConstructionPositions[3], true, m_ConstructionPositions[0], true);
+			// TODO: After angle snapping 
+			v3 dir = prevLocation - m_ConstructionPositions[0];
+			bool angleIsRestricted = RestrictSmallAngles(dir, m_StartSnappedNode, m_StartSnappedSegment, m_StartSnappedT);
+			angleIsRestricted |= RestrictSmallAngles(-dir, m_EndSnappedNode, m_EndSnappedSegment, m_EndSnappedT);
 
 			v3 AB = m_ConstructionPositions[3] - m_ConstructionPositions[0];
 
@@ -107,7 +109,7 @@ namespace Can
 					m_ConstructionPositions[3] = m_ConstructionPositions[0] + AB;
 				}
 				SnapToHeight({ 3 }, 0, AB);
-				SnapToAngle(AB, m_StartSnappedNode, m_StartSnappedSegment);
+				SnapToAngle(AB, m_StartSnappedNode, m_StartSnappedSegment, m_StartSnappedT);
 				m_ConstructionPositions[3] = m_ConstructionPositions[0] + AB;
 			}
 
@@ -176,7 +178,8 @@ namespace Can
 			m_ConstructionPositions[3] = prevLocation;
 
 			// TODO: After angle snapping
-			bool angleIsRestricted = RestrictSmallAngles(m_ConstructionPositions[3], true, v3(0.0f), false);
+			v3 dir = prevLocation - m_ConstructionPositions[0];
+			bool angleIsRestricted = RestrictSmallAngles(dir, m_StartSnappedNode, m_StartSnappedSegment, m_StartSnappedT);
 
 			v3 AB = m_ConstructionPositions[3] - m_ConstructionPositions[0];
 
@@ -185,7 +188,7 @@ namespace Can
 			f32 rotStart = rotEnd + glm::radians(180.0f);
 
 			SnapToHeight({ 1, 2, 3 }, 0, AB);
-			SnapToAngle(AB, m_StartSnappedNode, m_StartSnappedSegment);
+			SnapToAngle(AB, m_StartSnappedNode, m_StartSnappedSegment, m_StartSnappedT);
 			m_ConstructionPositions[1] = m_ConstructionPositions[0] + AB;
 			m_ConstructionPositions[2] = m_ConstructionPositions[0] + AB;
 			m_ConstructionPositions[3] = m_ConstructionPositions[0] + AB;
@@ -246,7 +249,10 @@ namespace Can
 				}
 			}
 			// TODO: After angle snapping
-			bool angleIsRestricted = RestrictSmallAngles(m_ConstructionPositions[1], true, m_ConstructionPositions[2], true);
+			v3 dir1 = m_ConstructionPositions[1] - m_ConstructionPositions[0];
+			bool angleIsRestricted = RestrictSmallAngles(dir1, m_StartSnappedNode, m_StartSnappedSegment, m_StartSnappedT);
+			v3 dir2 = m_ConstructionPositions[2] - m_ConstructionPositions[3];
+			angleIsRestricted |= RestrictSmallAngles(dir2, m_EndSnappedNode, m_EndSnappedSegment, m_EndSnappedT);
 			if (restrictionFlags & RESTRICT_SMALL_ANGLES)
 			{
 				v3 dirToEnd = m_ConstructionPositions[2] - m_ConstructionPositions[3];
@@ -311,11 +317,13 @@ namespace Can
 
 			m_ConstructionPositions[cubicCurveOrder[1]] = prevLocation;
 
-
 			// TODO: After angle snapping
 			bool angleIsRestricted = false;
 			if (cubicCurveOrder[1] == 1)
-				angleIsRestricted = RestrictSmallAngles(m_ConstructionPositions[1], true, v3(0.0f), false);
+			{
+				v3 dir = m_ConstructionPositions[1] - m_ConstructionPositions[0];
+				angleIsRestricted = RestrictSmallAngles(dir, m_StartSnappedNode, m_StartSnappedSegment, m_StartSnappedT);
+			}
 
 			v3 AB = prevLocation - m_ConstructionPositions[0];
 
@@ -335,7 +343,7 @@ namespace Can
 				SnapToHeight({ cubicCurveOrder[1] }, 0, AB);
 			if (cubicCurveOrder[1] == 1)
 			{
-				SnapToAngle(AB, m_StartSnappedNode, m_StartSnappedSegment);
+				SnapToAngle(AB, m_StartSnappedNode, m_StartSnappedSegment, m_StartSnappedT);
 				m_ConstructionPositions[1] = m_ConstructionPositions[0] + AB;
 			}
 
@@ -385,10 +393,15 @@ namespace Can
 			// TODO: After angle snapping
 			bool angleIsRestricted = false;
 			if (cubicCurveOrder[3] == 1)
-				angleIsRestricted = RestrictSmallAngles(v3(0.0f), false, m_ConstructionPositions[2], true);
+			{
+				v3 dir = m_ConstructionPositions[2] - m_ConstructionPositions[3];
+				bool angleIsRestricted = RestrictSmallAngles(dir, m_EndSnappedNode, m_EndSnappedSegment, m_EndSnappedT);
+			}
 			else
-				angleIsRestricted = RestrictSmallAngles(m_ConstructionPositions[1], true, v3(0.0f), false);
-
+			{
+				v3 dir = m_ConstructionPositions[1] - m_ConstructionPositions[0];
+				bool angleIsRestricted = RestrictSmallAngles(dir, m_StartSnappedNode, m_StartSnappedSegment, m_StartSnappedT);
+			}
 			if (snapFlags & SNAP_TO_LENGTH)
 			{
 				v3 AB1 = m_ConstructionPositions[1] - m_ConstructionPositions[0];
@@ -417,13 +430,13 @@ namespace Can
 			if (cubicCurveOrder[2] == 1)
 			{
 				v3 AB = m_ConstructionPositions[1] - m_ConstructionPositions[0];
-				SnapToAngle(AB, m_StartSnappedNode, m_StartSnappedSegment);
+				SnapToAngle(AB, m_StartSnappedNode, m_StartSnappedSegment, m_StartSnappedT);
 				m_ConstructionPositions[1] = m_ConstructionPositions[0] + AB;
 			}
 			else if (cubicCurveOrder[3] == 1 && cubicCurveOrder[2] == 2)
 			{
 				v3 AB = m_ConstructionPositions[2] - m_ConstructionPositions[3];
-				SnapToAngle(AB, m_EndSnappedNode, m_EndSnappedSegment);
+				SnapToAngle(AB, m_EndSnappedNode, m_EndSnappedSegment, m_EndSnappedT);
 				m_ConstructionPositions[2] = m_ConstructionPositions[3] + AB;
 			}
 
@@ -464,7 +477,10 @@ namespace Can
 			m_ConstructionPositions[cubicCurveOrder[3]] = prevLocation;
 
 			// TODO: After angle snapping
-			bool angleIsRestricted = RestrictSmallAngles(m_ConstructionPositions[1], true, m_ConstructionPositions[2], true);
+			v3 dir1 = m_ConstructionPositions[1] - m_ConstructionPositions[0];
+			bool angleIsRestricted = RestrictSmallAngles(dir1, m_StartSnappedNode, m_StartSnappedSegment, m_StartSnappedT);
+			v3 dir2 = m_ConstructionPositions[2] - m_ConstructionPositions[3];
+			angleIsRestricted |= RestrictSmallAngles(dir2, m_EndSnappedNode, m_EndSnappedSegment, m_EndSnappedT);
 
 			if (snapFlags & SNAP_TO_LENGTH)
 			{
@@ -495,13 +511,13 @@ namespace Can
 			if (cubicCurveOrder[3] == 1)
 			{
 				v3 AB = m_ConstructionPositions[1] - m_ConstructionPositions[0];
-				SnapToAngle(AB, m_StartSnappedNode, m_StartSnappedSegment);
+				SnapToAngle(AB, m_StartSnappedNode, m_StartSnappedSegment, m_StartSnappedT);
 				m_ConstructionPositions[1] = m_ConstructionPositions[0] + AB;
 			}
 			else if (cubicCurveOrder[3] == 2)
 			{
 				v3 AB = m_ConstructionPositions[2] - m_ConstructionPositions[3];
-				SnapToAngle(AB, m_EndSnappedNode, m_EndSnappedSegment);
+				SnapToAngle(AB, m_EndSnappedNode, m_EndSnappedSegment, m_EndSnappedT);
 				m_ConstructionPositions[2] = m_ConstructionPositions[3] + AB;
 			}
 
@@ -1813,7 +1829,7 @@ namespace Can
 			AB.y = 0.0f;
 		}
 	}
-	void RoadManager::SnapToAngle(v3& AB, s64 snappedNode, s64 snappedRoadSegment)
+	void RoadManager::SnapToAngle(v3& AB, s64 snappedNode, s64 snappedRoadSegment, f32 snappedT)
 	{
 		if (snapFlags & SNAP_TO_ANGLE)
 		{
@@ -1859,7 +1875,7 @@ namespace Can
 				else if (snappedRoadSegment != -1)
 				{
 					RoadSegment& segment = m_Segments[snappedRoadSegment];
-					v3 tangent = Math::CubicCurveTangent(segment.GetCurvePoints(), m_StartSnappedT);
+					v3 tangent = Math::CubicCurveTangent(segment.GetCurvePoints(), snappedT);
 					crossProduct = glm::cross(tangent, AB);
 
 					f32 dotResult = glm::dot(tangent, AB);
@@ -1895,94 +1911,48 @@ namespace Can
 		for (u64& inUse : m_GuidelinesInUse)
 			inUse = 0;
 	}
-	bool RoadManager::RestrictSmallAngles(const v3& locStart, bool start, const v3& locEnd, bool end)
+	bool RoadManager::RestrictSmallAngles(v3 direction, s64 snappedNode, s64 snappedRoadSegment, f32 snappedT)
 	{
-		bool angleIsRestricted = false;
 		if (restrictionFlags & RESTRICT_SMALL_ANGLES)
 		{
-			if (start)
+			//v3 dirToNewRS = locStart - m_ConstructionPositions[0];
+			direction.y = 0;
+			direction = glm::normalize(direction);
+
+			if (snappedNode != -1)
 			{
-				v3 dirToNewRS = locStart - m_ConstructionPositions[0];
-				dirToNewRS.y = 0;
-				dirToNewRS = glm::normalize(dirToNewRS);
-
-				if (m_StartSnappedNode != -1)
+				RoadNode& node = m_Nodes[snappedNode];
+				for (u64 rsIndex : node.roadSegments)
 				{
-					RoadNode& node = m_Nodes[m_StartSnappedNode];
-					for (u64 rsIndex : node.roadSegments)
-					{
-						RoadSegment& rs = m_Segments[rsIndex];
+					RoadSegment& rs = m_Segments[rsIndex];
 
-						v3 dirToOldRS = rs.StartNode == m_StartSnappedNode ? rs.GetStartDirection() : rs.GetEndDirection();
-						dirToOldRS.y = 0.0f;
-						dirToOldRS = glm::normalize(dirToOldRS);
+					v3 dirToOldRS = rs.StartNode == snappedNode ? rs.GetStartDirection() : rs.GetEndDirection();
+					dirToOldRS.y = 0.0f;
+					dirToOldRS = glm::normalize(dirToOldRS);
 
-						f32 dotResult = glm::dot(dirToNewRS, dirToOldRS);
-						dotResult /= glm::length(dirToNewRS) * glm::length(dirToOldRS);
-						dotResult = std::max(-1.0f, std::min(1.0f, dotResult));
-						f32 angle = glm::acos(dotResult);
-						if (angle < glm::radians(30.0f))
-						{
-							angleIsRestricted = true;
-							break;
-						}
-					}
-				}
-				else if (m_StartSnappedSegment != -1)
-				{
-					RoadSegment& rs = m_Segments[m_StartSnappedSegment];
-					v3 tangent = Math::CubicCurveTangent(rs.GetCurvePoints(), m_StartSnappedT);
-
-					f32 dotResult = glm::dot(dirToNewRS, tangent);
-					dotResult /= glm::length(dirToNewRS) * glm::length(tangent);
+					f32 dotResult = glm::dot(direction, dirToOldRS);
+					dotResult /= glm::length(direction) * glm::length(dirToOldRS);
 					dotResult = std::max(-1.0f, std::min(1.0f, dotResult));
 					f32 angle = glm::acos(dotResult);
-
-					angleIsRestricted = angle < glm::radians(30.0f) || angle > glm::radians(150.0f);
+					if (angle < glm::radians(30.0f))
+					{
+						return true;
+					}
 				}
 			}
-			if (end)
+			else if (snappedRoadSegment != -1)
 			{
-				v3 dirToNewRS = locEnd - m_ConstructionPositions[3];
-				dirToNewRS.y = 0;
-				dirToNewRS = glm::normalize(dirToNewRS);
+				RoadSegment& rs = m_Segments[snappedRoadSegment];
+				v3 tangent = Math::CubicCurveTangent(rs.GetCurvePoints(), snappedT);
 
-				if (m_EndSnappedNode != -1)
-				{
-					RoadNode& node = m_Nodes[m_EndSnappedNode];
-					for (u64 rsIndex : node.roadSegments)
-					{
-						RoadSegment& rs = m_Segments[rsIndex];
+				f32 dotResult = glm::dot(direction, tangent);
+				dotResult /= glm::length(direction) * glm::length(tangent);
+				dotResult = std::max(-1.0f, std::min(1.0f, dotResult));
+				f32 angle = glm::acos(dotResult);
 
-						v3 dirToOldRS = rs.StartNode == m_EndSnappedNode ? rs.GetStartDirection() : rs.GetEndDirection();
-						dirToOldRS.y = 0.0f;
-						dirToOldRS = glm::normalize(dirToOldRS);
-
-						f32 dotResult = glm::dot(dirToNewRS, dirToOldRS);
-						dotResult /= glm::length(dirToNewRS) * glm::length(dirToOldRS);
-						dotResult = std::max(-1.0f, std::min(1.0f, dotResult));
-						f32 angle = glm::acos(dotResult);
-						if (angle < glm::radians(30.0f))
-						{
-							angleIsRestricted = true;
-							break;
-						}
-					}
-				}
-				else if (m_EndSnappedSegment != -1)
-				{
-					RoadSegment& rs = m_Segments[m_EndSnappedSegment];
-					v3 tangent = Math::CubicCurveTangent(rs.GetCurvePoints(), m_EndSnappedT);
-
-					f32 dotResult = glm::dot(dirToNewRS, tangent);
-					dotResult /= glm::length(dirToNewRS) * glm::length(tangent);
-					dotResult = std::max(-1.0f, std::min(1.0f, dotResult));
-					f32 angle = glm::acos(dotResult);
-
-					angleIsRestricted |= angle < glm::radians(30.0f) || angle > glm::radians(150.0f);
-				}
+				return angle < glm::radians(30.0f) || angle > glm::radians(150.0f);
 			}
 		}
-		return angleIsRestricted;
+		return false;
 	}
 }

@@ -80,9 +80,9 @@ namespace Can
 		void SnapToGrid(v3& prevLocation);
 		void SnapToRoad(v3& prevLocation, bool isStart);
 		void SnapToHeight(const std::vector<u8>& indices, u8 index, v3& AB);
-		void SnapToAngle(v3& AB, s64 snappedNode, s64 snappedRoadSegment);
+		void SnapToAngle(v3& AB, s64 snappedNode, s64 snappedRoadSegment, f32 snappedT);
 		void ResetGuideLines();
-		bool RestrictSmallAngles(const v3& locStart, bool start, const v3& locEnd, bool end);
+		bool RestrictSmallAngles(v3 direction, s64 snappedNode, s64 snappedRoadSegment, f32 snappedT);
 
 	public:
 
