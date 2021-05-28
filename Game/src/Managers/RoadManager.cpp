@@ -554,8 +554,6 @@ namespace Can
 		for (u64 rsIndex = 0; rsIndex < size; rsIndex++)
 		{
 			RoadSegment& rs = m_Segments[rsIndex];
-			if (rs.type.road == roadType)
-				continue;
 
 			f32 rsl = rs.type.road_length;
 			f32 snapDist = rs.type.road_width * 0.5f;
@@ -1124,10 +1122,31 @@ namespace Can
 	}
 	bool RoadManager::OnMousePressed_Change()
 	{
-		if (selected_road_segment != -1)
+		if (selected_road_segment == -1)
 			return false;
 		RoadSegment& rs = m_Segments[selected_road_segment];
-		rs.SetType(m_Scene->MainApplication->road_types[m_Type]);
+		auto& currentType = rs.type;
+		auto& newType = m_Scene->MainApplication->road_types[m_Type];
+		if (newType.road == currentType.road)
+		{
+			if (!currentType.asymmetric)
+				return false;
+			// Buildings and cars
+			// ...
+			// ...
+			// ...
+
+			// Change direction
+			auto& cps = rs.GetCurvePoints();
+			u64 temp = rs.StartNode;
+			rs.StartNode = rs.EndNode;
+			rs.EndNode = temp;
+			rs.SetCurvePoints({ cps[3], cps[2], cps[1], cps[0] });
+		}
+		else
+		{
+			rs.SetType(newType);
+		}
 
 		m_Nodes[rs.StartNode].Reconstruct();
 		m_Nodes[rs.EndNode].Reconstruct();
