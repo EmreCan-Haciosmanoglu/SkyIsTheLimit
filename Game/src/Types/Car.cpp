@@ -7,12 +7,12 @@ namespace Can
 {
 	Car::Car(
 		Prefab* type,
-		RoadSegment* roadSegment,
-		size_t t_index,
-		float speed,
-		const glm::vec3& position,
-		const glm::vec3& target,
-		const glm::vec3& rotation
+		s64 roadSegment,
+		u64 t_index,
+		f32 speed,
+		const v3& position,
+		const v3& target,
+		const v3& rotation
 	)
 		: roadSegment(roadSegment)
 		, t_index(t_index)
@@ -22,10 +22,5 @@ namespace Can
 		, target(target)
 		, fromStart(true)
 	{
-	}
-	Car::~Car()
-	{
-		delete object;
-
 	}
 }

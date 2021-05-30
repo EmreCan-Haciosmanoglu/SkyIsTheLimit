@@ -2,9 +2,7 @@
 #include "BuildingManager.h"
 
 #include "Types/RoadSegment.h"
-#include "Junction.h"
 #include "Building.h"
-#include "End.h"
 
 #include "GameApp.h"
 #include "Scenes/GameScene.h"
@@ -26,7 +24,7 @@ namespace Can
 	{
 	}
 
-	void BuildingManager::OnUpdate(glm::vec3& prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection)
+	void BuildingManager::OnUpdate(v3& prevLocation, const v3& cameraPosition, const v3& cameraDirection)
 	{
 		switch (m_ConstructionMode)
 		{
@@ -44,10 +42,10 @@ namespace Can
 			break;
 		}
 	}
-	void BuildingManager::OnUpdate_Construction(glm::vec3& prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection)
+	void BuildingManager::OnUpdate_Construction(v3& prevLocation, const v3& cameraPosition, const v3& cameraDirection)
 	{
 		b_ConstructionRestricted = true;
-		m_SnappedRoadSegment = nullptr;
+		m_SnappedRoadSegment = (u64)-1;
 		m_Guideline->SetTransform(prevLocation);
 		m_GuidelinePosition = prevLocation;
 
@@ -58,29 +56,32 @@ namespace Can
 		bool snappedToRoad = false;
 		if (snapOptions[0])
 		{
-			for (RoadSegment* roadSegment : m_Scene->m_RoadManager.GetRoadSegments())
+			auto& segments = m_Scene->m_RoadManager.m_Segments;
+			u64 count = segments.size();
+			for(u64 rsIndex = 0; rsIndex<count; rsIndex++)
 			{
-				float roadWidth = roadSegment->Type[0]->boundingBoxM.z - roadSegment->Type[0]->boundingBoxL.z;
-				float roadLength = roadSegment->Type[0]->boundingBoxM.x - roadSegment->Type[0]->boundingBoxL.x;
+				RoadSegment& rs = segments[rsIndex];
+				float roadWidth = rs.type.road_width;
+				float roadLength = rs.type.road_length;
 				float snapDistance = buildingDepthFromCenter + (roadWidth * 0.5f);
 
-				const std::array<glm::vec3, 4>& vs = roadSegment->GetCurvePoints();
-				std::array<std::array<glm::vec2, 3>, 2> roadPolygon = Math::GetBoundingBoxOfBezierCurve(vs, snapDistance);
+				const std::array<v3, 4>& vs = rs.GetCurvePoints();
+				std::array<std::array<v2, 3>, 2> roadPolygon = Math::GetBoundingBoxOfBezierCurve(vs, snapDistance);
 
-				if (Math::CheckPolygonPointCollision(roadPolygon, glm::vec2{ prevLocation.x, prevLocation.z }))
+				if (Math::CheckPolygonPointCollision(roadPolygon, v2{ prevLocation.x, prevLocation.z }))
 				{
 					std::vector<float> ts{ 0.0f };
-					std::vector<glm::vec3> ps = Math::GetCubicCurveSamples(vs, roadLength, ts);
+					std::vector<v3> ps = Math::GetCubicCurveSamples(vs, roadLength, ts);
 					size_t size = ps.size();
-					glm::vec3 p0 = ps[0];
+					v3 p0 = ps[0];
 					for (size_t i = 1; i < size; i++)
 					{
-						glm::vec3 p1 = ps[i];
-						glm::vec3 dirToP1 = p1 - p0;
+						v3 p1 = ps[i];
+						v3 dirToP1 = p1 - p0;
 						dirToP1.y = 0.0f;
 						dirToP1 = glm::normalize(dirToP1);
 
-						glm::vec3 dirToPrev = prevLocation - p0;
+						v3 dirToPrev = prevLocation - p0;
 						float l1 = glm::length(dirToPrev);
 
 						float angle = glm::acos(glm::dot(dirToP1, dirToPrev) / l1);
@@ -92,14 +93,14 @@ namespace Can
 							if (c >= -0.5f * roadLength && c <= 1.5f * roadLength) // needs lil' bit more length to each directions
 							{
 								bool r = glm::cross(dirToP1, dirToPrev).y < 0.0f;
-								glm::vec3 shiftDir{ -dirToP1.z, 0.0f, dirToP1.x };
-								glm::vec3 shiftAmount = ((float)r * 2.0f - 1.0f) * shiftDir * snapDistance;
+								v3 shiftDir{ -dirToP1.z, 0.0f, dirToP1.x };
+								v3 shiftAmount = ((float)r * 2.0f - 1.0f) * shiftDir * snapDistance;
 								prevLocation = p0 + (dirToP1 * c) + shiftAmount;
-								m_SnappedRoadSegment = roadSegment;
+								m_SnappedRoadSegment = rsIndex;
 								m_GuidelinePosition = prevLocation;
 								float rotationOffset = (float)(dirToP1.x < 0.0f) * glm::radians(180.0f);
 								float rotation = glm::atan(-dirToP1.z / dirToP1.x) + rotationOffset;
-								m_GuidelineRotation = glm::vec3{ 0.0f, (float)r * glm::radians(180.0f) + glm::radians(90.0f) + rotation, 0.0f };
+								m_GuidelineRotation = v3{ 0.0f, (float)r * glm::radians(180.0f) + glm::radians(90.0f) + rotation, 0.0f };
 								m_Guideline->SetTransform(m_GuidelinePosition, m_GuidelineRotation);
 								snappedToRoad = true;
 								m_SnappedT = ts[i];
@@ -115,19 +116,20 @@ namespace Can
 
 		if (snapOptions[1])
 		{
-			if (m_SnappedRoadSegment)
+			if (m_SnappedRoadSegment != -1)
 			{
-				glm::vec2 boundingL{ m_Guideline->prefab->boundingBoxL.x, m_Guideline->prefab->boundingBoxL.z };
-				glm::vec2 boundingM{ m_Guideline->prefab->boundingBoxM.x, m_Guideline->prefab->boundingBoxM.z };
-				glm::vec2 boundingP{ prevLocation.x, prevLocation.z };
-
-				for (Building* building : m_SnappedRoadSegment->Buildings)
+				v2 boundingL{ m_Guideline->prefab->boundingBoxL.x, m_Guideline->prefab->boundingBoxL.z };
+				v2 boundingM{ m_Guideline->prefab->boundingBoxM.x, m_Guideline->prefab->boundingBoxM.z };
+				v2 boundingP{ prevLocation.x, prevLocation.z };
+				auto& segments = m_Scene->m_RoadManager.m_Segments;
+				
+				for (Building* building : segments[m_SnappedRoadSegment].Buildings)
 				{
-					glm::vec2 bL{ building->object->prefab->boundingBoxL.x, building->object->prefab->boundingBoxL.z };
-					glm::vec2 bM{ building->object->prefab->boundingBoxM.x, building->object->prefab->boundingBoxM.z };
-					glm::vec2 bP{ building->position.x, building->position.z };
+					v2 bL{ building->object->prefab->boundingBoxL.x, building->object->prefab->boundingBoxL.z };
+					v2 bM{ building->object->prefab->boundingBoxM.x, building->object->prefab->boundingBoxM.z };
+					v2 bP{ building->position.x, building->position.z };
 
-					glm::vec2 mtv = Helper::CheckRotatedRectangleCollision(
+					v2 mtv = Helper::CheckRotatedRectangleCollision(
 						bL,
 						bM,
 						building->object->rotation.y,
@@ -139,7 +141,7 @@ namespace Can
 					);
 					if (mtv.x != 0.0f || mtv.y != 0.0f)
 					{
-						prevLocation += glm::vec3{ mtv.x, 0.0f, mtv.y };
+						prevLocation += v3{ mtv.x, 0.0f, mtv.y };
 						m_GuidelinePosition = prevLocation;
 						m_Guideline->SetTransform(m_GuidelinePosition, m_GuidelineRotation);
 						break;
@@ -149,13 +151,13 @@ namespace Can
 		}
 
 		bool collidedWithRoad = false;
-		if (restrictions[0] && m_Scene->m_RoadManager.restrictions[2])
+		if (restrictions[0] && (m_Scene->m_RoadManager.restrictionFlags & 0x4/*change with #define*/))
 		{
-			glm::vec2 pos{ m_Guideline->position.x, m_Guideline->position.z };
-			glm::vec2 A{ m_Guideline->prefab->boundingBoxL.x, m_Guideline->prefab->boundingBoxL.z };
-			glm::vec2 D{ m_Guideline->prefab->boundingBoxM.x, m_Guideline->prefab->boundingBoxM.z };
-			glm::vec2 B{ A.x, D.y }; // this is faster right???
-			glm::vec2 C{ D.x, A.y }; // this is faster right???
+			v2 pos{ m_Guideline->position.x, m_Guideline->position.z };
+			v2 A{ m_Guideline->prefab->boundingBoxL.x, m_Guideline->prefab->boundingBoxL.z };
+			v2 D{ m_Guideline->prefab->boundingBoxM.x, m_Guideline->prefab->boundingBoxM.z };
+			v2 B{ A.x, D.y }; // this is faster right???
+			v2 C{ D.x, A.y }; // this is faster right???
 
 			float rot = m_Guideline->rotation.y;
 			A = Math::RotatePoint(A, rot) + pos;
@@ -163,22 +165,25 @@ namespace Can
 			C = Math::RotatePoint(C, rot) + pos;
 			D = Math::RotatePoint(D, rot) + pos;
 
-			std::array<std::array<glm::vec2, 3>, 2> polygonBuilding = {
-				std::array<glm::vec2,3>{A, B, D},
-				std::array<glm::vec2,3>{A, C, D}
+			std::array<std::array<v2, 3>, 2> polygonBuilding = {
+				std::array<v2,3>{A, B, D},
+				std::array<v2,3>{A, C, D}
 			};
 
-			for (RoadSegment* roadSegment : m_Scene->m_RoadManager.GetRoadSegments())
+			auto& segments = m_Scene->m_RoadManager.m_Segments;
+			u64 count = segments.size();
+			for(u64 rsIndex = 0; rsIndex<count;rsIndex++)
 			{
-				if (roadSegment == m_SnappedRoadSegment)
+				RoadSegment& rs = segments[rsIndex];
+				if (rsIndex == m_SnappedRoadSegment)
 					continue;
-				float roadPrefabWidth = roadSegment->Type[0]->boundingBoxM.z - roadSegment->Type[0]->boundingBoxL.z;
-				const std::array<glm::vec3, 4>& cps = roadSegment->GetCurvePoints();
-				std::array<std::array<glm::vec2, 3>, 2> newRoadBoundingBox = Math::GetBoundingBoxOfBezierCurve(cps, roadPrefabWidth * 0.5f);
+				float roadPrefabWidth = rs.type.road_width;
+				const std::array<v3, 4>& cps = rs.GetCurvePoints();
+				std::array<std::array<v2, 3>, 2> newRoadBoundingBox = Math::GetBoundingBoxOfBezierCurve(cps, roadPrefabWidth * 0.5f);
 
 				if (Math::CheckPolygonCollision(newRoadBoundingBox, polygonBuilding))
 				{
-					std::array<std::array<glm::vec2, 3>, (10 - 1) * 2> newRoadBoundingPolygon = Math::GetBoundingPolygonOfBezierCurve<10, 10>(cps, roadPrefabWidth * 0.5f);
+					std::array<std::array<v2, 3>, (10 - 1) * 2> newRoadBoundingPolygon = Math::GetBoundingPolygonOfBezierCurve<10, 10>(cps, roadPrefabWidth * 0.5f);
 					if (Math::CheckPolygonCollision(newRoadBoundingPolygon, polygonBuilding))
 					{
 						collidedWithRoad = true;
@@ -190,15 +195,15 @@ namespace Can
 
 		if (restrictions[0] && m_Scene->m_TreeManager.restrictions[0])
 		{
-			glm::vec2 buildingL{ selectedBuilding->boundingBoxL.x, selectedBuilding->boundingBoxL.z };
-			glm::vec2 buildingM{ selectedBuilding->boundingBoxM.x, selectedBuilding->boundingBoxM.z };
-			glm::vec2 buildingP{ m_GuidelinePosition.x, m_GuidelinePosition.z };
+			v2 buildingL{ selectedBuilding->boundingBoxL.x, selectedBuilding->boundingBoxL.z };
+			v2 buildingM{ selectedBuilding->boundingBoxM.x, selectedBuilding->boundingBoxM.z };
+			v2 buildingP{ m_GuidelinePosition.x, m_GuidelinePosition.z };
 			for (Object* tree : m_Scene->m_TreeManager.GetTrees())
 			{
-				glm::vec2 treeL{ tree->prefab->boundingBoxL.x, tree->prefab->boundingBoxL.z };
-				glm::vec2 treeM{ tree->prefab->boundingBoxM.x, tree->prefab->boundingBoxM.z };
-				glm::vec2 treeP{ tree->position.x, tree->position.z };
-				glm::vec2 mtv = Helper::CheckRotatedRectangleCollision(
+				v2 treeL{ tree->prefab->boundingBoxL.x, tree->prefab->boundingBoxL.z };
+				v2 treeM{ tree->prefab->boundingBoxM.x, tree->prefab->boundingBoxM.z };
+				v2 treeP{ tree->position.x, tree->position.z };
+				v2 mtv = Helper::CheckRotatedRectangleCollision(
 					treeL,
 					treeM,
 					tree->rotation.y,
@@ -208,25 +213,25 @@ namespace Can
 					m_GuidelineRotation.y,
 					buildingP
 				);
-				tree->tintColor = glm::vec4(1.0f);
+				tree->tintColor = v4(1.0f);
 				if (mtv.x != 0.0f || mtv.y != 0.0f)
-					tree->tintColor = glm::vec4{ 1.0f, 0.3f, 0.2f, 1.0f };
+					tree->tintColor = v4{ 1.0f, 0.3f, 0.2f, 1.0f };
 			}
 		}
 
 		bool collidedWithOtherBuildings = false;
 		if (restrictions[0])
 		{
-			glm::vec2 buildingL{ selectedBuilding->boundingBoxL.x, selectedBuilding->boundingBoxL.z };
-			glm::vec2 buildingM{ selectedBuilding->boundingBoxM.x, selectedBuilding->boundingBoxM.z };
-			glm::vec2 buildingP{ m_GuidelinePosition.x, m_GuidelinePosition.z };
+			v2 buildingL{ selectedBuilding->boundingBoxL.x, selectedBuilding->boundingBoxL.z };
+			v2 buildingM{ selectedBuilding->boundingBoxM.x, selectedBuilding->boundingBoxM.z };
+			v2 buildingP{ m_GuidelinePosition.x, m_GuidelinePosition.z };
 
 			for (Building* building : m_Buildings)
 			{
-				glm::vec2 bL{ building->object->prefab->boundingBoxL.x, building->object->prefab->boundingBoxL.z };
-				glm::vec2 bM{ building->object->prefab->boundingBoxM.x, building->object->prefab->boundingBoxM.z };
-				glm::vec2 bP{ building->position.x, building->position.z };
-				glm::vec2 mtv = Helper::CheckRotatedRectangleCollision(
+				v2 bL{ building->object->prefab->boundingBoxL.x, building->object->prefab->boundingBoxL.z };
+				v2 bM{ building->object->prefab->boundingBoxM.x, building->object->prefab->boundingBoxM.z };
+				v2 bP{ building->position.x, building->position.z };
+				v2 mtv = Helper::CheckRotatedRectangleCollision(
 					bL,
 					bM,
 					building->object->rotation.y,
@@ -245,15 +250,15 @@ namespace Can
 		}
 
 		b_ConstructionRestricted = (restrictions[1] && !snappedToRoad) || collidedWithRoad || collidedWithOtherBuildings;
-		m_Guideline->tintColor = b_ConstructionRestricted ? glm::vec4{ 1.0f, 0.3f, 0.2f, 1.0f } : glm::vec4(1.0f);
+		m_Guideline->tintColor = b_ConstructionRestricted ? v4{ 1.0f, 0.3f, 0.2f, 1.0f } : v4(1.0f);
 	}
-	void BuildingManager::OnUpdate_Destruction(glm::vec3& prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection)
+	void BuildingManager::OnUpdate_Destruction(v3& prevLocation, const v3& cameraPosition, const v3& cameraDirection)
 	{
 		m_SelectedBuildingToDestruct = m_Buildings.end();
 		for (auto& it = m_Buildings.begin(); it != m_Buildings.end(); ++it)
 		{
 			Building* building = *it;
-			building->object->tintColor = glm::vec4(1.0f);
+			building->object->tintColor = v4(1.0f);
 
 			if (Helper::CheckBoundingBoxHit(
 				cameraPosition,
@@ -263,7 +268,7 @@ namespace Can
 			))
 			{
 				m_SelectedBuildingToDestruct = it;
-				building->object->tintColor = glm::vec4{ 1.0f, 0.3f, 0.2f, 1.0f };
+				building->object->tintColor = v4{ 1.0f, 0.3f, 0.2f, 1.0f };
 				break;
 			}
 		}
@@ -296,32 +301,33 @@ namespace Can
 	{
 		if (!b_ConstructionRestricted)
 		{
+			auto& segments = m_Scene->m_RoadManager.m_Segments;
 			Building* newBuilding = new Building(m_Guideline->prefab, m_SnappedRoadSegment, m_SnappedT, m_GuidelinePosition, m_GuidelineRotation);
-			if (m_SnappedRoadSegment)
-				m_SnappedRoadSegment->Buildings.push_back(newBuilding);
+			if (m_SnappedRoadSegment != (u64)-1)
+				segments[m_SnappedRoadSegment].Buildings.push_back(newBuilding);
 			m_Buildings.push_back(newBuilding);
 			ResetStates();
 			m_Guideline->enabled = true;
 
 			if (restrictions[0] && m_Scene->m_TreeManager.restrictions[0])
 			{
-				glm::vec2 buildingL = { newBuilding->object->prefab->boundingBoxL.x, newBuilding->object->prefab->boundingBoxL.z };
-				glm::vec2 buildingM = { newBuilding->object->prefab->boundingBoxM.x, newBuilding->object->prefab->boundingBoxM.z };
-				glm::vec2 buildingP = { newBuilding->object->position.x, newBuilding->object->position.z };
+				v2 buildingL = { newBuilding->object->prefab->boundingBoxL.x, newBuilding->object->prefab->boundingBoxL.z };
+				v2 buildingM = { newBuilding->object->prefab->boundingBoxM.x, newBuilding->object->prefab->boundingBoxM.z };
+				v2 buildingP = { newBuilding->object->position.x, newBuilding->object->position.z };
 
 				auto& trees = m_Scene->m_TreeManager.GetTrees();
 				for (size_t i = 0; i < trees.size(); i++)
 				{
 					Object* tree = trees[i];
-					glm::vec2 mtv = Helper::CheckRotatedRectangleCollision(
+					v2 mtv = Helper::CheckRotatedRectangleCollision(
 						buildingL,
 						buildingM,
 						newBuilding->object->rotation.y,
 						buildingP,
-						glm::vec2{ tree->prefab->boundingBoxL.x ,tree->prefab->boundingBoxL.z },
-						glm::vec2{ tree->prefab->boundingBoxM.x ,tree->prefab->boundingBoxM.z },
+						v2{ tree->prefab->boundingBoxL.x ,tree->prefab->boundingBoxL.z },
+						v2{ tree->prefab->boundingBoxM.x ,tree->prefab->boundingBoxM.z },
 						tree->rotation.y,
-						glm::vec2{ tree->position.x, tree->position.z }
+						v2{ tree->position.x, tree->position.z }
 					);
 
 					if (mtv.x != 0.0f || mtv.y != 0.0f)
@@ -342,7 +348,8 @@ namespace Can
 			Building* building = *m_SelectedBuildingToDestruct;
 			if (building->connectedRoadSegment)
 			{
-				std::vector<Building*>& connectedBuildings = building->connectedRoadSegment->Buildings;
+				auto& segments = m_Scene->m_RoadManager.m_Segments;
+				std::vector<Building*>& connectedBuildings = segments[building->connectedRoadSegment].Buildings;
 				auto it = std::find(connectedBuildings.begin(), connectedBuildings.end(), building);
 				connectedBuildings.erase(it);
 			}
@@ -382,18 +389,18 @@ namespace Can
 
 	void BuildingManager::ResetStates()
 	{
-		m_GuidelinePosition = glm::vec3(-1.0f);
-		m_GuidelineRotation = glm::vec3(0.0f);
+		m_GuidelinePosition = v3(-1.0f);
+		m_GuidelineRotation = v3(0.0f);
 
-		m_SnappedRoadSegment = nullptr;
+		m_SnappedRoadSegment = (u64)-1;
 		m_SnappedT = -1.0f;
 
 		m_SelectedBuildingToDestruct = m_Buildings.end();
 
 		for (Building* building : m_Buildings)
-			building->object->tintColor = glm::vec4(1.0f);
+			building->object->tintColor = v4(1.0f);
 
 		m_Guideline->enabled = false;
-		m_Guideline->tintColor = glm::vec4(1.0f);
+		m_Guideline->tintColor = v4(1.0f);
 	}
 }

@@ -2,9 +2,7 @@
 #include "TreeManager.h"
 
 #include "Types/RoadSegment.h"
-#include "Junction.h"
 #include "Building.h"
-#include "End.h"
 
 #include "GameApp.h"
 #include "Scenes/GameScene.h"
@@ -34,7 +32,7 @@ namespace Can
 
 		size_t jump = 6;
 		float halfOffset = jump / (TERRAIN_SCALE_DOWN * 2.0f);
-
+		/*
 		for (size_t y = jump / 2; y < treeMap->GeHeight(); y += jump)
 		{
 			for (size_t x = jump / 2; x < treeMap->GetWidth(); x += jump)
@@ -88,7 +86,7 @@ namespace Can
 				}
 			}
 		}
-		std::cout << m_Trees.size() << " trees are generated!" << std::endl;
+		*/std::cout << m_Trees.size() << " trees are generated!" << std::endl;
 	}
 	TreeManager::~TreeManager()
 	{
@@ -117,7 +115,7 @@ namespace Can
 		m_GuidelinePosition = prevLocation;
 
 		bool collidedWithRoad = false;
-		if (m_Scene->m_RoadManager.restrictions[2] && restrictions[0])
+		if ((m_Scene->m_RoadManager.restrictionFlags & 0x4/*Change with #define*/) && restrictions[0])
 		{
 			glm::vec2 pos{ m_Guideline->position.x, m_Guideline->position.z };
 			glm::vec2 A{ m_Guideline->prefab->boundingBoxL.x, m_Guideline->prefab->boundingBoxL.z };
@@ -136,10 +134,10 @@ namespace Can
 				std::array<glm::vec2,3>{A, C, D}
 			};
 
-			for (RoadSegment* roadSegment : m_Scene->m_RoadManager.GetRoadSegments())
+			for (RoadSegment& rs : m_Scene->m_RoadManager.m_Segments)
 			{
-				float roadPrefabWidth = roadSegment->Type[0]->boundingBoxM.z - roadSegment->Type[0]->boundingBoxL.z;
-				const std::array<glm::vec3, 4>& cps = roadSegment->GetCurvePoints();
+				float roadPrefabWidth = rs.type.road_width;
+				const std::array<glm::vec3, 4>& cps = rs.GetCurvePoints();
 				std::array<std::array<glm::vec2, 3>, 2> newRoadBoundingBox = Math::GetBoundingBoxOfBezierCurve(cps, roadPrefabWidth * 0.5f);
 
 				if (Math::CheckPolygonCollision(newRoadBoundingBox, polygonTree))

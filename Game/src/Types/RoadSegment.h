@@ -6,33 +6,28 @@
 
 namespace Can
 {
-	class End;
 	class Car;
 	class Prefab;
 	class Object;
-	class Junction;
 	class Building;
 	class RoadSegment;
 	class RoadNode;
-
-	struct ConnectedObject
-	{
-		End* end = nullptr;
-		Junction* junction = nullptr;
-		RoadSegment* roadSegment = nullptr;
-	};
 
 	class RoadSegment
 	{
 	public:
 		RoadSegment(
-			const std::array<Prefab*, 3>& type,
+			const RoadType& type,
 			const std::array<glm::vec3, 4>& curvePoints
 		);
+		RoadSegment(RoadSegment&& other);
 		~RoadSegment();
 
+		RoadSegment& operator=(RoadSegment&& other);
+		friend bool operator==(const RoadSegment& left, const RoadSegment& right) { return &left == &right; }
+
 		void ReConstruct();
-		void ChangeType(const std::array<Prefab*, 3>& type);
+		void SetType(const RoadType& type) { this->type = type; ReConstruct(); }
 
 		inline const std::array<glm::vec3, 4>& GetCurvePoints() const { return CurvePoints; }
 		inline const glm::vec3& GetCurvePoint(size_t index) const { return CurvePoints[index]; }
@@ -57,30 +52,26 @@ namespace Can
 		void CalcRotsAndDirs();
 
 	public:
-		std::array<Prefab*, 3> Type;
-		RoadType road_type{};
+		RoadType type{};
 		std::vector<Building*> Buildings = {};
 		std::vector<Car*> Cars = {};
 
-		ConnectedObject ConnectedObjectAtStart;
-		ConnectedObject ConnectedObjectAtEnd;
-
-		RoadNode* StartNode;
-		RoadNode* EndNode;
+		u64 StartNode = (u64)-1;
+		u64 EndNode = (u64)-1;
 
 		std::vector<glm::vec3> curve_samples{};
+		std::vector<float> curve_t_samples{};
 
 		Object* object = nullptr;
 
-	private:
 		std::array<glm::vec3, 4> CurvePoints;
+		std::array<std::array<glm::vec2, 3>, 2> bounding_box{};
+	private:
 
 		std::array<glm::vec3, 2> Directions;
 		std::array<glm::vec2, 2> Rotations{
 			glm::vec2(0.0f),
 			glm::vec2(0.0f)
 		};
-
-		float length = 0.0f; // ????
-	};
+};
 }
