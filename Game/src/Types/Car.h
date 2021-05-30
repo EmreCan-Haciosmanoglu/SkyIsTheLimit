@@ -11,20 +11,22 @@ namespace Can
 			Prefab* type,
 			s64 roadSegment,
 			u64 t_index,
-			float speed,
-			const glm::vec3& position,
-			const glm::vec3& target,
-			const glm::vec3& rotation
+			f32 speed,
+			const v3& position,
+			const v3& target,
+			const v3& rotation
 		);
-		~Car();
+		~Car() { delete object; }
+
+	public:
 		s64 roadSegment;
 		u64 t_index = 0;
-		float speed = 100.0f;
-		float t = 0;
-		std::array<glm::vec3, 3> driftpoints;
+		f32 speed = 100.0f;
+		f32 t = 0;
+		std::array<v3, 3> driftpoints;
 		Object* object;
-		glm::vec3 position;
-		glm::vec3 target;
+		v3 position;
+		v3 target;
 		bool fromStart = false;
 		bool inJunction = false;
 	};

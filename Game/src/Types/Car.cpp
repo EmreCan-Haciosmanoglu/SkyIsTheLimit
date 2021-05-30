@@ -9,7 +9,7 @@ namespace Can
 		Prefab* type,
 		s64 roadSegment,
 		u64 t_index,
-		float speed,
+		f32 speed,
 		const v3& position,
 		const v3& target,
 		const v3& rotation
@@ -22,10 +22,5 @@ namespace Can
 		, target(target)
 		, fromStart(true)
 	{
-	}
-	Car::~Car()
-	{
-		delete object;
-
 	}
 }

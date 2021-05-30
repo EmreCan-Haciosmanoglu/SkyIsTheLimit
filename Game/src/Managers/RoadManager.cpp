@@ -1131,17 +1131,24 @@ namespace Can
 		{
 			if (!currentType.asymmetric)
 				return false;
-			// Buildings and cars
-			// ...
-			// ...
-			// ...
 
-			// Change direction
 			auto& cps = rs.GetCurvePoints();
 			u64 temp = rs.StartNode;
 			rs.StartNode = rs.EndNode;
 			rs.EndNode = temp;
 			rs.SetCurvePoints({ cps[3], cps[2], cps[1], cps[0] });
+
+			for (Building* building : rs.Buildings)
+				building->snappedT = 1 - building->snappedT;
+
+			for (Car* car : rs.Cars)
+			{
+				car->fromStart = !car->fromStart;
+				car->t_index = rs.curve_samples.size() - car->t_index;
+				u64 nextIndex = car->t_index + (car->fromStart ? +1 : -1);
+				nextIndex = std::max((const u64)0U, std::min(nextIndex, rs.curve_samples.size() - 1U));
+				car->target = rs.curve_samples[car->t_index];
+			}
 		}
 		else
 		{
