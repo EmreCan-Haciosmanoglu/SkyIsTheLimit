@@ -36,6 +36,19 @@ namespace Can
 	}
 	RoadManager::~RoadManager()
 	{
+		for (std::vector<Object*>& objs : m_Guidelines)
+		{
+			u64 index = objs.size();
+			while (index != 0)
+			{
+				index--;
+				Object* obj = objs[index];
+				objs.pop_back();
+				delete obj;
+			}
+		}
+		delete m_GuidelinesStart;
+		delete m_GuidelinesEnd;
 	}
 
 	void RoadManager::OnUpdate(v3& prevLocation, const v3& cameraPosition, const v3& cameraDirection)
