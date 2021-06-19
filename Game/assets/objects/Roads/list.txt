@@ -1,6 +1,7 @@
 START
 Name:Two-lane Two-way Road
 Asym:False
+Zoneable:True
 Road_Object:road_00.obj
 Road_Texture:road_00.png
 Junc_Object:junction_00.obj
@@ -12,6 +13,7 @@ END
 START
 Name:Four-lane Two-way Road
 Asym:False
+Zoneable:True
 Road_Object:road_01.obj
 Road_Texture:road_01.png
 Junc_Object:junction_01.obj
@@ -23,6 +25,7 @@ END
 START
 Name:Two-lane Two-way Road With Median
 Asym:False
+Zoneable:True
 Road_Object:road_02.obj
 Road_Texture:road_02.png
 Junc_Object:junction_02.obj
@@ -34,15 +37,56 @@ END
 START
 Name:Asymetric 1-2-lane Road
 Asym:True
+Zoneable:True
 Road_Object:road_03.obj
 Road_Texture:road_03.png
 Junc_Object:junction_03.obj
 Junc_Texture:junction_03.png
-Junc_Mirror_Object:junction_mirror_03.obj
-Junc_Mirror_Texture:junction_mirror_03.png
+Junc_Mirror_Object:junction_03_mirror.obj
+Junc_Mirror_Texture:junction_03_mirror.png
 End_Object:end_03.obj
 End_Texture:end_03.png
-End_Mirror_Object:end_mirror_03.obj
-End_Mirror_Texture:end_mirror_03.png
+End_Mirror_Object:end_03_mirror.obj
+End_Mirror_Texture:end_03_mirror.png
 Thumbnail:Thumbnail_03.png
+END
+START
+Name:Two-lane Two-way Highway Road
+Asym:False
+Zoneable:False
+Road_Object:road_04.obj
+Road_Texture:road_04.png
+Junc_Object:junction_04.obj
+Junc_Texture:junction_04.png
+End_Object:end_04.obj
+End_Texture:end_04.png
+Thumbnail:Thumbnail_04.png
+END
+START
+Name:Asymetric 1-2-lane Highway Road
+Asym:True
+Zoneable:False
+Road_Object:road_05.obj
+Road_Texture:road_05.png
+Junc_Object:junction_05.obj
+Junc_Texture:junction_05.png
+Junc_Mirror_Object:junction_05_mirror.obj
+Junc_Mirror_Texture:junction_05_mirror.png
+End_Object:end_05.obj
+End_Texture:end_05.png
+End_Mirror_Object:end_05_mirror.obj
+End_Mirror_Texture:end_05_mirror.png
+Thumbnail:Thumbnail_05.png
+END
+START
+Name:Four-lane Two-way Highway Road
+Asym:False
+Zoneable:False
+Road_Object:road_06.obj
+Road_Texture:road_06.png
+Junc_Object:junction_06.obj
+Junc_Texture:junction_06.png
+End_Object:end_06.obj
+End_Texture:end_06.png
+Thumbnail:Thumbnail_06.png
 END
