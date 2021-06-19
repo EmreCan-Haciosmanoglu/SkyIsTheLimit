@@ -513,8 +513,8 @@ namespace Can
 		ScrollViewConstructorParameters scrollViewRoadsParams = ScrollViewConstructorParameters{
 				m_Scene->m_Registry,
 				m_PanelRoads->entityID,
-				glm::vec3{ width * 0.25f, height - 5.3f, 0.01f },
-				glm::vec2{ width * 0.75f - 0.6f, 5.0f},
+				glm::vec3{ width * 0.25f - 0.6f, height - 5.3f, 0.01f },
+				glm::vec2{ width * 0.75f, 5.0f},
 				glm::vec4{ 201.0f / 255.0f, 235.0f / 255.0f, 227.0f / 255.0f, 1.0f },
 				2,
 				[]() {std::cout << "You clicked to the ScrollView For roads!" << std::endl; }
@@ -566,8 +566,8 @@ namespace Can
 		ScrollViewConstructorParameters scrollViewBuildingsParams = ScrollViewConstructorParameters{
 				m_Scene->m_Registry,
 				m_PanelBuildings->entityID,
-				glm::vec3{ width * 0.25f, height - 5.3f, 0.01f },
-				glm::vec2{ width * 0.75f - 0.6f, 5.0f},
+				glm::vec3{ width * 0.25f - 0.6f, height - 5.3f, 0.01f },
+				glm::vec2{ width * 0.75f, 5.0f},
 				glm::vec4{ 201.0f / 255.0f, 235.0f / 255.0f, 227.0f / 255.0f, 1.0f },
 				2,
 				[]() {std::cout << "You clicked to the ScrollView for buildings!" << std::endl; }
@@ -619,8 +619,8 @@ namespace Can
 		ScrollViewConstructorParameters scrollViewTreesParams = ScrollViewConstructorParameters{
 				m_Scene->m_Registry,
 				m_PanelTrees->entityID,
-				glm::vec3{ width * 0.25f, height - 5.3f, 0.01f },
-				glm::vec2{ width * 0.75f - 0.6f, 5.0f},
+				glm::vec3{ width * 0.25f - 0.6f, height - 5.3f, 0.01f },
+				glm::vec2{ width * 0.75f, 5.0f},
 				glm::vec4{ 201.0f / 255.0f, 235.0f / 255.0f, 227.0f / 255.0f, 1.0f },
 				2,
 				[]() {std::cout << "You clicked to the ScrollView for trees!" << std::endl; }
@@ -672,8 +672,8 @@ namespace Can
 		ScrollViewConstructorParameters scrollViewCarsParams = ScrollViewConstructorParameters{
 				m_Scene->m_Registry,
 				m_PanelCars->entityID,
-				glm::vec3{ width * 0.25f, height - 5.3f, 0.01f },
-				glm::vec2{ width * 0.75f - 0.6f, 5.0f},
+				glm::vec3{ width * 0.25f - 0.6f, height - 5.3f, 0.01f },
+				glm::vec2{ width * 0.75f, 5.0f},
 				glm::vec4{ 201.0f / 255.0f, 235.0f / 255.0f, 227.0f / 255.0f, 1.0f },
 				2,
 				[]() {std::cout << "You clicked to the ScrollView for cars!" << std::endl; }
