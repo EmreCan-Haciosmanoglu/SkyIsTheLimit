@@ -38,7 +38,6 @@ namespace Can
 		fourTimesSpeedTexture = Texture2D::Create("assets/textures/Buttons/FourTimesSpeed.png");
 
 		LoadRoadTypes();
-		//LoadRoads();
 		LoadBuildings();
 		LoadTrees();
 		LoadCars();
@@ -78,6 +77,7 @@ namespace Can
 		{
 			char* name_key = "Name\0";
 			char* asym_key = "Asym\0";
+			char* zone_key = "Zoneable\0";
 			char* road_object_key = "Road_Object\0";
 			char* road_texture_key = "Road_Texture\0";
 			char* junction_object_key = "Junc_Object\0";
@@ -100,6 +100,7 @@ namespace Can
 
 				std::string name;
 				std::string asym;
+				std::string zone;
 				std::string road_obj = path_to_roads;
 				std::string road_png = path_to_roads;
 				std::string junction_obj = path_to_roads;
@@ -127,6 +128,7 @@ namespace Can
 						type.junction = new Prefab(junction_obj, TEMP_SHADER_FILE_PATH, junction_png);
 						type.end = new Prefab(end_obj, TEMP_SHADER_FILE_PATH, end_png);
 						type.thumbnail = Texture2D::Create(thumbnail_png);
+						type.zoneable = zone != "False";
 						if (asym != "False")
 						{
 							type.asymmetric = true;
@@ -139,6 +141,7 @@ namespace Can
 						/*clearing for next road*/ {
 							name = "";
 							asym = "";
+							zone = "";
 							road_obj = path_to_roads;
 							road_png = path_to_roads;
 							junction_obj = path_to_roads;
@@ -160,6 +163,8 @@ namespace Can
 						name = std::string(print_from);
 					else if (std::equal(line.begin(), seperator, asym_key))
 						asym = std::string(print_from);
+					else if (std::equal(line.begin(), seperator, zone_key))
+						zone = std::string(print_from);
 					else if (std::equal(line.begin(), seperator, road_object_key))
 						road_obj = road_obj.append(std::string(print_from));
 					else if (std::equal(line.begin(), seperator, road_texture_key))
@@ -186,24 +191,7 @@ namespace Can
 			}
 			file.close();
 		}
-
-		//std::vector<std::string> objfiles = Helper::GetFiles(path, filter, ".obj");
-		//std::vector<std::string> pngfiles = Helper::GetFiles(path, filter, ".png");
-		//
-		//size_t fileCount = objfiles.size();
-		//for (size_t i = 0; i < fileCount; i++)
-		//	result.push_back(new Prefab(objfiles[i], TEMP_SHADER_FILE_PATH, pngfiles[i]));
 	}
-
-	/*void GameApp::LoadRoads()
-	{
-		std::vector<Prefab*> resultRoads = LoadPrefabs("\\assets\\objects\\roads", "road_");
-		std::vector<Prefab*> resultJunctions = LoadPrefabs("\\assets\\objects\\roads", "junction_");
-		std::vector<Prefab*> resultEnds = LoadPrefabs("\\assets\\objects\\roads", "end_");
-
-		for (size_t i = 0; i < resultRoads.size(); i++)
-			roads.push_back({ resultRoads[i], resultJunctions[i], resultEnds[i] });
-	}*/
 
 	void GameApp::LoadBuildings()
 	{
