@@ -61,6 +61,8 @@ namespace Can
 			for(u64 rsIndex = 0; rsIndex<count; rsIndex++)
 			{
 				RoadSegment& rs = segments[rsIndex];
+				if (rs.type.zoneable == false)
+					continue;
 				float roadWidth = rs.type.road_width;
 				float roadLength = rs.type.road_length;
 				float snapDistance = buildingDepthFromCenter + (roadWidth * 0.5f);

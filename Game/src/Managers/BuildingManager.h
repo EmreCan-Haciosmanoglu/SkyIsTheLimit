@@ -44,11 +44,11 @@ namespace Can
 		void ResetStates();
 	public:
 
-		std::array<bool, 2> snapOptions { false, false };
+		std::array<bool, 2> snapOptions { true, true };
 		// 0 : Roads
 		// 1 : Buildings
 
-		std::array<bool, 2> restrictions { false, false };
+		std::array<bool, 2> restrictions { true, true };
 		// 0 : Collision
 		// 1 : Snapping to a road
 

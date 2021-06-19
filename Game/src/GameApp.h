@@ -19,7 +19,6 @@ namespace Can
 		std::vector<Prefab*> LoadPrefabs(const std::string& folder, const std::string& filter);
 
 		void LoadRoadTypes();
-		//void LoadRoads();
 		void LoadBuildings();
 		void LoadTrees();
 		void LoadCars();
@@ -47,10 +46,6 @@ namespace Can
 
 
 		std::vector<RoadType> road_types;
-		//std::vector<std::array<Prefab*, 3>> roads;
-		// 0 => Road
-		// 1 => Junction
-		// 2 => End
 
 		std::vector<Prefab*> buildings;
 		std::vector<Prefab*> trees;
