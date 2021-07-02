@@ -7,7 +7,7 @@ namespace Can
 	class RoadNode
 	{
 	public:
-		RoadNode(const std::vector<u64>& roadSegments, const v3& position);
+		RoadNode(const std::vector<u64>& roadSegments, const v3& position, u8 elevation_type);
 		RoadNode(RoadNode&& other);
 		~RoadNode();
 		RoadNode& operator=(RoadNode&& other);
@@ -23,5 +23,11 @@ namespace Can
 	
 		v3 position = v3(0.0f);
 		u64 index = (u64)(-1);
+
+		// better name
+		s8 elevation_type = 0;
+		// -1 tunnel
+		// +0 ground
+		// +1 bridge
 	};
 }

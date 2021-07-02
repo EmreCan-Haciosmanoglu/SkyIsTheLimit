@@ -10,9 +10,10 @@
 
 namespace Can
 {
-	RoadNode::RoadNode(const std::vector<u64>& roadSegments, const v3& position)
+	RoadNode::RoadNode(const std::vector<u64>& roadSegments, const v3& position, u8 elevation_type)
 		: roadSegments(roadSegments)
 		, position(position)
+		, elevation_type(elevation_type)
 	{
 		Reconstruct();
 	}
@@ -21,6 +22,7 @@ namespace Can
 		, roadSegments(other.roadSegments)
 		, position(other.position)
 		, index(other.index)
+		, elevation_type(other.elevation_type)
 	{
 		other.roadSegments.clear();
 		other.object = nullptr;
@@ -39,6 +41,7 @@ namespace Can
 		roadSegments = other.roadSegments;
 		position = other.position;
 		index = other.index;
+		elevation_type = other.elevation_type;
 
 		other.roadSegments.clear();
 		other.object = nullptr;
@@ -94,7 +97,8 @@ namespace Can
 			}
 
 			object = new Object(
-				rs.type.asymmetric && isStartNode ? rs.type.end_mirror : rs.type.end,
+				rs.elevation_type == -1 ? (rs.type.asymmetric && isStartNode ? rs.type.tunnel_end_mirror : rs.type.tunnel_end) :
+				rs.elevation_type == 0 ? (rs.type.asymmetric && isStartNode ? rs.type.road_end_mirror : rs.type.road_end) : nullptr,
 				position,
 				rotation
 			);
@@ -126,33 +130,39 @@ namespace Can
 			v3 shiftR1Amount = shiftR1Dir * (rs1.type.road_width * 0.5f);
 			v3 shiftR2Amount = shiftR2Dir * (rs2.type.road_width * 0.5f);
 
-			f32 angleDiff = glm::acos(std::min(glm::dot(shiftR1Dir, shiftR2Dir), 1.0f));
+			f32 dot_product = glm::dot(shiftR1Dir, shiftR2Dir);
+			f32 len_product = glm::length(shiftR1Dir) * glm::length(shiftR2Dir);
+			f32 cos_value = dot_product / len_product;
+			f32 minned_maxxed = std::max(-1.0f, std::min(cos_value, 1.0f));
+			f32 angleDiff = glm::acos(minned_maxxed);
 			if (angleDiff < glm::radians(2.5f) || angleDiff > glm::radians(177.5f))
 			{
-				Intersections[i].x = position.x + shiftR1Amount.x;
-				Intersections[i].z = position.z + shiftR1Amount.z;
+				Intersections[i] = position + shiftR1Amount;
 			}
 			else
 			{
-				v3 intersection = Helper::RayPlaneIntersection(
+				Intersections[i] = Helper::RayPlaneIntersection(
 					position + shiftR1Amount,
 					r1Dir,
 					position + shiftR2Amount,
 					shiftR2Dir);
-
-				Intersections[i].x = intersection.x;
-				Intersections[i].z = intersection.z;
 			}
+			if (isnan(Intersections[i].x) || isinf(Intersections[i].x))
+				std::cout << "";
 		}
 
+		bool isTunnel = elevation_type == -1;
 		u64 indexCount = 0;
-		//Prefab* junction_prefab = 
 		for (u64 i = 0; i < count; i++)
 		{
 			const RoadSegment& rs = segments[roadSegments[i]];
 			bool asym = rs.type.asymmetric;
 			bool isStartNode = index == rs.StartNode;
-			indexCount += (asym && !isStartNode ? rs.type.junction_mirror : rs.type.junction)->indexCount;
+			bool isFromGround = rs.elevation_type == 0;
+			indexCount += (isTunnel ?
+				(asym && !isStartNode ? rs.type.tunnel_junction_mirror : rs.type.tunnel_junction) :
+				(asym && !isStartNode ? rs.type.road_junction_mirror : rs.type.road_junction))->indexCount;
+			indexCount += isTunnel && isFromGround ? rs.type.tunnel_entrance->indexCount : 0U;
 		}
 
 		TexturedObjectVertex* TOVertices = new TexturedObjectVertex[indexCount];
@@ -166,11 +176,24 @@ namespace Can
 			RoadSegment& rs = segments[roadSegments[i]];
 			bool asym = rs.type.asymmetric;
 			bool isStartNode = index == rs.StartNode;
-			Prefab* prefab = asym && !isStartNode ? rs.type.junction_mirror : rs.type.junction;
+			bool isFromGround = rs.elevation_type == 0;
+			Prefab* prefab = nullptr;
+			f32 halfWidth = 0.0f;
+			f32 junction_length = 0.0f;
+			if (isTunnel)
+			{
+				halfWidth = rs.type.tunnel_width * 0.5f;
+				junction_length = rs.type.tunnel_junction_length;
+				prefab = asym && !isStartNode ? rs.type.tunnel_junction_mirror : rs.type.tunnel_junction;
+			}
+			else
+			{
+				halfWidth = rs.type.road_width * 0.5f;
+				junction_length = rs.type.road_junction_length;
+				prefab = asym && !isStartNode ? rs.type.road_junction_mirror : rs.type.road_junction;
+			}
 			f32* prefabVertices = prefab->vertices;
 			u64 prefabIndexCount = prefab->indexCount;
-			f32 halfWidth = rs.type.road_width * 0.5f;
-			f32 junction_length = rs.type.junction_length;
 
 
 			f32 textureIndex = -1.0f;
@@ -207,13 +230,8 @@ namespace Can
 
 			f32 ljp = glm::length(rp - jp) - glm::length(rp - intersection1);
 			f32 ljn = glm::length(rn - jn) - glm::length(rn - intersection2);
-			//f32 ljp = glm::length(rp - intersection1);
-			//f32 ljn = glm::length(rn - intersection2);
 
 			f32 l = ljn > ljp ? ljn : ljp;
-			//f32 l = std::max(ljn, ljp);
-			//f32 l = ljn < ljp ? ljn : ljp;
-			//f32 l = std::min(ljn, ljp);
 
 			f32 offsetl = l + junction_length;
 			v3 temp = position + RoadDir * offsetl;
@@ -251,15 +269,51 @@ namespace Can
 				TOVertices[offset + j].UV.x = prefabVertices[index + 3];
 				TOVertices[offset + j].UV.y = prefabVertices[index + 4];
 				TOVertices[offset + j].Normal.x = prefabVertices[index + 5];
-				TOVertices[offset + j].Normal.x = prefabVertices[index + 6];
-				TOVertices[offset + j].Normal.x = prefabVertices[index + 7];
+				TOVertices[offset + j].Normal.y = prefabVertices[index + 6];
+				TOVertices[offset + j].Normal.z = prefabVertices[index + 7];
 				TOVertices[offset + j].TextureIndex = textureIndex;
 			}
 			offset += prefabIndexCount;
+			if (isTunnel && isFromGround)
+			{
+				Prefab* tunnel_entrance = rs.type.tunnel_entrance;
+				TexturedObjectVertex* verts = (TexturedObjectVertex*)(tunnel_entrance->vertices);
+				textureIndex = -1.0f;
+				for (uint8_t i = 0; i < textureSlotIndex; i++)
+				{
+					if (*(textures[i].get()) == *(tunnel_entrance->textures[0].get()))
+					{
+						textureIndex = i;
+						break;
+					}
+				}
+				if (textureIndex == -1.0f)
+				{
+					textureIndex = (f32)textureSlotIndex;
+					textures[textureSlotIndex] = tunnel_entrance->textures[0];
+					textureSlotIndex++;
+				}
+				for (u64 j = 0; j < tunnel_entrance->indexCount; j++)
+				{
+					v3 AB = rs.CurvePoints[3] - rs.CurvePoints[0];
+					v3 point{ verts[j].Position.x, verts[j].Position.y, verts[j].Position.z };
+					if (point.x > 0.01f)
+						point.x *= glm::abs(AB.x) / rs.type.tunnel_entrance_length_f;
+					point.x += junction_length;
+					point.x += rs.type.tunnel_entrance_length_b;
+					point = glm::rotateY(point, angle);
+
+					TOVertices[offset + j].Position = point;
+					TOVertices[offset + j].UV = verts[j].UV;
+					TOVertices[offset + j].Normal = verts[j].Normal;
+					TOVertices[offset + j].TextureIndex = textureIndex;
+				}
+				offset += tunnel_entrance->indexCount;
+			}
 		}
 		Prefab* newPrefab = new Prefab(
 			"",
-			segments[roadSegments[0]].type.junction->shaderPath, // we may have different shaders in the future
+			segments[roadSegments[0]].type.road_junction->shaderPath, // we may have different shaders in the future
 			textures,
 			textureSlotIndex,
 			(f32*)TOVertices,

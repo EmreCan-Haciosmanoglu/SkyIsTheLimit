@@ -58,7 +58,7 @@ namespace Can
 			switch (e_ConstructionMode)
 			{
 			case ConstructionMode::Road:
-				m_RoadManager.OnUpdate(I, camPos, forward);
+				m_RoadManager.OnUpdate(I, camPos, forward, ts);
 				break;
 			case ConstructionMode::Building:
 				m_BuildingManager.OnUpdate(I, camPos, forward);
