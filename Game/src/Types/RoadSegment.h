@@ -17,7 +17,7 @@ namespace Can
 		RoadSegment(
 			const RoadType& type,
 			const std::array<v3, 4>& curvePoints,
-			s8 elevation_type 
+			s8 elevation_type
 		);
 		RoadSegment(RoadSegment&& other);
 		~RoadSegment();
@@ -33,10 +33,11 @@ namespace Can
 		inline v3 GetCurvePoint(size_t index) { return CurvePoints[index]; }
 
 		inline const v3& GetStartPosition() const { return CurvePoints[0]; }
-		inline const v3& GetEndPosition() const { return CurvePoints[3]; }
+		inline void SetStartPosition(const v3& position) { SetCurvePoint(0, position); }
 
-		void SetStartPosition(const v3& position);
-		void SetEndPosition(const v3& position);
+		inline const v3& GetEndPosition() const { return CurvePoints[3]; }
+		inline void SetEndPosition(const v3& position) { SetCurvePoint(3, position); }
+
 		void SetCurvePoints(const std::array<v3, 4>& curvePoints);
 		void SetCurvePoint(u64 index, const v3& curvePoint);
 
@@ -79,5 +80,5 @@ namespace Can
 			v2(0.0f),
 			v2(0.0f)
 		};
-};
+	};
 }

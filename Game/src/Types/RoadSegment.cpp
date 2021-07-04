@@ -254,29 +254,19 @@ namespace Can
 		}
 		*/
 	}
-
-	void RoadSegment::SetStartPosition(const v3& position)
-	{
-		CurvePoints[0] = position;
-		CalcRotsAndDirs();
-		ReConstruct();
-	}
-	void RoadSegment::SetEndPosition(const v3& position)
-	{
-		CurvePoints[3] = position;
-		CalcRotsAndDirs();
-		ReConstruct();
-	}
 	void RoadSegment::SetCurvePoints(const std::array<v3, 4>& curvePoints)
 	{
+		GameApp* app = GameScene::ActiveGameScene->MainApplication;
+		if (elevation_type == 0)
+			Helper::UpdateTheTerrain(app, this, true);
 		CurvePoints = curvePoints;
 		CalcRotsAndDirs();
 		ReConstruct();
 	}
 	void RoadSegment::SetCurvePoint(u64 index, const v3& curvePoint)
 	{
-		CurvePoints[index] = curvePoint;
-		CalcRotsAndDirs();
-		ReConstruct();
+		std::array<v3, 4> cps = CurvePoints;
+		cps[index] = curvePoint;
+		SetCurvePoints(cps);
 	}
 }

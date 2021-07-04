@@ -1881,6 +1881,10 @@ namespace Can
 	{
 		RoadSegment& rs = m_Segments[roadSegment];
 
+		GameApp* app = GameScene::ActiveGameScene->MainApplication;
+		if (rs.elevation_type == 0)
+			Helper::UpdateTheTerrain(app, &m_Segments[roadSegment], true);
+
 		for (Building* building : rs.Buildings)
 		{
 			m_Scene->m_BuildingManager.GetBuildings().erase(std::find(m_Scene->m_BuildingManager.GetBuildings().begin(), m_Scene->m_BuildingManager.GetBuildings().end(), building));

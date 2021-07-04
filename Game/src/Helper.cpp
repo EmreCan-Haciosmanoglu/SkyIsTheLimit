@@ -4,6 +4,7 @@
 #include "Scenes/GameScene.h"
 #include "Can/Math.h"
 #include "GameApp.h"
+#include "Types/RoadNode.h"
 
 namespace  Can::Helper
 {
@@ -319,16 +320,20 @@ namespace  Can::Helper
 		for (u64 index = 0; index < count; index++)
 		{
 			std::array<v3, 3>& triangle = boundingPoligon[index];
+			std::array<v2, 3> tr = {
+				v2{triangle[0].x, -triangle[0].z},
+				v2{triangle[1].x, -triangle[1].z},
+				v2{triangle[2].x, -triangle[2].z}
+			};
+			u64 x0 = (u64)(triangle[0].x * TERRAIN_SCALE_DOWN);
+			u64 y0 = (u64)(-triangle[0].z * TERRAIN_SCALE_DOWN);
+			u64 x1 = (u64)(triangle[1].x * TERRAIN_SCALE_DOWN);
+			u64 y1 = (u64)(-triangle[1].z * TERRAIN_SCALE_DOWN);
+			u64 x2 = (u64)(triangle[2].x * TERRAIN_SCALE_DOWN);
+			u64 y2 = (u64)(-triangle[2].z * TERRAIN_SCALE_DOWN);
 
-			u64 x0 = triangle[0].x * TERRAIN_SCALE_DOWN;
-			u64 y0 = -triangle[0].z * TERRAIN_SCALE_DOWN;
-			u64 x1 = triangle[1].x * TERRAIN_SCALE_DOWN;
-			u64 y1 = -triangle[1].z * TERRAIN_SCALE_DOWN;
-			u64 x2 = triangle[2].x * TERRAIN_SCALE_DOWN;
-			u64 y2 = -triangle[2].z * TERRAIN_SCALE_DOWN;
-
-			f32 margin = 0.05f;
-			f32 val = triangle[0].y - margin;
+			f32 margin = 0.01f;
+			f32 val = std::min({ triangle[0].y, triangle[1].y, triangle[2].y }) - margin;
 
 			u64 minx = std::min({ x0, x1, x2 });
 			u64 maxx = std::max({ x0, x1, x2 });
@@ -341,27 +346,57 @@ namespace  Can::Helper
 			maxY = std::max(maxy, maxY);
 
 			for (u64 x = minx; x < maxx + 1; x++)
+			{
 				for (u64 y = miny; y < maxy + 1; y++)
 				{
-					u64 dist = (x + (w - 1) * y) * 60;
-
-					f32 height = vertices[dist + 1];
-					if (height >= val)
+					if (!Math::CheckPointTriangleCollision(tr, v2{ x / TERRAIN_SCALE_DOWN, y / TERRAIN_SCALE_DOWN }))
+						continue;
+					for (s8 i = -1; i <= 1; i++)
 					{
-						vertices[dist + 1U] = reset ? 0.0f : val;
-						vertices[dist + 31] = reset ? 0.0f : val;
-
-						if (x > 0)
-							vertices[dist - 60 + 11] = reset ? 0.0f : val;
-						if (y > 0)
-							vertices[dist - 60 * (w - 1) + 51] = reset ? 0.0f : val;
-						if (x > 0 && y > 0)
+						for (s8 j = -1; j <= 1; j++)
 						{
-							vertices[dist - 60 * w + 21] = reset ? 0.0f : val;
-							vertices[dist - 60 * w + 41] = reset ? 0.0f : val;
+							s64 xx = x + i;
+							s64 yy = y + j;
+							if (xx < 0 || yy < 0 || xx > w - 1 || yy > h - 1)
+								continue;
+
+							u64 dist = (xx + (w - 1) * yy) * 60;
+
+							f32 height = vertices[dist + 1];
+							if (reset)
+							{
+								vertices[dist + 1U] = 0.0f;
+								vertices[dist + 31] = 0.0f;
+
+								if (xx > 0)
+									vertices[dist - 60 + 11] = 0.0f;
+								if (yy > 0)
+									vertices[dist - 60 * (w - 1) + 51] = 0.0f;
+								if (xx > 0 && yy > 0)
+								{
+									vertices[dist - 60 * w + 21] = 0.0f;
+									vertices[dist - 60 * w + 41] = 0.0f;
+								}
+							}
+							else if (height >= val)
+							{
+								vertices[dist + 1U] = val;
+								vertices[dist + 31] = val;
+
+								if (xx > 0)
+									vertices[dist - 60 + 11] = val;
+								if (yy > 0)
+									vertices[dist - 60 * (w - 1) + 51] = val;
+								if (xx > 0 && yy > 0)
+								{
+									vertices[dist - 60 * w + 21] = val;
+									vertices[dist - 60 * w + 41] = val;
+								}
+							}
 						}
 					}
 				}
+			}
 		}
 		minX -= 1;
 		maxX += 1;
@@ -418,7 +453,7 @@ namespace  Can::Helper
 			}
 		}
 
-		int vertexCount = app->terrainPrefab->indexCount * (3 + 4 + 3);
+		u64 vertexCount = app->terrainPrefab->indexCount * (3 + 4 + 3);
 		app->terrainPrefab->vertexBuffer->Bind();
 		app->terrainPrefab->vertexBuffer->ReDo(app->terrainPrefab->vertices, sizeof(f32) * vertexCount);
 		app->terrainPrefab->vertexBuffer->Unbind();
