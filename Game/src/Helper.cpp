@@ -2,6 +2,8 @@
 #include "Helper.h"
 
 #include "Scenes/GameScene.h"
+#include "Can/Math.h"
+#include "GameApp.h"
 
 namespace  Can::Helper
 {
@@ -30,10 +32,10 @@ namespace  Can::Helper
 	std::array<v2, 4> getAxis(const std::array<v2, 4>& c1, const std::array<v2, 4>& c2)
 	{
 		return std::array<v2, 4>{
-			glm::normalize(c1[1] - c1[0]) ,
-			glm::normalize(c1[3] - c1[0]) ,
-			glm::normalize(c2[1] - c2[0]) ,
-			glm::normalize(c2[3] - c2[0])
+			glm::normalize(c1[1] - c1[0]),
+				glm::normalize(c1[3] - c1[0]),
+				glm::normalize(c2[1] - c2[0]),
+				glm::normalize(c2[3] - c2[0])
 		};
 	}
 
@@ -270,67 +272,156 @@ namespace  Can::Helper
 		return files;
 	}
 
-	void LevelTheTerrain(const v2& startIndex, const v2& endIndex, const v3& startCoord, const v3& endCoord, Object* terrain, f32 width, bool reset)
+	void UpdateTheTerrain(GameApp* app, RoadSegment* rs, bool reset)
 	{
-		/*v2 AB = {
-			endCoord.x - startCoord.x ,
-			endCoord.z - startCoord.z
-		};
-		f32 mAB = glm::length(AB);
-		v3 SE = endCoord - startCoord;
+		float* vertices = app->terrainPrefab->vertices;
+		u64 w = app->terrainTexture->GetWidth();
+		u64 h = app->terrainTexture->GetHeight();
 
-		f32* data = terrain->prefab->vertices;
+		v3 least = rs->object->prefab->boundingBoxL;
+		v3 most = rs->object->prefab->boundingBoxM;
 
-		bool xC = startIndex.x < endIndex.x + 1;
-		int xA = xC ? 1 : -1;
-		bool yC = startIndex.y < endIndex.y + 1;
-		int yA = yC ? 1 : -1;
-		u64 yMin = startIndex.y - 2 * yA;
-		u64 yMax = endIndex.y + 2 * yA;
-		u64 xMin = startIndex.x - 2 * xA;
-		u64 xMax = endIndex.x + 2 * xA;
-		for (u64 y = yMin; (y < yMax) == yC; y += yA)
+		std::vector<v3>& curve_samples = rs->curve_samples;
+		std::array<v3, 4> cps = rs->CurvePoints;
+		f32 halfWidth = rs->type.road_width * 0.5f;
+
+		std::vector<std::array<v3, 3>> boundingPoligon{};
+		v3 p0 = cps[0];
+		v3 p1 = curve_samples[1];
+		v3 d1 = halfWidth * glm::normalize(p1 - p0);
+		d1 = { -d1.z, d1.y, d1.x };
+
+		float Size = curve_samples.size();
+		for (size_t i = 2; i < Size; i++)
 		{
-			for (u64 x = xMin; (x < xMax) == xC; x += xA)
-			{
-				if (x < 0 || y < 0 || x >= terrain->w - 1 || y >= terrain->h - 1)
-					continue;
-				u64 dist1 = (x + (terrain->w - 1) * y) * 60;
-				u64 dist2 = (x + (terrain->w - 1) * (y - 1)) * 60;
-				v2 AP = {
-					data[dist1] - startCoord.x,
-					data[dist1 + 2] - startCoord.z
-				};
-				f32 mAP = glm::length(AP);
-				f32 angle = glm::acos(glm::dot(AB, AP) / (mAP * mAB));
-				f32 d = mAB * glm::sin(angle);
+			v3 p2 = curve_samples[i];
+			v3 d2 = halfWidth * glm::normalize(p2 - p1);
+			d2 = { -d2.z, d2.y, d2.x };
 
-				if (d < width)
+			boundingPoligon.push_back(std::array<v3, 3>{ p0 + d1, p0 - d1, p1 + d2 });
+			boundingPoligon.push_back(std::array<v3, 3>{ p0 - d1, p1 + d2, p1 - d2 });
+
+			p0 = p1;
+			p1 = p2;
+			d1 = d2;
+		}
+		v3 d2 = halfWidth * glm::normalize(p1 - curve_samples[2]);
+		d2 = { -d2.z, d2.y, d2.x };
+		boundingPoligon.push_back(std::array<v3, 3>{ p0 + d1, p0 - d1, p1 + d2 });
+		boundingPoligon.push_back(std::array<v3, 3>{ p0 - d1, p1 + d2, p1 - d2 });
+
+		u64 minX = w - 1;
+		u64 maxX = 0;
+		u64 minY = h - 1;
+		u64 maxY = 0;
+
+		u64 count = boundingPoligon.size();
+		for (u64 index = 0; index < count; index++)
+		{
+			std::array<v3, 3>& triangle = boundingPoligon[index];
+
+			u64 x0 = triangle[0].x * TERRAIN_SCALE_DOWN;
+			u64 y0 = -triangle[0].z * TERRAIN_SCALE_DOWN;
+			u64 x1 = triangle[1].x * TERRAIN_SCALE_DOWN;
+			u64 y1 = -triangle[1].z * TERRAIN_SCALE_DOWN;
+			u64 x2 = triangle[2].x * TERRAIN_SCALE_DOWN;
+			u64 y2 = -triangle[2].z * TERRAIN_SCALE_DOWN;
+
+			f32 margin = 0.05f;
+			f32 val = triangle[0].y - margin;
+
+			u64 minx = std::min({ x0, x1, x2 });
+			u64 maxx = std::max({ x0, x1, x2 });
+			u64 miny = std::min({ y0, y1, y2 });
+			u64 maxy = std::max({ y0, y1, y2 });
+
+			minX = std::min(minx, minX);
+			maxX = std::max(maxx, maxX);
+			minY = std::min(miny, minY);
+			maxY = std::max(maxy, maxY);
+
+			for (u64 x = minx; x < maxx + 1; x++)
+				for (u64 y = miny; y < maxy + 1; y++)
 				{
-					f32 c = mAB * glm::cos(angle);
-					f32 yOffset = SE.y * (c * mAB);
-					f32 yCoord = startCoord.y + yOffset;
-					if (dist2 - 60 >= 0)
+					u64 dist = (x + (w - 1) * y) * 60;
+
+					f32 height = vertices[dist + 1];
+					if (height >= val)
 					{
-						data[dist2 - 39] = yCoord;
-						data[dist2 - 19] = yCoord;
-						data[dist2 + 51] = yCoord;
+						vertices[dist + 1U] = reset ? 0.0f : val;
+						vertices[dist + 31] = reset ? 0.0f : val;
+
+						if (x > 0)
+							vertices[dist - 60 + 11] = reset ? 0.0f : val;
+						if (y > 0)
+							vertices[dist - 60 * (w - 1) + 51] = reset ? 0.0f : val;
+						if (x > 0 && y > 0)
+						{
+							vertices[dist - 60 * w + 21] = reset ? 0.0f : val;
+							vertices[dist - 60 * w + 41] = reset ? 0.0f : val;
+						}
 					}
-					data[dist1 - 49] = yCoord;
-					data[dist1 + 1] = yCoord;
-					data[dist1 + 31] = yCoord;
 				}
+		}
+		minX -= 1;
+		maxX += 1;
+		minY -= 1;
+		maxY += 1;
+
+		minX = std::max((u64)0, minX);
+		maxX = std::min(w - 1, maxX);
+		minY = std::max((u64)0, minY);
+		maxY = std::min(h - 1, maxY);
+
+		for (f32 x = minX; x < maxX; x++)
+		{
+			for (f32 y = minY; y < maxY; y++)
+			{
+				u64 vertexIndex = (x + (w - 1) * y) * 60;
+				v3 a00(vertices[vertexIndex + 0 + 0], vertices[vertexIndex + 0 + 1], vertices[vertexIndex + 0 + 2]);
+				v3 a10(vertices[vertexIndex + 10 + 0], vertices[vertexIndex + 10 + 1], vertices[vertexIndex + 10 + 2]);
+				v3 a11(vertices[vertexIndex + 20 + 0], vertices[vertexIndex + 20 + 1], vertices[vertexIndex + 20 + 2]);
+				v3 a01(vertices[vertexIndex + 50 + 0], vertices[vertexIndex + 50 + 1], vertices[vertexIndex + 50 + 2]);
+
+				v3 u1 = a11 - a00;
+				v3 v1 = a10 - a00;
+
+				v3 u2 = a01 - a00;
+				v3 v2 = a11 - a00;
+
+				v3 norm1 = glm::normalize(glm::cross(v1, u1));
+				v3 norm2 = glm::normalize(glm::cross(v2, u2));
+
+				vertices[vertexIndex + 0 + 7] = norm1.x;
+				vertices[vertexIndex + 0 + 8] = norm1.y;
+				vertices[vertexIndex + 0 + 9] = norm1.z;
+
+				vertices[vertexIndex + 10 + 7] = norm1.x;
+				vertices[vertexIndex + 10 + 8] = norm1.y;
+				vertices[vertexIndex + 10 + 9] = norm1.z;
+
+				vertices[vertexIndex + 20 + 7] = norm1.x;
+				vertices[vertexIndex + 20 + 8] = norm1.y;
+				vertices[vertexIndex + 20 + 9] = norm1.z;
+
+				vertices[vertexIndex + 30 + 7] = norm2.x;
+				vertices[vertexIndex + 30 + 8] = norm2.y;
+				vertices[vertexIndex + 30 + 9] = norm2.z;
+
+				vertices[vertexIndex + 40 + 7] = norm2.x;
+				vertices[vertexIndex + 40 + 8] = norm2.y;
+				vertices[vertexIndex + 40 + 9] = norm2.z;
+
+				vertices[vertexIndex + 50 + 7] = norm2.x;
+				vertices[vertexIndex + 50 + 8] = norm2.y;
+				vertices[vertexIndex + 50 + 9] = norm2.z;
 			}
 		}
 
-		int vertexCount = terrain->indexCount * (3 + 4 + 3);
-		terrain->VB->Bind();
-		terrain->VB->ReDo(terrain->Vertices, sizeof(f32) * vertexCount);
-		terrain->VB->Unbind();*/
-	}
-
-	void UpdateTheTerrain(const RoadSegment& rs, bool reset)
-	{
+		int vertexCount = app->terrainPrefab->indexCount * (3 + 4 + 3);
+		app->terrainPrefab->vertexBuffer->Bind();
+		app->terrainPrefab->vertexBuffer->ReDo(app->terrainPrefab->vertices, sizeof(f32) * vertexCount);
+		app->terrainPrefab->vertexBuffer->Unbind();
 	}
 
 	Prefab* GetPrefabForTerrain(const std::string& texturePath)

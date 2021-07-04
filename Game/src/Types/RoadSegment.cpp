@@ -7,6 +7,8 @@
 #include "Can/Math.h"
 #include "Helper.h"
 
+#include "Scenes/GameScene.h"
+
 namespace Can
 {
 	RoadSegment::RoadSegment(const RoadType& type, const std::array<v3, 4>& curvePoints, s8 elevation_type)
@@ -168,6 +170,7 @@ namespace Can
 			p1 = p2;
 			curve_samples.push_back(p1);
 		}
+
 		Prefab* newPrefab = nullptr;
 		if (elevation_type == -1)
 			newPrefab = new Prefab(type.tunnel->objectPath, type.tunnel->shaderPath, type.tunnel->texturePath, (f32*)TOVertices, indexCount);
@@ -182,6 +185,7 @@ namespace Can
 				newPrefab->boundingBoxL.x = std::min(newPrefab->boundingBoxL.x, TOVertices[offset].Position.x);
 				newPrefab->boundingBoxL.y = std::min(newPrefab->boundingBoxL.y, TOVertices[offset].Position.y);
 				newPrefab->boundingBoxL.z = std::min(newPrefab->boundingBoxL.z, TOVertices[offset].Position.z);
+
 				newPrefab->boundingBoxM.x = std::max(newPrefab->boundingBoxM.x, TOVertices[offset].Position.x);
 				newPrefab->boundingBoxM.y = std::max(newPrefab->boundingBoxM.y, TOVertices[offset].Position.y);
 				newPrefab->boundingBoxM.z = std::max(newPrefab->boundingBoxM.z, TOVertices[offset].Position.z);
@@ -190,6 +194,10 @@ namespace Can
 
 		object = new Object(newPrefab, CurvePoints[0]);
 		object->owns_prefab = true;
+
+		GameApp* app = GameScene::ActiveGameScene->MainApplication;
+		if (elevation_type == 0)
+			Helper::UpdateTheTerrain(app, this, false);
 	}
 
 	void RoadSegment::CalcRotsAndDirs()

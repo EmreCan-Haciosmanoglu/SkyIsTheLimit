@@ -32,8 +32,7 @@ namespace Can::Helper
 
 	v2 RotateAPointAroundAPoint(const v2& p1, f32 angleInRadians, const v2& p2 = { 0.0f, 0.0f });
 
-	void LevelTheTerrain(const v2& startIndex, const v2& endIndex, const v3& startCoord, const v3& endCoord, Object* terrain, f32 width, bool reset);
-	void UpdateTheTerrain(const RoadSegment& rs, bool reset);
+	void UpdateTheTerrain(GameApp* app, RoadSegment* rs, bool reset);
 
 	Prefab* GetPrefabForTerrain(const std::string& texturePath);
 

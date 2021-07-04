@@ -15,6 +15,7 @@ namespace Can
 		:Application(props)
 	{
 		terrainPrefab = Helper::GetPrefabForTerrain("assets/objects/flat_land.png");
+		terrainTexture = Texture2D::Create("assets/objects/flat_land.png");
 		//terrainPrefab = Helper::GetPrefabForTerrain("assets/objects/flat_land_small.png");
 		//terrainPrefab = Helper::GetPrefabForTerrain("assets/objects/heightmap_smallest.png");
 		//terrainPrefab = Helper::GetPrefabForTerrain("assets/objects/heightmap.png");

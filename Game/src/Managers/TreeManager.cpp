@@ -24,7 +24,7 @@ namespace Can
 
 		Ref<Texture2D> treeMap = m_Scene->MainApplication->treeMap;
 		treeMap->Bind();
-		GLubyte* pixels = new GLubyte[(size_t)treeMap->GetWidth() * (size_t)treeMap->GeHeight() * 4];
+		GLubyte* pixels = new GLubyte[(size_t)treeMap->GetWidth() * (size_t)treeMap->GetHeight() * 4];
 		glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
 
 		int r, g, b, a; // or GLubyte r, g, b, a;
