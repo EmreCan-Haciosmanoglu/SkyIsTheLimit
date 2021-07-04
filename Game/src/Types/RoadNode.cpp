@@ -296,9 +296,15 @@ namespace Can
 				for (u64 j = 0; j < tunnel_entrance->indexCount; j++)
 				{
 					v3 AB = rs.CurvePoints[3] - rs.CurvePoints[0];
+					AB = v3{ glm::abs(AB.x), glm::abs(AB.y), glm::abs(AB.z) };
 					v3 point{ verts[j].Position.x, verts[j].Position.y, verts[j].Position.z };
 					if (point.x > 0.01f)
-						point.x *= glm::abs(AB.x) / rs.type.tunnel_entrance_length_f;
+					{
+						f32 val = AB.y < rs.type.tunnel_height ? 
+							(AB.x - rs.type.tunnel_junction_length) : 
+							(rs.type.tunnel_height / AB.y) * (AB.x - rs.type.tunnel_junction_length);
+						point.x *= val / rs.type.tunnel_entrance_length_f;
+					}
 					point.x += junction_length;
 					point.x += rs.type.tunnel_entrance_length_b;
 					point = glm::rotateY(point, angle);

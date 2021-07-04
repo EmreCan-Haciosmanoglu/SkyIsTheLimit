@@ -149,12 +149,12 @@ namespace Can
 
 				if (c == 1 && PrefabTOVertices[i].Position.x < 0.01f)
 				{
-					point = glm::rotateZ(point, pitchTemp);
 					point = glm::rotateY(point, yawTemp);
 				}
 				else
 				{
-					point = glm::rotateZ(point, pitch1);
+					if (c < count - 1 || PrefabTOVertices[i].Position.x < l + 0.01f)
+						point = glm::rotateZ(point, pitch1);
 					point = glm::rotateY(point, yaw1);
 				}
 
@@ -176,12 +176,6 @@ namespace Can
 
 		for (int c = 0; c < count - 1; c++)
 		{
-			//v3 p2 = Math::CubicCurve<f32>(CurvePoints, (c + 1.0f) / count);
-			//v3 vec = p2 - p1;
-			//f32 length = glm::length(vec);
-			//v3 dir = vec / length;
-			//f32 scale = length / l;
-
 			for (int i = 0; i < prefabIndexCount; i++)
 			{
 				u64 offset = c * prefabIndexCount + i;
