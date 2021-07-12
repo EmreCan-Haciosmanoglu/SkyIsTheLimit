@@ -1285,9 +1285,6 @@ namespace Can
 				m_StartSnappedNode = snapNode;
 				m_StartSnappedSegment = snapSegment;
 				b_ConstructionStartSnapped = snapped;
-
-				RoadNode& node = m_Nodes[nodeIndex];
-				node.AddRoadSegment({ rs1, rs2 });
 			}
 
 

@@ -275,6 +275,16 @@ namespace  Can::Helper
 
 	void UpdateTheTerrain(GameApp* app, RoadSegment* rs, bool reset)
 	{
+		std::vector<RoadNode>& nodes = app->gameScene->m_RoadManager.m_Nodes;
+		if (rs->StartNode >= nodes.size())
+			return;
+		if (rs->EndNode >= nodes.size())
+			return;
+		RoadNode& startNode = nodes[rs->StartNode];
+		RoadNode& endNode = nodes[rs->EndNode];
+		bool start_node_is_tunnel = startNode.elevation_type == -1;
+		bool end_node_is_tunnel = endNode.elevation_type == -1;
+
 		float* vertices = app->terrainPrefab->vertices;
 		u64 w = app->terrainTexture->GetWidth();
 		u64 h = app->terrainTexture->GetHeight();
@@ -317,81 +327,216 @@ namespace  Can::Helper
 		u64 maxY = 0;
 
 		u64 count = boundingPoligon.size();
-		for (u64 index = 0; index < count; index++)
+		for (u64 index = 0; index < count; index += 1)
 		{
-			std::array<v3, 3>& triangle = boundingPoligon[index];
-			std::array<v2, 3> tr = {
-				v2{triangle[0].x, -triangle[0].z},
-				v2{triangle[1].x, -triangle[1].z},
-				v2{triangle[2].x, -triangle[2].z}
-			};
-			u64 x0 = (u64)(triangle[0].x * TERRAIN_SCALE_DOWN);
-			u64 y0 = (u64)(-triangle[0].z * TERRAIN_SCALE_DOWN);
-			u64 x1 = (u64)(triangle[1].x * TERRAIN_SCALE_DOWN);
-			u64 y1 = (u64)(-triangle[1].z * TERRAIN_SCALE_DOWN);
-			u64 x2 = (u64)(triangle[2].x * TERRAIN_SCALE_DOWN);
-			u64 y2 = (u64)(-triangle[2].z * TERRAIN_SCALE_DOWN);
+			std::array<v3, 3> tr = boundingPoligon[index];
+			tr[0].x *= TERRAIN_SCALE_DOWN;
+			tr[1].x *= TERRAIN_SCALE_DOWN;
+			tr[2].x *= TERRAIN_SCALE_DOWN;
+			tr[0].z *= -TERRAIN_SCALE_DOWN;
+			tr[1].z *= -TERRAIN_SCALE_DOWN;
+			tr[2].z *= -TERRAIN_SCALE_DOWN;
 
 			f32 margin = 0.01f;
-			f32 val = std::min({ triangle[0].y, triangle[1].y, triangle[2].y }) - margin;
+			f32 val = std::min({ tr[0].y, tr[1].y, tr[2].y }) - margin;
 
-			u64 minx = std::min({ x0, x1, x2 });
-			u64 maxx = std::max({ x0, x1, x2 });
-			u64 miny = std::min({ y0, y1, y2 });
-			u64 maxy = std::max({ y0, y1, y2 });
 
-			minX = std::min(minx, minX);
-			maxX = std::max(maxx, maxX);
-			minY = std::min(miny, minY);
-			maxY = std::max(maxy, maxY);
-
-			for (u64 x = minx; x < maxx + 1; x++)
+			v3* minvx = &tr[0];
+			v3* medvx = &tr[1];
+			v3* maxvx = &tr[2];
 			{
-				for (u64 y = miny; y < maxy + 1; y++)
+				if (minvx->x > medvx->x)
 				{
-					if (!Math::CheckPointTriangleCollision(tr, v2{ x / TERRAIN_SCALE_DOWN, y / TERRAIN_SCALE_DOWN }))
+					v3* temp = medvx;
+					medvx = minvx;
+					minvx = temp;
+				}
+				if (medvx->x > maxvx->x)
+				{
+					v3* temp = maxvx;
+					maxvx = medvx;
+					medvx = temp;
+				}
+				if (minvx->x > medvx->x)
+				{
+					v3* temp = medvx;
+					medvx = minvx;
+					minvx = temp;
+				}
+				minvx->x -= 1.0f;
+				maxvx->x += 1.5f;
+			}
+			{
+				v3* minvz = &tr[0];
+				v3* medvz = &tr[1];
+				v3* maxvz = &tr[2];
+				if (minvz->z > medvz->z)
+				{
+					v3* temp = medvz;
+					medvz = minvz;
+					minvz = temp;
+				}
+				if (medvz->z > maxvz->z)
+				{
+					v3* temp = maxvz;
+					maxvz = medvz;
+					medvz = temp;
+				}
+				if (minvz->z > medvz->z)
+				{
+					v3* temp = medvz;
+					medvz = minvz;
+					minvz = temp;
+				}
+				minvz->z -= 1.0f;
+				maxvz->z += 1.5f;
+				minY = std::min(minY, (u64)minvz->z);
+				maxY = std::max(maxY, (u64)maxvz->z);
+			}
+
+			f32 dx1 = std::max(medvx->x - minvx->x, 0.001f);
+			f32 dx2 = std::max(maxvx->x - minvx->x, 0.001f);
+			f32 dx3 = std::max(maxvx->x - medvx->x, 0.001f);
+
+			f32 dy1 = medvx->z - minvx->z;
+			f32 dy2 = maxvx->z - minvx->z;
+			f32 dy3 = maxvx->z - medvx->z;
+
+			minX = std::min(minX, (u64)minvx->x);
+			maxX = std::max(maxX, (u64)maxvx->x);
+
+			for (f32 x = minvx->x; x < maxvx->x; x += 0.5f)
+			{
+				f32 perc1 = (x - minvx->x) / dx1;
+				f32 perc2 = (x - minvx->x) / dx2;
+				f32 perc3 = (x - medvx->x) / dx3;
+
+				f32 y1 = minvx->z + dy1 * perc1;
+				f32 y2 = minvx->z + dy2 * perc2;
+				f32 y3 = medvx->z + dy3 * perc3;
+
+				u64 ly = std::min(x < medvx->x ? y1 : y3, y2);
+				u64 my = std::max(x < medvx->x ? y1 : y3, y2);
+				//u64 ly = std::min(y1, y2);
+				//u64 my = std::max(y1, y2);
+
+				for (u64 y = ly; y <= my; y++)
+				{
+					if ((u64)x > w - 1 || y > h - 1)
 						continue;
-					for (s8 i = -1; i <= 1; i++)
+
+					u64 dist = ((u64)x + (w - 1) * y) * 60;
+
+					f32 height = vertices[dist + 1];
+					bool is_tunnel_entrance = (index < 2 && start_node_is_tunnel) || (index > count - 3 && end_node_is_tunnel);
+					if (is_tunnel_entrance)
 					{
-						for (s8 j = -1; j <= 1; j++)
+						if (reset)
 						{
-							s64 xx = x + i;
-							s64 yy = y + j;
-							if (xx < 0 || yy < 0 || xx > w - 1 || yy > h - 1)
-								continue;
+							vertices[dist + 1U] = 0.0f;
+							vertices[dist + 11] = 0.0f;
+							vertices[dist + 21] = 0.0f;
+							vertices[dist + 31] = 0.0f;
+							vertices[dist + 41] = 0.0f;
+							vertices[dist + 51] = 0.0f;
 
-							u64 dist = (xx + (w - 1) * yy) * 60;
-
-							f32 height = vertices[dist + 1];
-							if (reset)
+							if (x > 0)
 							{
-								vertices[dist + 1U] = 0.0f;
-								vertices[dist + 31] = 0.0f;
-
-								if (xx > 0)
-									vertices[dist - 60 + 11] = 0.0f;
-								if (yy > 0)
-									vertices[dist - 60 * (w - 1) + 51] = 0.0f;
-								if (xx > 0 && yy > 0)
-								{
-									vertices[dist - 60 * w + 21] = 0.0f;
-									vertices[dist - 60 * w + 41] = 0.0f;
-								}
+								vertices[dist - 60 + 1U] = 0.0f;
+								vertices[dist - 60 + 11] = 0.0f;
+								vertices[dist - 60 + 21] = 0.0f;
+								vertices[dist - 60 + 31] = 0.0f;
+								vertices[dist - 60 + 41] = 0.0f;
+								vertices[dist - 60 + 51] = 0.0f;
 							}
-							else if (height >= val)
+							if (y > 0)
 							{
-								vertices[dist + 1U] = val;
-								vertices[dist + 31] = val;
+								vertices[dist - 60 * (w - 1) + 1U] = 0.0f;
+								vertices[dist - 60 * (w - 1) + 11] = 0.0f;
+								vertices[dist - 60 * (w - 1) + 21] = 0.0f;
+								vertices[dist - 60 * (w - 1) + 31] = 0.0f;
+								vertices[dist - 60 * (w - 1) + 41] = 0.0f;
+								vertices[dist - 60 * (w - 1) + 51] = 0.0f;
+							}
+							if (x > 0 && y > 0)
+							{
+								vertices[dist - 60 * w + 1U] = 0.0f;
+								vertices[dist - 60 * w + 11] = 0.0f;
+								vertices[dist - 60 * w + 21] = 0.0f;
+								vertices[dist - 60 * w + 31] = 0.0f;
+								vertices[dist - 60 * w + 41] = 0.0f;
+								vertices[dist - 60 * w + 51] = 0.0f;
+							}
+						}
+						else
+						{
 
-								if (xx > 0)
-									vertices[dist - 60 + 11] = val;
-								if (yy > 0)
-									vertices[dist - 60 * (w - 1) + 51] = val;
-								if (xx > 0 && yy > 0)
-								{
-									vertices[dist - 60 * w + 21] = val;
-									vertices[dist - 60 * w + 41] = val;
-								}
+							vertices[dist + 1U] = val;
+							vertices[dist + 11] = val;
+							vertices[dist + 21] = val;
+							vertices[dist + 31] = val;
+							vertices[dist + 41] = val;
+							vertices[dist + 51] = val;
+
+							if (x > 0)
+							{
+								vertices[dist - 60 + 1U] = val;
+								vertices[dist - 60 + 11] = val;
+								vertices[dist - 60 + 21] = val;
+								vertices[dist - 60 + 31] = val;
+								vertices[dist - 60 + 41] = val;
+								vertices[dist - 60 + 51] = val;
+							}
+							if (y > 0)
+							{
+								vertices[dist - 60 * (w - 1) + 1U] = val;
+								vertices[dist - 60 * (w - 1) + 11] = val;
+								vertices[dist - 60 * (w - 1) + 21] = val;
+								vertices[dist - 60 * (w - 1) + 31] = val;
+								vertices[dist - 60 * (w - 1) + 41] = val;
+								vertices[dist - 60 * (w - 1) + 51] = val;
+							}
+							if (x > 0 && y > 0)
+							{
+								vertices[dist - 60 * w + 1U] = val;
+								vertices[dist - 60 * w + 11] = val;
+								vertices[dist - 60 * w + 21] = val;
+								vertices[dist - 60 * w + 31] = val;
+								vertices[dist - 60 * w + 41] = val;
+								vertices[dist - 60 * w + 51] = val;
+							}
+						}
+					}
+					else
+					{
+						if (reset)
+						{
+							vertices[dist + 1U] = 0.0f;
+							vertices[dist + 31] = 0.0f;
+
+							if (x > 0)
+								vertices[dist - 60 + 11] = 0.0f;
+							if (y > 0)
+								vertices[dist - 60 * (w - 1) + 51] = 0.0f;
+							if (x > 0 && y > 0)
+							{
+								vertices[dist - 60 * w + 21] = 0.0f;
+								vertices[dist - 60 * w + 41] = 0.0f;
+							}
+						}
+						else if (height >= val)
+						{
+							vertices[dist + 1U] = val;
+							vertices[dist + 31] = val;
+
+							if (x > 0)
+								vertices[dist - 60 + 11] = val;
+							if (y > 0)
+								vertices[dist - 60 * (w - 1) + 51] = val;
+							if (x > 0 && y > 0)
+							{
+								vertices[dist - 60 * w + 21] = val;
+								vertices[dist - 60 * w + 41] = val;
 							}
 						}
 					}
