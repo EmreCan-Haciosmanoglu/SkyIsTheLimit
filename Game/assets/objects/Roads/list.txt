@@ -28,6 +28,14 @@ Road_Junc_Object:01/road_junction.obj
 Road_Junc_Texture:01/road_junction.png
 Road_End_Object:01/road_end.obj
 Road_End_Texture:01/road_end.png
+Tunnel_Object:01/tunnel.obj
+Tunnel_Texture:01/tunnel.png
+Tunnel_Junc_Object:01/tunnel_junction.obj
+Tunnel_Junc_Texture:01/tunnel_junction.png
+Tunnel_End_Object:01/tunnel_end.obj
+Tunnel_End_Texture:01/tunnel_end.png
+Tunnel_Entrance_Object:01/tunnel_entrance.obj
+Tunnel_Entrance_Texture:01/tunnel_entrance.png
 Thumbnail:01/Thumbnail.png
 END
 START
