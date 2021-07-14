@@ -184,8 +184,6 @@ namespace Can
 							type.tunnel_height = type.tunnel->boundingBoxM.y - type.tunnel->boundingBoxL.y;
 							type.tunnel_length = type.tunnel->boundingBoxM.x - type.tunnel->boundingBoxL.x;
 							type.tunnel_junction_length = type.tunnel_junction->boundingBoxM.x - type.tunnel_junction->boundingBoxL.x;
-							type.tunnel_entrance_length_f = type.tunnel_entrance->boundingBoxM.x;
-							type.tunnel_entrance_length_b = -(type.tunnel_entrance->boundingBoxL.x);
 						}
 						type.road_width = type.road->boundingBoxM.z - type.road->boundingBoxL.z;
 						type.road_length = type.road->boundingBoxM.x - type.road->boundingBoxL.x;
