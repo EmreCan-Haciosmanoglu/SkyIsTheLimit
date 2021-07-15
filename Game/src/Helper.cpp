@@ -425,120 +425,91 @@ namespace  Can::Helper
 						continue;
 
 					u64 dist = ((u64)x + (w - 1) * y) * 60;
+					f32 height = vertices[dist + 1];
+					if (reset)
+					{
+						vertices[dist + 1U] = 0.0f;
+						vertices[dist + 31] = 0.0f;
+
+						if (x > 0)
+							vertices[dist - 60 + 11] = 0.0f;
+						if (y > 0)
+							vertices[dist - 60 * (w - 1) + 51] = 0.0f;
+						if (x > 0 && y > 0)
+						{
+							vertices[dist - 60 * w + 21] = 0.0f;
+							vertices[dist - 60 * w + 41] = 0.0f;
+						}
+					}
+					else if (height >= val)
+					{
+						vertices[dist + 1U] = val;
+						vertices[dist + 31] = val;
+
+						if (x > 0)
+							vertices[dist - 60 + 11] = val;
+						if (y > 0)
+							vertices[dist - 60 * (w - 1) + 51] = val;
+						if (x > 0 && y > 0)
+						{
+							vertices[dist - 60 * w + 21] = val;
+							vertices[dist - 60 * w + 41] = val;
+						}
+					}
+				}
+			}
+
+			if ((index == 0 && start_node_is_tunnel) || (index == count - 1 && end_node_is_tunnel))
+			{
+				v3 AB = tr[1] - tr[start_node_is_tunnel ? 0 : 2];
+				f32 len = glm::length(AB);
+				v3 dir = AB / (len * 2.0f);
+
+				u64 count = (u64)(len * 2.0f);
+				v3 current_point = tr[start_node_is_tunnel ? 0 : 2];
+				for (u64 indexd = 0; indexd < count; indexd++)
+				{
+					u64 x = current_point.x;
+					u64 y = current_point.z;
+					u64 dist = (x + (w - 1) * y) * 60;
 
 					f32 height = vertices[dist + 1];
-					bool is_tunnel_entrance = (index < 1 && start_node_is_tunnel) || (index > count - 2 && end_node_is_tunnel);
-					if (is_tunnel_entrance)
+
+					vertices[dist + 1U] = 0.0f;
+					vertices[dist + 11] = 0.0f;
+					vertices[dist + 21] = 0.0f;
+					vertices[dist + 31] = 0.0f;
+					vertices[dist + 41] = 0.0f;
+					vertices[dist + 51] = 0.0f;
+
+					if (x > 0)
 					{
-						if (reset)
-						{
-							vertices[dist + 1U] = 0.0f;
-							vertices[dist + 11] = 0.0f;
-							vertices[dist + 21] = 0.0f;
-							vertices[dist + 31] = 0.0f;
-							vertices[dist + 41] = 0.0f;
-							vertices[dist + 51] = 0.0f;
-
-							if (x > 0)
-							{
-								vertices[dist - 60 + 1U] = 0.0f;
-								vertices[dist - 60 + 11] = 0.0f;
-								vertices[dist - 60 + 21] = 0.0f;
-								vertices[dist - 60 + 31] = 0.0f;
-								vertices[dist - 60 + 41] = 0.0f;
-								vertices[dist - 60 + 51] = 0.0f;
-							}
-							if (y > 0)
-							{
-								vertices[dist - 60 * (w - 1) + 1U] = 0.0f;
-								vertices[dist - 60 * (w - 1) + 11] = 0.0f;
-								vertices[dist - 60 * (w - 1) + 21] = 0.0f;
-								vertices[dist - 60 * (w - 1) + 31] = 0.0f;
-								vertices[dist - 60 * (w - 1) + 41] = 0.0f;
-								vertices[dist - 60 * (w - 1) + 51] = 0.0f;
-							}
-							if (x > 0 && y > 0)
-							{
-								vertices[dist - 60 * w + 1U] = 0.0f;
-								vertices[dist - 60 * w + 11] = 0.0f;
-								vertices[dist - 60 * w + 21] = 0.0f;
-								vertices[dist - 60 * w + 31] = 0.0f;
-								vertices[dist - 60 * w + 41] = 0.0f;
-								vertices[dist - 60 * w + 51] = 0.0f;
-							}
-						}
-						else
-						{
-
-							vertices[dist + 1U] = val;
-							vertices[dist + 11] = val;
-							vertices[dist + 21] = val;
-							vertices[dist + 31] = val;
-							vertices[dist + 41] = val;
-							vertices[dist + 51] = val;
-
-							if (x > 0)
-							{
-								vertices[dist - 60 + 1U] = val;
-								vertices[dist - 60 + 11] = val;
-								vertices[dist - 60 + 21] = val;
-								vertices[dist - 60 + 31] = val;
-								vertices[dist - 60 + 41] = val;
-								vertices[dist - 60 + 51] = val;
-							}
-							if (y > 0)
-							{
-								vertices[dist - 60 * (w - 1) + 1U] = val;
-								vertices[dist - 60 * (w - 1) + 11] = val;
-								vertices[dist - 60 * (w - 1) + 21] = val;
-								vertices[dist - 60 * (w - 1) + 31] = val;
-								vertices[dist - 60 * (w - 1) + 41] = val;
-								vertices[dist - 60 * (w - 1) + 51] = val;
-							}
-							if (x > 0 && y > 0)
-							{
-								vertices[dist - 60 * w + 1U] = val;
-								vertices[dist - 60 * w + 11] = val;
-								vertices[dist - 60 * w + 21] = val;
-								vertices[dist - 60 * w + 31] = val;
-								vertices[dist - 60 * w + 41] = val;
-								vertices[dist - 60 * w + 51] = val;
-							}
-						}
+						vertices[dist - 60 + 1U] = 0.0f;
+						vertices[dist - 60 + 11] = 0.0f;
+						vertices[dist - 60 + 21] = 0.0f;
+						vertices[dist - 60 + 31] = 0.0f;
+						vertices[dist - 60 + 41] = 0.0f;
+						vertices[dist - 60 + 51] = 0.0f;
 					}
-					else
+					if (y > 0)
 					{
-						if (reset)
-						{
-							vertices[dist + 1U] = 0.0f;
-							vertices[dist + 31] = 0.0f;
-
-							if (x > 0)
-								vertices[dist - 60 + 11] = 0.0f;
-							if (y > 0)
-								vertices[dist - 60 * (w - 1) + 51] = 0.0f;
-							if (x > 0 && y > 0)
-							{
-								vertices[dist - 60 * w + 21] = 0.0f;
-								vertices[dist - 60 * w + 41] = 0.0f;
-							}
-						}
-						else if (height >= val)
-						{
-							vertices[dist + 1U] = val;
-							vertices[dist + 31] = val;
-
-							if (x > 0)
-								vertices[dist - 60 + 11] = val;
-							if (y > 0)
-								vertices[dist - 60 * (w - 1) + 51] = val;
-							if (x > 0 && y > 0)
-							{
-								vertices[dist - 60 * w + 21] = val;
-								vertices[dist - 60 * w + 41] = val;
-							}
-						}
+						vertices[dist - 60 * (w - 1) + 1U] = 0.0f;
+						vertices[dist - 60 * (w - 1) + 11] = 0.0f;
+						vertices[dist - 60 * (w - 1) + 21] = 0.0f;
+						vertices[dist - 60 * (w - 1) + 31] = 0.0f;
+						vertices[dist - 60 * (w - 1) + 41] = 0.0f;
+						vertices[dist - 60 * (w - 1) + 51] = 0.0f;
 					}
+					if (x > 0 && y > 0)
+					{
+						vertices[dist - 60 * w + 1U] = 0.0f;
+						vertices[dist - 60 * w + 11] = 0.0f;
+						vertices[dist - 60 * w + 21] = 0.0f;
+						vertices[dist - 60 * w + 31] = 0.0f;
+						vertices[dist - 60 * w + 41] = 0.0f;
+						vertices[dist - 60 * w + 51] = 0.0f;
+					}
+					current_point += dir;
 				}
 			}
 		}
