@@ -365,8 +365,7 @@ namespace  Can::Helper
 				}
 				minvx->x -= 1.0f;
 				maxvx->x += 1.5f;
-			}
-			{
+
 				v3* minvz = &tr[0];
 				v3* medvz = &tr[1];
 				v3* maxvz = &tr[2];
@@ -428,7 +427,7 @@ namespace  Can::Helper
 					u64 dist = ((u64)x + (w - 1) * y) * 60;
 
 					f32 height = vertices[dist + 1];
-					bool is_tunnel_entrance = (index < 2 && start_node_is_tunnel) || (index > count - 3 && end_node_is_tunnel);
+					bool is_tunnel_entrance = (index < 1 && start_node_is_tunnel) || (index > count - 2 && end_node_is_tunnel);
 					if (is_tunnel_entrance)
 					{
 						if (reset)

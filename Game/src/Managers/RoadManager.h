@@ -33,12 +33,12 @@ namespace Can
 		RoadManager(GameScene* scene);
 		~RoadManager();
 
-		void OnUpdate(v3& prevLocation, const v3& cameraPosition, const v3& cameraDirection, f32 ts);
-		void OnUpdate_Straight(v3& prevLocation, const v3& cameraPosition, const v3& cameraDirection, f32 ts);
-		void OnUpdate_QuadraticCurve(v3& prevLocation, const v3& cameraPosition, const v3& cameraDirection);
-		void OnUpdate_CubicCurve(v3& prevLocation, const v3& cameraPosition, const v3& cameraDirection);
-		void OnUpdate_Change(v3& prevLocation, const v3& cameraPosition, const v3& cameraDirection);
-		void OnUpdate_Destruction(v3& prevLocation, const v3& cameraPosition, const v3& cameraDirection);
+		void OnUpdate(v3& prevLocation, f32 ts);
+		void OnUpdate_Straight(v3& prevLocation, f32 ts);
+		void OnUpdate_QuadraticCurve(v3& prevLocation, f32 ts);
+		void OnUpdate_CubicCurve(v3& prevLocation, f32 ts);
+		void OnUpdate_Change(v3& prevLocation, f32 ts);
+		void OnUpdate_Destruction(v3& prevLocatio, f32 ts);
 
 		void DrawStraightGuidelines(const v3& pointA, const v3& pointB, s8 eA, s8 eB);
 		void DrawCurvedGuidelines(const std::array<v3, 4>& curvePoints);

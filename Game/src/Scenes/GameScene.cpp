@@ -24,7 +24,7 @@ namespace Can
 			0.1f,
 			1000.0f,
 			glm::vec3{ 22.0f, 15.0f, -0.0f },
-			glm::vec3{ -90.0f, 0.0f, 0.0f }
+			glm::vec3{ -60.0f, 0.0f, 0.0f }
 		)
 	{
 		m_Terrain->owns_prefab = true;
@@ -58,7 +58,7 @@ namespace Can
 			switch (e_ConstructionMode)
 			{
 			case ConstructionMode::Road:
-				m_RoadManager.OnUpdate(I, camPos, forward, ts);
+				m_RoadManager.OnUpdate(I, ts);
 				break;
 			case ConstructionMode::Building:
 				m_BuildingManager.OnUpdate(I, camPos, forward);

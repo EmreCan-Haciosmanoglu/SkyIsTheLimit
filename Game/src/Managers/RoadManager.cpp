@@ -76,33 +76,33 @@ namespace Can
 		delete m_TunnelGuidelinesEnd;
 	}
 
-	void RoadManager::OnUpdate(v3& prevLocation, const v3& cameraPosition, const v3& cameraDirection, f32 ts)
+	void RoadManager::OnUpdate(v3& prevLocation, f32 ts)
 	{
 		switch (m_ConstructionMode)
 		{
 		case RoadConstructionMode::None:
 			break;
 		case RoadConstructionMode::Straight:
-			OnUpdate_Straight(prevLocation, cameraPosition, cameraDirection, ts);
+			OnUpdate_Straight(prevLocation, ts);
 			break;
 		case RoadConstructionMode::QuadraticCurve:
-			OnUpdate_QuadraticCurve(prevLocation, cameraPosition, cameraDirection);
+			OnUpdate_QuadraticCurve(prevLocation, ts);
 			break;
 		case RoadConstructionMode::CubicCurve:
-			OnUpdate_CubicCurve(prevLocation, cameraPosition, cameraDirection);
+			OnUpdate_CubicCurve(prevLocation, ts);
 			break;
 		case  RoadConstructionMode::Change:
-			OnUpdate_Change(prevLocation, cameraPosition, cameraDirection);
+			OnUpdate_Change(prevLocation, ts);
 			break;
 		case  RoadConstructionMode::Destruct:
-			OnUpdate_Destruction(prevLocation, cameraPosition, cameraDirection);
+			OnUpdate_Destruction(prevLocation, ts);
 			break;
 		}
 	}
-	void RoadManager::OnUpdate_Straight(v3& prevLocation, const v3& cameraPosition, const v3& cameraDirection, f32 ts)
+	void RoadManager::OnUpdate_Straight(v3& prevLocation, f32 ts)
 	{
 		RoadType& type = m_Scene->MainApplication->road_types[m_Type];
-		m_Scene->m_Terrain->enabled = (m_Elevationtypes[0] >= 0) && (m_Elevationtypes[3] >= 0);
+		m_Scene->m_Terrain->enabled = (m_ConstructionPhase == 0 && m_Elevationtypes[0] >= 0) || (m_ConstructionPhase != 0 && m_Elevationtypes[3] >= 0);
 
 		// HACK
 		static f32 cooldown = 0.0f;
@@ -136,9 +136,7 @@ namespace Can
 			s8 elevationValue = 0;
 			if (m_CurrentElevation < -type.tunnel_height)
 				elevationValue = -1;
-			else if (m_CurrentElevation < type.bridge_height)
-				elevationValue = 0;
-			else
+			else if (m_CurrentElevation > type.bridge_height)
 				elevationValue = 1;
 
 			m_Elevationtypes[0] = elevationValue;
@@ -169,9 +167,7 @@ namespace Can
 			s8 elevationValue = 0;
 			if (m_CurrentElevation < -type.tunnel_height)
 				elevationValue = -1;
-			else if (m_CurrentElevation < type.bridge_height)
-				elevationValue = 0;
-			else
+			else if (m_CurrentElevation > type.bridge_height)
 				elevationValue = 1;
 
 			m_Elevationtypes[3] = elevationValue;
@@ -247,19 +243,65 @@ namespace Can
 			DrawStraightGuidelines(m_ConstructionPositions[0], m_ConstructionPositions[3], m_Elevationtypes[0], m_Elevationtypes[3]);
 		}
 	}
-	void RoadManager::OnUpdate_QuadraticCurve(v3& prevLocation, const v3& cameraPosition, const v3& cameraDirection)
+	void RoadManager::OnUpdate_QuadraticCurve(v3& prevLocation, f32 ts)
 	{
-		Prefab* selectedRoad = m_Scene->MainApplication->road_types[m_Type].road;
-		f32 roadPrefabWidth = selectedRoad->boundingBoxM.z - selectedRoad->boundingBoxL.z;
-		f32 roadPrefabLength = selectedRoad->boundingBoxM.x - selectedRoad->boundingBoxL.x;
+		RoadType& type = m_Scene->MainApplication->road_types[m_Type];
+		m_Scene->m_Terrain->enabled =
+			(m_ConstructionPhase == 0 && m_Elevationtypes[0] >= 0) ||
+			(m_ConstructionPhase == 1 && m_Elevationtypes[1] >= 0) ||
+			(m_ConstructionPhase == 2 && m_Elevationtypes[3] >= 0);
+
+		// HACK
+		static f32 cooldown = 0.0f;
+		if (cooldown <= 0.0f)
+		{
+			if (Input::IsKeyPressed(KeyCode::PageUp))
+			{
+				m_CurrentElevation += 0.1f;
+				cooldown = 0.15f;
+			}
+			else if (Input::IsKeyPressed(KeyCode::PageDown))
+			{
+				m_CurrentElevation -= 0.1f;
+				cooldown = 0.15f;
+			}
+			else if (Input::IsKeyPressed(KeyCode::Home))
+			{
+				m_CurrentElevation = 0.0f;
+			}
+		}
+		else
+		{
+			cooldown -= ts;
+		}
+
+		// Delete this when bridges are added
+		m_CurrentElevation = std::min(0.0f, m_CurrentElevation);
 
 		ResetGuideLines();
 
 		if (m_ConstructionPhase == 0)
 		{
+			s8 elevationValue = 0;
+			if (m_CurrentElevation < -type.tunnel_height)
+				elevationValue = -1;
+			else if (m_CurrentElevation > type.bridge_height)
+				elevationValue = 1;
+
+			m_Elevationtypes[0] = elevationValue;
+			m_Elevationtypes[1] = elevationValue;
+			m_Elevationtypes[2] = elevationValue;
+			m_Elevationtypes[3] = elevationValue;
+			m_Elevations[0] = m_CurrentElevation;
+			m_Elevations[1] = m_CurrentElevation;
+			m_Elevations[2] = m_CurrentElevation;
+			m_Elevations[3] = m_CurrentElevation;
+
 			SnapToGrid(prevLocation);
 			SnapToRoad(prevLocation, true);
 
+			if (!b_ConstructionStartSnapped)
+				prevLocation += v3{ 0.0f, m_CurrentElevation, 0.0f };
 			m_ConstructionPositions[0] = prevLocation;
 			m_ConstructionPositions[1] = prevLocation;
 			m_ConstructionPositions[2] = prevLocation;
@@ -269,12 +311,33 @@ namespace Can
 			m_GroundGuidelinesEnd->SetTransform(prevLocation + v3{ 0.0f, 0.15f, 0.0f }, v3(0.0f));
 			m_TunnelGuidelinesStart->SetTransform(prevLocation + v3{ 0.0f, 0.15f, 0.0f }, v3{ 0.0f, glm::radians(180.0f), 0.0f });
 			m_TunnelGuidelinesEnd->SetTransform(prevLocation + v3{ 0.0f, 0.15f, 0.0f }, v3(0.0f));
+
+			m_GroundGuidelinesStart->enabled = elevationValue > -0.01f;
+			m_GroundGuidelinesEnd->enabled = elevationValue > -0.01f;
+
+			m_TunnelGuidelinesStart->enabled = elevationValue < -0.01f;
+			m_TunnelGuidelinesEnd->enabled = elevationValue < -0.01f;
 		}
 		else if (m_ConstructionPhase == 1)
 		{
+			s8 elevationValue = 0;
+			if (m_CurrentElevation < -type.tunnel_height)
+				elevationValue = -1;
+			else if (m_CurrentElevation > type.bridge_height)
+				elevationValue = 1;
+
+			m_Elevationtypes[2] = elevationValue;
+			m_Elevationtypes[1] = elevationValue;
+			m_Elevationtypes[3] = elevationValue;
+			m_Elevations[1] = m_CurrentElevation;
+			m_Elevations[2] = m_CurrentElevation;
+			m_Elevations[3] = m_CurrentElevation;
+
 			b_ConstructionRestricted = false;
 			SnapToGrid(prevLocation);
 
+			if (!b_ConstructionEndSnapped)
+				prevLocation += v3{ 0.0f, m_CurrentElevation, 0.0f };
 			m_ConstructionPositions[1] = prevLocation;
 			m_ConstructionPositions[2] = prevLocation;
 			m_ConstructionPositions[3] = prevLocation;
@@ -297,7 +360,7 @@ namespace Can
 
 			v2 A = v2{ m_ConstructionPositions[0].x, m_ConstructionPositions[0].z };
 			v2 D = v2{ m_ConstructionPositions[3].x, m_ConstructionPositions[3].z };
-			v2 AD = roadPrefabWidth * 0.5f * glm::normalize(D - A);
+			v2 AD = type.road_width * 0.5f * glm::normalize(D - A);
 
 			if (!b_ConstructionStartSnapped) A -= AD;
 			D += AD;
@@ -327,10 +390,21 @@ namespace Can
 		}
 		else if (m_ConstructionPhase == 2)
 		{
+			s8 elevationValue = 0;
+			if (m_CurrentElevation < -type.tunnel_height)
+				elevationValue = -1;
+			else if (m_CurrentElevation > type.bridge_height)
+				elevationValue = 1;
+
+			m_Elevationtypes[3] = elevationValue;
+			m_Elevations[3] = m_CurrentElevation;
+
 			b_ConstructionRestricted = false;
 			SnapToGrid(prevLocation);
 			SnapToRoad(prevLocation, false);
 
+			if (!b_ConstructionEndSnapped)
+				prevLocation += v3{ 0.0f, m_CurrentElevation, 0.0f };
 			m_ConstructionPositions[3] = prevLocation;
 
 			if (!b_ConstructionEndSnapped)
@@ -375,10 +449,10 @@ namespace Can
 						(m_ConstructionPositions[2] + m_ConstructionPositions[3]) * 0.5f,
 						m_ConstructionPositions[3],
 			};
-			std::array<std::array<v2, 3>, 2> newRoadBoundingBox = Math::GetBoundingBoxOfBezierCurve(cps, roadPrefabWidth * 0.5f);
-			std::array<std::array<v2, 3>, (10 - 1) * 2> newRoadBoundingPolygon = Math::GetBoundingPolygonOfBezierCurve<10, 10>(cps, roadPrefabWidth * 0.5f);
+			std::array<std::array<v2, 3>, 2> newRoadBoundingBox = Math::GetBoundingBoxOfBezierCurve(cps, type.road_width * 0.5f);
+			std::array<std::array<v2, 3>, (10 - 1) * 2> newRoadBoundingPolygon = Math::GetBoundingPolygonOfBezierCurve<10, 10>(cps, type.road_width * 0.5f);
 
-			bool lengthIsRestricted = (restrictionFlags & RESTRICT_SHORT_LENGTH) && (glm::length(cps[0] - cps[3]) < (2.0f * roadPrefabLength));
+			bool lengthIsRestricted = (restrictionFlags & RESTRICT_SHORT_LENGTH) && (glm::length(cps[0] - cps[3]) < (2.0f * type.road_length));
 			bool collisionIsRestricted = (restrictionFlags & RESTRICT_COLLISIONS) ? CheckRoadRoadCollision(newRoadBoundingBox, newRoadBoundingPolygon) : false;
 
 			if (m_Scene->m_BuildingManager.restrictions[0] && (restrictionFlags & RESTRICT_COLLISIONS))
@@ -392,7 +466,7 @@ namespace Can
 			DrawCurvedGuidelines(cps);
 		}
 	}
-	void RoadManager::OnUpdate_CubicCurve(v3& prevLocation, const v3& cameraPosition, const v3& cameraDirection)
+	void RoadManager::OnUpdate_CubicCurve(v3& prevLocation, f32 ts)
 	{
 		Prefab* selectedRoad = m_Scene->MainApplication->road_types[m_Type].road;
 		f32 roadPrefabWidth = selectedRoad->boundingBoxM.z - selectedRoad->boundingBoxL.z;
@@ -647,7 +721,7 @@ namespace Can
 			DrawCurvedGuidelines(m_ConstructionPositions);
 		}
 	}
-	void RoadManager::OnUpdate_Change(v3& prevLocation, const v3& cameraPosition, const v3& cameraDirection)
+	void RoadManager::OnUpdate_Change(v3& prevLocation, f32 ts)
 	{
 		if (selected_road_segment != -1)
 			m_Segments[selected_road_segment].object->SetTransform(m_Segments[selected_road_segment].GetStartPosition());
@@ -700,7 +774,7 @@ namespace Can
 		}
 		selected_road_segment = -1;
 	}
-	void RoadManager::OnUpdate_Destruction(v3& prevLocation, const v3& cameraPosition, const v3& cameraDirection)
+	void RoadManager::OnUpdate_Destruction(v3& prevLocation, f32 ts)
 	{
 		SnapInformation snapInformation = CheckSnapping(prevLocation);
 		m_DestructionSegment = snapInformation.segment;
@@ -891,26 +965,26 @@ namespace Can
 	}
 	void RoadManager::DrawCurvedGuidelines(const std::array<v3, 4>& curvePoints)
 	{
-		Prefab* selectedRoad = m_Scene->MainApplication->road_types[m_Type].road;
-		f32 roadPrefabWidth = selectedRoad->boundingBoxM.z - selectedRoad->boundingBoxL.z;
-		f32 roadPrefabLength = selectedRoad->boundingBoxM.x - selectedRoad->boundingBoxL.x;
+		RoadType& type = m_Scene->MainApplication->road_types[m_Type];
 
 		f32 l = glm::length(curvePoints[3] - curvePoints[0]);
 		u64 count = 1;
-		while (l > roadPrefabLength)
 		{
-			count *= 2;
-			v3 p = Math::CubicCurve<f32>(curvePoints, 1.0f / count);
-			l = glm::length(p - curvePoints[0]);
+			while (l > type.road_length)
+			{
+				count *= 2;
+				v3 p = Math::CubicCurve<f32>(curvePoints, 1.0f / count);
+				l = glm::length(p - curvePoints[0]);
+			}
+			if (count > 1) count /= 2;
+			while (l > type.road_length)
+			{
+				count++;
+				v3 p = Math::CubicCurve<f32>(curvePoints, 1.0f / count);
+				l = glm::length(p - curvePoints[0]);
+			}
+			if (count > 1) count--;
 		}
-		if (count > 1) count /= 2;
-		while (l > roadPrefabLength)
-		{
-			count++;
-			v3 p = Math::CubicCurve<f32>(curvePoints, 1.0f / count);
-			l = glm::length(p - curvePoints[0]);
-		}
-		if (count > 1) count--;
 
 		v3 AB1 = curvePoints[1] - curvePoints[0];
 		v3 AB2 = curvePoints[2] - curvePoints[3];
@@ -921,34 +995,61 @@ namespace Can
 		f32 rotationStart = glm::atan(-AB1.z / AB1.x) + rotationOffset1;
 		f32 rotationEnd = glm::atan(-AB2.z / AB2.x) + rotationOffset2;
 
-		m_GroundGuidelinesStart->enabled = !b_ConstructionStartSnapped;
-		m_GroundGuidelinesEnd->enabled = !b_ConstructionEndSnapped;
-
+		m_GroundGuidelinesStart->enabled = !b_ConstructionStartSnapped && m_Elevationtypes[0] == 0;
+		m_GroundGuidelinesEnd->enabled = !b_ConstructionEndSnapped && m_Elevationtypes[3] == 0;
 		m_GroundGuidelinesStart->SetTransform(curvePoints[0] + v3{ 0.0f, 0.15f, 0.0f }, { 0.0f, rotationStart, 0.0f });
 		m_GroundGuidelinesEnd->SetTransform(curvePoints[3] + v3{ 0.0f, 0.15f, 0.0f }, { 0.0f, rotationEnd, 0.0f });
+		m_GroundGuidelinesStart->tintColor = b_ConstructionRestricted ? v4{ 1.0f, 0.3f, 0.2f, 1.0f } : v4(1.0f);
+		m_GroundGuidelinesEnd->tintColor = b_ConstructionRestricted ? v4{ 1.0f, 0.3f, 0.2f, 1.0f } : v4(1.0f);
+
+		m_TunnelGuidelinesStart->enabled = !b_ConstructionStartSnapped && m_Elevationtypes[0] == -1;
+		m_TunnelGuidelinesEnd->enabled = !b_ConstructionEndSnapped && m_Elevationtypes[3] == -1;
+		m_TunnelGuidelinesStart->SetTransform(curvePoints[0] + v3{ 0.0f, 0.15f, 0.0f }, { 0.0f, rotationStart, 0.0f });
+		m_TunnelGuidelinesEnd->SetTransform(curvePoints[3] + v3{ 0.0f, 0.15f, 0.0f }, { 0.0f, rotationEnd, 0.0f });
+		m_TunnelGuidelinesStart->tintColor = b_ConstructionRestricted ? v4{ 1.0f, 0.3f, 0.2f, 1.0f } : v4(1.0f);
+		m_TunnelGuidelinesEnd->tintColor = b_ConstructionRestricted ? v4{ 1.0f, 0.3f, 0.2f, 1.0f } : v4(1.0f);
+
 
 		for (u64& inUse : m_GroundGuidelinesInUse)
 			inUse = 0;
-		m_GroundGuidelinesInUse[m_Type] += count;
-
-		if (m_GroundGuidelinesInUse[m_Type] > m_GroundGuidelines[m_Type].size())
-			for (u64 j = m_GroundGuidelines[m_Type].size(); j < m_GroundGuidelinesInUse[m_Type]; j++)
-				m_GroundGuidelines[m_Type].push_back(new Object(m_Scene->MainApplication->road_types[m_Type].road));
+		for (u64& inUse : m_TunnelGuidelinesInUse)
+			inUse = 0;
 
 		v3 p1 = curvePoints[0];
-		for (int c = 0; c < count; c++)
+		u64 groundIndex = 0;
+		u64 tunnelIndex = 0;
+		for (u64 c = 0; c < count; c++)
 		{
 			v3 p2 = Math::CubicCurve<f32>(std::array<v3, 4>{curvePoints}, (c + 1.0f) / count);
 			v3 vec1 = p2 - p1;
 			f32 length = glm::length(vec1);
 			v3 dir1 = vec1 / length;
 
-			f32 scale = length / roadPrefabLength;
+			f32 scale = 1.0f; ;
 			f32 rot1 = glm::acos(dir1.x) * ((f32)(dir1.z < 0.0f) * 2.0f - 1.0f);
 
-			Object* roadSG = m_GroundGuidelines[m_Type][c];
-			roadSG->enabled = true;
-			roadSG->SetTransform(
+			Object* guideline_object = nullptr;
+			if (-p1.y > type.tunnel_height)
+			{
+				m_TunnelGuidelinesInUse[m_Type] ++;
+				if (m_TunnelGuidelinesInUse[m_Type] > m_TunnelGuidelines[m_Type].size())
+					m_TunnelGuidelines[m_Type].push_back(new Object(m_Scene->MainApplication->road_types[m_Type].tunnel));
+				guideline_object = m_TunnelGuidelines[m_Type][tunnelIndex];
+				scale = length / type.tunnel_length;
+				tunnelIndex++;
+			}
+			else
+			{
+				m_GroundGuidelinesInUse[m_Type] ++;
+				if (m_GroundGuidelinesInUse[m_Type] > m_GroundGuidelines[m_Type].size())
+					m_GroundGuidelines[m_Type].push_back(new Object(m_Scene->MainApplication->road_types[m_Type].road));
+				guideline_object = m_GroundGuidelines[m_Type][groundIndex];
+				scale = length / type.road_length;
+				groundIndex++;
+			}
+
+			guideline_object->enabled = true;
+			guideline_object->SetTransform(
 				p1 + v3{ 0.0f, 0.15f, 0.0f },
 				v3{ 0.0f, rot1, 0.0f },
 				v3{ scale, 1.0f, 1.0f }
@@ -957,10 +1058,11 @@ namespace Can
 			p1 = p2;
 		}
 
-		m_GroundGuidelinesStart->tintColor = b_ConstructionRestricted ? v4{ 1.0f, 0.3f, 0.2f, 1.0f } : v4(1.0f);
-		m_GroundGuidelinesEnd->tintColor = b_ConstructionRestricted ? v4{ 1.0f, 0.3f, 0.2f, 1.0f } : v4(1.0f);
 
 		for (std::vector<Object*>& os : m_GroundGuidelines)
+			for (Object* rg : os)
+				rg->tintColor = b_ConstructionRestricted ? v4{ 1.0f, 0.3f, 0.2f, 1.0f } : v4(1.0f);
+		for (std::vector<Object*>& os : m_TunnelGuidelines)
 			for (Object* rg : os)
 				rg->tintColor = b_ConstructionRestricted ? v4{ 1.0f, 0.3f, 0.2f, 1.0f } : v4(1.0f);
 	}
