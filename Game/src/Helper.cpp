@@ -463,51 +463,83 @@ namespace  Can::Helper
 			{
 				v3 AB = tr[1] - tr[start_node_is_tunnel ? 0 : 2];
 				f32 len = glm::length(AB);
-				v3 dir = AB / (len * 2.0f);
+				v3 dir = AB / (len * 3.0f);
 
-				u64 count = (u64)(len * 2.0f);
+				u64 count = (u64)(len * 3.0f);
 				v3 current_point = tr[start_node_is_tunnel ? 0 : 2];
 				for (u64 indexd = 0; indexd < count; indexd++)
 				{
 					u64 x = current_point.x;
 					u64 y = current_point.z;
-					u64 dist = (x + (w - 1) * y) * 60;
+					u64 dist_00 = ((x + 0) + (w - 1) * (y + 0)) * 60;
 
-					f32 height = vertices[dist + 1];
+					vertices[dist_00 + 1U] = 0.0f;
+					vertices[dist_00 + 11] = 0.0f;
+					vertices[dist_00 + 21] = 0.0f;
+					vertices[dist_00 + 31] = 0.0f;
+					vertices[dist_00 + 41] = 0.0f;
+					vertices[dist_00 + 51] = 0.0f;
 
-					vertices[dist + 1U] = 0.0f;
-					vertices[dist + 11] = 0.0f;
-					vertices[dist + 21] = 0.0f;
-					vertices[dist + 31] = 0.0f;
-					vertices[dist + 41] = 0.0f;
-					vertices[dist + 51] = 0.0f;
+					if (x < w - 1)
+					{
+						u64 dist_x0 = ((x + 1) + (w - 1) * (y + 0)) * 60;
+						vertices[dist_x0 + 1U] = 0.0f;
+						vertices[dist_x0 + 11] = 0.0f;
+						vertices[dist_x0 + 21] = 0.0f;
+						vertices[dist_x0 + 31] = 0.0f;
+						vertices[dist_x0 + 41] = 0.0f;
+						vertices[dist_x0 + 51] = 0.0f;
+					}
+					if (y < h - 1)
+					{
+						u64 dist_0y = ((x + 0) + (w - 1) * (y + 1)) * 60;
+						vertices[dist_0y + 1U] = 0.0f;
+						vertices[dist_0y + 11] = 0.0f;
+						vertices[dist_0y + 21] = 0.0f;
+						vertices[dist_0y + 31] = 0.0f;
+						vertices[dist_0y + 41] = 0.0f;
+						vertices[dist_0y + 51] = 0.0f;
+					}
+					if (x < w - 1 && y < h - 1)
+					{
+						u64 dist_xy = ((x + 1) + (w - 1) * (y + 1)) * 60;
+						vertices[dist_xy + 1U] = 0.0f;
+						vertices[dist_xy + 11] = 0.0f;
+						vertices[dist_xy + 21] = 0.0f;
+						vertices[dist_xy + 31] = 0.0f;
+						vertices[dist_xy + 41] = 0.0f;
+						vertices[dist_xy + 51] = 0.0f;
+					}
 
 					if (x > 0)
 					{
-						vertices[dist - 60 + 1U] = 0.0f;
-						vertices[dist - 60 + 11] = 0.0f;
-						vertices[dist - 60 + 21] = 0.0f;
-						vertices[dist - 60 + 31] = 0.0f;
-						vertices[dist - 60 + 41] = 0.0f;
-						vertices[dist - 60 + 51] = 0.0f;
+						u64 dist_x0 = ((x - 1) + (w - 1) * (y + 0)) * 60;
+						vertices[dist_x0 + 1U] = 0.0f;
+						vertices[dist_x0 + 11] = 0.0f;
+						vertices[dist_x0 + 21] = 0.0f;
+						vertices[dist_x0 + 31] = 0.0f;
+						vertices[dist_x0 + 41] = 0.0f;
+						vertices[dist_x0 + 51] = 0.0f;
 					}
 					if (y > 0)
 					{
-						vertices[dist - 60 * (w - 1) + 1U] = 0.0f;
-						vertices[dist - 60 * (w - 1) + 11] = 0.0f;
-						vertices[dist - 60 * (w - 1) + 21] = 0.0f;
-						vertices[dist - 60 * (w - 1) + 31] = 0.0f;
-						vertices[dist - 60 * (w - 1) + 41] = 0.0f;
-						vertices[dist - 60 * (w - 1) + 51] = 0.0f;
+						u64 dist_0y = ((x + 0) + (w - 1) * (y - 1)) * 60;
+						vertices[dist_0y + 1U] = 0.0f;
+						vertices[dist_0y + 11] = 0.0f;
+						vertices[dist_0y + 21] = 0.0f;
+						vertices[dist_0y + 31] = 0.0f;
+						vertices[dist_0y + 41] = 0.0f;
+						vertices[dist_0y + 51] = 0.0f;
 					}
 					if (x > 0 && y > 0)
 					{
-						vertices[dist - 60 * w + 1U] = 0.0f;
-						vertices[dist - 60 * w + 11] = 0.0f;
-						vertices[dist - 60 * w + 21] = 0.0f;
-						vertices[dist - 60 * w + 31] = 0.0f;
-						vertices[dist - 60 * w + 41] = 0.0f;
-						vertices[dist - 60 * w + 51] = 0.0f;
+						u64 dist_xy = ((x - 1) + (w - 1) * (y - 1)) * 60;
+						vertices[dist_xy + 1U] = 0.0f;
+						vertices[dist_xy + 11] = 0.0f;
+						vertices[dist_xy + 21] = 0.0f;
+						vertices[dist_xy + 31] = 0.0f;
+						vertices[dist_xy + 41] = 0.0f;
+						vertices[dist_xy + 51] = 0.0f;
 					}
 					current_point += dir;
 				}
