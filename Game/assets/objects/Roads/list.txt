@@ -42,13 +42,13 @@ START
 Name:Two-lane Two-way Road With Median
 Asym:False
 Zoneable:True
-Road_Object:road_02.obj
-Road_Texture:road_02.png
-Road_Junc_Object:road_junction_02.obj
-Road_Junc_Texture:road_junction_02.png
-Road_End_Object:road_end_02.obj
-Road_End_Texture:road_end_02.png
-Thumbnail:Thumbnail_02.png
+Road_Object:02/road.obj
+Road_Texture:02/road.png
+Road_Junc_Object:02/road_junction.obj
+Road_Junc_Texture:02/road_junction.png
+Road_End_Object:02/road_end.obj
+Road_End_Texture:02/road_end.png
+Thumbnail:02/Thumbnail.png
 END
 START
 Name:Asymetric 1-2-lane Road
