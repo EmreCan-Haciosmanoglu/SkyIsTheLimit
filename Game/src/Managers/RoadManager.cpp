@@ -1364,16 +1364,6 @@ namespace Can
 
 		if (m_ConstructionPhase > 1)
 		{
-			m_ConstructionPositions[1] = (m_ConstructionPositions[0] + m_ConstructionPositions[3]) / 2.0f;
-			m_ConstructionPositions[2] = (m_ConstructionPositions[0] + m_ConstructionPositions[3]) / 2.0f;
-
-			for (std::vector<Object*>& os : m_GroundGuidelines)
-				for (Object* rg : os)
-					rg->enabled = false;
-			for (u64& inUse : m_GroundGuidelinesInUse)
-				inUse = 0;
-			m_ConstructionPhase = 0;
-
 			if (m_Elevationtypes[0] == m_Elevationtypes[3])
 			{
 				AddRoadSegment({
@@ -1450,13 +1440,6 @@ namespace Can
 
 		if (m_ConstructionPhase > 2)
 		{
-			for (std::vector<Object*>& os : m_GroundGuidelines)
-				for (Object* rg : os)
-					rg->enabled = false;
-			for (u64& inUse : m_GroundGuidelinesInUse)
-				inUse = 0;
-			m_ConstructionPhase = 0;
-
 			std::array<v3, 4> cps{
 					m_ConstructionPositions[0],
 					(m_ConstructionPositions[2] + m_ConstructionPositions[0]) * 0.5f,
@@ -1542,21 +1525,75 @@ namespace Can
 
 		if (m_ConstructionPhase > 3)
 		{
-			for (std::vector<Object*>& os : m_GroundGuidelines)
-				for (Object* rg : os)
-					rg->enabled = false;
-			for (u64& inUse : m_GroundGuidelinesInUse)
-				inUse = 0;
-			m_ConstructionPhase = 0;
+			std::array<v3, 4> cps = m_ConstructionPositions;
 
-			AddRoadSegment(m_ConstructionPositions, m_Elevationtypes[0]);
+			if (
+				m_Elevationtypes[0] == m_Elevationtypes[1] &&
+				m_Elevationtypes[0] == m_Elevationtypes[2] &&
+				m_Elevationtypes[0] == m_Elevationtypes[3])
+			{
+				AddRoadSegment(cps, m_Elevationtypes[0]);
+			}
+			else
+			{
+				RoadType& type = m_Scene->MainApplication->road_types[m_Type];
+				std::vector<f32> ts{ 0.0f };
+				std::vector<v3> samples = Math::GetCubicCurveSamples(cps, type.road_length, ts);
+
+				bool is_underground = m_Elevationtypes[0] == -1;
+				u64 count = ts.size();
+
+				s64 end_snap_node = m_EndSnappedNode;
+				s64 end_snap_segment = m_EndSnappedSegment;
+				bool end_snapped = b_ConstructionEndSnapped;
+
+				for (u64 i = 0; i < count - 1; i++)
+				{
+					if ((is_underground && -samples[i].y < type.tunnel_height) || (!is_underground && -samples[i].y > type.tunnel_height))
+					{
+						m_Nodes.push_back(RoadNode({}, samples[i], -1));
+						u64 nodeIndex = m_Nodes.size() - 1;
+						m_Nodes[nodeIndex].index = nodeIndex;
+
+						m_EndSnappedNode = nodeIndex;
+						m_EndSnappedSegment = -1;
+						b_ConstructionEndSnapped = true;
+
+						AddRoadSegment({
+							cps[0],
+							cps[0] + (cps[1] - cps[0]) * ts[i],
+							Math::QuadraticCurve(std::array<v3, 3>{ cps[0], cps[1], cps[2] }, ts[i]),
+							samples[i]
+							}, is_underground ? -1 : 0);
+
+						cps = {
+							samples[i],
+							Math::QuadraticCurve(std::array<v3, 3>{ cps[1], cps[2], cps[3] }, ts[i]),
+							cps[2] + (cps[3] - cps[2]) * ts[i],
+							cps[3]
+						};
+						m_StartSnappedNode = m_EndSnappedNode;
+						m_StartSnappedSegment = m_EndSnappedSegment;
+						b_ConstructionStartSnapped = b_ConstructionEndSnapped;
+
+						ts = { 0.0f };
+						samples = Math::GetCubicCurveSamples(cps, type.road_length, ts);
+						i = 0;
+						count = ts.size();
+						is_underground = !is_underground;
+					}
+				}
+
+				m_EndSnappedNode = end_snap_node;
+				m_EndSnappedSegment = end_snap_segment;
+				b_ConstructionEndSnapped = end_snapped;
+
+				AddRoadSegment(cps, is_underground ? -1 : 0);
+			}
 
 			ResetStates();
 			m_Scene->m_TreeManager.ResetStates();
 			m_Scene->m_BuildingManager.ResetStates();
-
-			m_GroundGuidelinesStart->enabled = true;
-			m_GroundGuidelinesEnd->enabled = true;
 		}
 		return false;
 	}
