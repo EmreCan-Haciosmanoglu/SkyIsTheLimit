@@ -62,17 +62,17 @@ START
 Name:Asymetric 1-2-lane Road
 Asym:True
 Zoneable:True
-Road_Object:road_03.obj
-Road_Texture:road_03.png
-Road_Junc_Object:road_junction_03.obj
-Road_Junc_Texture:road_junction_03.png
-Road_Junc_Mirror_Object:road_junction_03_mirror.obj
-Road_Junc_Mirror_Texture:road_junction_03_mirror.png
-Road_End_Object:road_end_03.obj
-Road_End_Texture:road_end_03.png
-Road_End_Mirror_Object:road_end_03_mirror.obj
-Road_End_Mirror_Texture:road_end_03_mirror.png
-Thumbnail:Thumbnail_03.png
+Road_Object:03/road.obj
+Road_Texture:03/road.png
+Road_Junc_Object:03/road_junction.obj
+Road_Junc_Texture:03/road_junction.png
+Road_Junc_Mirror_Object:03/road_junction_mirror.obj
+Road_Junc_Mirror_Texture:03/road_junction_mirror.png
+Road_End_Object:03/road_end.obj
+Road_End_Texture:03/road_end.png
+Road_End_Mirror_Object:03/road_end_mirror.obj
+Road_End_Mirror_Texture:03/road_end_mirror.png
+Thumbnail:03/Thumbnail.png
 END
 START
 Name:Two-lane Two-way Highway Road
