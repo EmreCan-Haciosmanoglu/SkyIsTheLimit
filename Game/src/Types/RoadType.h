@@ -33,6 +33,7 @@ namespace Can
 		Prefab* tunnel_end_mirror = nullptr;
 
 		Prefab* tunnel_entrance = nullptr;
+		Prefab* tunnel_entrance_mirror = nullptr;
 
 		Ref<Texture2D> thumbnail;
 

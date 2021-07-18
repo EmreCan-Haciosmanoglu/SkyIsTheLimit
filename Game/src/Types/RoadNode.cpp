@@ -276,7 +276,7 @@ namespace Can
 			offset += prefabIndexCount;
 			if (isTunnel && isFromGround)
 			{
-				Prefab* tunnel_entrance = rs.type.tunnel_entrance;
+				Prefab* tunnel_entrance = asym && !isStartNode ? rs.type.tunnel_entrance_mirror : rs.type.tunnel_entrance;
 				TexturedObjectVertex* verts = (TexturedObjectVertex*)(tunnel_entrance->vertices);
 				textureIndex = -1.0f;
 				for (uint8_t i = 0; i < textureSlotIndex; i++)
@@ -307,6 +307,7 @@ namespace Can
 				offset += tunnel_entrance->indexCount;
 			}
 		}
+		
 		Prefab* newPrefab = new Prefab(
 			"",
 			segments[roadSegments[0]].type.road_junction->shaderPath, // we may have different shaders in the future

@@ -104,6 +104,8 @@ namespace Can
 
 			char* tunnel_entrance_object_key = "Tunnel_Entrance_Object\0";
 			char* tunnel_entrance_texture_key = "Tunnel_Entrance_Texture\0";
+			char* tunnel_entrance_mirror_object_key = "Tunnel_Entrance_Mirror_Object\0";
+			char* tunnel_entrance_mirror_texture_key = "Tunnel_Entrance_Mirror_Texture\0";
 
 			char* thumbnail_key = "Thumbnail\0";
 
@@ -144,6 +146,8 @@ namespace Can
 
 				std::string tunnel_entrance_obj = path_to_roads;
 				std::string tunnel_entrance_png = path_to_roads;
+				std::string tunnel_entrance_mirror_obj = path_to_roads;
+				std::string tunnel_entrance_mirror_png = path_to_roads;
 
 				std::string thumbnail_png = path_to_roads;
 
@@ -179,6 +183,7 @@ namespace Can
 							{
 								type.tunnel_junction_mirror = new Prefab(tunnel_junction_mirror_obj, TEMP_SHADER_FILE_PATH, tunnel_junction_mirror_png);
 								type.tunnel_end_mirror = new Prefab(tunnel_end_mirror_obj, TEMP_SHADER_FILE_PATH, tunnel_end_mirror_png);
+								type.tunnel_entrance_mirror = new Prefab(tunnel_entrance_mirror_obj, TEMP_SHADER_FILE_PATH, tunnel_entrance_mirror_png);
 							}
 							type.tunnel_width = type.tunnel->boundingBoxM.z - type.tunnel->boundingBoxL.z;
 							type.tunnel_height = type.tunnel->boundingBoxM.y - type.tunnel->boundingBoxL.y;
@@ -217,6 +222,8 @@ namespace Can
 
 							tunnel_entrance_obj = path_to_roads;
 							tunnel_entrance_png = path_to_roads;
+							tunnel_entrance_mirror_obj = path_to_roads;
+							tunnel_entrance_mirror_png = path_to_roads;
 
 							thumbnail_png = path_to_roads;
 
@@ -280,6 +287,10 @@ namespace Can
 						tunnel_entrance_obj = tunnel_entrance_obj.append(std::string(print_from));
 					else if (std::equal(line.begin(), seperator, tunnel_entrance_texture_key))
 						tunnel_entrance_png = tunnel_entrance_png.append(std::string(print_from));
+					else if (std::equal(line.begin(), seperator, tunnel_entrance_mirror_object_key))
+						tunnel_entrance_mirror_obj = tunnel_entrance_mirror_obj.append(std::string(print_from));
+					else if (std::equal(line.begin(), seperator, tunnel_entrance_mirror_texture_key))
+						tunnel_entrance_mirror_png = tunnel_entrance_mirror_png.append(std::string(print_from));
 					else if (std::equal(line.begin(), seperator, thumbnail_key))
 						thumbnail_png = thumbnail_png.append(std::string(print_from));
 				}

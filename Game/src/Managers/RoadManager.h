@@ -25,6 +25,7 @@ namespace Can
 		s64 segment = -1;
 		s64 node = -1;
 		f32 T = 0.0f;
+		s8 elevation_type = 0;
 	};
 
 	class RoadManager

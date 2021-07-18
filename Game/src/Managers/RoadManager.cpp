@@ -1134,6 +1134,10 @@ namespace Can
 					continue;
 			}
 			RoadSegment& rs = m_Segments[rsIndex];
+
+			if (m_Elevationtypes[0] == 0 && m_Elevationtypes[3] == 0 && rs.elevation_type == -1)
+				continue;
+
 			f32 halfWidth = rs.type.road_width * 0.5f;
 
 			std::array<std::array<v2, 3>, 2> oldRoadPolygon = Math::GetBoundingBoxOfBezierCurve(rs.GetCurvePoints(), halfWidth);
@@ -1224,6 +1228,15 @@ namespace Can
 					continue;
 			}
 			RoadSegment& rs = m_Segments[rsIndex];
+
+			if (
+				m_Elevationtypes[0] == 0 && 
+				m_Elevationtypes[1] == 0 && 
+				m_Elevationtypes[2] == 0 && 
+				m_Elevationtypes[3] == 0 && 
+				rs.elevation_type == -1)
+				continue;
+
 			f32 halfWidth = rs.type.road_width * 0.5f;
 
 			std::array<std::array<v2, 3>, 2> oldRoadBoundingBox = Math::GetBoundingBoxOfBezierCurve(rs.GetCurvePoints(), halfWidth);
@@ -2199,39 +2212,41 @@ namespace Can
 
 	SnapInformation RoadManager::CheckSnapping(const v3& prevLocation)
 	{
-		Prefab* selectedRoad = m_Scene->MainApplication->road_types[m_Type].road;
-		f32 roadSegmentPrefabWidth = selectedRoad->boundingBoxM.z - selectedRoad->boundingBoxL.z;
-		f32 roadPrefabLength = selectedRoad->boundingBoxM.x - selectedRoad->boundingBoxL.x;
-
 		SnapInformation results;
-		results.location = prevLocation;
-		v2 P{ prevLocation.x, prevLocation.z };
+		RoadType& type = m_Scene->MainApplication->road_types[m_Type];
 
+		f32 min_distance_to_snap = -prevLocation.y > type.tunnel_height ? type.tunnel_width : type.road_width;
+
+		results.location = prevLocation;
 		for (u64 i = 0; i < m_Nodes.size(); i++)
 		{
-			v3 a = prevLocation;
-			v3 b = m_Nodes[i].position;
-			a.y = 0;
-			b.y = 0;
-			if (glm::length(b - a) < roadSegmentPrefabWidth)
+			RoadNode& node = m_Nodes[i];
+			v3 distance_vector = node.position - prevLocation;
+			distance_vector.y = 0.0f;
+			if (glm::length(distance_vector) < min_distance_to_snap)
 			{
-				results.location = m_Nodes[i].position;
+				results.location = node.position;
 				results.snapped = true;
 				results.node = i;
+				results.elevation_type = node.elevation_type;
 				return results;
 			}
 		}
 
+		v2 point{ prevLocation.x, prevLocation.z };
 		for (u64 i = 0; i < m_Segments.size(); i++)
-			if (Math::CheckPolygonPointCollision(m_Segments[i].bounding_box, P))
+		{
+			RoadSegment& segment = m_Segments[i];
+			if (Math::CheckPolygonPointCollision(segment.bounding_box, point))
 			{
-				f32 snapDist = (roadSegmentPrefabWidth + m_Segments[i].type.road_width) * 0.5f;
-				u64 curve_samples_size = m_Segments[i].curve_samples.size();
-				CAN_ASSERT(curve_samples_size > 1, "Samples size can't be smaller than 2");
-				v3 point0 = m_Segments[i].curve_samples[0];
+				f32 width = segment.elevation_type == -1 ? segment.type.tunnel_width : segment.type.road_width;
+				f32 snapDist = (min_distance_to_snap + width) * 0.5f;
+				std::vector<v3> samples = segment.curve_samples;
+				u64 curve_samples_size = samples.size();
+				v3 point0 = samples[0];
 				for (u64 j = 1; j < curve_samples_size; j++)
 				{
-					v3 point1 = m_Segments[i].curve_samples[j];
+					v3 point1 = samples[j];
 					v3 dirToP1 = point1 - point0;
 					dirToP1.y = 0.0f;
 					f32 lenr = glm::length(dirToP1);
@@ -2247,20 +2262,21 @@ namespace Can
 					if (dist < snapDist)
 					{
 						f32 c = len * glm::cos(angle);
-						if (c >= -0.5f * m_Segments[i].type.road_width && c <= lenr + 0.5f * m_Segments[i].type.road_width)
+						if (c >= -0.5f * width && c <= lenr + 0.5f * width)
 						{
-
 							f32 t = std::max(0.0f, std::min(1.0f, glm::cos(angle)));
 							results.location = point0 + t * lenr * dirToP1;
 							results.segment = i;
 							results.snapped = true;
-							results.T = Math::Lerp(m_Segments[i].curve_t_samples[j - 1], m_Segments[i].curve_t_samples[j], t);
+							results.T = Math::Lerp(segment.curve_t_samples[j - 1], segment.curve_t_samples[j], t);
+							results.elevation_type = segment.elevation_type;
 							return results;
 						}
 					}
 					point0 = point1;
 				}
 			}
+		}
 		return results;
 	}
 
@@ -2337,6 +2353,8 @@ namespace Can
 				m_StartSnappedSegment = snapInformation.segment;
 				m_StartSnappedNode = snapInformation.node;
 				m_StartSnappedT = snapInformation.T;
+				if (b_ConstructionStartSnapped)
+					m_Elevationtypes[0] = snapInformation.elevation_type;
 			}
 			else
 			{
@@ -2344,6 +2362,8 @@ namespace Can
 				m_EndSnappedSegment = snapInformation.segment;
 				m_EndSnappedNode = snapInformation.node;
 				m_EndSnappedT = snapInformation.T;
+				if (b_ConstructionEndSnapped)
+					m_Elevationtypes[3] = snapInformation.elevation_type;
 			}
 		}
 	}
