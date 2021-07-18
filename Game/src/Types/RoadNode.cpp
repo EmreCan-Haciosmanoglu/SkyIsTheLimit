@@ -84,7 +84,7 @@ namespace Can
 				rs.SetStartPosition(position);
 				rotation = { 0.0f,
 					rs.GetStartRotation().y + glm::radians(180.0f),
-					rs.GetStartRotation().x
+					-rs.GetStartRotation().x
 				};
 			}
 			else
@@ -92,7 +92,7 @@ namespace Can
 				rs.SetEndPosition(position);
 				rotation = { 0.0f,
 					rs.GetEndRotation().y + glm::radians(180.0f),
-					rs.GetEndRotation().x
+					-rs.GetEndRotation().x
 				};
 			}
 
