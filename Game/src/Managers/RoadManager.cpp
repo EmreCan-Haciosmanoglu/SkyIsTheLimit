@@ -148,13 +148,13 @@ namespace Can
 			SnapToRoad(prevLocation, true);
 
 			if (!b_ConstructionStartSnapped)
-				prevLocation += v3{ 0.0f, m_CurrentElevation, 0.0f };
+				prevLocation.z += m_CurrentElevation;
 			m_ConstructionPositions[0] = prevLocation;
 
-			m_GroundGuidelinesStart->SetTransform(prevLocation + v3{ 0.0f, 0.15f, 0.0f }, v3{ 0.0f, glm::radians(180.0f), 0.0f });
-			m_GroundGuidelinesEnd->SetTransform(prevLocation + v3{ 0.0f, 0.15f, 0.0f }, v3(0.0f));
-			m_TunnelGuidelinesStart->SetTransform(prevLocation + v3{ 0.0f, 0.15f, 0.0f }, v3{ 0.0f, glm::radians(180.0f), 0.0f });
-			m_TunnelGuidelinesEnd->SetTransform(prevLocation + v3{ 0.0f, 0.15f, 0.0f }, v3(0.0f));
+			m_GroundGuidelinesStart->SetTransform(prevLocation + v3{ 0.0f, 0.0f, 0.15f }, v3{ 0.0f, 0.0f, glm::radians(180.0f) });
+			m_GroundGuidelinesEnd->SetTransform(prevLocation + v3{ 0.0f, 0.0f, 0.15f }, v3(0.0f));
+			m_TunnelGuidelinesStart->SetTransform(prevLocation + v3{ 0.0f, 0.0f, 0.15f }, v3{ 0.0f, 0.0f, glm::radians(180.0f) });
+			m_TunnelGuidelinesEnd->SetTransform(prevLocation + v3{ 0.0f, 0.0f, 0.15f }, v3(0.0f));
 
 			m_GroundGuidelinesStart->enabled = elevationValue == 0;
 			m_GroundGuidelinesEnd->enabled = elevationValue == 0;
@@ -174,19 +174,15 @@ namespace Can
 			SnapToRoad(prevLocation, false);
 
 			if (!b_ConstructionEndSnapped)
-				prevLocation += v3{ 0.0f, m_CurrentElevation, 0.0f };
+				prevLocation.z += m_CurrentElevation;
 			m_ConstructionPositions[3] = prevLocation;
 
 			// TODO: After angle snapping 
-			v3 dir = prevLocation - m_ConstructionPositions[0];
+			v2 dir = (v2)(prevLocation - m_ConstructionPositions[0]);
 			bool angleIsRestricted = RestrictSmallAngles(dir, m_StartSnappedNode, m_StartSnappedSegment, m_StartSnappedT);
 			angleIsRestricted |= RestrictSmallAngles(-dir, m_EndSnappedNode, m_EndSnappedSegment, m_EndSnappedT);
 
 			v3 AB = m_ConstructionPositions[3] - m_ConstructionPositions[0];
-
-			f32 rotOffset = (f32)(AB.x < 0.0f) * glm::radians(180.0f);
-			f32 rotEnd = glm::atan(-AB.z / AB.x) + rotOffset;
-			f32 rotStart = rotEnd + glm::radians(180.0f);
 
 
 			if (!b_ConstructionEndSnapped)
@@ -203,8 +199,8 @@ namespace Can
 				m_ConstructionPositions[3] = m_ConstructionPositions[0] + AB;
 			}
 
-			v2 A = v2{ m_ConstructionPositions[0].x, m_ConstructionPositions[0].z };
-			v2 D = v2{ m_ConstructionPositions[3].x, m_ConstructionPositions[3].z };
+			v2 A = (v2)m_ConstructionPositions[0];
+			v2 D = (v2)m_ConstructionPositions[3];
 			v2 AD = type.road_width * 0.5f * glm::normalize(D - A);
 
 			if (!b_ConstructionStartSnapped) A -= AD;
@@ -294,16 +290,16 @@ namespace Can
 			SnapToRoad(prevLocation, true);
 
 			if (!b_ConstructionStartSnapped)
-				prevLocation += v3{ 0.0f, m_CurrentElevation, 0.0f };
+				prevLocation.z += m_CurrentElevation;
 			m_ConstructionPositions[0] = prevLocation;
 			m_ConstructionPositions[1] = prevLocation;
 			m_ConstructionPositions[2] = prevLocation;
 			m_ConstructionPositions[3] = prevLocation;
 
-			m_GroundGuidelinesStart->SetTransform(prevLocation + v3{ 0.0f, 0.15f, 0.0f }, v3{ 0.0f, glm::radians(180.0f), 0.0f });
-			m_GroundGuidelinesEnd->SetTransform(prevLocation + v3{ 0.0f, 0.15f, 0.0f }, v3(0.0f));
-			m_TunnelGuidelinesStart->SetTransform(prevLocation + v3{ 0.0f, 0.15f, 0.0f }, v3{ 0.0f, glm::radians(180.0f), 0.0f });
-			m_TunnelGuidelinesEnd->SetTransform(prevLocation + v3{ 0.0f, 0.15f, 0.0f }, v3(0.0f));
+			m_GroundGuidelinesStart->SetTransform(prevLocation + v3{ 0.0f, 0.0f, 0.15f }, v3{ 0.0f, 0.0f, glm::radians(180.0f) });
+			m_GroundGuidelinesEnd->SetTransform(prevLocation + v3{ 0.0f, 0.0f, 0.15f }, v3(0.0f));
+			m_TunnelGuidelinesStart->SetTransform(prevLocation + v3{ 0.0f, 0.0f, 0.15f }, v3{ 0.0f, 0.0f, glm::radians(180.0f) });
+			m_TunnelGuidelinesEnd->SetTransform(prevLocation + v3{ 0.0f, 0.0f, 0.15f }, v3(0.0f));
 
 			m_GroundGuidelinesStart->enabled = elevationValue == 0;
 			m_GroundGuidelinesEnd->enabled = elevationValue == 0;
@@ -323,21 +319,16 @@ namespace Can
 			b_ConstructionRestricted = false;
 			SnapToGrid(prevLocation);
 
-			if (!b_ConstructionEndSnapped)
-				prevLocation += v3{ 0.0f, m_CurrentElevation, 0.0f };
+			prevLocation.z += m_CurrentElevation;
 			m_ConstructionPositions[1] = prevLocation;
 			m_ConstructionPositions[2] = prevLocation;
 			m_ConstructionPositions[3] = prevLocation;
 
 			// TODO: After angle snapping
-			v3 dir = prevLocation - m_ConstructionPositions[0];
+			v2 dir = (v2)(prevLocation - m_ConstructionPositions[0]);
 			bool angleIsRestricted = RestrictSmallAngles(dir, m_StartSnappedNode, m_StartSnappedSegment, m_StartSnappedT);
 
 			v3 AB = m_ConstructionPositions[3] - m_ConstructionPositions[0];
-
-			f32 rotOffset = (f32)(AB.x < 0.0f) * glm::radians(180.0f);
-			f32 rotEnd = glm::atan(-AB.z / AB.x) + rotOffset;
-			f32 rotStart = rotEnd + glm::radians(180.0f);
 
 			SnapToHeight({ 1, 2, 3 }, 0, AB);
 			SnapToAngle(AB, m_StartSnappedNode, m_StartSnappedSegment, m_StartSnappedT);
@@ -345,8 +336,8 @@ namespace Can
 			m_ConstructionPositions[2] = m_ConstructionPositions[0] + AB;
 			m_ConstructionPositions[3] = m_ConstructionPositions[0] + AB;
 
-			v2 A = v2{ m_ConstructionPositions[0].x, m_ConstructionPositions[0].z };
-			v2 D = v2{ m_ConstructionPositions[3].x, m_ConstructionPositions[3].z };
+			v2 A = (v2)m_ConstructionPositions[0];
+			v2 D = (v2)m_ConstructionPositions[3];
 			v2 AD = type.road_width * 0.5f * glm::normalize(D - A);
 
 			if (!b_ConstructionStartSnapped) A -= AD;
@@ -385,16 +376,16 @@ namespace Can
 			SnapToRoad(prevLocation, false);
 
 			if (!b_ConstructionEndSnapped)
-				prevLocation += v3{ 0.0f, m_CurrentElevation, 0.0f };
+				prevLocation.z += m_CurrentElevation;
 			m_ConstructionPositions[3] = prevLocation;
 
 			if (!b_ConstructionEndSnapped)
 				SnapToHeight({ 3 }, 0, v3(0.0f));
 			// SnapToAngle For center angle
 			/***Magic***/ {
-				v2 Cd{ m_ConstructionPositions[1].x, m_ConstructionPositions[1].z };
-				v2 A{ m_ConstructionPositions[0].x, m_ConstructionPositions[0].z };
-				v2 B{ m_ConstructionPositions[3].x, m_ConstructionPositions[3].z };
+				v2 Cd = (v2)m_ConstructionPositions[1];
+				v2 A = (v2)m_ConstructionPositions[0];
+				v2 B = (v2)m_ConstructionPositions[3];
 				v2 ray = glm::normalize(Cd - A);
 				v2 AB = B - A;
 				f32 d = glm::dot(AB, AB) / (2.0f * glm::dot(AB, ray));
@@ -402,13 +393,13 @@ namespace Can
 				if (d < 200.0f && d > 0.0f)
 				{
 					m_ConstructionPositions[2].x = C.x;
-					m_ConstructionPositions[2].z = C.y;
+					m_ConstructionPositions[2].y = C.y;
 				}
 			}
 			// TODO: After angle snapping
-			v3 dir1 = m_ConstructionPositions[1] - m_ConstructionPositions[0];
+			v2 dir1 = (v2)(m_ConstructionPositions[1] - m_ConstructionPositions[0]);
 			bool angleIsRestricted = RestrictSmallAngles(dir1, m_StartSnappedNode, m_StartSnappedSegment, m_StartSnappedT);
-			v3 dir2 = m_ConstructionPositions[2] - m_ConstructionPositions[3];
+			v2 dir2 = (v2)(m_ConstructionPositions[2] - m_ConstructionPositions[3]);
 			angleIsRestricted |= RestrictSmallAngles(dir2, m_EndSnappedNode, m_EndSnappedSegment, m_EndSnappedT);
 			if (restrictionFlags & RESTRICT_SMALL_ANGLES)
 			{
@@ -502,13 +493,13 @@ namespace Can
 			SnapToRoad(prevLocation, true);
 
 			if (!b_ConstructionStartSnapped)
-				prevLocation += v3{ 0.0f, m_CurrentElevation, 0.0f };
+				prevLocation.z += m_CurrentElevation;
 			m_ConstructionPositions[0] = prevLocation;
 
-			m_GroundGuidelinesStart->SetTransform(prevLocation + v3{ 0.0f, 0.15f, 0.0f }, v3{ 0.0f, glm::radians(180.0f), 0.0f });
-			m_GroundGuidelinesEnd->SetTransform(prevLocation + v3{ 0.0f, 0.15f, 0.0f }, v3(0.0f));
-			m_TunnelGuidelinesStart->SetTransform(prevLocation + v3{ 0.0f, 0.15f, 0.0f }, v3{ 0.0f, glm::radians(180.0f), 0.0f });
-			m_TunnelGuidelinesEnd->SetTransform(prevLocation + v3{ 0.0f, 0.15f, 0.0f }, v3(0.0f));
+			m_GroundGuidelinesStart->SetTransform(prevLocation + v3{ 0.0f, 0.0f, 0.15f }, v3{ 0.0f, 0.0f, glm::radians(180.0f) });
+			m_GroundGuidelinesEnd->SetTransform(prevLocation + v3{ 0.0f, 0.0f, 0.15f }, v3(0.0f));
+			m_TunnelGuidelinesStart->SetTransform(prevLocation + v3{ 0.0f, 0.0f, 0.15f }, v3{ 0.0f, 0.0f, glm::radians(180.0f) });
+			m_TunnelGuidelinesEnd->SetTransform(prevLocation + v3{ 0.0f, 0.0f, 0.15f }, v3(0.0f));
 
 			m_GroundGuidelinesStart->enabled = elevationValue == 0;
 			m_GroundGuidelinesEnd->enabled = elevationValue == 0;
@@ -527,22 +518,18 @@ namespace Can
 				SnapToRoad(prevLocation, false);
 
 			if (!(b_ConstructionEndSnapped && cubicCurveOrder[1] == 3))
-				prevLocation += v3{ 0.0f, m_CurrentElevation, 0.0f };
+				prevLocation.z += m_CurrentElevation;
 			m_ConstructionPositions[cubicCurveOrder[1]] = prevLocation;
 
 			// TODO: After angle snapping
 			bool angleIsRestricted = false;
 			if (cubicCurveOrder[1] == 1)
 			{
-				v3 dir = m_ConstructionPositions[1] - m_ConstructionPositions[0];
+				v2 dir = (v2)(m_ConstructionPositions[1] - m_ConstructionPositions[0]);
 				angleIsRestricted = RestrictSmallAngles(dir, m_StartSnappedNode, m_StartSnappedSegment, m_StartSnappedT);
 			}
 
 			v3 AB = prevLocation - m_ConstructionPositions[0];
-
-			f32 rotOffset = (f32)(AB.x < 0.0f) * glm::radians(180.0f);
-			f32 rotEnd = glm::atan(-AB.z / AB.x) + rotOffset;
-			f32 rotStart = rotEnd + glm::radians(180.0f);
 
 			if ((snapFlags & SNAP_TO_LENGTH) && (cubicCurveOrder[1] == 1) && (glm::length(AB) > 0.5f))
 			{
@@ -560,8 +547,8 @@ namespace Can
 				m_ConstructionPositions[1] = m_ConstructionPositions[0] + AB;
 			}
 
-			v2 A = v2{ m_ConstructionPositions[cubicCurveOrder[0]].x, m_ConstructionPositions[cubicCurveOrder[0]].z };
-			v2 D = v2{ m_ConstructionPositions[cubicCurveOrder[1]].x, m_ConstructionPositions[cubicCurveOrder[1]].z };
+			v2 A = (v2)m_ConstructionPositions[cubicCurveOrder[0]];
+			v2 D = (v2)m_ConstructionPositions[cubicCurveOrder[1]];
 			v2 AD = type.road_width * 0.5f * glm::normalize(D - A);
 
 			if (!b_ConstructionStartSnapped) A -= AD;
@@ -604,7 +591,7 @@ namespace Can
 				SnapToRoad(prevLocation, false);
 
 			if (!(b_ConstructionEndSnapped && cubicCurveOrder[2] == 3))
-				prevLocation += v3{ 0.0f, m_CurrentElevation, 0.0f };
+				prevLocation.z += m_CurrentElevation;
 			m_ConstructionPositions[cubicCurveOrder[2]] = prevLocation;
 			m_ConstructionPositions[cubicCurveOrder[3]] = prevLocation;
 
@@ -612,12 +599,12 @@ namespace Can
 			bool angleIsRestricted = false;
 			if (cubicCurveOrder[3] == 1)
 			{
-				v3 dir = m_ConstructionPositions[2] - m_ConstructionPositions[3];
+				v2 dir = (v2)(m_ConstructionPositions[2] - m_ConstructionPositions[3]);
 				bool angleIsRestricted = RestrictSmallAngles(dir, m_EndSnappedNode, m_EndSnappedSegment, m_EndSnappedT);
 			}
 			else
 			{
-				v3 dir = m_ConstructionPositions[1] - m_ConstructionPositions[0];
+				v2 dir = (v2)(m_ConstructionPositions[1] - m_ConstructionPositions[0]);
 				bool angleIsRestricted = RestrictSmallAngles(dir, m_StartSnappedNode, m_StartSnappedSegment, m_StartSnappedT);
 			}
 			if (snapFlags & SNAP_TO_LENGTH)
@@ -696,13 +683,13 @@ namespace Can
 				SnapToRoad(prevLocation, false);
 
 			if (!(b_ConstructionEndSnapped && cubicCurveOrder[3] == 3))
-				prevLocation += v3{ 0.0f, m_CurrentElevation, 0.0f };
+				prevLocation.z += m_CurrentElevation;
 			m_ConstructionPositions[cubicCurveOrder[3]] = prevLocation;
 
 			// TODO: After angle snapping
-			v3 dir1 = m_ConstructionPositions[1] - m_ConstructionPositions[0];
+			v2 dir1 = (v2)(m_ConstructionPositions[1] - m_ConstructionPositions[0]);
 			bool angleIsRestricted = RestrictSmallAngles(dir1, m_StartSnappedNode, m_StartSnappedSegment, m_StartSnappedT);
-			v3 dir2 = m_ConstructionPositions[2] - m_ConstructionPositions[3];
+			v2 dir2 = (v2)(m_ConstructionPositions[2] - m_ConstructionPositions[3]);
 			angleIsRestricted |= RestrictSmallAngles(dir2, m_EndSnappedNode, m_EndSnappedSegment, m_EndSnappedT);
 
 			if (snapFlags & SNAP_TO_LENGTH)
@@ -771,7 +758,7 @@ namespace Can
 		if (selected_road_segment != -1)
 			m_Segments[selected_road_segment].object->SetTransform(m_Segments[selected_road_segment].GetStartPosition());
 
-		v2 prevLoc2D{ prevLocation.x, prevLocation.z };
+		v2 prevLoc2D = (v2)prevLocation;
 		Prefab* roadType = m_Scene->MainApplication->road_types[m_Type].road;
 		u64 size = m_Segments.size();
 		for (u64 rsIndex = 0; rsIndex < size; rsIndex++)
@@ -794,7 +781,7 @@ namespace Can
 				{
 					v3 point1 = curve_samples[i];
 					v3 dirToP1 = point1 - point0;
-					dirToP1.y = 0.0f;
+					dirToP1.z = 0.0f;
 					dirToP1 = glm::normalize(dirToP1);
 
 					v3 dirToPrev = prevLocation - point0;
@@ -809,7 +796,7 @@ namespace Can
 						if (c >= -0.5f * rsl && c <= 1.5f * rsl)
 						{
 							selected_road_segment = rsIndex;
-							rs.object->SetTransform(rs.GetStartPosition() + v3{ 0.0f, 0.1f, 0.0f });
+							rs.object->SetTransform(rs.GetStartPosition() + v3{ 0.0f, 0.0f, 0.1f });
 							return;
 						}
 					}
@@ -842,17 +829,17 @@ namespace Can
 					RoadNode& startNode = m_Nodes[rs.StartNode];
 					RoadNode& endNode = m_Nodes[rs.EndNode];
 
-					rs.object->SetTransform(rs.GetStartPosition() + v3{ 0.0f, 0.1f, 0.0f });
+					rs.object->SetTransform(rs.GetStartPosition() + v3{ 0.0f, 0.0f, 0.1f });
 
 					if (rs.StartNode == m_DestructionNode)
 					{
 						if (endNode.roadSegments.size() == 1)
-							endNode.object->SetTransform(endNode.position + v3{ 0.0f, 0.1f, 0.0f });
+							endNode.object->SetTransform(endNode.position + v3{ 0.0f, 0.0f, 0.1f });
 					}
 					else
 					{
 						if (startNode.roadSegments.size() == 1)
-							startNode.object->SetTransform(startNode.position + v3{ 0.0f, 0.1f, 0.0f });
+							startNode.object->SetTransform(startNode.position + v3{ 0.0f, 0.0f, 0.1f });
 					}
 				}
 			}
@@ -862,12 +849,12 @@ namespace Can
 				RoadNode& startNode = m_Nodes[rs.StartNode];
 				RoadNode& endNode = m_Nodes[rs.EndNode];
 
-				rs.object->SetTransform(rs.GetStartPosition() + v3{ 0.0f, 0.1f, 0.0f });
+				rs.object->SetTransform(rs.GetStartPosition() + v3{ 0.0f, 0.0f, 0.1f });
 
 				if (endNode.roadSegments.size() == 1)
-					endNode.object->SetTransform(endNode.position + v3{ 0.0f, 0.1f, 0.0f });
+					endNode.object->SetTransform(endNode.position + v3{ 0.0f, 0.0f, 0.1f });
 				if (startNode.roadSegments.size() == 1)
-					startNode.object->SetTransform(startNode.position + v3{ 0.0f, 0.1f, 0.0f });
+					startNode.object->SetTransform(startNode.position + v3{ 0.0f, 0.0f, 0.1f });
 			}
 		}
 	}
@@ -884,10 +871,10 @@ namespace Can
 		f32 first_length = 0.0f;
 
 		v3 direction = AB / entire_length;
-		v2 dir = glm::normalize(v2{ AB.x, AB.z });
+		v2 dir = glm::normalize((v2)AB);
 		f32 yaw = glm::acos(dir.x) * ((float)(dir.y < 0.0f) * 2.0f - 1.0f);
 		v3 dirR = glm::rotateY(AB, -yaw);
-		dir = glm::normalize(v2{ dirR.x, dirR.y });
+		dir = glm::normalize((v2)dirR);
 		f32 pitch = glm::acos(dir.x) * ((float)(dir.y > 0.0f) * 2.0f - 1.0f);
 
 		int count = (int)(entire_length / type.road_length);
@@ -899,9 +886,10 @@ namespace Can
 
 		if (eA != eB)
 		{
-			v3 pA = pointA + v3{ 0.0f, type.tunnel_height, 0.0f };
-			//v3 pB = pointB + v3{ 0.0f, type.tunnel_height, 0.0f };
-			v3 intersectionPoint = Helper::RayPlaneIntersection(pA, direction, v3(0.0f), v3{ 0.0f, 1.0f, 0.0 });
+			v3 pA = pointA;
+			pA.z += type.tunnel_height;
+
+			v3 intersectionPoint = Helper::RayPlaneIntersection(pA, direction, v3(0.0f), v3{ 0.0f, 0.0f, 1.0f });
 			first_length = glm::length(intersectionPoint - pA);
 			f32 ratio = first_length / entire_length;
 			if (eA == -1)
@@ -965,8 +953,8 @@ namespace Can
 			Object* roadG = m_GroundGuidelines[m_Type][j];
 			roadG->enabled = true;
 			roadG->SetTransform(
-				pointStart + (direction * (j * scaleG * type.road_length)) + v3{ 0.0f, 0.15f, 0.0f },
-				v3{ 0.0f, yaw, pitch },
+				pointStart + (direction * (j * scaleG * type.road_length)) + v3{ 0.0f, 0.0f, 0.15f },
+				v3{ 0.0f, pitch, yaw },
 				v3{ 1.0f * scaleG, 1.0f, 1.0f }
 			);
 		}
@@ -975,8 +963,8 @@ namespace Can
 			Object* roadG = m_TunnelGuidelines[m_Type][j];
 			roadG->enabled = true;
 			roadG->SetTransform(
-				pointStart + (direction * (first_length + j * scaleT * type.tunnel_length)) + v3{ 0.0f, 0.15f, 0.0f },
-				v3{ 0.0f, yaw, pitch },
+				pointStart + (direction * (first_length + j * scaleT * type.tunnel_length)) + v3{ 0.0f, 0.0f, 0.15f },
+				v3{ 0.0f, pitch, yaw },
 				v3{ 1.0f * scaleT, 1.0f, 1.0f }
 			);
 		}
@@ -988,10 +976,10 @@ namespace Can
 		m_TunnelGuidelinesStart->enabled = !b_ConstructionStartSnapped && eA == -1;
 		m_TunnelGuidelinesEnd->enabled = !b_ConstructionEndSnapped && eB == -1;
 
-		m_GroundGuidelinesStart->SetTransform(pointStart + v3{ 0.0f, 0.15f, 0.0f }, { 0.0f, yaw + glm::radians(180.0f), -pitch });
-		m_GroundGuidelinesEnd->SetTransform(pointEnd + v3{ 0.0f, 0.15f, 0.0f }, { 0.0f, yaw, pitch });
-		m_TunnelGuidelinesStart->SetTransform(pointStart + v3{ 0.0f, 0.15f, 0.0f }, { 0.0f, yaw + glm::radians(180.0f), -pitch });
-		m_TunnelGuidelinesEnd->SetTransform(pointEnd + v3{ 0.0f, 0.15f, 0.0f }, { 0.0f, yaw, pitch });
+		m_GroundGuidelinesStart->SetTransform(pointStart + v3{ 0.0f, 0.0f, 0.15f }, { 0.0f, -pitch, yaw + glm::radians(180.0f) });
+		m_GroundGuidelinesEnd->SetTransform(pointEnd + v3{ 0.0f, 0.0f, 0.15f }, { 0.0f, pitch, yaw });
+		m_TunnelGuidelinesStart->SetTransform(pointStart + v3{ 0.0f, 0.0f, 0.15f }, { 0.0f, -pitch, yaw + glm::radians(180.0f) });
+		m_TunnelGuidelinesEnd->SetTransform(pointEnd + v3{ 0.0f, 0.0f, 0.15f }, { 0.0f, pitch, yaw });
 
 		v4 red = v4{ 1.0f, 0.3f, 0.2f, 1.0f };
 		v4 white = v4(1.0f);
@@ -1037,23 +1025,23 @@ namespace Can
 		f32 rotationOffset1 = (f32)(AB1.x >= 0.0f) * glm::radians(180.0f);
 		f32 rotationOffset2 = (f32)(AB2.x >= 0.0f) * glm::radians(180.0f);
 
-		f32 rotationStart = glm::atan(-AB1.z / AB1.x) + rotationOffset1;
-		f32 rotationEnd = glm::atan(-AB2.z / AB2.x) + rotationOffset2;
+		f32 rotationStart = glm::atan(-AB1.y / AB1.x) + rotationOffset1;
+		f32 rotationEnd = glm::atan(-AB2.y / AB2.x) + rotationOffset2;
 
 		m_GroundGuidelinesStart->enabled = !b_ConstructionStartSnapped && m_Elevationtypes[0] == 0;
 		m_GroundGuidelinesEnd->enabled = !b_ConstructionEndSnapped && m_Elevationtypes[3] == 0;
-		m_GroundGuidelinesStart->SetTransform(curvePoints[0] + v3{ 0.0f, 0.15f, 0.0f }, { 0.0f, rotationStart, 0.0f });
-		m_GroundGuidelinesEnd->SetTransform(curvePoints[3] + v3{ 0.0f, 0.15f, 0.0f }, { 0.0f, rotationEnd, 0.0f });
-		m_GroundGuidelinesStart->tintColor = b_ConstructionRestricted ? v4{ 1.0f, 0.3f, 0.2f, 1.0f } : v4(1.0f);
-		m_GroundGuidelinesEnd->tintColor = b_ConstructionRestricted ? v4{ 1.0f, 0.3f, 0.2f, 1.0f } : v4(1.0f);
-
 		m_TunnelGuidelinesStart->enabled = !b_ConstructionStartSnapped && m_Elevationtypes[0] == -1;
 		m_TunnelGuidelinesEnd->enabled = !b_ConstructionEndSnapped && m_Elevationtypes[3] == -1;
-		m_TunnelGuidelinesStart->SetTransform(curvePoints[0] + v3{ 0.0f, 0.15f, 0.0f }, { 0.0f, rotationStart, 0.0f });
-		m_TunnelGuidelinesEnd->SetTransform(curvePoints[3] + v3{ 0.0f, 0.15f, 0.0f }, { 0.0f, rotationEnd, 0.0f });
+
+		m_GroundGuidelinesStart->SetTransform(curvePoints[0] + v3{ 0.0f, 0.0f, 0.15f }, v3{ 0.0f, 0.0f, rotationStart });
+		m_GroundGuidelinesEnd->SetTransform(curvePoints[3] + v3{ 0.0f, 0.0f, 0.15f }, v3{ 0.0f, 0.0f, rotationEnd });
+		m_TunnelGuidelinesStart->SetTransform(curvePoints[0] + v3{ 0.0f, 0.0f, 0.15f }, v3{ 0.0f, 0.0f, rotationStart });
+		m_TunnelGuidelinesEnd->SetTransform(curvePoints[3] + v3{ 0.0f, 0.0f, 0.15f }, v3{ 0.0f, 0.0f, rotationEnd });
+
+		m_GroundGuidelinesStart->tintColor = b_ConstructionRestricted ? v4{ 1.0f, 0.3f, 0.2f, 1.0f } : v4(1.0f);
+		m_GroundGuidelinesEnd->tintColor = b_ConstructionRestricted ? v4{ 1.0f, 0.3f, 0.2f, 1.0f } : v4(1.0f);
 		m_TunnelGuidelinesStart->tintColor = b_ConstructionRestricted ? v4{ 1.0f, 0.3f, 0.2f, 1.0f } : v4(1.0f);
 		m_TunnelGuidelinesEnd->tintColor = b_ConstructionRestricted ? v4{ 1.0f, 0.3f, 0.2f, 1.0f } : v4(1.0f);
-
 
 		for (u64& inUse : m_GroundGuidelinesInUse)
 			inUse = 0;
@@ -1071,7 +1059,7 @@ namespace Can
 			v3 dir1 = vec1 / length;
 
 			f32 scale = 1.0f; ;
-			f32 rot1 = glm::acos(dir1.x) * ((f32)(dir1.z < 0.0f) * 2.0f - 1.0f);
+			f32 rot1 = glm::acos(dir1.x) * ((f32)(dir1.y < 0.0f) * 2.0f - 1.0f);
 
 			Object* guideline_object = nullptr;
 			if (-p1.y > type.tunnel_height)
@@ -1095,8 +1083,8 @@ namespace Can
 
 			guideline_object->enabled = true;
 			guideline_object->SetTransform(
-				p1 + v3{ 0.0f, 0.15f, 0.0f },
-				v3{ 0.0f, rot1, 0.0f },
+				p1 + v3{ 0.0f, 0.0f, 0.15f },
+				v3{ 0.0f, 0.0f, rot1 },
 				v3{ scale, 1.0f, 1.0f }
 			);
 
@@ -1156,17 +1144,12 @@ namespace Can
 		for (Building* building : m_Scene->m_BuildingManager.GetBuildings())
 		{
 			Prefab* prefab = building->object->prefab;
-			v2 pos{ building->object->position.x, building->object->position.z };
-			v2 A = { prefab->boundingBoxL.x, prefab->boundingBoxL.z };
-			v2 B = { prefab->boundingBoxL.x, prefab->boundingBoxM.z };
-			v2 C = { prefab->boundingBoxM.x, prefab->boundingBoxL.z };
-			v2 D = { prefab->boundingBoxM.x, prefab->boundingBoxM.z };
-
+			v2 pos = (v2)building->object->position;
 			f32 rot = building->object->rotation.y;
-			A = Math::RotatePoint(A, rot) + pos;
-			B = Math::RotatePoint(B, rot) + pos;
-			C = Math::RotatePoint(C, rot) + pos;
-			D = Math::RotatePoint(D, rot) + pos;
+			v2 A = Math::RotatePoint((v2)prefab->boundingBoxL, rot) + pos;
+			v2 B = Math::RotatePoint((v2)prefab->boundingBoxL, rot) + pos;
+			v2 C = Math::RotatePoint((v2)prefab->boundingBoxM, rot) + pos;
+			v2 D = Math::RotatePoint((v2)prefab->boundingBoxM, rot) + pos;
 
 			std::array<std::array<v2, 3>, 2> polygonBuilding = {
 				std::array<v2,3>{A, B, D},
@@ -1182,17 +1165,12 @@ namespace Can
 		for (Object* tree : m_Scene->m_TreeManager.GetTrees())
 		{
 			Prefab* prefab = tree->prefab;
-			v2 pos{ tree->position.x, tree->position.z };
-			v2 A{ prefab->boundingBoxL.x * tree->scale.x, prefab->boundingBoxL.z * tree->scale.z };
-			v2 B{ prefab->boundingBoxL.x * tree->scale.x, prefab->boundingBoxM.z * tree->scale.z };
-			v2 C{ prefab->boundingBoxM.x * tree->scale.x, prefab->boundingBoxL.z * tree->scale.z };
-			v2 D{ prefab->boundingBoxM.x * tree->scale.x, prefab->boundingBoxM.z * tree->scale.z };
-
+			v2 pos = (v2)tree->position;
 			f32 rot = tree->rotation.y;
-			A = Math::RotatePoint(A, rot) + pos;
-			B = Math::RotatePoint(B, rot) + pos;
-			C = Math::RotatePoint(C, rot) + pos;
-			D = Math::RotatePoint(D, rot) + pos;
+			v2 A = Math::RotatePoint((v2)(prefab->boundingBoxL * tree->scale), rot) + pos;
+			v2 B = Math::RotatePoint((v2)(prefab->boundingBoxL * tree->scale), rot) + pos;
+			v2 C = Math::RotatePoint((v2)(prefab->boundingBoxM * tree->scale), rot) + pos;
+			v2 D = Math::RotatePoint((v2)(prefab->boundingBoxM * tree->scale), rot) + pos;
 
 			std::array<std::array<v2, 3>, 2> polygonTree = {
 				std::array<v2,3>{A, B, D},
@@ -1230,10 +1208,10 @@ namespace Can
 			RoadSegment& rs = m_Segments[rsIndex];
 
 			if (
-				m_Elevationtypes[0] == 0 && 
-				m_Elevationtypes[1] == 0 && 
-				m_Elevationtypes[2] == 0 && 
-				m_Elevationtypes[3] == 0 && 
+				m_Elevationtypes[0] == 0 &&
+				m_Elevationtypes[1] == 0 &&
+				m_Elevationtypes[2] == 0 &&
+				m_Elevationtypes[3] == 0 &&
 				rs.elevation_type == -1)
 				continue;
 
@@ -1263,17 +1241,12 @@ namespace Can
 		for (Building* building : m_Scene->m_BuildingManager.GetBuildings())
 		{
 			Prefab* prefab = building->object->prefab;
-			v2 pos{ building->object->position.x, building->object->position.z };
-			v2 A = { prefab->boundingBoxL.x, prefab->boundingBoxL.z };
-			v2 B = { prefab->boundingBoxL.x, prefab->boundingBoxM.z };
-			v2 C = { prefab->boundingBoxM.x, prefab->boundingBoxL.z };
-			v2 D = { prefab->boundingBoxM.x, prefab->boundingBoxM.z };
-
+			v2 pos = (v2)building->object->position;
 			f32 rot = building->object->rotation.y;
-			A = Math::RotatePoint(A, rot) + pos;
-			B = Math::RotatePoint(B, rot) + pos;
-			C = Math::RotatePoint(C, rot) + pos;
-			D = Math::RotatePoint(D, rot) + pos;
+			v2 A = Math::RotatePoint((v2)prefab->boundingBoxL, rot) + pos;
+			v2 B = Math::RotatePoint((v2)prefab->boundingBoxL, rot) + pos;
+			v2 C = Math::RotatePoint((v2)prefab->boundingBoxM, rot) + pos;
+			v2 D = Math::RotatePoint((v2)prefab->boundingBoxM, rot) + pos;
 
 			std::array<std::array<v2, 3>, 2> polygonBuilding = {
 				std::array<v2,3>{A, B, D},
@@ -1290,17 +1263,12 @@ namespace Can
 		for (Object* tree : m_Scene->m_TreeManager.GetTrees())
 		{
 			Prefab* prefab = tree->prefab;
-			v2 pos{ tree->position.x, tree->position.z };
-			v2 A = { prefab->boundingBoxL.x * tree->scale.x, prefab->boundingBoxL.z * tree->scale.z };
-			v2 B = { prefab->boundingBoxL.x * tree->scale.x, prefab->boundingBoxM.z * tree->scale.z };
-			v2 C = { prefab->boundingBoxM.x * tree->scale.x, prefab->boundingBoxL.z * tree->scale.z };
-			v2 D = { prefab->boundingBoxM.x * tree->scale.x, prefab->boundingBoxM.z * tree->scale.z };
-
+			v2 pos = (v2)tree->position;
 			f32 rot = tree->rotation.y;
-			A = Math::RotatePoint(A, rot) + pos;
-			B = Math::RotatePoint(B, rot) + pos;
-			C = Math::RotatePoint(C, rot) + pos;
-			D = Math::RotatePoint(D, rot) + pos;
+			v2 A = Math::RotatePoint((v2)(prefab->boundingBoxL * tree->scale), rot) + pos;
+			v2 B = Math::RotatePoint((v2)(prefab->boundingBoxL * tree->scale), rot) + pos;
+			v2 C = Math::RotatePoint((v2)(prefab->boundingBoxM * tree->scale), rot) + pos;
+			v2 D = Math::RotatePoint((v2)(prefab->boundingBoxM * tree->scale), rot) + pos;
 
 			std::array<std::array<v2, 3>, 2> polygonTree = {
 				std::array<v2,3>{A, B, D},
@@ -1391,12 +1359,11 @@ namespace Can
 				RoadType& type = m_Scene->MainApplication->road_types[m_Type];
 
 				v3 intersectionPoint = Helper::RayPlaneIntersection(
-					m_ConstructionPositions[0] + v3{ 0.0f, type.tunnel_height, 0.0f },
+					m_ConstructionPositions[0],
 					glm::normalize(m_ConstructionPositions[3] - m_ConstructionPositions[0]),
-					v3(0.0f),
-					v3{ 0.0f, 1.0f, 0.0 }
+					v3{ 0.0f, 0.0f, -type.tunnel_height },
+					v3{ 0.0f, 0.0f, 1.0f }
 				);
-				intersectionPoint.y -= type.tunnel_height;
 
 				///////////
 				m_Nodes.push_back(RoadNode({}, intersectionPoint, -1));
@@ -1731,17 +1698,12 @@ namespace Can
 				Building* building = buildings[i];
 
 				Prefab* prefab = building->object->prefab;
-				v2 pos{ building->object->position.x, building->object->position.z };
-				v2 A = { prefab->boundingBoxL.x, prefab->boundingBoxL.z };
-				v2 B = { prefab->boundingBoxL.x, prefab->boundingBoxM.z };
-				v2 C = { prefab->boundingBoxM.x, prefab->boundingBoxL.z };
-				v2 D = { prefab->boundingBoxM.x, prefab->boundingBoxM.z };
-
+				v2 pos = (v2)building->object->position;
 				f32 rot = building->object->rotation.y;
-				A = Math::RotatePoint(A, rot) + pos;
-				B = Math::RotatePoint(B, rot) + pos;
-				C = Math::RotatePoint(C, rot) + pos;
-				D = Math::RotatePoint(D, rot) + pos;
+				v2 A = Math::RotatePoint((v2)prefab->boundingBoxL, rot) + pos;
+				v2 B = Math::RotatePoint((v2)prefab->boundingBoxL, rot) + pos;
+				v2 C = Math::RotatePoint((v2)prefab->boundingBoxM, rot) + pos;
+				v2 D = Math::RotatePoint((v2)prefab->boundingBoxM, rot) + pos;
 
 				std::array<std::array<v2, 3>, 2> polygonBuilding = {
 					std::array<v2,3>{A, B, D},
@@ -1774,17 +1736,12 @@ namespace Can
 			{
 				Object* tree = trees[i];
 				Prefab* prefab = tree->prefab;
-				v2 pos{ tree->position.x, tree->position.z };
-				v2 A = { prefab->boundingBoxL.x * tree->scale.x, prefab->boundingBoxL.z * tree->scale.z };
-				v2 B = { prefab->boundingBoxL.x * tree->scale.x, prefab->boundingBoxM.z * tree->scale.z };
-				v2 C = { prefab->boundingBoxM.x * tree->scale.x, prefab->boundingBoxL.z * tree->scale.z };
-				v2 D = { prefab->boundingBoxM.x * tree->scale.x, prefab->boundingBoxM.z * tree->scale.z };
-
+				v2 pos = (v2)tree->position;
 				f32 rot = tree->rotation.y;
-				A = Math::RotatePoint(A, rot) + pos;
-				B = Math::RotatePoint(B, rot) + pos;
-				C = Math::RotatePoint(C, rot) + pos;
-				D = Math::RotatePoint(D, rot) + pos;
+				v2 A = Math::RotatePoint((v2)(prefab->boundingBoxL * tree->scale), rot) + pos;
+				v2 B = Math::RotatePoint((v2)(prefab->boundingBoxL * tree->scale), rot) + pos;
+				v2 C = Math::RotatePoint((v2)(prefab->boundingBoxM * tree->scale), rot) + pos;
+				v2 D = Math::RotatePoint((v2)(prefab->boundingBoxM * tree->scale), rot) + pos;
 
 				std::array<std::array<v2, 3>, 2> polygonTree = {
 					std::array<v2,3>{A, B, D},
@@ -2221,8 +2178,7 @@ namespace Can
 		for (u64 i = 0; i < m_Nodes.size(); i++)
 		{
 			RoadNode& node = m_Nodes[i];
-			v3 distance_vector = node.position - prevLocation;
-			distance_vector.y = 0.0f;
+			v2 distance_vector = (v2)(node.position - prevLocation);
 			if (glm::length(distance_vector) < min_distance_to_snap)
 			{
 				results.location = node.position;
@@ -2233,7 +2189,7 @@ namespace Can
 			}
 		}
 
-		v2 point{ prevLocation.x, prevLocation.z };
+		v2 point = (v2)prevLocation;
 		for (u64 i = 0; i < m_Segments.size(); i++)
 		{
 			RoadSegment& segment = m_Segments[i];
@@ -2247,16 +2203,13 @@ namespace Can
 				for (u64 j = 1; j < curve_samples_size; j++)
 				{
 					v3 point1 = samples[j];
-					v3 dirToP1 = point1 - point0;
-					dirToP1.y = 0.0f;
+					v2 dirToP1 = (v2)(point1 - point0);
 					f32 lenr = glm::length(dirToP1);
-					dirToP1 = dirToP1 / lenr;
 
-					v3 dirToPrev = prevLocation - point0;
-					dirToPrev.y = 0;
+					v2 dirToPrev = (v2)(prevLocation - point0);
 					f32 len = glm::length(dirToPrev);
 
-					f32 angle = glm::acos(glm::dot(dirToP1, dirToPrev) / len);
+					f32 angle = glm::acos(glm::dot(dirToP1, dirToPrev) / (lenr * len));
 					f32 dist = len * glm::sin(angle);
 
 					if (dist < snapDist)
@@ -2265,7 +2218,7 @@ namespace Can
 						if (c >= -0.5f * width && c <= lenr + 0.5f * width)
 						{
 							f32 t = std::max(0.0f, std::min(1.0f, glm::cos(angle)));
-							results.location = point0 + t * lenr * dirToP1;
+							results.location = point0 + v3(t * lenr * dirToP1, 0.0f);
 							results.segment = i;
 							results.snapped = true;
 							results.T = Math::Lerp(segment.curve_t_samples[j - 1], segment.curve_t_samples[j], t);
@@ -2338,7 +2291,7 @@ namespace Can
 		if (snapFlags & SNAP_TO_GRID)
 		{
 			prevLocation.x = prevLocation.x - std::fmod(prevLocation.x, 0.5f) + 0.25f;
-			prevLocation.z = prevLocation.z - std::fmod(prevLocation.z, 0.5f) - 0.25f;
+			prevLocation.y = prevLocation.y - std::fmod(prevLocation.y, 0.5f) + 0.25f;
 		}
 	}
 	void RoadManager::SnapToRoad(v3& prevLocation, bool isStart)
@@ -2372,15 +2325,15 @@ namespace Can
 		if (snapFlags & SNAP_TO_HEIGHT)
 		{
 			for (u8 i = 0; i < indices.size(); i++)
-				m_ConstructionPositions[indices[i]].y = m_ConstructionPositions[index].y;
-			AB.y = 0.0f;
+				m_ConstructionPositions[indices[i]].z = m_ConstructionPositions[index].z;
+			AB.z = 0.0f;
 		}
 	}
 	void RoadManager::SnapToAngle(v3& AB, s64 snappedNode, s64 snappedRoadSegment, f32 snappedT)
 	{
 		if (snapFlags & SNAP_TO_ANGLE)
 		{
-			f32 rotation1 = glm::atan(-AB.z / AB.x) + (f32)(AB.x < 0.0f) * glm::radians(180.0f);
+			f32 rotation1 = glm::atan(-AB.y / AB.x) + (f32)(AB.x < 0.0f) * glm::radians(180.0f);
 			f32 length1 = glm::length(AB);
 			if (length1 > 0.1f)
 			{
@@ -2446,7 +2399,7 @@ namespace Can
 					newAngle = angle + 2.5f - std::fmod(angle + 2.5f, 5.0f);
 				}
 				f32 angleDiff = crossProduct.y > 0.0 ? glm::radians(newAngle - angle) : glm::radians(angle - newAngle);
-				AB = glm::rotateY(AB, angleDiff);
+				AB = glm::rotateZ(AB, angleDiff);
 			}
 		}
 	}
@@ -2463,12 +2416,10 @@ namespace Can
 		for (u64& inUse : m_TunnelGuidelinesInUse)
 			inUse = 0;
 	}
-	bool RoadManager::RestrictSmallAngles(v3 direction, s64 snappedNode, s64 snappedRoadSegment, f32 snappedT)
+	bool RoadManager::RestrictSmallAngles(v2 direction, s64 snappedNode, s64 snappedRoadSegment, f32 snappedT)
 	{
 		if (restrictionFlags & RESTRICT_SMALL_ANGLES)
 		{
-			//v3 dirToNewRS = locStart - m_ConstructionPositions[0];
-			direction.y = 0;
 			direction = glm::normalize(direction);
 
 			if (snappedNode != -1)
@@ -2478,8 +2429,7 @@ namespace Can
 				{
 					RoadSegment& rs = m_Segments[rsIndex];
 
-					v3 dirToOldRS = rs.StartNode == snappedNode ? rs.GetStartDirection() : rs.GetEndDirection();
-					dirToOldRS.y = 0.0f;
+					v2 dirToOldRS = (v2)(rs.StartNode == snappedNode ? rs.GetStartDirection() : rs.GetEndDirection());
 					dirToOldRS = glm::normalize(dirToOldRS);
 
 					f32 dotResult = glm::dot(direction, dirToOldRS);
@@ -2495,7 +2445,8 @@ namespace Can
 			else if (snappedRoadSegment != -1)
 			{
 				RoadSegment& rs = m_Segments[snappedRoadSegment];
-				v3 tangent = Math::CubicCurveTangent(rs.GetCurvePoints(), snappedT);
+				v2 tangent = (v2)(v3)(Math::CubicCurveTangent(rs.GetCurvePoints(), snappedT));
+				tangent = glm::normalize(tangent);
 
 				f32 dotResult = glm::dot(direction, tangent);
 				dotResult /= glm::length(direction) * glm::length(tangent);

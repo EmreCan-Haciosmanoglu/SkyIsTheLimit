@@ -83,7 +83,7 @@ namespace Can
 		void SnapToHeight(const std::vector<u8>& indices, u8 index, v3& AB);
 		void SnapToAngle(v3& AB, s64 snappedNode, s64 snappedRoadSegment, f32 snappedT);
 		void ResetGuideLines();
-		bool RestrictSmallAngles(v3 direction, s64 snappedNode, s64 snappedRoadSegment, f32 snappedT);
+		bool RestrictSmallAngles(v2 direction, s64 snappedNode, s64 snappedRoadSegment, f32 snappedT);
 
 	public:
 

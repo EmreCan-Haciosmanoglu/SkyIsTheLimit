@@ -606,7 +606,135 @@ namespace  Can::Helper
 		app->terrainPrefab->vertexBuffer->Unbind();
 	}
 
+	struct TerrainVertices
+	{
+		v3 position;
+		v4 color;
+		v3 normal;
+	};
+
 	Prefab* GetPrefabForTerrain(const std::string& texturePath)
+	{
+		Prefab* terrain = nullptr;
+		const v4 COLOR{ 9.0f / 255.0f, 255.0f / 255.0f, 4.0f / 255.0f, 1.0f };
+
+		int texture_width, texture_height, texture_channels;
+		u8* data = (u8*)stbi_load(texturePath.c_str(), &texture_width, &texture_height, &texture_channels, 0);
+
+		u64 terrain_width = texture_width - (u64)1;
+		u64 terrain_depth = texture_height - (u64)1;
+		u64 terrain_vertex_count = terrain_width * terrain_depth * 2 * 3;
+
+		TerrainVertices* terrain_vertices = new TerrainVertices[terrain_vertex_count];
+		u64 index = 0;
+#define TEMP 5
+		for (u64 y = 0; y < terrain_depth; y++)
+		{
+			u8 p_00 = data[(texture_width * (y + 0)) * texture_channels];
+			u8 p_0y = data[(texture_width * (y + 1)) * texture_channels];
+			for (u64 x = 0; x < terrain_width; x++)
+			{
+				u8 p_x0 = data[((x + 1) + texture_width * (y + 0)) * texture_channels];
+				u8 p_xy = data[((x + 1) + texture_width * (y + 1)) * texture_channels];
+				{
+					terrain_vertices[index].position.x = ((x + 0) / TERRAIN_SCALE_DOWN);
+					terrain_vertices[index].position.y = ((y + 0) / TERRAIN_SCALE_DOWN);
+					terrain_vertices[index].position.z = (p_00 / (255.0f / TEMP));
+					terrain_vertices[index].color = COLOR;
+					index++;
+				}
+				{
+					terrain_vertices[index].position.x = ((x + 1) / TERRAIN_SCALE_DOWN);
+					terrain_vertices[index].position.y = ((y + 0) / TERRAIN_SCALE_DOWN);
+					terrain_vertices[index].position.z = (p_x0 / (255.0f / TEMP));
+					terrain_vertices[index].color = COLOR;
+					index++;
+				}
+				{
+					terrain_vertices[index].position.x = ((x + 1) / TERRAIN_SCALE_DOWN);
+					terrain_vertices[index].position.y = ((y + 1) / TERRAIN_SCALE_DOWN);
+					terrain_vertices[index].position.z = (p_xy / (255.0f / TEMP));
+					terrain_vertices[index].color = COLOR;
+					index++;
+				}
+				{
+					terrain_vertices[index].position.x = ((x + 0) / TERRAIN_SCALE_DOWN);
+					terrain_vertices[index].position.y = ((y + 0) / TERRAIN_SCALE_DOWN);
+					terrain_vertices[index].position.z = (p_00 / (255.0f / TEMP));
+					terrain_vertices[index].color = COLOR;
+					index++;
+				}
+				{
+					terrain_vertices[index].position.x = ((x + 1) / TERRAIN_SCALE_DOWN);
+					terrain_vertices[index].position.y = ((y + 1) / TERRAIN_SCALE_DOWN);
+					terrain_vertices[index].position.z = (p_xy / (255.0f / TEMP));
+					terrain_vertices[index].color = COLOR;
+					index++;
+				}
+				{
+					terrain_vertices[index].position.x = ((x + 0) / TERRAIN_SCALE_DOWN);
+					terrain_vertices[index].position.y = ((y + 1) / TERRAIN_SCALE_DOWN);
+					terrain_vertices[index].position.z = (p_0y / (255.0f / TEMP));
+					terrain_vertices[index].color = COLOR;
+					index++;
+				}
+				p_00 = p_x0;
+				p_0y = p_xy;
+			}
+		}
+		index = 0;
+		for (u64 y = 0; y < terrain_depth; y++)
+		{
+			v3 v_00 = terrain_vertices[index + 0].position;
+			v3 v_0y = terrain_vertices[index + 5].position;
+			for (u64 x = 0; x < terrain_width; x++)
+			{
+				v3 v_x0 = terrain_vertices[index + 1].position;
+				v3 v_xy = terrain_vertices[index + 2].position;
+
+				v3 u_1 = v_xy - v_00;
+				v3 v_1 = v_x0 - v_00;
+				v3 normal_vector_1 = glm::normalize(glm::cross(v_1, u_1));
+
+				v3 u_2 = v_0y - v_00;
+				v3 v_2 = v_xy - v_00;
+				v3 normal_vector_2 = glm::normalize(glm::cross(v_2, u_2));
+
+				terrain_vertices[index + 0].normal = normal_vector_1;
+				terrain_vertices[index + 1].normal = normal_vector_1;
+				terrain_vertices[index + 2].normal = normal_vector_1;
+				terrain_vertices[index + 3].normal = normal_vector_2;
+				terrain_vertices[index + 4].normal = normal_vector_2;
+				terrain_vertices[index + 5].normal = normal_vector_2;
+				index += 6;
+
+				v_00 = v_x0;
+				v_0y = v_xy;
+			}
+		}
+
+		terrain = new Prefab(
+			"",
+			"assets/shaders/Cube.glsl",
+			"",
+			(float*)terrain_vertices,
+			terrain_vertex_count,
+			terrain_vertex_count * (sizeof(TerrainVertices) / sizeof(float)),
+			BufferLayout{
+				{ShaderDataType::Float3, "a_Position"},
+				{ShaderDataType::Float4, "a_Color"},
+				{ShaderDataType::Float3, "a_Normal"}
+			});
+		terrain->boundingBoxL = { 0.0f, 0.0f,0.0f };
+		terrain->boundingBoxM = {
+			texture_width / TERRAIN_SCALE_DOWN,
+			texture_height / TERRAIN_SCALE_DOWN,
+			1.0f * TEMP };
+
+		return terrain;
+	}
+
+	/*Prefab* GetPrefabForTerrainXZY(const std::string& texturePath)
 	{
 #define TEMP_TERRAIN_SHADER "assets/shaders/Cube.glsl"
 
@@ -627,6 +755,8 @@ namespace  Can::Helper
 		u64 indexCount = w * h * 2 * 3;
 		u64 vertexCount = indexCount * (3 + 4 + 3);
 		f32* vertices = new f32[vertexCount];
+		u64 terrain_vertex_count = w * h * 2 * 3;
+		TerrainVertices* terrain_vertices = new TerrainVertices[terrain_vertex_count];
 
 		int vertexIndex = 0;
 		for (u64 y = 0; y < h; y++)
@@ -639,6 +769,7 @@ namespace  Can::Helper
 				unsigned char* p4 = &data[((x + 1) + (width) * (y + 0)) * channels];
 
 				{
+
 					f32 z = (p1[0] / 256.0f) * COLOR_COUNT;
 					u64 heightIndex = (u64)z;
 					vertices[vertexIndex++] = x / TERRAIN_SCALE_DOWN;
@@ -729,7 +860,7 @@ namespace  Can::Helper
 		{
 			for (f32 y = 0; y < h; y++)
 			{
-				v3 a00(vertices[vertexIndex + 0 + 0], vertices[vertexIndex + 0 + 1], vertices[vertexIndex + 0 + 2]);
+				v3 a00(vertices[vertexIndex + 0U + 0], vertices[vertexIndex + 0U + 1], vertices[vertexIndex + 0U + 2]);
 				v3 a10(vertices[vertexIndex + 10 + 0], vertices[vertexIndex + 10 + 1], vertices[vertexIndex + 10 + 2]);
 				v3 a11(vertices[vertexIndex + 20 + 0], vertices[vertexIndex + 20 + 1], vertices[vertexIndex + 20 + 2]);
 				v3 a01(vertices[vertexIndex + 50 + 0], vertices[vertexIndex + 50 + 1], vertices[vertexIndex + 50 + 2]);
@@ -775,7 +906,7 @@ namespace  Can::Helper
 		terrainPrefab->boundingBoxM = { width / TERRAIN_SCALE_DOWN, 1.0f * COLOR_COUNT, 0.0f };
 
 		return terrainPrefab;
-	}
+	}*/
 
 	v2 RotateAPointAroundAPoint(const v2& p1, f32 angleInRadians, const v2& p2)
 	{

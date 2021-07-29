@@ -73,7 +73,7 @@ namespace Can
 
 
 		ShadowMapMasterRenderer* m_ShadowMapMasterRenderer = nullptr;
-		glm::vec3 m_LightPosition{ +0.0f, 1.0f, 0.0f };
+		glm::vec3 m_LightPosition{ +0.0f, 0.0f, 1.0f };
 		glm::vec3 m_LightDirection{ +1.0f, -1.0f, -1.0f };
 
 	};
