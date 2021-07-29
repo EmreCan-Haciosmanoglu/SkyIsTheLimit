@@ -875,7 +875,7 @@ namespace Can
 		f32 yaw = glm::acos(dir.x) * ((float)(dir.y > 0.0f) * 2.0f - 1.0f);
 		v3 dirR = glm::rotateZ(AB, -yaw);
 		dir = glm::normalize(v2{ dirR.x, dirR.z });
-		f32 pitch = glm::acos(dir.x) * ((float)(dir.y > 0.0f) * 2.0f - 1.0f);
+		f32 pitch = glm::acos(std::abs(dir.x)) * ((float)(dir.y < 0.0f) * 2.0f - 1.0f);
 
 		int count = (int)(entire_length / type.road_length);
 		u64 countT = 0;
@@ -1035,10 +1035,10 @@ namespace Can
 		m_TunnelGuidelinesStart->enabled = !b_ConstructionStartSnapped && m_Elevationtypes[0] == -1;
 		m_TunnelGuidelinesEnd->enabled = !b_ConstructionEndSnapped && m_Elevationtypes[3] == -1;
 
-		m_GroundGuidelinesStart->SetTransform(curvePoints[0] + v3{ 0.0f, 0.0f, 0.15f }, v3{ 0.0f, 0.0f, rotationStart });
-		m_GroundGuidelinesEnd->SetTransform(curvePoints[3] + v3{ 0.0f, 0.0f, 0.15f }, v3{ 0.0f, 0.0f, rotationEnd });
-		m_TunnelGuidelinesStart->SetTransform(curvePoints[0] + v3{ 0.0f, 0.0f, 0.15f }, v3{ 0.0f, 0.0f, rotationStart });
-		m_TunnelGuidelinesEnd->SetTransform(curvePoints[3] + v3{ 0.0f, 0.0f, 0.15f }, v3{ 0.0f, 0.0f, rotationEnd });
+		m_GroundGuidelinesStart->SetTransform(curvePoints[0] + v3{ 0.0f, 0.0f, 0.15f }, v3{ 0.0f, 0.0f, -rotationStart });
+		m_GroundGuidelinesEnd->SetTransform(curvePoints[3] + v3{ 0.0f, 0.0f, 0.15f }, v3{ 0.0f, 0.0f, -rotationEnd });
+		m_TunnelGuidelinesStart->SetTransform(curvePoints[0] + v3{ 0.0f, 0.0f, 0.15f }, v3{ 0.0f, 0.0f, -rotationStart });
+		m_TunnelGuidelinesEnd->SetTransform(curvePoints[3] + v3{ 0.0f, 0.0f, 0.15f }, v3{ 0.0f, 0.0f, -rotationEnd });
 
 		m_GroundGuidelinesStart->tintColor = b_ConstructionRestricted ? v4{ 1.0f, 0.3f, 0.2f, 1.0f } : v4(1.0f);
 		m_GroundGuidelinesEnd->tintColor = b_ConstructionRestricted ? v4{ 1.0f, 0.3f, 0.2f, 1.0f } : v4(1.0f);
@@ -1061,7 +1061,7 @@ namespace Can
 			v3 dir1 = vec1 / length;
 
 			f32 scale = 1.0f; ;
-			f32 rot1 = glm::acos(dir1.x) * ((f32)(dir1.y < 0.0f) * 2.0f - 1.0f);
+			f32 rot1 = glm::acos(dir1.x) * ((f32)(dir1.y > 0.0f) * 2.0f - 1.0f);
 
 			Object* guideline_object = nullptr;
 			if (-p1.y > type.tunnel_height)
@@ -2400,7 +2400,7 @@ namespace Can
 					f32 angle = std::fmod(endAngle + 720.0f, 360.0f);
 					newAngle = angle + 2.5f - std::fmod(angle + 2.5f, 5.0f);
 				}
-				f32 angleDiff = crossProduct.y > 0.0 ? glm::radians(newAngle - angle) : glm::radians(angle - newAngle);
+				f32 angleDiff = crossProduct.z > 0.0 ? glm::radians(newAngle - angle) : glm::radians(angle - newAngle);
 				AB = glm::rotateZ(AB, angleDiff);
 			}
 		}

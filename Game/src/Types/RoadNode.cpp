@@ -83,16 +83,16 @@ namespace Can
 			{
 				rs.SetStartPosition(position);
 				rotation = { 0.0f,
-					rs.GetStartRotation().y + glm::radians(180.0f),
-					-rs.GetStartRotation().x
+					-rs.GetStartRotation().x,
+					rs.GetStartRotation().y + glm::radians(180.0f)
 				};
 			}
 			else
 			{
 				rs.SetEndPosition(position);
 				rotation = { 0.0f,
-					rs.GetEndRotation().y + glm::radians(180.0f),
-					-rs.GetEndRotation().x
+					-rs.GetEndRotation().x,
+					rs.GetEndRotation().y + glm::radians(180.0f)
 				};
 			}
 
@@ -121,11 +121,9 @@ namespace Can
 
 			v3 r1Dir = index == rs1.StartNode ? rs1.GetStartDirection() : rs1.GetEndDirection();
 			v3 r2Dir = index == rs2.StartNode ? rs2.GetStartDirection() : rs2.GetEndDirection();
-			r1Dir.y = 0.0f;
-			r2Dir.y = 0.0f;
 
-			v3 shiftR1Dir = glm::normalize(v3{ +r1Dir.z, 0.0f, -r1Dir.x });
-			v3 shiftR2Dir = glm::normalize(v3{ -r2Dir.z, 0.0f, +r2Dir.x });
+			v3 shiftR1Dir = glm::normalize(v3{ -r1Dir.y, +r1Dir.x, 0.0f });
+			v3 shiftR2Dir = glm::normalize(v3{ +r2Dir.y, -r2Dir.x, 0.0f });
 
 			v3 shiftR1Amount = shiftR1Dir * (rs1.type.road_width * 0.5f);
 			v3 shiftR2Amount = shiftR2Dir * (rs2.type.road_width * 0.5f);
@@ -217,10 +215,10 @@ namespace Can
 
 			v3 RoadPos = index == rs.StartNode ? rs.GetCurvePoint(1) : rs.GetCurvePoint(2);
 			v3 RoadDir = index == rs.StartNode ? rs.GetStartDirection() : rs.GetEndDirection();
-			RoadDir.y = 0.0f;
+			RoadDir.z = 0.0f;
 			RoadDir = glm::normalize(RoadDir);
 
-			v3 shiftAmount{ +RoadDir.z * halfWidth, 0.0f, -RoadDir.x * halfWidth };
+			v3 shiftAmount{ -RoadDir.y * halfWidth, +RoadDir.x * halfWidth, 0.0f };
 
 			v3 rp = RoadPos + shiftAmount;
 			v3 rn = RoadPos - shiftAmount;
@@ -246,26 +244,26 @@ namespace Can
 				u64 index = j * oneVertexSize;
 				v2 point{
 					prefabVertices[index + 0],
-					prefabVertices[index + 2]
+					prefabVertices[index + 1]
 				};
 				if (point.x < 0.001f)
 				{
 					f32 percent = std::abs(point.y / halfWidth);
 					if (point.y < 0.001f)
-						point.x += percent * ljp;
-					else if (point.y > 0.001f)
 						point.x += percent * ljn;
+					else if (point.y > 0.001f)
+						point.x += percent * ljp;
 				}
 				else
 				{
 					point.x += l;
 				}
 
-				v2 rotatedPoint = Math::RotatePoint(point, -angle);
+				v2 rotatedPoint = Math::RotatePoint(point, angle);
 
 				TOVertices[offset + j].Position.x = rotatedPoint.x;
-				TOVertices[offset + j].Position.y = prefabVertices[index + 1];
-				TOVertices[offset + j].Position.z = rotatedPoint.y;
+				TOVertices[offset + j].Position.y = rotatedPoint.y;
+				TOVertices[offset + j].Position.z = prefabVertices[index + 2];
 				TOVertices[offset + j].UV.x = prefabVertices[index + 3];
 				TOVertices[offset + j].UV.y = prefabVertices[index + 4];
 				TOVertices[offset + j].Normal.x = prefabVertices[index + 5];
@@ -297,7 +295,7 @@ namespace Can
 				{
 					v3 point = verts[j].Position;
 					point.x += junction_length;
-					point = glm::rotateY(point, angle);
+					point = glm::rotateZ(point, angle);
 
 					TOVertices[offset + j].Position = point;
 					TOVertices[offset + j].UV = verts[j].UV;
@@ -307,7 +305,7 @@ namespace Can
 				offset += tunnel_entrance->indexCount;
 			}
 		}
-		
+
 		Prefab* newPrefab = new Prefab(
 			"",
 			segments[roadSegments[0]].type.road_junction->shaderPath, // we may have different shaders in the future
