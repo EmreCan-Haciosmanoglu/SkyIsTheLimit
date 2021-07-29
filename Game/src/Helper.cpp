@@ -300,14 +300,14 @@ namespace  Can::Helper
 		v3 p0 = cps[0];
 		v3 p1 = curve_samples[1];
 		v3 d1 = halfWidth * glm::normalize(p1 - p0);
-		d1 = { -d1.z, d1.y, d1.x };
+		d1 = v3{ -d1.y, d1.x, d1.z };
 
 		float Size = curve_samples.size();
 		for (size_t i = 2; i < Size; i++)
 		{
 			v3 p2 = curve_samples[i];
 			v3 d2 = halfWidth * glm::normalize(p2 - p1);
-			d2 = { -d2.z, d2.y, d2.x };
+			d2 = v3{ -d2.y, d2.x, d2.z };
 
 			boundingPoligon.push_back(std::array<v3, 3>{ p0 + d1, p0 - d1, p1 + d2 });
 			boundingPoligon.push_back(std::array<v3, 3>{ p0 - d1, p1 + d2, p1 - d2 });
@@ -317,7 +317,7 @@ namespace  Can::Helper
 			d1 = d2;
 		}
 		v3 d2 = halfWidth * glm::normalize(p1 - curve_samples[2]);
-		d2 = { -d2.z, d2.y, d2.x };
+		d2 = v3{ -d2.y, d2.x, d2.z };
 		boundingPoligon.push_back(std::array<v3, 3>{ p0 + d1, p0 - d1, p1 + d2 });
 		boundingPoligon.push_back(std::array<v3, 3>{ p0 - d1, p1 + d2, p1 - d2 });
 
@@ -333,12 +333,12 @@ namespace  Can::Helper
 			tr[0].x *= TERRAIN_SCALE_DOWN;
 			tr[1].x *= TERRAIN_SCALE_DOWN;
 			tr[2].x *= TERRAIN_SCALE_DOWN;
-			tr[0].z *= -TERRAIN_SCALE_DOWN;
-			tr[1].z *= -TERRAIN_SCALE_DOWN;
-			tr[2].z *= -TERRAIN_SCALE_DOWN;
+			tr[0].y *= TERRAIN_SCALE_DOWN;
+			tr[1].y *= TERRAIN_SCALE_DOWN;
+			tr[2].y *= TERRAIN_SCALE_DOWN;
 
 			f32 margin = 0.01f;
-			f32 val = std::min({ tr[0].y, tr[1].y, tr[2].y }) - margin;
+			f32 val = reset? 0.0f : std::min({ tr[0].z, tr[1].z, tr[2].z }) - margin;
 
 
 			v3* minvx = &tr[0];
@@ -365,44 +365,44 @@ namespace  Can::Helper
 				}
 				minvx->x -= 1.0f;
 				maxvx->x += 1.5f;
+				minX = std::min(minX, (u64)minvx->x);
+				maxX = std::max(maxX, (u64)maxvx->x);
 
-				v3* minvz = &tr[0];
-				v3* medvz = &tr[1];
-				v3* maxvz = &tr[2];
-				if (minvz->z > medvz->z)
+				v3* minvy = &tr[0];
+				v3* medvy = &tr[1];
+				v3* maxvy = &tr[2];
+				if (minvy->y > medvy->y)
 				{
-					v3* temp = medvz;
-					medvz = minvz;
-					minvz = temp;
+					v3* temp = medvy;
+					medvy = minvy;
+					minvy = temp;
 				}
-				if (medvz->z > maxvz->z)
+				if (medvy->y > maxvy->y)
 				{
-					v3* temp = maxvz;
-					maxvz = medvz;
-					medvz = temp;
+					v3* temp = maxvy;
+					maxvy = medvy;
+					medvy = temp;
 				}
-				if (minvz->z > medvz->z)
+				if (minvy->y > medvy->y)
 				{
-					v3* temp = medvz;
-					medvz = minvz;
-					minvz = temp;
+					v3* temp = medvy;
+					medvy = minvy;
+					minvy = temp;
 				}
-				minvz->z -= 1.0f;
-				maxvz->z += 1.5f;
-				minY = std::min(minY, (u64)minvz->z);
-				maxY = std::max(maxY, (u64)maxvz->z);
+				minvy->y -= 1.0f;
+				maxvy->y += 1.5f;
+				minY = std::min(minY, (u64)minvy->y);
+				maxY = std::max(maxY, (u64)maxvy->y);
 			}
 
 			f32 dx1 = std::max(medvx->x - minvx->x, 0.001f);
 			f32 dx2 = std::max(maxvx->x - minvx->x, 0.001f);
 			f32 dx3 = std::max(maxvx->x - medvx->x, 0.001f);
 
-			f32 dy1 = medvx->z - minvx->z;
-			f32 dy2 = maxvx->z - minvx->z;
-			f32 dy3 = maxvx->z - medvx->z;
+			f32 dy1 = medvx->y - minvx->y;
+			f32 dy2 = maxvx->y - minvx->y;
+			f32 dy3 = maxvx->y - medvx->y;
 
-			minX = std::min(minX, (u64)minvx->x);
-			maxX = std::max(maxX, (u64)maxvx->x);
 
 			for (f32 x = minvx->x; x < maxvx->x; x += 0.5f)
 			{
@@ -410,9 +410,9 @@ namespace  Can::Helper
 				f32 perc2 = (x - minvx->x) / dx2;
 				f32 perc3 = (x - medvx->x) / dx3;
 
-				f32 y1 = minvx->z + dy1 * perc1;
-				f32 y2 = minvx->z + dy2 * perc2;
-				f32 y3 = medvx->z + dy3 * perc3;
+				f32 y1 = minvx->y + dy1 * perc1;
+				f32 y2 = minvx->y + dy2 * perc2;
+				f32 y3 = medvx->y + dy3 * perc3;
 
 				u64 ly = std::min(x < medvx->x ? y1 : y3, y2);
 				u64 my = std::max(x < medvx->x ? y1 : y3, y2);
@@ -425,36 +425,18 @@ namespace  Can::Helper
 						continue;
 
 					u64 dist = ((u64)x + (w - 1) * y) * 60;
-					f32 height = vertices[dist + 1];
-					if (reset)
-					{
-						vertices[dist + 1U] = 0.0f;
-						vertices[dist + 31] = 0.0f;
 
-						if (x > 0)
-							vertices[dist - 60 + 11] = 0.0f;
-						if (y > 0)
-							vertices[dist - 60 * (w - 1) + 51] = 0.0f;
-						if (x > 0 && y > 0)
-						{
-							vertices[dist - 60 * w + 21] = 0.0f;
-							vertices[dist - 60 * w + 41] = 0.0f;
-						}
-					}
-					else if (height >= val)
-					{
-						vertices[dist + 1U] = val;
-						vertices[dist + 31] = val;
+					vertices[dist + 2U] = val;
+					vertices[dist + 32] = val;
 
-						if (x > 0)
-							vertices[dist - 60 + 11] = val;
-						if (y > 0)
-							vertices[dist - 60 * (w - 1) + 51] = val;
-						if (x > 0 && y > 0)
-						{
-							vertices[dist - 60 * w + 21] = val;
-							vertices[dist - 60 * w + 41] = val;
-						}
+					if (x > 0)
+						vertices[dist - 60 + 12] = val;
+					if (y > 0)
+						vertices[dist - 60 * (w - 1) + 52] = val;
+					if (x > 0 && y > 0)
+					{
+						vertices[dist - 60 * w + 22] = val;
+						vertices[dist - 60 * w + 42] = val;
 					}
 				}
 			}
@@ -470,76 +452,76 @@ namespace  Can::Helper
 				for (u64 indexd = 0; indexd < count; indexd++)
 				{
 					u64 x = current_point.x;
-					u64 y = current_point.z;
+					u64 y = current_point.y;
 					u64 dist_00 = ((x + 0) + (w - 1) * (y + 0)) * 60;
 
-					vertices[dist_00 + 1U] = 0.0f;
-					vertices[dist_00 + 11] = 0.0f;
-					vertices[dist_00 + 21] = 0.0f;
-					vertices[dist_00 + 31] = 0.0f;
-					vertices[dist_00 + 41] = 0.0f;
-					vertices[dist_00 + 51] = 0.0f;
+					vertices[dist_00 + 2U] = 0.0f;
+					vertices[dist_00 + 12] = 0.0f;
+					vertices[dist_00 + 22] = 0.0f;
+					vertices[dist_00 + 32] = 0.0f;
+					vertices[dist_00 + 42] = 0.0f;
+					vertices[dist_00 + 52] = 0.0f;
 
 					if (x < w - 1)
 					{
 						u64 dist_x0 = ((x + 1) + (w - 1) * (y + 0)) * 60;
-						vertices[dist_x0 + 1U] = 0.0f;
-						vertices[dist_x0 + 11] = 0.0f;
-						vertices[dist_x0 + 21] = 0.0f;
-						vertices[dist_x0 + 31] = 0.0f;
-						vertices[dist_x0 + 41] = 0.0f;
-						vertices[dist_x0 + 51] = 0.0f;
+						vertices[dist_x0 + 2U] = 0.0f;
+						vertices[dist_x0 + 12] = 0.0f;
+						vertices[dist_x0 + 22] = 0.0f;
+						vertices[dist_x0 + 32] = 0.0f;
+						vertices[dist_x0 + 42] = 0.0f;
+						vertices[dist_x0 + 52] = 0.0f;
 					}
 					if (y < h - 1)
 					{
 						u64 dist_0y = ((x + 0) + (w - 1) * (y + 1)) * 60;
-						vertices[dist_0y + 1U] = 0.0f;
-						vertices[dist_0y + 11] = 0.0f;
-						vertices[dist_0y + 21] = 0.0f;
-						vertices[dist_0y + 31] = 0.0f;
-						vertices[dist_0y + 41] = 0.0f;
-						vertices[dist_0y + 51] = 0.0f;
+						vertices[dist_0y + 2U] = 0.0f;
+						vertices[dist_0y + 12] = 0.0f;
+						vertices[dist_0y + 22] = 0.0f;
+						vertices[dist_0y + 32] = 0.0f;
+						vertices[dist_0y + 42] = 0.0f;
+						vertices[dist_0y + 52] = 0.0f;
 					}
 					if (x < w - 1 && y < h - 1)
 					{
 						u64 dist_xy = ((x + 1) + (w - 1) * (y + 1)) * 60;
-						vertices[dist_xy + 1U] = 0.0f;
-						vertices[dist_xy + 11] = 0.0f;
-						vertices[dist_xy + 21] = 0.0f;
-						vertices[dist_xy + 31] = 0.0f;
-						vertices[dist_xy + 41] = 0.0f;
-						vertices[dist_xy + 51] = 0.0f;
+						vertices[dist_xy + 2U] = 0.0f;
+						vertices[dist_xy + 12] = 0.0f;
+						vertices[dist_xy + 22] = 0.0f;
+						vertices[dist_xy + 32] = 0.0f;
+						vertices[dist_xy + 42] = 0.0f;
+						vertices[dist_xy + 52] = 0.0f;
 					}
 
 					if (x > 0)
 					{
 						u64 dist_x0 = ((x - 1) + (w - 1) * (y + 0)) * 60;
-						vertices[dist_x0 + 1U] = 0.0f;
-						vertices[dist_x0 + 11] = 0.0f;
-						vertices[dist_x0 + 21] = 0.0f;
-						vertices[dist_x0 + 31] = 0.0f;
-						vertices[dist_x0 + 41] = 0.0f;
-						vertices[dist_x0 + 51] = 0.0f;
-					}
+						vertices[dist_x0 + 2U] = 0.0f;
+						vertices[dist_x0 + 12] = 0.0f;
+						vertices[dist_x0 + 22] = 0.0f;
+						vertices[dist_x0 + 32] = 0.0f;
+						vertices[dist_x0 + 42] = 0.0f;
+						vertices[dist_x0 + 52] = 0.0f;
+					}						
 					if (y > 0)
 					{
 						u64 dist_0y = ((x + 0) + (w - 1) * (y - 1)) * 60;
-						vertices[dist_0y + 1U] = 0.0f;
-						vertices[dist_0y + 11] = 0.0f;
-						vertices[dist_0y + 21] = 0.0f;
-						vertices[dist_0y + 31] = 0.0f;
-						vertices[dist_0y + 41] = 0.0f;
-						vertices[dist_0y + 51] = 0.0f;
+						vertices[dist_0y + 2U] = 0.0f;
+						vertices[dist_0y + 12] = 0.0f;
+						vertices[dist_0y + 22] = 0.0f;
+						vertices[dist_0y + 32] = 0.0f;
+						vertices[dist_0y + 42] = 0.0f;
+						vertices[dist_0y + 52] = 0.0f;
 					}
 					if (x > 0 && y > 0)
 					{
 						u64 dist_xy = ((x - 1) + (w - 1) * (y - 1)) * 60;
-						vertices[dist_xy + 1U] = 0.0f;
-						vertices[dist_xy + 11] = 0.0f;
-						vertices[dist_xy + 21] = 0.0f;
-						vertices[dist_xy + 31] = 0.0f;
-						vertices[dist_xy + 41] = 0.0f;
-						vertices[dist_xy + 51] = 0.0f;
+						vertices[dist_xy + 2U] = 0.0f;
+						vertices[dist_xy + 12] = 0.0f;
+						vertices[dist_xy + 22] = 0.0f;
+						vertices[dist_xy + 32] = 0.0f;
+						vertices[dist_xy + 42] = 0.0f;
+						vertices[dist_xy + 52] = 0.0f;
 					}
 					current_point += dir;
 				}

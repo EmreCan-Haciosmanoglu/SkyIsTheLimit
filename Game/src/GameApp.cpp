@@ -185,13 +185,13 @@ namespace Can
 								type.tunnel_end_mirror = new Prefab(tunnel_end_mirror_obj, TEMP_SHADER_FILE_PATH, tunnel_end_mirror_png);
 								type.tunnel_entrance_mirror = new Prefab(tunnel_entrance_mirror_obj, TEMP_SHADER_FILE_PATH, tunnel_entrance_mirror_png);
 							}
-							type.tunnel_width = type.tunnel->boundingBoxM.z - type.tunnel->boundingBoxL.z;
-							type.tunnel_height = type.tunnel->boundingBoxM.y - type.tunnel->boundingBoxL.y;
 							type.tunnel_length = type.tunnel->boundingBoxM.x - type.tunnel->boundingBoxL.x;
+							type.tunnel_width = type.tunnel->boundingBoxM.y - type.tunnel->boundingBoxL.y;
+							type.tunnel_height = type.tunnel->boundingBoxM.z - type.tunnel->boundingBoxL.z;
 							type.tunnel_junction_length = type.tunnel_junction->boundingBoxM.x - type.tunnel_junction->boundingBoxL.x;
 						}
-						type.road_width = type.road->boundingBoxM.z - type.road->boundingBoxL.z;
 						type.road_length = type.road->boundingBoxM.x - type.road->boundingBoxL.x;
+						type.road_width = type.road->boundingBoxM.y - type.road->boundingBoxL.y;
 						type.road_junction_length = type.road_junction->boundingBoxM.x - type.road_junction->boundingBoxL.x;
 						/*clearing for next road*/ {
 							name = "";

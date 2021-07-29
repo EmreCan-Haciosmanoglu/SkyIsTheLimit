@@ -872,9 +872,9 @@ namespace Can
 
 		v3 direction = AB / entire_length;
 		v2 dir = glm::normalize((v2)AB);
-		f32 yaw = glm::acos(dir.x) * ((float)(dir.y < 0.0f) * 2.0f - 1.0f);
-		v3 dirR = glm::rotateY(AB, -yaw);
-		dir = glm::normalize((v2)dirR);
+		f32 yaw = glm::acos(dir.x) * ((float)(dir.y > 0.0f) * 2.0f - 1.0f);
+		v3 dirR = glm::rotateZ(AB, -yaw);
+		dir = glm::normalize(v2{ dirR.x, dirR.z });
 		f32 pitch = glm::acos(dir.x) * ((float)(dir.y > 0.0f) * 2.0f - 1.0f);
 
 		int count = (int)(entire_length / type.road_length);
@@ -886,11 +886,13 @@ namespace Can
 
 		if (eA != eB)
 		{
-			v3 pA = pointA;
-			pA.z += type.tunnel_height;
-
-			v3 intersectionPoint = Helper::RayPlaneIntersection(pA, direction, v3(0.0f), v3{ 0.0f, 0.0f, 1.0f });
-			first_length = glm::length(intersectionPoint - pA);
+			v3 intersectionPoint = Helper::RayPlaneIntersection(
+				pointA,
+				direction,
+				v3{ 0.0f, 0.0f, -type.tunnel_height },
+				v3{ 0.0f, 0.0f, 1.0f }
+			);
+			first_length = glm::length(intersectionPoint - pointA);
 			f32 ratio = first_length / entire_length;
 			if (eA == -1)
 			{
@@ -1674,7 +1676,7 @@ namespace Can
 	u64 RoadManager::AddRoadSegment(const std::array<v3, 4>& curvePoints, s8 elevation_type)
 	{
 		Prefab* selectedRoad = m_Scene->MainApplication->road_types[m_Type].road;
-		f32 roadPrefabWidth = selectedRoad->boundingBoxM.z - selectedRoad->boundingBoxL.z;
+		f32 roadPrefabWidth = selectedRoad->boundingBoxM.y - selectedRoad->boundingBoxL.y;
 		m_Segments.push_back(RoadSegment(
 			m_Scene->MainApplication->road_types[m_Type],
 			curvePoints,
