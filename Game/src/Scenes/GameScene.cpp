@@ -18,18 +18,18 @@ namespace Can
 		, m_TreeManager(this)
 		, m_BuildingManager(this)
 		, m_CarManager(this)
-		, m_MainCameraController(
+		, camera_controller(
 			45.0f,
 			16.0f / 9.0f,
 			0.1f,
 			1000.0f,
 			v3{ 2.0f, -3.0f, 5.0f },
-			v3{ 30.0f, 0.0f, 0.0f }
+			v3{ 0.0f, -30.0f, 90.0f }
 		)
 	{
 		m_Terrain->owns_prefab = true;
 		m_LightDirection = glm::normalize(m_LightDirection);
-		m_ShadowMapMasterRenderer = new ShadowMapMasterRenderer(&m_MainCameraController);
+		m_ShadowMapMasterRenderer = new ShadowMapMasterRenderer(&camera_controller);
 	}
 	GameScene::~GameScene()
 	{
@@ -44,12 +44,12 @@ namespace Can
 	}
 	void GameScene::OnUpdate(TimeStep ts)
 	{
-		m_MainCameraController.OnUpdate(ts);
+		camera_controller.on_update(ts);
 
 		RenderCommand::SetClearColor({ 0.9f, 0.9f, 0.9f, 1.0f });
 		RenderCommand::Clear();
 
-		v3 camPos = m_MainCameraController.GetCamera().GetPosition();
+		v3 camPos = camera_controller.camera.position;
 		v3 forward = GetRayCastedFromScreen();
 
 		v3 I = Helper::RayPlaneIntersection(
@@ -84,13 +84,13 @@ namespace Can
 			MoveMe2AnotherFile(ts);
 
 
-		Renderer3D::BeginScene(m_MainCameraController.GetCamera());
+		Renderer3D::BeginScene(camera_controller.camera);
 		m_ShadowMapMasterRenderer->Render(m_LightDirection);
 
 		Renderer3D::DrawObjects(
 			m_ShadowMapMasterRenderer->GetLS(),
 			m_ShadowMapMasterRenderer->GetShadowMap(),
-			m_MainCameraController.GetCamera(),
+			camera_controller.camera,
 			m_LightPosition
 		);
 
@@ -99,14 +99,14 @@ namespace Can
 	}
 	void GameScene::OnEvent(Event::Event& event)
 	{
-		m_MainCameraController.OnEvent(event);
+		camera_controller.on_event(event);
 		Can::Event::EventDispatcher dispatcher(event);
 		dispatcher.Dispatch<Can::Event::MouseButtonPressedEvent>(CAN_BIND_EVENT_FN(GameScene::OnMousePressed));
 	}
 	bool GameScene::OnMousePressed(Event::MouseButtonPressedEvent& event)
 	{
 		MouseCode button = event.GetMouseButton();
-		v3 camPos = m_MainCameraController.GetCamera().GetPosition();
+		v3 camPos = camera_controller.camera.position;
 		v3 forward = GetRayCastedFromScreen();
 
 
@@ -202,11 +202,11 @@ namespace Can
 		float w = (float)(app.GetWindow().GetWidth());
 		float h = (float)(app.GetWindow().GetHeight());
 
-		auto camera = m_MainCameraController.GetCamera();
-		v3 camPos = camera.GetPosition();
-		v3 camRot = camera.GetRotation();
+		auto camera = camera_controller.camera;
+		v3 camPos = camera.position;
+		v3 camRot = camera.rotation;
 
-		float fovyX = m_MainCameraController.GetFOV();
+		float fovyX = camera.field_of_view_angle;
 		float xoffSet = glm::degrees(glm::atan(glm::tan(glm::radians(fovyX)) * (((w / 2.0f) - mouseX) / (w / 2.0f))));
 		float yoffSet = glm::degrees(glm::atan(((h - 2.0f * mouseY) * glm::sin(glm::radians(xoffSet))) / (w - 2.0f * mouseX)));
 
@@ -215,21 +215,9 @@ namespace Can
 			yoffSet
 		};
 
-		v3 forward = {
-			-glm::sin(glm::radians(camRot.y)) * glm::cos(glm::radians(camRot.x)),
-			glm::sin(glm::radians(camRot.x)),
-			-glm::cos(glm::radians(camRot.x)) * glm::cos(glm::radians(camRot.y))
-		};
-		v3 up = {
-			glm::sin(glm::radians(camRot.x)) * glm::sin(glm::radians(camRot.y)),
-			glm::cos(glm::radians(camRot.x)),
-			glm::sin(glm::radians(camRot.x)) * glm::cos(glm::radians(camRot.y))
-		};
-		v3 right = {
-			-glm::sin(glm::radians(camRot.y - 90.0f)),
-			0,
-			-glm::cos(glm::radians(camRot.y - 90.0f))
-		};
+		v3 forward = camera.forward;
+		v3 up = camera.up;
+		v3 right = camera.right;
 
 		forward = glm::rotate(forward, glm::radians(offsetDegrees.x), up);
 		right = glm::rotate(right, glm::radians(offsetDegrees.x), up);

@@ -622,42 +622,42 @@ namespace  Can::Helper
 					terrain_vertices[index].position.x = ((x + 0) / TERRAIN_SCALE_DOWN);
 					terrain_vertices[index].position.y = ((y + 0) / TERRAIN_SCALE_DOWN);
 					terrain_vertices[index].position.z = (p_00 / (255.0f / TEMP));
-					terrain_vertices[index].color = COLOR;
+					terrain_vertices[index].color = COLOR * ((x*1.0f) / terrain_width);
 					index++;
 				}
 				{
 					terrain_vertices[index].position.x = ((x + 1) / TERRAIN_SCALE_DOWN);
 					terrain_vertices[index].position.y = ((y + 0) / TERRAIN_SCALE_DOWN);
 					terrain_vertices[index].position.z = (p_x0 / (255.0f / TEMP));
-					terrain_vertices[index].color = COLOR;
+					terrain_vertices[index].color = COLOR * ((x * 1.0f) / terrain_width);
 					index++;
 				}
 				{
 					terrain_vertices[index].position.x = ((x + 1) / TERRAIN_SCALE_DOWN);
 					terrain_vertices[index].position.y = ((y + 1) / TERRAIN_SCALE_DOWN);
 					terrain_vertices[index].position.z = (p_xy / (255.0f / TEMP));
-					terrain_vertices[index].color = COLOR;
+					terrain_vertices[index].color = COLOR * ((x * 1.0f) / terrain_width);
 					index++;
 				}
 				{
 					terrain_vertices[index].position.x = ((x + 0) / TERRAIN_SCALE_DOWN);
 					terrain_vertices[index].position.y = ((y + 0) / TERRAIN_SCALE_DOWN);
 					terrain_vertices[index].position.z = (p_00 / (255.0f / TEMP));
-					terrain_vertices[index].color = COLOR;
+					terrain_vertices[index].color = COLOR * ((x * 1.0f) / terrain_width);
 					index++;
 				}
 				{
 					terrain_vertices[index].position.x = ((x + 1) / TERRAIN_SCALE_DOWN);
 					terrain_vertices[index].position.y = ((y + 1) / TERRAIN_SCALE_DOWN);
 					terrain_vertices[index].position.z = (p_xy / (255.0f / TEMP));
-					terrain_vertices[index].color = COLOR;
+					terrain_vertices[index].color = COLOR * ((x * 1.0f) / terrain_width);
 					index++;
 				}
 				{
 					terrain_vertices[index].position.x = ((x + 0) / TERRAIN_SCALE_DOWN);
 					terrain_vertices[index].position.y = ((y + 1) / TERRAIN_SCALE_DOWN);
 					terrain_vertices[index].position.z = (p_0y / (255.0f / TEMP));
-					terrain_vertices[index].color = COLOR;
+					terrain_vertices[index].color = COLOR * ((x * 1.0f) / terrain_width);
 					index++;
 				}
 				p_00 = p_x0;

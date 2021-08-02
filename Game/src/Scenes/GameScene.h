@@ -69,7 +69,7 @@ namespace Can
 		SpeedMode e_SpeedMode = SpeedMode::Normal;
 
 	private:
-		Camera::Controller::Perspective m_MainCameraController;
+		Perspective_Camera_Controller camera_controller;
 
 
 		ShadowMapMasterRenderer* m_ShadowMapMasterRenderer = nullptr;

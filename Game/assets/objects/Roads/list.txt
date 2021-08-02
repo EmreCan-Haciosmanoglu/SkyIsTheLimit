@@ -120,8 +120,8 @@ Road_Junc_Mirror_Object:05/road_junction_mirror.obj
 Road_Junc_Mirror_Texture:05/road_junction_mirror.png
 Road_End_Object:05/road_end.obj
 Road_End_Texture:05/road_end.png
-Road_End_Mirror_Object:05/road_end_mirror.obj
-Road_End_Mirror_Texture:05/road_end_mirror.png
+Road_End_Mirror_Object:05/road_end.obj
+Road_End_Mirror_Texture:05/road_end.png
 Tunnel_Object:05/tunnel.obj
 Tunnel_Texture:05/tunnel.png
 Tunnel_Junc_Object:05/tunnel_junction.obj
@@ -148,5 +148,13 @@ Road_Junc_Object:06/road_junction.obj
 Road_Junc_Texture:06/road_junction.png
 Road_End_Object:06/road_end.obj
 Road_End_Texture:06/road_end.png
+Tunnel_Object:06/tunnel.obj
+Tunnel_Texture:06/tunnel.png
+Tunnel_Junc_Object:06/tunnel_junction.obj
+Tunnel_Junc_Texture:06/tunnel_junction.png
+Tunnel_End_Object:06/tunnel_end.obj
+Tunnel_End_Texture:06/tunnel_end.png
+Tunnel_Entrance_Object:06/tunnel_entrance.obj
+Tunnel_Entrance_Texture:06/tunnel_entrance.png
 Thumbnail:06/Thumbnail.png
 END

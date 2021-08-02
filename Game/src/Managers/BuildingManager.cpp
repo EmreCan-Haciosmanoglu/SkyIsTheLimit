@@ -50,7 +50,7 @@ namespace Can
 		m_GuidelinePosition = prevLocation;
 
 		Prefab* selectedBuilding = m_Guideline->prefab;
-		float buildingWidth = selectedBuilding->boundingBoxM.z - selectedBuilding->boundingBoxL.z;
+		float buildingWidth = selectedBuilding->boundingBoxM.y - selectedBuilding->boundingBoxL.y;
 		float buildingDepthFromCenter = -selectedBuilding->boundingBoxL.x;
 
 		bool snappedToRoad = false;
@@ -58,7 +58,7 @@ namespace Can
 		{
 			auto& segments = m_Scene->m_RoadManager.m_Segments;
 			u64 count = segments.size();
-			for(u64 rsIndex = 0; rsIndex<count; rsIndex++)
+			for (u64 rsIndex = 0; rsIndex < count; rsIndex++)
 			{
 				RoadSegment& rs = segments[rsIndex];
 				if (rs.type.zoneable == false)
@@ -70,7 +70,7 @@ namespace Can
 				const std::array<v3, 4>& vs = rs.GetCurvePoints();
 				std::array<std::array<v2, 3>, 2> roadPolygon = Math::GetBoundingBoxOfBezierCurve(vs, snapDistance);
 
-				if (Math::CheckPolygonPointCollision(roadPolygon, v2{ prevLocation.x, prevLocation.z }))
+				if (Math::CheckPolygonPointCollision(roadPolygon, (v2)prevLocation))
 				{
 					std::vector<float> ts{ 0.0f };
 					std::vector<v3> ps = Math::GetCubicCurveSamples(vs, roadLength, ts);
@@ -80,10 +80,11 @@ namespace Can
 					{
 						v3 p1 = ps[i];
 						v3 dirToP1 = p1 - p0;
-						dirToP1.y = 0.0f;
+						dirToP1.z = 0.0f;
 						dirToP1 = glm::normalize(dirToP1);
 
 						v3 dirToPrev = prevLocation - p0;
+						dirToPrev.z = 0.0f;
 						float l1 = glm::length(dirToPrev);
 
 						float angle = glm::acos(glm::dot(dirToP1, dirToPrev) / l1);
@@ -94,15 +95,19 @@ namespace Can
 							float c = l1 * glm::cos(angle);
 							if (c >= -0.5f * roadLength && c <= 1.5f * roadLength) // needs lil' bit more length to each directions
 							{
-								bool r = glm::cross(dirToP1, dirToPrev).y < 0.0f;
-								v3 shiftDir{ -dirToP1.z, 0.0f, dirToP1.x };
+								bool r = glm::cross(dirToP1, dirToPrev).z > 0.0f;
+								v3 shiftDir{ -dirToP1.y, dirToP1.x, 0.0f };
 								v3 shiftAmount = ((float)r * 2.0f - 1.0f) * shiftDir * snapDistance;
 								prevLocation = p0 + (dirToP1 * c) + shiftAmount;
 								m_SnappedRoadSegment = rsIndex;
 								m_GuidelinePosition = prevLocation;
 								float rotationOffset = (float)(dirToP1.x < 0.0f) * glm::radians(180.0f);
-								float rotation = glm::atan(-dirToP1.z / dirToP1.x) + rotationOffset;
-								m_GuidelineRotation = v3{ 0.0f, (float)r * glm::radians(180.0f) + glm::radians(90.0f) + rotation, 0.0f };
+								float rotation = glm::atan(dirToP1.y / dirToP1.x) + rotationOffset;
+								m_GuidelineRotation = v3{
+									0.0f,
+									0.0f,
+									(float)r * glm::radians(180.0f) + glm::radians(-90.0f) + rotation
+								};
 								m_Guideline->SetTransform(m_GuidelinePosition, m_GuidelineRotation);
 								snappedToRoad = true;
 								m_SnappedT = ts[i];
@@ -120,30 +125,30 @@ namespace Can
 		{
 			if (m_SnappedRoadSegment != -1)
 			{
-				v2 boundingL{ m_Guideline->prefab->boundingBoxL.x, m_Guideline->prefab->boundingBoxL.z };
-				v2 boundingM{ m_Guideline->prefab->boundingBoxM.x, m_Guideline->prefab->boundingBoxM.z };
-				v2 boundingP{ prevLocation.x, prevLocation.z };
+				v2 boundingL = (v2)m_Guideline->prefab->boundingBoxL;
+				v2 boundingM = (v2)m_Guideline->prefab->boundingBoxM;
+				v2 boundingP = (v2)prevLocation;
 				auto& segments = m_Scene->m_RoadManager.m_Segments;
-				
+
 				for (Building* building : segments[m_SnappedRoadSegment].Buildings)
 				{
-					v2 bL{ building->object->prefab->boundingBoxL.x, building->object->prefab->boundingBoxL.z };
-					v2 bM{ building->object->prefab->boundingBoxM.x, building->object->prefab->boundingBoxM.z };
-					v2 bP{ building->position.x, building->position.z };
+					v2 bL = (v2)building->object->prefab->boundingBoxL;
+					v2 bM = (v2)building->object->prefab->boundingBoxM;
+					v2 bP = (v2)building->position;
 
 					v2 mtv = Helper::CheckRotatedRectangleCollision(
 						bL,
 						bM,
-						building->object->rotation.y,
+						building->object->rotation.z,
 						bP,
 						boundingL,
 						boundingM,
-						m_GuidelineRotation.y,
+						m_GuidelineRotation.z,
 						boundingP
 					);
-					if (mtv.x != 0.0f || mtv.y != 0.0f)
+					if (glm::length(mtv) > 0.0f)
 					{
-						prevLocation += v3{ mtv.x, 0.0f, mtv.y };
+						prevLocation += v3(mtv, 0.0f);
 						m_GuidelinePosition = prevLocation;
 						m_Guideline->SetTransform(m_GuidelinePosition, m_GuidelineRotation);
 						break;
@@ -155,9 +160,9 @@ namespace Can
 		bool collidedWithRoad = false;
 		if (restrictions[0] && (m_Scene->m_RoadManager.restrictionFlags & 0x4/*change with #define*/))
 		{
-			v2 pos{ m_Guideline->position.x, m_Guideline->position.z };
-			v2 A{ m_Guideline->prefab->boundingBoxL.x, m_Guideline->prefab->boundingBoxL.z };
-			v2 D{ m_Guideline->prefab->boundingBoxM.x, m_Guideline->prefab->boundingBoxM.z };
+			v2 pos = (v2)m_Guideline->position;
+			v2 A = (v2)m_Guideline->prefab->boundingBoxL;
+			v2 D = (v2)m_Guideline->prefab->boundingBoxM;
 			v2 B{ A.x, D.y }; // this is faster right???
 			v2 C{ D.x, A.y }; // this is faster right???
 
@@ -174,7 +179,7 @@ namespace Can
 
 			auto& segments = m_Scene->m_RoadManager.m_Segments;
 			u64 count = segments.size();
-			for(u64 rsIndex = 0; rsIndex<count;rsIndex++)
+			for (u64 rsIndex = 0; rsIndex < count; rsIndex++)
 			{
 				RoadSegment& rs = segments[rsIndex];
 				if (rsIndex == m_SnappedRoadSegment)
@@ -197,26 +202,26 @@ namespace Can
 
 		if (restrictions[0] && m_Scene->m_TreeManager.restrictions[0])
 		{
-			v2 buildingL{ selectedBuilding->boundingBoxL.x, selectedBuilding->boundingBoxL.z };
-			v2 buildingM{ selectedBuilding->boundingBoxM.x, selectedBuilding->boundingBoxM.z };
-			v2 buildingP{ m_GuidelinePosition.x, m_GuidelinePosition.z };
+			v2 buildingL = (v2)selectedBuilding->boundingBoxL;
+			v2 buildingM = (v2)selectedBuilding->boundingBoxM;
+			v2 buildingP = (v2)m_GuidelinePosition;
 			for (Object* tree : m_Scene->m_TreeManager.GetTrees())
 			{
-				v2 treeL{ tree->prefab->boundingBoxL.x, tree->prefab->boundingBoxL.z };
-				v2 treeM{ tree->prefab->boundingBoxM.x, tree->prefab->boundingBoxM.z };
-				v2 treeP{ tree->position.x, tree->position.z };
+				v2 treeL = (v2)tree->prefab->boundingBoxL;
+				v2 treeM = (v2)tree->prefab->boundingBoxM;
+				v2 treeP = (v2)tree->position;
 				v2 mtv = Helper::CheckRotatedRectangleCollision(
 					treeL,
 					treeM,
-					tree->rotation.y,
+					tree->rotation.z,
 					treeP,
 					buildingL,
 					buildingM,
-					m_GuidelineRotation.y,
+					m_GuidelineRotation.z,
 					buildingP
 				);
 				tree->tintColor = v4(1.0f);
-				if (mtv.x != 0.0f || mtv.y != 0.0f)
+				if (glm::length(mtv) > 0.0f)
 					tree->tintColor = v4{ 1.0f, 0.3f, 0.2f, 1.0f };
 			}
 		}
@@ -224,26 +229,26 @@ namespace Can
 		bool collidedWithOtherBuildings = false;
 		if (restrictions[0])
 		{
-			v2 buildingL{ selectedBuilding->boundingBoxL.x, selectedBuilding->boundingBoxL.z };
-			v2 buildingM{ selectedBuilding->boundingBoxM.x, selectedBuilding->boundingBoxM.z };
-			v2 buildingP{ m_GuidelinePosition.x, m_GuidelinePosition.z };
+			v2 buildingL = (v2)selectedBuilding->boundingBoxL;
+			v2 buildingM = (v2)selectedBuilding->boundingBoxM;
+			v2 buildingP = (v2)m_GuidelinePosition;
 
 			for (Building* building : m_Buildings)
 			{
-				v2 bL{ building->object->prefab->boundingBoxL.x, building->object->prefab->boundingBoxL.z };
-				v2 bM{ building->object->prefab->boundingBoxM.x, building->object->prefab->boundingBoxM.z };
-				v2 bP{ building->position.x, building->position.z };
+				v2 bL = (v2)building->object->prefab->boundingBoxL;
+				v2 bM = (v2)building->object->prefab->boundingBoxM;
+				v2 bP = (v2)building->position;
 				v2 mtv = Helper::CheckRotatedRectangleCollision(
 					bL,
 					bM,
-					building->object->rotation.y,
+					building->object->rotation.z,
 					bP,
 					buildingL,
 					buildingM,
-					m_GuidelineRotation.y,
+					m_GuidelineRotation.z,
 					buildingP
 				);
-				if (mtv.x != 0.0f || mtv.y != 0.0f)
+				if (glm::length(mtv) > 0.0f)
 				{
 					collidedWithOtherBuildings = true;
 					break;
@@ -313,9 +318,9 @@ namespace Can
 
 			if (restrictions[0] && m_Scene->m_TreeManager.restrictions[0])
 			{
-				v2 buildingL = { newBuilding->object->prefab->boundingBoxL.x, newBuilding->object->prefab->boundingBoxL.z };
-				v2 buildingM = { newBuilding->object->prefab->boundingBoxM.x, newBuilding->object->prefab->boundingBoxM.z };
-				v2 buildingP = { newBuilding->object->position.x, newBuilding->object->position.z };
+				v2 buildingL = (v2)newBuilding->object->prefab->boundingBoxL;
+				v2 buildingM = (v2)newBuilding->object->prefab->boundingBoxM;
+				v2 buildingP = (v2)newBuilding->object->position;
 
 				auto& trees = m_Scene->m_TreeManager.GetTrees();
 				for (size_t i = 0; i < trees.size(); i++)
@@ -324,15 +329,15 @@ namespace Can
 					v2 mtv = Helper::CheckRotatedRectangleCollision(
 						buildingL,
 						buildingM,
-						newBuilding->object->rotation.y,
+						newBuilding->object->rotation.z,
 						buildingP,
-						v2{ tree->prefab->boundingBoxL.x ,tree->prefab->boundingBoxL.z },
-						v2{ tree->prefab->boundingBoxM.x ,tree->prefab->boundingBoxM.z },
-						tree->rotation.y,
-						v2{ tree->position.x, tree->position.z }
+						(v2)tree->prefab->boundingBoxL,
+						(v2)tree->prefab->boundingBoxM,
+						tree->rotation.z,
+						(v2)tree->position
 					);
 
-					if (mtv.x != 0.0f || mtv.y != 0.0f)
+					if (glm::length(mtv) > 0.0f)
 					{
 						trees.erase(trees.begin() + i);
 						delete tree;
