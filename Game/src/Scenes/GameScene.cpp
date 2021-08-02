@@ -244,10 +244,15 @@ namespace Can
 				v3 d1rection = glm::normalize(driftPos - car->position);
 				car->position = driftPos;
 
-				car->object->SetTransform(car->position, v3{
-					0.0f,
-					glm::radians(180.0f) + glm::acos(d1rection.x) * ((float)(d1rection.z < 0.0f) * 2.0f - 1.0f),
-					0.0f });
+
+				v2 dir = glm::normalize((v2)d1rection);
+				f32 yaw = glm::acos(dir.x) * ((float)(dir.y > 0.0f) * 2.0f - 1.0f);
+				v3 dirR = glm::rotateZ(d1rection, -yaw);
+				dir = glm::normalize(v2{ dirR.x, dirR.z });
+				f32 pitch = glm::acos(std::abs(dir.x)) * ((float)(dir.y < 0.0f) * 2.0f - 1.0f);
+
+
+				car->object->SetTransform(car->position, v3{ 0.0f, pitch, yaw + glm::radians(180.0f) });
 				if (car->t >= 1.0f)
 				{
 					car->inJunction = false;
@@ -337,10 +342,14 @@ namespace Can
 						car->t_index += (car->fromStart ? +1 : -1);
 
 						v3 d1rection = glm::normalize(car->target - oldTarget);
-						car->object->SetTransform(car->position, v3{
-							0.0f,
-							glm::radians(180.0f) + glm::acos(d1rection.x) * ((float)(d1rection.z < 0.0f) * 2.0f - 1.0f),
-							0.0f });
+
+						v2 dir = glm::normalize((v2)d1rection);
+						f32 yaw = glm::acos(dir.x) * ((float)(dir.y > 0.0f) * 2.0f - 1.0f);
+						v3 dirR = glm::rotateZ(d1rection, -yaw);
+						dir = glm::normalize(v2{ dirR.x, dirR.z });
+						f32 pitch = glm::acos(std::abs(dir.x)) * ((float)(dir.y < 0.0f) * 2.0f - 1.0f);
+
+						car->object->SetTransform(car->position, v3{ 0.0f, pitch, yaw + glm::radians(180.0f) });
 					}
 
 				}
