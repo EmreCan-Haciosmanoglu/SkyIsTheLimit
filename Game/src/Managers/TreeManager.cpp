@@ -117,35 +117,45 @@ namespace Can
 		bool collidedWithRoad = false;
 		if ((m_Scene->m_RoadManager.restrictionFlags & 0x4/*Change with #define*/) && restrictions[0])
 		{
-			v2 pos = (v2)m_Guideline->position;
-			v2 A = (v2)m_Guideline->prefab->boundingBoxL;
-			v2 D = (v2)m_Guideline->prefab->boundingBoxM;
-			v2 B{ A.x, D.y }; // this is faster right???
-			v2 C{ D.x, A.y }; // this is faster right???
+			Prefab* prefab = m_Guideline->prefab;
+			f32 tree_height = prefab->boundingBoxM.z - prefab->boundingBoxL.z;
 
-			f32 rot = m_Guideline->rotation.y;
-			A = Math::RotatePoint(A, rot) + pos;
-			B = Math::RotatePoint(B, rot) + pos;
-			C = Math::RotatePoint(C, rot) + pos;
-			D = Math::RotatePoint(D, rot) + pos;
+			v3 A = v3{ prefab->boundingBoxL.x, prefab->boundingBoxL.y, prefab->boundingBoxL.z };
+			v3 B = v3{ prefab->boundingBoxL.x, prefab->boundingBoxM.y, prefab->boundingBoxL.z };
+			v3 C = v3{ prefab->boundingBoxM.x, prefab->boundingBoxL.y, prefab->boundingBoxL.z };
+			v3 D = v3{ prefab->boundingBoxM.x, prefab->boundingBoxM.y, prefab->boundingBoxL.z };
 
-			std::array<std::array<v2, 3>, 2> polygonTree = {
-				std::array<v2,3>{A, B, D},
-				std::array<v2,3>{A, C, D}
+
+			f32 rot = m_Guideline->rotation.z;
+			A = glm::rotateZ(A, rot) + m_Guideline->position;
+			B = glm::rotateZ(B, rot) + m_Guideline->position;
+			C = glm::rotateZ(C, rot) + m_Guideline->position;
+			D = glm::rotateZ(D, rot) + m_Guideline->position;
+
+			std::vector<std::array<v3, 3>> tree_bounding_polygon = {
+				std::array<v3, 3>{A, B, D},
+				std::array<v3, 3>{A, C, D}
+			};
+
+			std::array<v3, 2> tree_bounding_box{
+				v3{std::min({A.x, B.x, C.x, D.x}), std::min({A.y, B.y, C.y, D.y}), A.z},
+				v3{std::max({A.x, B.x, C.x, D.x}), std::max({A.y, B.y, C.y, D.y}), A.z + tree_height}
 			};
 
 			for (RoadSegment& rs : m_Scene->m_RoadManager.m_Segments)
 			{
 				if (rs.elevation_type == -1)
 					continue;
-				f32 roadPrefabWidth = rs.type.road_width;
-				const std::array<v3, 4>& cps = rs.GetCurvePoints();
-				std::array<std::array<v2, 3>, 2> newRoadBoundingBox = Math::GetBoundingBoxOfBezierCurve(cps, roadPrefabWidth * 0.5f);
 
-				if (Math::CheckPolygonCollision(newRoadBoundingBox, polygonTree))
+				f32 road_height = rs.elevation_type == -1 ? rs.type.tunnel_height : rs.type.road_height;
+				std::array<v3, 2> road_bounding_box{
+					rs.object->prefab->boundingBoxL + rs.CurvePoints[0],
+					rs.object->prefab->boundingBoxM + rs.CurvePoints[0]
+				};
+
+				if (Math::check_bounding_box_bounding_box_collision(road_bounding_box, tree_bounding_box))
 				{
-					std::array<std::array<v2, 3>, (10 - 1) * 2> newRoadBoundingPolygon = Math::GetBoundingPolygonOfBezierCurve<10, 10>(cps, roadPrefabWidth * 0.5f);
-					if (Math::CheckPolygonCollision(newRoadBoundingPolygon, polygonTree))
+					if (Math::check_bounding_polygon_bounding_polygon_collision_with_z(rs.bounding_polygon, road_height, tree_bounding_polygon, tree_height))
 					{
 						collidedWithRoad = true;
 						break;

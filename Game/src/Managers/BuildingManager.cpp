@@ -50,8 +50,8 @@ namespace Can
 		m_GuidelinePosition = prevLocation;
 
 		Prefab* selectedBuilding = m_Guideline->prefab;
-		float buildingWidth = selectedBuilding->boundingBoxM.y - selectedBuilding->boundingBoxL.y;
-		float buildingDepthFromCenter = -selectedBuilding->boundingBoxL.x;
+		f32 buildingWidth = selectedBuilding->boundingBoxM.y - selectedBuilding->boundingBoxL.y;
+		f32 buildingDepthFromCenter = -selectedBuilding->boundingBoxL.x;
 
 		bool snappedToRoad = false;
 		if (snapOptions[0])
@@ -63,16 +63,16 @@ namespace Can
 				RoadSegment& rs = segments[rsIndex];
 				if (rs.type.zoneable == false)
 					continue;
-				float roadWidth = rs.type.road_width;
-				float roadLength = rs.type.road_length;
-				float snapDistance = buildingDepthFromCenter + (roadWidth * 0.5f);
+				f32 roadWidth = rs.type.road_width;
+				f32 roadLength = rs.type.road_length;
+				f32 snapDistance = buildingDepthFromCenter + (roadWidth * 0.5f);
 
 				const std::array<v3, 4>& vs = rs.GetCurvePoints();
 				std::array<std::array<v2, 3>, 2> roadPolygon = Math::GetBoundingBoxOfBezierCurve(vs, snapDistance);
 
 				if (Math::CheckPolygonPointCollision(roadPolygon, (v2)prevLocation))
 				{
-					std::vector<float> ts{ 0.0f };
+					std::vector<f32> ts{ 0.0f };
 					std::vector<v3> ps = Math::GetCubicCurveSamples(vs, roadLength, ts);
 					size_t size = ps.size();
 					v3 p0 = ps[0];
@@ -85,28 +85,28 @@ namespace Can
 
 						v3 dirToPrev = prevLocation - p0;
 						dirToPrev.z = 0.0f;
-						float l1 = glm::length(dirToPrev);
+						f32 l1 = glm::length(dirToPrev);
 
-						float angle = glm::acos(glm::dot(dirToP1, dirToPrev) / l1);
-						float dist = l1 * glm::sin(angle);
+						f32 angle = glm::acos(glm::dot(dirToP1, dirToPrev) / l1);
+						f32 dist = l1 * glm::sin(angle);
 
 						if (dist < snapDistance)
 						{
-							float c = l1 * glm::cos(angle);
+							f32 c = l1 * glm::cos(angle);
 							if (c >= -0.5f * roadLength && c <= 1.5f * roadLength) // needs lil' bit more length to each directions
 							{
 								bool r = glm::cross(dirToP1, dirToPrev).z > 0.0f;
 								v3 shiftDir{ -dirToP1.y, dirToP1.x, 0.0f };
-								v3 shiftAmount = ((float)r * 2.0f - 1.0f) * shiftDir * snapDistance;
+								v3 shiftAmount = ((f32)r * 2.0f - 1.0f) * shiftDir * snapDistance;
 								prevLocation = p0 + (dirToP1 * c) + shiftAmount;
 								m_SnappedRoadSegment = rsIndex;
 								m_GuidelinePosition = prevLocation;
-								float rotationOffset = (float)(dirToP1.x < 0.0f) * glm::radians(180.0f);
-								float rotation = glm::atan(dirToP1.y / dirToP1.x) + rotationOffset;
+								f32 rotationOffset = (f32)(dirToP1.x < 0.0f) * glm::radians(180.0f);
+								f32 rotation = glm::atan(dirToP1.y / dirToP1.x) + rotationOffset;
 								m_GuidelineRotation = v3{
 									0.0f,
 									0.0f,
-									(float)r * glm::radians(180.0f) + glm::radians(-90.0f) + rotation
+									(f32)r * glm::radians(180.0f) + glm::radians(-90.0f) + rotation
 								};
 								m_Guideline->SetTransform(m_GuidelinePosition, m_GuidelineRotation);
 								snappedToRoad = true;
@@ -160,21 +160,29 @@ namespace Can
 		bool collidedWithRoad = false;
 		if (restrictions[0] && (m_Scene->m_RoadManager.restrictionFlags & 0x4/*change with #define*/))
 		{
-			v2 pos = (v2)m_Guideline->position;
-			v2 A = (v2)m_Guideline->prefab->boundingBoxL;
-			v2 D = (v2)m_Guideline->prefab->boundingBoxM;
-			v2 B{ A.x, D.y }; // this is faster right???
-			v2 C{ D.x, A.y }; // this is faster right???
+			Prefab* prefab = m_Guideline->prefab;
+			f32 building_height = prefab->boundingBoxM.z - prefab->boundingBoxL.z;
 
-			float rot = m_Guideline->rotation.y;
-			A = Math::RotatePoint(A, rot) + pos;
-			B = Math::RotatePoint(B, rot) + pos;
-			C = Math::RotatePoint(C, rot) + pos;
-			D = Math::RotatePoint(D, rot) + pos;
+			v3 A = v3{ prefab->boundingBoxL.x, prefab->boundingBoxL.y, prefab->boundingBoxL.z };
+			v3 B = v3{ prefab->boundingBoxL.x, prefab->boundingBoxM.y, prefab->boundingBoxL.z };
+			v3 C = v3{ prefab->boundingBoxM.x, prefab->boundingBoxL.y, prefab->boundingBoxL.z };
+			v3 D = v3{ prefab->boundingBoxM.x, prefab->boundingBoxM.y, prefab->boundingBoxL.z };
 
-			std::array<std::array<v2, 3>, 2> polygonBuilding = {
-				std::array<v2,3>{A, B, D},
-				std::array<v2,3>{A, C, D}
+
+			f32 rot = m_Guideline->rotation.z;
+			A = glm::rotateZ(A, rot) + m_Guideline->position;
+			B = glm::rotateZ(B, rot) + m_Guideline->position;
+			C = glm::rotateZ(C, rot) + m_Guideline->position;
+			D = glm::rotateZ(D, rot) + m_Guideline->position;
+
+			std::vector<std::array<v3, 3>> building_bounding_polygon = {
+				std::array<v3, 3>{A, B, D},
+				std::array<v3, 3>{A, C, D}
+			};
+
+			std::array<v3, 2> building_bounding_box{
+				v3{std::min({A.x, B.x, C.x, D.x}), std::min({A.y, B.y, C.y, D.y}), A.z},
+				v3{std::max({A.x, B.x, C.x, D.x}), std::max({A.y, B.y, C.y, D.y}), A.z + building_height}
 			};
 
 			auto& segments = m_Scene->m_RoadManager.m_Segments;
@@ -184,14 +192,16 @@ namespace Can
 				RoadSegment& rs = segments[rsIndex];
 				if (rsIndex == m_SnappedRoadSegment)
 					continue;
-				float roadPrefabWidth = rs.type.road_width;
-				const std::array<v3, 4>& cps = rs.GetCurvePoints();
-				std::array<std::array<v2, 3>, 2> newRoadBoundingBox = Math::GetBoundingBoxOfBezierCurve(cps, roadPrefabWidth * 0.5f);
 
-				if (Math::CheckPolygonCollision(newRoadBoundingBox, polygonBuilding))
+				f32 road_height = rs.elevation_type == -1 ? rs.type.tunnel_height : rs.type.road_height;
+				std::array<v3, 2> road_bounding_box{
+					rs.object->prefab->boundingBoxL + rs.CurvePoints[0],
+					rs.object->prefab->boundingBoxM + rs.CurvePoints[0]
+				};
+
+				if (Math::check_bounding_box_bounding_box_collision(road_bounding_box, building_bounding_box))
 				{
-					std::array<std::array<v2, 3>, (10 - 1) * 2> newRoadBoundingPolygon = Math::GetBoundingPolygonOfBezierCurve<10, 10>(cps, roadPrefabWidth * 0.5f);
-					if (Math::CheckPolygonCollision(newRoadBoundingPolygon, polygonBuilding))
+					if (Math::check_bounding_polygon_bounding_polygon_collision_with_z(rs.bounding_polygon, road_height, building_bounding_polygon, building_height))
 					{
 						collidedWithRoad = true;
 						break;
