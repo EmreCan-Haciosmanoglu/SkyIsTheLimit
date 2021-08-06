@@ -29,5 +29,7 @@ namespace Can
 		// -1 tunnel
 		// +0 ground
 		// +1 bridge
+
+		std::vector<std::array<v3, 3>> bounding_polygon{};
 	};
 }

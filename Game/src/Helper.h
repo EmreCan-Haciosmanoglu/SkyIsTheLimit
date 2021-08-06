@@ -39,6 +39,10 @@ namespace Can::Helper
 
 	std::vector<std::string> GetFiles(const std::string& folder, const std::string& filter, const std::string& fileType);
 
+	void name_me_normals(u64 w, u64 h, u64 min_x, u64 max_x, u64 min_y, u64 max_y, f32* vertices);
+	void name_me_cutting(u64 w, u64 h, v3 AB, v3 current_point, f32* vertices);
+	std::array<u64, 4> name_me_digging(u64 w, u64 h, const std::vector<std::array<v3, 3>>& polygon, f32* vertices, bool reset);
+
 	struct sort_by_angle
 	{
 		inline bool operator() (u64 roadSegment1, u64 roadSegment2)

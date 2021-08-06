@@ -273,35 +273,150 @@ namespace  Can::Helper
 		return files;
 	}
 
-	void UpdateTheTerrain(GameApp* app, const std::vector<std::array<v3, 3>>& polygon, bool reset)
+	void name_me_normals(u64 w, u64 h, u64 min_x, u64 max_x, u64 min_y, u64 max_y, f32* vertices)
 	{
+		for (u64 x = min_x; x < max_x; x++)
+		{
+			for (u64 y = min_y; y < max_y; y++)
+			{
+				u64 vertexIndex = (x + (w - 1) * y) * 60;
+				v3 a00(vertices[vertexIndex + 0 + 0], vertices[vertexIndex + 0 + 1], vertices[vertexIndex + 0 + 2]);
+				v3 a10(vertices[vertexIndex + 10 + 0], vertices[vertexIndex + 10 + 1], vertices[vertexIndex + 10 + 2]);
+				v3 a11(vertices[vertexIndex + 20 + 0], vertices[vertexIndex + 20 + 1], vertices[vertexIndex + 20 + 2]);
+				v3 a01(vertices[vertexIndex + 50 + 0], vertices[vertexIndex + 50 + 1], vertices[vertexIndex + 50 + 2]);
 
+				v3 u1 = a11 - a00;
+				v3 v1 = a10 - a00;
+
+				v3 u2 = a01 - a00;
+				v3 v2 = a11 - a00;
+
+				v3 norm1 = glm::normalize(glm::cross(v1, u1));
+				v3 norm2 = glm::normalize(glm::cross(v2, u2));
+
+				vertices[vertexIndex + 0 + 7] = norm1.x;
+				vertices[vertexIndex + 0 + 8] = norm1.y;
+				vertices[vertexIndex + 0 + 9] = norm1.z;
+
+				vertices[vertexIndex + 10 + 7] = norm1.x;
+				vertices[vertexIndex + 10 + 8] = norm1.y;
+				vertices[vertexIndex + 10 + 9] = norm1.z;
+
+				vertices[vertexIndex + 20 + 7] = norm1.x;
+				vertices[vertexIndex + 20 + 8] = norm1.y;
+				vertices[vertexIndex + 20 + 9] = norm1.z;
+
+				vertices[vertexIndex + 30 + 7] = norm2.x;
+				vertices[vertexIndex + 30 + 8] = norm2.y;
+				vertices[vertexIndex + 30 + 9] = norm2.z;
+
+				vertices[vertexIndex + 40 + 7] = norm2.x;
+				vertices[vertexIndex + 40 + 8] = norm2.y;
+				vertices[vertexIndex + 40 + 9] = norm2.z;
+
+				vertices[vertexIndex + 50 + 7] = norm2.x;
+				vertices[vertexIndex + 50 + 8] = norm2.y;
+				vertices[vertexIndex + 50 + 9] = norm2.z;
+			}
+		}
 	}
-	void UpdateTheTerrain(GameApp* app, RoadSegment* rs, bool reset)
+
+	void name_me_cutting(u64 w, u64 h, v3 AB, v3 current_point, f32* vertices)
 	{
-		std::vector<RoadNode>& nodes = app->gameScene->m_RoadManager.m_Nodes;
-		if (rs->StartNode >= nodes.size())
-			return;
-		if (rs->EndNode >= nodes.size())
-			return;
-		RoadNode& startNode = nodes[rs->StartNode];
-		RoadNode& endNode = nodes[rs->EndNode];
-		bool start_node_is_tunnel = startNode.elevation_type == -1;
-		bool end_node_is_tunnel = endNode.elevation_type == -1;
 
-		float* vertices = app->terrainPrefab->vertices;
-		u64 w = app->terrainTexture->GetWidth();
-		u64 h = app->terrainTexture->GetHeight();
+		f32 len = glm::length(AB);
+		v3 dir = AB / (len * 3.0f);
 
+		u64 count = (u64)(len * 3.0f);
+		for (u64 indexd = 0; indexd < count; indexd++)
+		{
+			u64 x = current_point.x;
+			u64 y = current_point.y;
+			u64 dist_00 = ((x + 0) + (w - 1) * (y + 0)) * 60;
+
+			vertices[dist_00 + 2U] = 0.0f;
+			vertices[dist_00 + 12] = 0.0f;
+			vertices[dist_00 + 22] = 0.0f;
+			vertices[dist_00 + 32] = 0.0f;
+			vertices[dist_00 + 42] = 0.0f;
+			vertices[dist_00 + 52] = 0.0f;
+
+			if (x < w - 1)
+			{
+				u64 dist_x0 = ((x + 1) + (w - 1) * (y + 0)) * 60;
+				vertices[dist_x0 + 2U] = 0.0f;
+				vertices[dist_x0 + 12] = 0.0f;
+				vertices[dist_x0 + 22] = 0.0f;
+				vertices[dist_x0 + 32] = 0.0f;
+				vertices[dist_x0 + 42] = 0.0f;
+				vertices[dist_x0 + 52] = 0.0f;
+			}
+			if (y < h - 1)
+			{
+				u64 dist_0y = ((x + 0) + (w - 1) * (y + 1)) * 60;
+				vertices[dist_0y + 2U] = 0.0f;
+				vertices[dist_0y + 12] = 0.0f;
+				vertices[dist_0y + 22] = 0.0f;
+				vertices[dist_0y + 32] = 0.0f;
+				vertices[dist_0y + 42] = 0.0f;
+				vertices[dist_0y + 52] = 0.0f;
+			}
+			if (x < w - 1 && y < h - 1)
+			{
+				u64 dist_xy = ((x + 1) + (w - 1) * (y + 1)) * 60;
+				vertices[dist_xy + 2U] = 0.0f;
+				vertices[dist_xy + 12] = 0.0f;
+				vertices[dist_xy + 22] = 0.0f;
+				vertices[dist_xy + 32] = 0.0f;
+				vertices[dist_xy + 42] = 0.0f;
+				vertices[dist_xy + 52] = 0.0f;
+			}
+
+			if (x > 0)
+			{
+				u64 dist_x0 = ((x - 1) + (w - 1) * (y + 0)) * 60;
+				vertices[dist_x0 + 2U] = 0.0f;
+				vertices[dist_x0 + 12] = 0.0f;
+				vertices[dist_x0 + 22] = 0.0f;
+				vertices[dist_x0 + 32] = 0.0f;
+				vertices[dist_x0 + 42] = 0.0f;
+				vertices[dist_x0 + 52] = 0.0f;
+			}
+			if (y > 0)
+			{
+				u64 dist_0y = ((x + 0) + (w - 1) * (y - 1)) * 60;
+				vertices[dist_0y + 2U] = 0.0f;
+				vertices[dist_0y + 12] = 0.0f;
+				vertices[dist_0y + 22] = 0.0f;
+				vertices[dist_0y + 32] = 0.0f;
+				vertices[dist_0y + 42] = 0.0f;
+				vertices[dist_0y + 52] = 0.0f;
+			}
+			if (x > 0 && y > 0)
+			{
+				u64 dist_xy = ((x - 1) + (w - 1) * (y - 1)) * 60;
+				vertices[dist_xy + 2U] = 0.0f;
+				vertices[dist_xy + 12] = 0.0f;
+				vertices[dist_xy + 22] = 0.0f;
+				vertices[dist_xy + 32] = 0.0f;
+				vertices[dist_xy + 42] = 0.0f;
+				vertices[dist_xy + 52] = 0.0f;
+			}
+			current_point += dir;
+		}
+	}
+
+	std::array<u64, 4> name_me_digging(u64 w, u64 h, const std::vector<std::array<v3, 3>>& polygon, f32* vertices, bool reset)
+	{
 		u64 minX = w - 1;
 		u64 maxX = 0;
 		u64 minY = h - 1;
 		u64 maxY = 0;
 
-		u64 count = rs->bounding_polygon.size();
+		u64 count = polygon.size();
 		for (u64 index = 0; index < count; index += 1)
 		{
-			std::array<v3, 3> tr = rs->bounding_polygon[index];
+			std::array<v3, 3> tr = polygon[index];
 			tr[0].x *= TERRAIN_SCALE_DOWN;
 			tr[1].x *= TERRAIN_SCALE_DOWN;
 			tr[2].x *= TERRAIN_SCALE_DOWN;
@@ -375,7 +490,6 @@ namespace  Can::Helper
 			f32 dy2 = maxvx->y - minvx->y;
 			f32 dy3 = maxvx->y - medvx->y;
 
-
 			for (f32 x = minvx->x; x < maxvx->x; x += 0.5f)
 			{
 				f32 perc1 = (x - minvx->x) / dx1;
@@ -412,93 +526,18 @@ namespace  Can::Helper
 					}
 				}
 			}
-
-			if ((index == 0 && start_node_is_tunnel) || (index == count - 1 && end_node_is_tunnel))
-			{
-				v3 AB = tr[1] - tr[start_node_is_tunnel ? 0 : 2];
-				f32 len = glm::length(AB);
-				v3 dir = AB / (len * 3.0f);
-
-				u64 count = (u64)(len * 3.0f);
-				v3 current_point = tr[start_node_is_tunnel ? 0 : 2];
-				for (u64 indexd = 0; indexd < count; indexd++)
-				{
-					u64 x = current_point.x;
-					u64 y = current_point.y;
-					u64 dist_00 = ((x + 0) + (w - 1) * (y + 0)) * 60;
-
-					vertices[dist_00 + 2U] = 0.0f;
-					vertices[dist_00 + 12] = 0.0f;
-					vertices[dist_00 + 22] = 0.0f;
-					vertices[dist_00 + 32] = 0.0f;
-					vertices[dist_00 + 42] = 0.0f;
-					vertices[dist_00 + 52] = 0.0f;
-
-					if (x < w - 1)
-					{
-						u64 dist_x0 = ((x + 1) + (w - 1) * (y + 0)) * 60;
-						vertices[dist_x0 + 2U] = 0.0f;
-						vertices[dist_x0 + 12] = 0.0f;
-						vertices[dist_x0 + 22] = 0.0f;
-						vertices[dist_x0 + 32] = 0.0f;
-						vertices[dist_x0 + 42] = 0.0f;
-						vertices[dist_x0 + 52] = 0.0f;
-					}
-					if (y < h - 1)
-					{
-						u64 dist_0y = ((x + 0) + (w - 1) * (y + 1)) * 60;
-						vertices[dist_0y + 2U] = 0.0f;
-						vertices[dist_0y + 12] = 0.0f;
-						vertices[dist_0y + 22] = 0.0f;
-						vertices[dist_0y + 32] = 0.0f;
-						vertices[dist_0y + 42] = 0.0f;
-						vertices[dist_0y + 52] = 0.0f;
-					}
-					if (x < w - 1 && y < h - 1)
-					{
-						u64 dist_xy = ((x + 1) + (w - 1) * (y + 1)) * 60;
-						vertices[dist_xy + 2U] = 0.0f;
-						vertices[dist_xy + 12] = 0.0f;
-						vertices[dist_xy + 22] = 0.0f;
-						vertices[dist_xy + 32] = 0.0f;
-						vertices[dist_xy + 42] = 0.0f;
-						vertices[dist_xy + 52] = 0.0f;
-					}
-
-					if (x > 0)
-					{
-						u64 dist_x0 = ((x - 1) + (w - 1) * (y + 0)) * 60;
-						vertices[dist_x0 + 2U] = 0.0f;
-						vertices[dist_x0 + 12] = 0.0f;
-						vertices[dist_x0 + 22] = 0.0f;
-						vertices[dist_x0 + 32] = 0.0f;
-						vertices[dist_x0 + 42] = 0.0f;
-						vertices[dist_x0 + 52] = 0.0f;
-					}
-					if (y > 0)
-					{
-						u64 dist_0y = ((x + 0) + (w - 1) * (y - 1)) * 60;
-						vertices[dist_0y + 2U] = 0.0f;
-						vertices[dist_0y + 12] = 0.0f;
-						vertices[dist_0y + 22] = 0.0f;
-						vertices[dist_0y + 32] = 0.0f;
-						vertices[dist_0y + 42] = 0.0f;
-						vertices[dist_0y + 52] = 0.0f;
-					}
-					if (x > 0 && y > 0)
-					{
-						u64 dist_xy = ((x - 1) + (w - 1) * (y - 1)) * 60;
-						vertices[dist_xy + 2U] = 0.0f;
-						vertices[dist_xy + 12] = 0.0f;
-						vertices[dist_xy + 22] = 0.0f;
-						vertices[dist_xy + 32] = 0.0f;
-						vertices[dist_xy + 42] = 0.0f;
-						vertices[dist_xy + 52] = 0.0f;
-					}
-					current_point += dir;
-				}
-			}
 		}
+		return { minX, maxX, minY, maxY };
+	}
+
+	void UpdateTheTerrain(GameApp* app, const std::vector<std::array<v3, 3>>& polygon, bool reset)
+	{
+		float* vertices = app->terrainPrefab->vertices;
+		u64 w = app->terrainTexture->GetWidth();
+		u64 h = app->terrainTexture->GetHeight();
+
+		auto [minX, maxX, minY, maxY] = name_me_digging(w, h, polygon, vertices, reset);
+
 		minX -= 1;
 		maxX += 1;
 		minY -= 1;
@@ -509,50 +548,56 @@ namespace  Can::Helper
 		minY = std::max((u64)0, minY);
 		maxY = std::min(h - 1, maxY);
 
-		for (f32 x = minX; x < maxX; x++)
+		name_me_normals(w, h, minX, maxX, minY, maxY, vertices);
+
+		u64 vertexCount = app->terrainPrefab->indexCount * (3 + 4 + 3);
+		app->terrainPrefab->vertexBuffer->Bind();
+		app->terrainPrefab->vertexBuffer->ReDo(app->terrainPrefab->vertices, sizeof(f32) * vertexCount);
+		app->terrainPrefab->vertexBuffer->Unbind();
+	}
+	
+	void UpdateTheTerrain(GameApp* app, RoadSegment* rs, bool reset)
+	{
+		std::vector<RoadNode>& nodes = app->gameScene->m_RoadManager.m_Nodes;
+		if (rs->StartNode >= nodes.size())
+			return;
+		if (rs->EndNode >= nodes.size())
+			return;
+		RoadNode& startNode = nodes[rs->StartNode];
+		RoadNode& endNode = nodes[rs->EndNode];
+		bool start_node_is_tunnel = startNode.elevation_type == -1;
+		bool end_node_is_tunnel = endNode.elevation_type == -1;
+
+		float* vertices = app->terrainPrefab->vertices;
+		u64 w = app->terrainTexture->GetWidth();
+		u64 h = app->terrainTexture->GetHeight();
+
+		auto [minX, maxX, minY, maxY] = name_me_digging(w, h, rs->bounding_polygon, vertices, reset);
+
+		if (start_node_is_tunnel)
 		{
-			for (f32 y = minY; y < maxY; y++)
-			{
-				u64 vertexIndex = (x + (w - 1) * y) * 60;
-				v3 a00(vertices[vertexIndex + 0 + 0], vertices[vertexIndex + 0 + 1], vertices[vertexIndex + 0 + 2]);
-				v3 a10(vertices[vertexIndex + 10 + 0], vertices[vertexIndex + 10 + 1], vertices[vertexIndex + 10 + 2]);
-				v3 a11(vertices[vertexIndex + 20 + 0], vertices[vertexIndex + 20 + 1], vertices[vertexIndex + 20 + 2]);
-				v3 a01(vertices[vertexIndex + 50 + 0], vertices[vertexIndex + 50 + 1], vertices[vertexIndex + 50 + 2]);
-
-				v3 u1 = a11 - a00;
-				v3 v1 = a10 - a00;
-
-				v3 u2 = a01 - a00;
-				v3 v2 = a11 - a00;
-
-				v3 norm1 = glm::normalize(glm::cross(v1, u1));
-				v3 norm2 = glm::normalize(glm::cross(v2, u2));
-
-				vertices[vertexIndex + 0 + 7] = norm1.x;
-				vertices[vertexIndex + 0 + 8] = norm1.y;
-				vertices[vertexIndex + 0 + 9] = norm1.z;
-
-				vertices[vertexIndex + 10 + 7] = norm1.x;
-				vertices[vertexIndex + 10 + 8] = norm1.y;
-				vertices[vertexIndex + 10 + 9] = norm1.z;
-
-				vertices[vertexIndex + 20 + 7] = norm1.x;
-				vertices[vertexIndex + 20 + 8] = norm1.y;
-				vertices[vertexIndex + 20 + 9] = norm1.z;
-
-				vertices[vertexIndex + 30 + 7] = norm2.x;
-				vertices[vertexIndex + 30 + 8] = norm2.y;
-				vertices[vertexIndex + 30 + 9] = norm2.z;
-
-				vertices[vertexIndex + 40 + 7] = norm2.x;
-				vertices[vertexIndex + 40 + 8] = norm2.y;
-				vertices[vertexIndex + 40 + 9] = norm2.z;
-
-				vertices[vertexIndex + 50 + 7] = norm2.x;
-				vertices[vertexIndex + 50 + 8] = norm2.y;
-				vertices[vertexIndex + 50 + 9] = norm2.z;
-			}
+			v3 AB = rs->bounding_polygon[0][1] - rs->bounding_polygon[0][0];
+			v3 current_point = rs->bounding_polygon[0][0];
+			name_me_cutting(w, h, AB, current_point, vertices);
 		}
+		else if (end_node_is_tunnel)
+		{
+			v3 AB = rs->bounding_polygon[rs->bounding_polygon.size() - 1][1] - rs->bounding_polygon[rs->bounding_polygon.size() - 1][2];
+			v3 current_point = rs->bounding_polygon[rs->bounding_polygon.size() - 1][2];
+			name_me_cutting(w, h, AB, current_point, vertices);
+		}
+
+		minX -= 1;
+		maxX += 1;
+		minY -= 1;
+		maxY += 1;
+
+		minX = std::max((u64)0, minX);
+		maxX = std::min(w - 1, maxX);
+		minY = std::max((u64)0, minY);
+		maxY = std::min(h - 1, maxY);
+
+		name_me_normals(w, h, minX, maxX, minY, maxY, vertices);
 
 		u64 vertexCount = app->terrainPrefab->indexCount * (3 + 4 + 3);
 		app->terrainPrefab->vertexBuffer->Bind();

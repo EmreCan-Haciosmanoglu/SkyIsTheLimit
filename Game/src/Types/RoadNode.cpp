@@ -23,6 +23,7 @@ namespace Can
 		, position(other.position)
 		, index(other.index)
 		, elevation_type(other.elevation_type)
+		, bounding_polygon(other.bounding_polygon)
 	{
 		other.roadSegments.clear();
 		other.object = nullptr;
@@ -42,8 +43,10 @@ namespace Can
 		position = other.position;
 		index = other.index;
 		elevation_type = other.elevation_type;
+		bounding_polygon = other.bounding_polygon;
 
 		other.roadSegments.clear();
+		other.bounding_polygon.clear();
 		other.object = nullptr;
 		return *this;
 	}
@@ -74,36 +77,59 @@ namespace Can
 		auto& segments = GameScene::ActiveGameScene->m_RoadManager.m_Segments;
 		auto& nodes = GameScene::ActiveGameScene->m_RoadManager.m_Nodes;
 
+		Helper::UpdateTheTerrain(GameScene::ActiveGameScene->MainApplication, bounding_polygon, true);
+		bounding_polygon.clear();
+
 		RoadSegment& rs = segments[roadSegments[0]];
 		if (roadSegments.size() == 1)
 		{
 			v3 rotation = v3(0.0f);
 			bool isStartNode = index == rs.StartNode;
+
 			if (isStartNode)
 			{
 				rs.SetStartPosition(position);
-				rotation = { 0.0f,
-					-rs.GetStartRotation().x,
+				rotation = {
+					0.0f,
+					0.0f, //-rs.GetStartRotation().x,
 					rs.GetStartRotation().y + glm::radians(180.0f)
 				};
 			}
 			else
 			{
 				rs.SetEndPosition(position);
-				rotation = { 0.0f,
-					-rs.GetEndRotation().x,
+				rotation = {
+					0.0f,
+					0.0f, //-rs.GetEndRotation().x,
 					rs.GetEndRotation().y + glm::radians(180.0f)
 				};
 			}
-
-			object = new Object(
+			Prefab* prefab =
 				rs.elevation_type == -1 ? (rs.type.asymmetric && isStartNode ? rs.type.tunnel_end_mirror : rs.type.tunnel_end) :
-				rs.elevation_type == 0 ? (rs.type.asymmetric && isStartNode ? rs.type.road_end_mirror : rs.type.road_end) : nullptr,
-				position,
-				rotation
-			);
+				rs.elevation_type == 0 ? (rs.type.asymmetric && isStartNode ? rs.type.road_end_mirror : rs.type.road_end) : nullptr;
+
+			object = new Object(prefab, position, rotation);
+			v3 A = prefab->boundingBoxL;
+			v3 B = prefab->boundingBoxL;
+			v3 C = prefab->boundingBoxL;
+			v3 D = prefab->boundingBoxM;
+			B.y = D.y;
+			C.x = D.x;
+			D.z = A.z;
+
+			A = glm::rotateZ(A, rotation.z) + position;
+			B = glm::rotateZ(B, rotation.z) + position;
+			C = glm::rotateZ(C, rotation.z) + position;
+			D = glm::rotateZ(D, rotation.z) + position;
+
+			bounding_polygon = {
+				std::array<v3, 3>{ A, B, C},
+				std::array<v3, 3>{ B, C, D}
+			};
 
 			object->owns_prefab = false;
+
+			Helper::UpdateTheTerrain(GameScene::ActiveGameScene->MainApplication, bounding_polygon, false);
 			return;
 		}
 
