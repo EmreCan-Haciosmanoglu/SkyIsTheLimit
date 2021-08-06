@@ -65,7 +65,8 @@ namespace Can
 		Object* object = nullptr;
 
 		std::array<v3, 4> CurvePoints;
-		std::array<std::array<v2, 3>, 2> bounding_box{};
+		std::array<std::array<v2, 3>, 2> bounding_rect{};
+		std::vector<std::array<v3, 3>> bounding_polygon{};
 
 		// better name
 		s8 elevation_type = 0;

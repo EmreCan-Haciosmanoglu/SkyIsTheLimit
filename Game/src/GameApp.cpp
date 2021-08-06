@@ -192,6 +192,7 @@ namespace Can
 						}
 						type.road_length = type.road->boundingBoxM.x - type.road->boundingBoxL.x;
 						type.road_width = type.road->boundingBoxM.y - type.road->boundingBoxL.y;
+						type.road_height = type.road->boundingBoxM.z - type.road->boundingBoxL.z;
 						type.road_junction_length = type.road_junction->boundingBoxM.x - type.road_junction->boundingBoxL.x;
 						/*clearing for next road*/ {
 							name = "";

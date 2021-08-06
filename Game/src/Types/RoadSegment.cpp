@@ -28,14 +28,16 @@ namespace Can
 		, curve_t_samples(other.curve_t_samples)
 		, object(other.object)
 		, CurvePoints(other.CurvePoints)
-		, bounding_box(other.bounding_box)
+		, bounding_rect(other.bounding_rect)
+		, bounding_polygon(other.bounding_polygon)
+		, elevation_type(other.elevation_type)
 		, Directions(other.Directions)
 		, Rotations(other.Rotations)
-		, elevation_type(other.elevation_type)
 	{
 		other.object = nullptr;
 		other.curve_samples.clear();
 		other.curve_t_samples.clear();
+		other.bounding_polygon.clear();
 		other.Buildings.clear();
 		other.Cars.clear();
 	}
@@ -58,13 +60,15 @@ namespace Can
 		curve_t_samples = other.curve_t_samples;
 		object = other.object;
 		CurvePoints = other.CurvePoints;
-		bounding_box = other.bounding_box;
+		bounding_rect = other.bounding_rect;
+		bounding_polygon = other.bounding_polygon;
 		Directions = other.Directions;
 		Rotations = other.Rotations;
 
 		other.object = nullptr;
 		other.curve_samples.clear();
 		other.curve_t_samples.clear();
+		other.bounding_polygon.clear();
 		other.Buildings.clear();
 		other.Cars.clear();
 
@@ -76,10 +80,11 @@ namespace Can
 		f32 w = elevation_type == -1 ? type.tunnel_width : (elevation_type == 0 ? type.road_width : 1.0f);
 		f32 l = elevation_type == -1 ? type.tunnel_length : (elevation_type == 0 ? type.road_length : 1.0f);
 
-		bounding_box = Math::GetBoundingBoxOfBezierCurve(CurvePoints, w * 0.5f);
+		bounding_rect = Math::GetBoundingBoxOfBezierCurve(CurvePoints, w * 0.5f);
 		curve_t_samples.clear();
 		curve_t_samples = Math::GetCubicCurveSampleTs(CurvePoints, l);
 		curve_samples.clear();
+		bounding_polygon.clear();
 		u64 count = curve_t_samples.size();
 
 		u64 prefabIndexCount = elevation_type == -1 ? type.tunnel->indexCount : elevation_type == 0 ? type.road->indexCount : 0;
@@ -110,6 +115,8 @@ namespace Can
 			f32 scale = length / l;
 			v3 dir1 = vec1 / length;
 			v3 dir2 = (c < count - 1) ? glm::normalize((v3)Math::CubicCurve<f32>(CurvePoints, curve_t_samples[c + 1]) - p2) : -Directions[1];
+			v3 shift1 = glm::normalize(v3{ -dir1.y, dir1.x, 0.0f }) * w * 0.5f;
+			v3 shift2 = glm::normalize(v3{ -dir2.y, dir2.x, 0.0f }) * w * 0.5f;
 
 
 			v2 dirr1 = glm::normalize((v2)dir1);
@@ -167,6 +174,17 @@ namespace Can
 				TOVertices[offset].Normal = PrefabTOVertices[i].Normal;
 				TOVertices[offset].TextureIndex = PrefabTOVertices[i].TextureIndex;
 			}
+			bounding_polygon.push_back(std::array<v3, 3>{
+				p1 + shift1,
+				p1 - shift1,
+				p2 + shift2
+			});
+			bounding_polygon.push_back(std::array<v3, 3>{
+				p1 - shift1,
+				p2 - shift2,
+				p2 + shift2
+			});
+
 			p1 = p2;
 			curve_samples.push_back(p1);
 		}

@@ -39,7 +39,7 @@ namespace Can
 
 		f32 road_width = 0.01f;
 		f32 road_length = 0.01f;
-		f32 road_height = 0.01f; // for later
+		f32 road_height = 0.01f;
 		f32 road_junction_length = 0.01f;
 
 		f32 tunnel_width = 0.01f;
