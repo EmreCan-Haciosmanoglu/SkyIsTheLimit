@@ -199,32 +199,40 @@ namespace Can
 				m_ConstructionPositions[3] = m_ConstructionPositions[0] + AB;
 			}
 
-			v2 A = (v2)m_ConstructionPositions[0];
-			v2 D = (v2)m_ConstructionPositions[3];
-			v2 AD = type.road_width * 0.5f * glm::normalize(D - A);
+			v3 A = m_ConstructionPositions[0];
+			v3 D = m_ConstructionPositions[3];
+			v3 AD = D - A;
+			if (glm::length(AD) == 0.0f)
+				AD.x = 0.001f;
+			AD.z = 0.0f;
+			AD = type.road_width * 0.5f * glm::normalize(AD);
 
 			if (!b_ConstructionStartSnapped) A -= AD;
 			if (!b_ConstructionStartSnapped) D += AD;
 
-			AD = v2{ -AD.y , AD.x };
+			AD = v3{ -AD.y , AD.x , 0.0f };
 
-			v2 P1 = A + AD;
-			v2 P2 = A - AD;
-			v2 P3 = D + AD;
-			v2 P4 = D - AD;
+			v3 P1 = A + AD;
+			v3 P2 = A - AD;
+			v3 P3 = D + AD;
+			v3 P4 = D - AD;
 
-			std::array<std::array<v2, 3>, 2> newRoadPolygon = {
-					std::array<v2,3>{ P1, P2, P3},
-					std::array<v2,3>{ P2, P3, P4}
+			std::vector<std::array<v3, 3>> new_road_bounding_polygon{
+					std::array<v3,3>{ P1, P2, P3},
+					std::array<v3,3>{ P2, P3, P4}
 			};
-
+			f32 guideline_height = elevationValue == -1 ? type.tunnel_height : type.road_height;
+			std::array<v3, 2> new_road_bounding_box{ /* Find Better Way*/
+				v3{std::min({P1.x, P2.x, P3.x, P4.x}), std::min({P1.y, P2.y, P3.y, P4.y}), std::min({A.z, D.z}) },
+				v3{std::max({P1.x, P2.x, P3.x, P4.x}), std::max({P1.y, P2.y, P3.y, P4.y}), std::max({A.z, D.z}) + guideline_height}
+			};
 			bool lengthIsRestricted = (restrictionFlags & RESTRICT_SHORT_LENGTH) && (glm::length(AB) < (2.0f * type.road_length));
-			bool collisionIsRestricted = (restrictionFlags & RESTRICT_COLLISIONS) ? CheckStraightRoadRoadCollision(newRoadPolygon) : false;
+			bool collisionIsRestricted = (restrictionFlags & RESTRICT_COLLISIONS) ? check_road_road_collision(new_road_bounding_box, new_road_bounding_polygon) : false;
 
 			if (m_Scene->m_BuildingManager.restrictions[0] && (restrictionFlags & RESTRICT_COLLISIONS))
-				CheckStraightRoadBuildingCollision(newRoadPolygon);
+				highlight_road_building_collisions(new_road_bounding_box, new_road_bounding_polygon);
 			if (m_Scene->m_TreeManager.restrictions[0] && (restrictionFlags & RESTRICT_COLLISIONS))
-				CheckStraightRoadTreeCollision(newRoadPolygon);
+				highlight_road_tree_collisions(new_road_bounding_box, new_road_bounding_polygon);
 
 			b_ConstructionRestricted |= angleIsRestricted;
 			b_ConstructionRestricted |= lengthIsRestricted;
@@ -240,7 +248,6 @@ namespace Can
 			(m_ConstructionPhase == 0 && m_Elevationtypes[0] >= 0) ||
 			(m_ConstructionPhase == 1 && m_Elevationtypes[1] >= 0) ||
 			(m_ConstructionPhase == 2 && m_Elevationtypes[3] >= 0);
-
 		// HACK
 		static f32 cooldown = 0.0f;
 		if (cooldown <= 0.0f)
@@ -336,31 +343,38 @@ namespace Can
 			m_ConstructionPositions[2] = m_ConstructionPositions[0] + AB;
 			m_ConstructionPositions[3] = m_ConstructionPositions[0] + AB;
 
-			v2 A = (v2)m_ConstructionPositions[0];
-			v2 D = (v2)m_ConstructionPositions[3];
-			v2 AD = type.road_width * 0.5f * glm::normalize(D - A);
+			v3 A = m_ConstructionPositions[0];
+			v3 D = m_ConstructionPositions[3];
+			v3 AD = D - A;
+			AD.z = 0.0f;
+			AD = type.road_width * 0.5f * glm::normalize(AD);
 
 			if (!b_ConstructionStartSnapped) A -= AD;
 			D += AD;
 
-			AD = v2{ -AD.y , AD.x };
+			AD = v3{ -AD.y , AD.x, 0.0f };
 
-			v2 P1 = A + AD;
-			v2 P2 = A - AD;
-			v2 P3 = D + AD;
-			v2 P4 = D - AD;
+			v3 P1 = A + AD;
+			v3 P2 = A - AD;
+			v3 P3 = D + AD;
+			v3 P4 = D - AD;
 
-			std::array<std::array<v2, 3>, 2> newRoadPolygon = {
-					std::array<v2,3>{ P1, P2, P3},
-					std::array<v2,3>{ P2, P3, P4}
+			std::vector<std::array<v3, 3>> new_road_bounding_polygon = {
+					std::array<v3,3>{ P1, P2, P3},
+					std::array<v3,3>{ P2, P3, P4}
+			};
+			f32 guideline_height = elevationValue == -1 ? type.tunnel_height : type.road_height;
+			std::array<v3, 2> new_road_bounding_box{ /* Find Better Way*/
+				v3{std::min({P1.x, P2.x, P3.x, P4.x}), std::min({P1.y, P2.y, P3.y, P4.y}), std::min({A.z, D.z}) },
+				v3{std::max({P1.x, P2.x, P3.x, P4.x}), std::max({P1.y, P2.y, P3.y, P4.y}), std::max({A.z, D.z}) + guideline_height}
 			};
 
-			bool collisionIsRestricted = (restrictionFlags & RESTRICT_COLLISIONS) ? CheckStraightRoadRoadCollision(newRoadPolygon) : false;
+			bool collisionIsRestricted = (restrictionFlags & RESTRICT_COLLISIONS) ? check_road_road_collision(new_road_bounding_box, new_road_bounding_polygon) : false;
 
 			if (m_Scene->m_BuildingManager.restrictions[0] && (restrictionFlags & RESTRICT_COLLISIONS))
-				CheckStraightRoadBuildingCollision(newRoadPolygon);
+				highlight_road_building_collisions(new_road_bounding_box, new_road_bounding_polygon);
 			if (m_Scene->m_TreeManager.restrictions[0] && (restrictionFlags & RESTRICT_COLLISIONS))
-				CheckStraightRoadTreeCollision(newRoadPolygon);
+				highlight_road_tree_collisions(new_road_bounding_box, new_road_bounding_polygon);
 
 			b_ConstructionRestricted |= angleIsRestricted;
 			b_ConstructionRestricted |= collisionIsRestricted;
@@ -421,16 +435,17 @@ namespace Can
 						(m_ConstructionPositions[2] + m_ConstructionPositions[3]) * 0.5f,
 						m_ConstructionPositions[3],
 			};
-			std::array<std::array<v2, 3>, 2> newRoadBoundingBox = Math::GetBoundingBoxOfBezierCurve(cps, type.road_width * 0.5f);
-			std::array<std::array<v2, 3>, (10 - 1) * 2> newRoadBoundingPolygon = Math::GetBoundingPolygonOfBezierCurve<10, 10>(cps, type.road_width * 0.5f);
+
+			std::array<v3, 2>  new_road_bounding_box = Math::get_bounding_box_from_cubic_bezier_curve(cps, type.road_width * 0.5f, type.road_height);
+			std::vector<std::array<v3, 3>> new_road_bounding_polygon = Math::get_bounding_polygon_from_bezier_curve(cps, type.road_width * 0.5f, type.road_length);
 
 			bool lengthIsRestricted = (restrictionFlags & RESTRICT_SHORT_LENGTH) && (glm::length(cps[0] - cps[3]) < (2.0f * type.road_length));
-			bool collisionIsRestricted = (restrictionFlags & RESTRICT_COLLISIONS) ? CheckRoadRoadCollision(newRoadBoundingBox, newRoadBoundingPolygon) : false;
+			bool collisionIsRestricted = (restrictionFlags & RESTRICT_COLLISIONS) ? check_road_road_collision(new_road_bounding_box, new_road_bounding_polygon) : false;
 
 			if (m_Scene->m_BuildingManager.restrictions[0] && (restrictionFlags & RESTRICT_COLLISIONS))
-				CheckRoadBuildingCollision(newRoadBoundingBox, newRoadBoundingPolygon);
+				highlight_road_building_collisions(new_road_bounding_box, new_road_bounding_polygon);
 			if (m_Scene->m_TreeManager.restrictions[0] && (restrictionFlags & RESTRICT_COLLISIONS))
-				CheckRoadTreeCollision(newRoadBoundingBox, newRoadBoundingPolygon);
+				highlight_road_tree_collisions(new_road_bounding_box, new_road_bounding_polygon);
 
 			b_ConstructionRestricted |= angleIsRestricted;
 			b_ConstructionRestricted |= lengthIsRestricted;
@@ -547,32 +562,39 @@ namespace Can
 				m_ConstructionPositions[1] = m_ConstructionPositions[0] + AB;
 			}
 
-			v2 A = (v2)m_ConstructionPositions[cubicCurveOrder[0]];
-			v2 D = (v2)m_ConstructionPositions[cubicCurveOrder[1]];
-			v2 AD = type.road_width * 0.5f * glm::normalize(D - A);
+			v3 A = m_ConstructionPositions[0];
+			v3 D = m_ConstructionPositions[3];
+			v3 AD = D - A;
+			AD.z = 0.0f;
+			AD = type.road_width * 0.5f * glm::normalize(AD);
 
 			if (!b_ConstructionStartSnapped) A -= AD;
 			D += AD;
 
-			AD = v2{ -AD.y , AD.x };
+			AD = v3{ -AD.y , AD.x, 0.0f };
 
-			v2 P1 = A + AD;
-			v2 P2 = A - AD;
-			v2 P3 = D + AD;
-			v2 P4 = D - AD;
+			v3 P1 = A + AD;
+			v3 P2 = A - AD;
+			v3 P3 = D + AD;
+			v3 P4 = D - AD;
 
-			std::array<std::array<v2, 3>, 2> newRoadPolygon = {
-					std::array<v2,3>{ P1, P2, P3},
-					std::array<v2,3>{ P2, P3, P4}
+			std::vector<std::array<v3, 3>> new_road_bounding_polygon = {
+					std::array<v3,3>{ P1, P2, P3},
+					std::array<v3,3>{ P2, P3, P4}
+			};
+			f32 guideline_height = elevationValue == -1 ? type.tunnel_height : type.road_height;
+			std::array<v3, 2> new_road_bounding_box{ /* Find Better Way*/
+				v3{std::min({P1.x, P2.x, P3.x, P4.x}), std::min({P1.y, P2.y, P3.y, P4.y}), std::min({A.z, D.z}) },
+				v3{std::max({P1.x, P2.x, P3.x, P4.x}), std::max({P1.y, P2.y, P3.y, P4.y}), std::max({A.z, D.z}) + guideline_height}
 			};
 
 			bool lengthIsRestricted = (restrictionFlags & RESTRICT_SHORT_LENGTH) && glm::length(AB) < 2.0f * type.road_length;
-			bool collisionIsRestricted = (restrictionFlags & RESTRICT_COLLISIONS) ? CheckStraightRoadRoadCollision(newRoadPolygon) : false;
+			bool collisionIsRestricted = (restrictionFlags & RESTRICT_COLLISIONS) ? check_road_road_collision(new_road_bounding_box, new_road_bounding_polygon) : false;
 
 			if (m_Scene->m_BuildingManager.restrictions[0] && (restrictionFlags & RESTRICT_COLLISIONS))
-				CheckStraightRoadBuildingCollision(newRoadPolygon);
+				highlight_road_building_collisions(new_road_bounding_box, new_road_bounding_polygon);
 			if (m_Scene->m_TreeManager.restrictions[0] && (restrictionFlags & RESTRICT_COLLISIONS))
-				CheckStraightRoadTreeCollision(newRoadPolygon);
+				highlight_road_tree_collisions(new_road_bounding_box, new_road_bounding_polygon);
 
 			b_ConstructionRestricted |= angleIsRestricted;
 			b_ConstructionRestricted |= lengthIsRestricted;
@@ -652,19 +674,21 @@ namespace Can
 				(m_ConstructionPositions[(cubicCurveOrder[3] == 1) ? 2 : 1] + m_ConstructionPositions[3]) * 0.5f,
 				m_ConstructionPositions[3]
 			};
-
-			std::array<std::array<v2, 3>, 2> newRoadBoundingBox = Math::GetBoundingBoxOfBezierCurve(cps, type.road_width * 0.5f);
-			std::array<std::array<v2, 3>, (10 - 1) * 2> newRoadBoundingPolygon = Math::GetBoundingPolygonOfBezierCurve<10, 10>(cps, type.road_width * 0.5f);
+			f32 guideline_width = (elevationValue == -1 ? type.tunnel_width : type.road_width) * 0.5f;
+			f32 guideline_height = elevationValue == -1 ? type.tunnel_height : type.road_height;
+			f32 guideline_length = elevationValue == -1 ? type.tunnel_length : type.road_length;
+			std::array<v3, 2> new_road_bounding_box = Math::get_bounding_box_from_cubic_bezier_curve(cps, guideline_width, guideline_height);
+			std::vector<std::array<v3, 3>> new_road_bounding_polygon = Math::get_bounding_polygon_from_bezier_curve(cps, guideline_width, guideline_length);
 
 			bool lengthIsRestricted = (restrictionFlags & RESTRICT_SHORT_LENGTH) &&
 				(((cubicCurveOrder[3] == 1) && (glm::length(cps[2] - cps[3]) < 2.0f * type.road_length)) ||
 					((cubicCurveOrder[3] != 1) && (glm::length(cps[1] - cps[0]) < 2.0f * type.road_length)));
-			bool collisionIsRestricted = (restrictionFlags & RESTRICT_COLLISIONS) ? CheckRoadRoadCollision(newRoadBoundingBox, newRoadBoundingPolygon) : false;
+			bool collisionIsRestricted = (restrictionFlags & RESTRICT_COLLISIONS) ? check_road_road_collision(new_road_bounding_box, new_road_bounding_polygon) : false;
 
 			if (m_Scene->m_BuildingManager.restrictions[0] && (restrictionFlags & RESTRICT_COLLISIONS))
-				CheckRoadBuildingCollision(newRoadBoundingBox, newRoadBoundingPolygon);
+				highlight_road_building_collisions(new_road_bounding_box, new_road_bounding_polygon);
 			if (m_Scene->m_TreeManager.restrictions[0] && (restrictionFlags & RESTRICT_COLLISIONS))
-				CheckRoadTreeCollision(newRoadBoundingBox, newRoadBoundingPolygon);
+				highlight_road_tree_collisions(new_road_bounding_box, new_road_bounding_polygon);
 
 			b_ConstructionRestricted |= angleIsRestricted;
 			b_ConstructionRestricted |= lengthIsRestricted;
@@ -731,19 +755,22 @@ namespace Can
 				m_ConstructionPositions[2] = m_ConstructionPositions[3] + AB;
 			}
 
-			std::array<std::array<v2, 3>, 2> newRoadBoundingBox = Math::GetBoundingBoxOfBezierCurve(m_ConstructionPositions, type.road_width * 0.5f);
-			std::array<std::array<v2, 3>, (10 - 1) * 2> newRoadBoundingPolygon = Math::GetBoundingPolygonOfBezierCurve<10, 10>(m_ConstructionPositions, type.road_width * 0.5f);
+			f32 guideline_width = (elevationValue == -1 ? type.tunnel_width : type.road_width) * 0.5f;
+			f32 guideline_height = elevationValue == -1 ? type.tunnel_height : type.road_height;
+			f32 guideline_length = elevationValue == -1 ? type.tunnel_length : type.road_length;
+			std::array<v3, 2> new_road_bounding_box = Math::get_bounding_box_from_cubic_bezier_curve(m_ConstructionPositions, guideline_width, guideline_height);
+			std::vector<std::array<v3, 3>> new_road_bounding_polygon = Math::get_bounding_polygon_from_bezier_curve(m_ConstructionPositions, guideline_width, guideline_length);
 
 			bool lengthIsRestricted =
 				(restrictionFlags & RESTRICT_SHORT_LENGTH) &&
 				(glm::length(m_ConstructionPositions[0] - m_ConstructionPositions[1]) < 2.0f * type.road_length) &&
 				(glm::length(m_ConstructionPositions[3] - m_ConstructionPositions[2]) < 2.0f * type.road_length);
-			bool collisionIsRestricted = (restrictionFlags & RESTRICT_COLLISIONS) ? CheckRoadRoadCollision(newRoadBoundingBox, newRoadBoundingPolygon) : false;
+			bool collisionIsRestricted = (restrictionFlags & RESTRICT_COLLISIONS) ? check_road_road_collision(new_road_bounding_box, new_road_bounding_polygon) : false;
 
 			if (m_Scene->m_BuildingManager.restrictions[0] && (restrictionFlags & RESTRICT_COLLISIONS))
-				CheckRoadBuildingCollision(newRoadBoundingBox, newRoadBoundingPolygon);
+				highlight_road_building_collisions(new_road_bounding_box, new_road_bounding_polygon);
 			if (m_Scene->m_TreeManager.restrictions[0] && (restrictionFlags & RESTRICT_COLLISIONS))
-				CheckRoadTreeCollision(newRoadBoundingBox, newRoadBoundingPolygon);
+				highlight_road_tree_collisions(new_road_bounding_box, new_road_bounding_polygon);
 
 
 			b_ConstructionRestricted |= angleIsRestricted;
@@ -1102,186 +1129,118 @@ namespace Can
 				rg->tintColor = b_ConstructionRestricted ? v4{ 1.0f, 0.3f, 0.2f, 1.0f } : v4(1.0f);
 	}
 
-	bool RoadManager::CheckStraightRoadRoadCollision(const std::array<std::array<v2, 3>, 2>& polygon)
+	bool RoadManager::check_road_road_collision(const std::array<v3, 2>& bounding_box, const std::vector<std::array<v3, 3>>& bounding_polygon)
 	{
+		RoadType& type = m_Scene->MainApplication->road_types[m_Type];
+		f32 guideline_height = m_Elevationtypes[0] == -1 ? type.tunnel_height : type.road_height;
+
 		u64 segmentCount = m_Segments.size();
 		for (u64 rsIndex = 0; rsIndex < segmentCount; rsIndex++)
 		{
+			RoadSegment& rs = m_Segments[rsIndex];
 			if (rsIndex == m_StartSnappedSegment)
 				continue;
 			if (rsIndex == m_EndSnappedSegment)
 				continue;
-			if (m_StartSnappedNode != -1)
-			{
-				auto it = std::find(m_Nodes[m_StartSnappedNode].roadSegments.begin(), m_Nodes[m_StartSnappedNode].roadSegments.end(), rsIndex);
-				if (it != m_Nodes[m_StartSnappedNode].roadSegments.end())
-					continue;
-			}
-			if (m_EndSnappedNode != -1)
-			{
-				auto it = std::find(m_Nodes[m_EndSnappedNode].roadSegments.begin(), m_Nodes[m_EndSnappedNode].roadSegments.end(), rsIndex);
-				if (it != m_Nodes[m_EndSnappedNode].roadSegments.end())
-					continue;
-			}
-			RoadSegment& rs = m_Segments[rsIndex];
-
-			if (m_Elevationtypes[0] == 0 && m_Elevationtypes[3] == 0 && rs.elevation_type == -1)
+			if (m_StartSnappedNode == rs.StartNode || m_StartSnappedNode == rs.EndNode)
 				continue;
+			if (m_EndSnappedNode == rs.StartNode || m_EndSnappedNode == rs.EndNode)
+				continue;
+			f32 rs_height = rs.elevation_type == -1 ? rs.type.tunnel_height : rs.type.road_height;
 
-			f32 halfWidth = rs.type.road_width * 0.5f;
+			std::array<v3, 2> old_road_bounding_box{
+				rs.object->prefab->boundingBoxL + rs.CurvePoints[0],
+				rs.object->prefab->boundingBoxM + rs.CurvePoints[0]
+			};
 
-			std::array<std::array<v2, 3>, 2> oldRoadPolygon = Math::GetBoundingBoxOfBezierCurve(rs.GetCurvePoints(), halfWidth);
-
-			if (Math::CheckPolygonCollision(polygon, oldRoadPolygon))
-			{
-				std::array<std::array<v2, 3>, (10 - 1) * 2> result = Math::GetBoundingPolygonOfBezierCurve<10, 10>(rs.GetCurvePoints(), halfWidth);
-				if (Math::CheckPolygonCollision(result, polygon))
+			if (Math::check_bounding_box_bounding_box_collision(bounding_box, old_road_bounding_box))
+				if (Math::check_bounding_polygon_bounding_polygon_collision_with_z(bounding_polygon, guideline_height, rs.bounding_polygon, rs_height))
 					return true;
-			}
 		}
 		return false;
 	}
-	void RoadManager::CheckStraightRoadBuildingCollision(const std::array<std::array<v2, 3>, 2>& polygon)
+	bool RoadManager::check_road_building_collision(Building* building, const std::array<v3, 2>& bounding_box, const std::vector<std::array<v3, 3>>& bounding_polygon)
+	{
+		RoadType& type = m_Scene->MainApplication->road_types[m_Type];
+		f32 height = m_Elevationtypes[0] == -1 ? type.tunnel_height : type.road_height;
+
+		Prefab* prefab = building->object->prefab;
+		f32 rot = building->object->rotation.z;
+		f32 building_height = prefab->boundingBoxM.z - prefab->boundingBoxL.z;
+
+		v3 A = v3{ prefab->boundingBoxL.x, prefab->boundingBoxL.y, prefab->boundingBoxL.z };
+		v3 B = v3{ prefab->boundingBoxL.x, prefab->boundingBoxM.y, prefab->boundingBoxL.z };
+		v3 C = v3{ prefab->boundingBoxM.x, prefab->boundingBoxL.y, prefab->boundingBoxL.z };
+		v3 D = v3{ prefab->boundingBoxM.x, prefab->boundingBoxM.y, prefab->boundingBoxL.z };
+
+		A = glm::rotateZ(A, rot) + building->position;
+		B = glm::rotateZ(B, rot) + building->position;
+		C = glm::rotateZ(C, rot) + building->position;
+		D = glm::rotateZ(D, rot) + building->position;
+
+		std::vector<std::array<v3, 3>> building_bounding_polygon{
+			std::array<v3,3>{A, B, D},
+			std::array<v3,3>{A, C, D}
+		};
+
+		std::array<v3, 2> building_bounding_box{
+			v3{std::min({A.x, B.x, C.x, D.x}), std::min({A.y, B.y, C.y, D.y}), std::min({A.z, B.z, C.z, D.z})},
+			v3{std::max({A.x, B.x, C.x, D.x}), std::max({A.y, B.y, C.y, D.y}), std::max({A.z, B.z, C.z, D.z})}
+		};
+
+		building->object->tintColor = v4(1.0f);
+		if (Math::check_bounding_box_bounding_box_collision(bounding_box, building_bounding_box))
+			if (Math::check_bounding_polygon_bounding_polygon_collision_with_z(bounding_polygon, height, building_bounding_polygon, building_height))
+				return true;
+		return false;
+	}
+	bool RoadManager::check_road_tree_collision(Object* tree, const std::array<v3, 2>& bounding_box, const std::vector<std::array<v3, 3>>& bounding_polygon)
+	{
+		RoadType& type = m_Scene->MainApplication->road_types[m_Type];
+		f32 height = m_Elevationtypes[0] == -1 ? type.tunnel_height : type.road_height;
+
+		Prefab* prefab = tree->prefab;
+		f32 rot = tree->rotation.z;
+		f32 tree_height = prefab->boundingBoxM.z - prefab->boundingBoxL.z;
+
+		v3 A = v3{ prefab->boundingBoxL.x, prefab->boundingBoxL.y, prefab->boundingBoxL.z };
+		v3 B = v3{ prefab->boundingBoxL.x, prefab->boundingBoxM.y, prefab->boundingBoxL.z };
+		v3 C = v3{ prefab->boundingBoxM.x, prefab->boundingBoxL.y, prefab->boundingBoxL.z };
+		v3 D = v3{ prefab->boundingBoxM.x, prefab->boundingBoxM.y, prefab->boundingBoxL.z };
+
+		A = glm::rotateZ(A * tree->scale, rot) + tree->position;
+		B = glm::rotateZ(B * tree->scale, rot) + tree->position;
+		C = glm::rotateZ(C * tree->scale, rot) + tree->position;
+		D = glm::rotateZ(D * tree->scale, rot) + tree->position;
+
+		std::vector<std::array<v3, 3>> tree_bounding_polygon{
+			std::array<v3,3>{A, B, D},
+			std::array<v3,3>{A, C, D}
+		};
+
+		std::array<v3, 2>tree_bounding_box{
+			v3{std::min({A.x, B.x, C.x, D.x}), std::min({A.y, B.y, C.y, D.y}), std::min({A.z, B.z, C.z, D.z})},
+			v3{std::max({A.x, B.x, C.x, D.x}), std::max({A.y, B.y, C.y, D.y}), std::max({A.z, B.z, C.z, D.z})}
+		};
+
+		tree->tintColor = v4(1.0f);
+		if (Math::check_bounding_box_bounding_box_collision(bounding_box, tree_bounding_box))
+			if (Math::check_bounding_polygon_bounding_polygon_collision_with_z(bounding_polygon, height, tree_bounding_polygon, tree_height))
+				return true;
+		return false;
+	}
+
+	void RoadManager::highlight_road_building_collisions(const std::array<v3, 2>& bounding_box, const std::vector<std::array<v3, 3>>& bounding_polygon)
 	{
 		for (Building* building : m_Scene->m_BuildingManager.GetBuildings())
-		{
-			Prefab* prefab = building->object->prefab;
-			v2 pos = (v2)building->object->position;
-			f32 rot = building->object->rotation.y;
-			v2 A = Math::RotatePoint((v2)prefab->boundingBoxL, rot) + pos;
-			v2 B = Math::RotatePoint((v2)prefab->boundingBoxL, rot) + pos;
-			v2 C = Math::RotatePoint((v2)prefab->boundingBoxM, rot) + pos;
-			v2 D = Math::RotatePoint((v2)prefab->boundingBoxM, rot) + pos;
-
-			std::array<std::array<v2, 3>, 2> polygonBuilding = {
-				std::array<v2,3>{A, B, D},
-				std::array<v2,3>{A, C, D}
-			};
-			building->object->tintColor = v4(1.0f);
-			if (Math::CheckPolygonCollision(polygon, polygonBuilding))
+			if (check_road_building_collision(building, bounding_box, bounding_polygon))
 				building->object->tintColor = v4{ 1.0f, 0.3f, 0.2f, 1.0f };
-		}
 	}
-	void RoadManager::CheckStraightRoadTreeCollision(const std::array<std::array<v2, 3>, 2>& polygon)
+	void RoadManager::highlight_road_tree_collisions(const std::array<v3, 2>& bounding_box, const std::vector<std::array<v3, 3>>& bounding_polygon)
 	{
 		for (Object* tree : m_Scene->m_TreeManager.GetTrees())
-		{
-			Prefab* prefab = tree->prefab;
-			v2 pos = (v2)tree->position;
-			f32 rot = tree->rotation.y;
-			v2 A = Math::RotatePoint((v2)(prefab->boundingBoxL * tree->scale), rot) + pos;
-			v2 B = Math::RotatePoint((v2)(prefab->boundingBoxL * tree->scale), rot) + pos;
-			v2 C = Math::RotatePoint((v2)(prefab->boundingBoxM * tree->scale), rot) + pos;
-			v2 D = Math::RotatePoint((v2)(prefab->boundingBoxM * tree->scale), rot) + pos;
-
-			std::array<std::array<v2, 3>, 2> polygonTree = {
-				std::array<v2,3>{A, B, D},
-				std::array<v2,3>{A, C, D}
-			};
-
-			tree->tintColor = v4(1.0f);
-			if (Math::CheckPolygonCollision(polygon, polygonTree))
+			if (check_road_tree_collision(tree, bounding_box, bounding_polygon))
 				tree->tintColor = v4{ 1.0f, 0.3f, 0.2f, 1.0f };
-		}
-
-	}
-
-	bool RoadManager::CheckRoadRoadCollision(const std::array<std::array<v2, 3>, 2>& box, const std::array<std::array<v2, 3>, (10 - 1) * 2>& polygon)
-	{
-		u64 segmentCount = m_Segments.size();
-		for (u64 rsIndex = 0; rsIndex < segmentCount; rsIndex++)
-		{
-			if (rsIndex == m_StartSnappedSegment)
-				continue;
-			if (rsIndex == m_EndSnappedSegment)
-				continue;
-			if (m_StartSnappedNode != -1)
-			{
-				auto it = std::find(m_Nodes[m_StartSnappedNode].roadSegments.begin(), m_Nodes[m_StartSnappedNode].roadSegments.end(), rsIndex);
-				if (it != m_Nodes[m_StartSnappedNode].roadSegments.end())
-					continue;
-			}
-			if (m_EndSnappedNode != -1)
-			{
-				auto it = std::find(m_Nodes[m_EndSnappedNode].roadSegments.begin(), m_Nodes[m_EndSnappedNode].roadSegments.end(), rsIndex);
-				if (it != m_Nodes[m_EndSnappedNode].roadSegments.end())
-					continue;
-			}
-			RoadSegment& rs = m_Segments[rsIndex];
-
-			if (
-				m_Elevationtypes[0] == 0 &&
-				m_Elevationtypes[1] == 0 &&
-				m_Elevationtypes[2] == 0 &&
-				m_Elevationtypes[3] == 0 &&
-				rs.elevation_type == -1)
-				continue;
-
-			f32 halfWidth = rs.type.road_width * 0.5f;
-
-			std::array<std::array<v2, 3>, 2> oldRoadBoundingBox = Math::GetBoundingBoxOfBezierCurve(rs.GetCurvePoints(), halfWidth);
-
-			if (Math::CheckPolygonCollision(box, oldRoadBoundingBox))
-			{
-				if (Math::CheckPolygonCollision(polygon, oldRoadBoundingBox))
-				{
-					std::array<std::array<v2, 3>, (10 - 1) * 2> oldRoadBoundingPolygon = Math::GetBoundingPolygonOfBezierCurve<10, 10>(rs.GetCurvePoints(), halfWidth);
-					if (Math::CheckPolygonCollision(box, oldRoadBoundingPolygon))
-					{
-						if (Math::CheckPolygonCollision(polygon, oldRoadBoundingPolygon))
-						{
-							return true;
-						}
-					}
-				}
-			}
-		}
-		return false;
-	}
-	void RoadManager::CheckRoadBuildingCollision(const std::array<std::array<v2, 3>, 2>& box, const std::array<std::array<v2, 3>, (10 - 1) * 2>& polygon)
-	{
-		for (Building* building : m_Scene->m_BuildingManager.GetBuildings())
-		{
-			Prefab* prefab = building->object->prefab;
-			v2 pos = (v2)building->object->position;
-			f32 rot = building->object->rotation.y;
-			v2 A = Math::RotatePoint((v2)prefab->boundingBoxL, rot) + pos;
-			v2 B = Math::RotatePoint((v2)prefab->boundingBoxL, rot) + pos;
-			v2 C = Math::RotatePoint((v2)prefab->boundingBoxM, rot) + pos;
-			v2 D = Math::RotatePoint((v2)prefab->boundingBoxM, rot) + pos;
-
-			std::array<std::array<v2, 3>, 2> polygonBuilding = {
-				std::array<v2,3>{A, B, D},
-				std::array<v2,3>{A, C, D}
-			};
-			building->object->tintColor = v4(1.0f);
-			if (Math::CheckPolygonCollision(box, polygonBuilding))
-				if (Math::CheckPolygonCollision(polygon, polygonBuilding))
-					building->object->tintColor = v4{ 1.0f, 0.3f, 0.2f, 1.0f };
-		}
-	}
-	void RoadManager::CheckRoadTreeCollision(const std::array<std::array<v2, 3>, 2>& box, const std::array<std::array<v2, 3>, (10 - 1) * 2>& polygon)
-	{
-		for (Object* tree : m_Scene->m_TreeManager.GetTrees())
-		{
-			Prefab* prefab = tree->prefab;
-			v2 pos = (v2)tree->position;
-			f32 rot = tree->rotation.y;
-			v2 A = Math::RotatePoint((v2)(prefab->boundingBoxL * tree->scale), rot) + pos;
-			v2 B = Math::RotatePoint((v2)(prefab->boundingBoxL * tree->scale), rot) + pos;
-			v2 C = Math::RotatePoint((v2)(prefab->boundingBoxM * tree->scale), rot) + pos;
-			v2 D = Math::RotatePoint((v2)(prefab->boundingBoxM * tree->scale), rot) + pos;
-
-			std::array<std::array<v2, 3>, 2> polygonTree = {
-				std::array<v2,3>{A, B, D},
-				std::array<v2,3>{A, C, D}
-			};
-
-			tree->tintColor = v4(1.0f);
-			if (Math::CheckPolygonCollision(box, polygonTree))
-				if (Math::CheckPolygonCollision(polygon, polygonTree))
-					tree->tintColor = v4{ 1.0f, 0.3f, 0.2f, 1.0f };
-		}
 	}
 
 	bool RoadManager::OnMousePressed(MouseCode button)
@@ -1675,90 +1634,52 @@ namespace Can
 
 	u64 RoadManager::AddRoadSegment(const std::array<v3, 4>& curvePoints, s8 elevation_type)
 	{
-		Prefab* selectedRoad = m_Scene->MainApplication->road_types[m_Type].road;
-		f32 roadPrefabWidth = selectedRoad->boundingBoxM.y - selectedRoad->boundingBoxL.y;
-		m_Segments.push_back(RoadSegment(
-			m_Scene->MainApplication->road_types[m_Type],
-			curvePoints,
-			elevation_type
-		));
+		RoadType& type = m_Scene->MainApplication->road_types[m_Type];
+		f32 new_road_width = elevation_type == -1 ? type.tunnel_width : type.road_width;
+		f32 new_road_height = elevation_type == -1 ? type.tunnel_height : type.road_height;
+		f32 new_road_length = elevation_type == -1 ? type.tunnel_length : type.road_length;
+
+		m_Segments.push_back(RoadSegment(type, curvePoints, elevation_type));
 		u64 rsIndex = m_Segments.size() - 1;
 
-		std::array<std::array<v2, 3>, 2> newRoadBoundingBox = Math::GetBoundingBoxOfBezierCurve(curvePoints, roadPrefabWidth * 0.5f);
-		std::array<std::array<v2, 3>, (10 - 1) * 2> newRoadBoundingPolygon = Math::GetBoundingPolygonOfBezierCurve<10, 10>(curvePoints, roadPrefabWidth * 0.5f);
-
-		/* check collisions for End s if not snapped
-		if (m_StartSnappedEnd || m_StartSnappedJunction || m_StartSnappedRoadSegment)
-			least.x = 0.0f;
-		if (m_EndSnappedEnd || m_EndSnappedJunction || m_EndSnappedRoadSegment)
-			most.x = glm::length(AB);*/
+		std::array<v3, 2> new_road_bounding_box = Math::get_bounding_box_from_cubic_bezier_curve(curvePoints, new_road_width * 0.5f, new_road_height);
+		std::vector<std::array<v3, 3>> new_road_bounding_polygon = Math::get_bounding_polygon_from_bezier_curve(curvePoints, new_road_width * 0.5f, new_road_length);
 
 		auto& buildings = m_Scene->m_BuildingManager.GetBuildings();
 		if (m_Scene->m_BuildingManager.restrictions[0] && (restrictionFlags & RESTRICT_COLLISIONS))
+		{
 			for (u64 i = 0; i < buildings.size(); i++)
 			{
 				Building* building = buildings[i];
-
-				Prefab* prefab = building->object->prefab;
-				v2 pos = (v2)building->object->position;
-				f32 rot = building->object->rotation.y;
-				v2 A = Math::RotatePoint((v2)prefab->boundingBoxL, rot) + pos;
-				v2 B = Math::RotatePoint((v2)prefab->boundingBoxL, rot) + pos;
-				v2 C = Math::RotatePoint((v2)prefab->boundingBoxM, rot) + pos;
-				v2 D = Math::RotatePoint((v2)prefab->boundingBoxM, rot) + pos;
-
-				std::array<std::array<v2, 3>, 2> polygonBuilding = {
-					std::array<v2,3>{A, B, D},
-					std::array<v2,3>{A, C, D}
-				};
-
-				building->object->tintColor = v4(1.0f);
-				if (Math::CheckPolygonCollision(newRoadBoundingBox, polygonBuilding))
-					if (Math::CheckPolygonCollision(newRoadBoundingPolygon, polygonBuilding))
+				if (check_road_building_collision(building, new_road_bounding_box, new_road_bounding_polygon))
+				{
+					if (building->connectedRoadSegment)
 					{
-						if (building->connectedRoadSegment)
-						{
-							RoadSegment& rs = m_Segments[building->connectedRoadSegment];
-							auto it = std::find(
-								rs.Buildings.begin(),
-								rs.Buildings.end(),
-								building
-							);
-							rs.Buildings.erase(it);
-						}
-						buildings.erase(buildings.begin() + i);
-						delete building;
-						i--;
+						RoadSegment& rs = m_Segments[building->connectedRoadSegment];
+						auto it = std::find(rs.Buildings.begin(), rs.Buildings.end(), building);
+						rs.Buildings.erase(it);
 					}
+					buildings.erase(buildings.begin() + i);
+					delete building;
+					i--;
+				}
 			}
+		}
 
 		auto& trees = m_Scene->m_TreeManager.GetTrees();
 		if (m_Scene->m_TreeManager.restrictions[0] && (restrictionFlags & RESTRICT_COLLISIONS))
+		{
 			for (u64 i = 0; i < trees.size(); i++)
 			{
 				Object* tree = trees[i];
-				Prefab* prefab = tree->prefab;
-				v2 pos = (v2)tree->position;
-				f32 rot = tree->rotation.y;
-				v2 A = Math::RotatePoint((v2)(prefab->boundingBoxL * tree->scale), rot) + pos;
-				v2 B = Math::RotatePoint((v2)(prefab->boundingBoxL * tree->scale), rot) + pos;
-				v2 C = Math::RotatePoint((v2)(prefab->boundingBoxM * tree->scale), rot) + pos;
-				v2 D = Math::RotatePoint((v2)(prefab->boundingBoxM * tree->scale), rot) + pos;
-
-				std::array<std::array<v2, 3>, 2> polygonTree = {
-					std::array<v2,3>{A, B, D},
-					std::array<v2,3>{A, C, D}
-				};
-
-				tree->tintColor = v4(1.0f);
-				if (Math::CheckPolygonCollision(newRoadBoundingBox, polygonTree))
-					if (Math::CheckPolygonCollision(newRoadBoundingPolygon, polygonTree))
-					{
-						trees.erase(trees.begin() + i);
-						delete tree;
-						i--;
-					}
+				if (check_road_tree_collision(tree, new_road_bounding_box, new_road_bounding_polygon))
+				{
+					trees.erase(trees.begin() + i);
+					delete tree;
+					i--;
+				}
 			}
+		}
 
 		///////////////////
 		if (m_StartSnappedNode != -1)
@@ -2195,7 +2116,7 @@ namespace Can
 		for (u64 i = 0; i < m_Segments.size(); i++)
 		{
 			RoadSegment& segment = m_Segments[i];
-			if (Math::CheckPolygonPointCollision(segment.bounding_box, point))
+			if (Math::CheckPolygonPointCollision(segment.bounding_rect, point))
 			{
 				f32 width = segment.elevation_type == -1 ? segment.type.tunnel_width : segment.type.road_width;
 				f32 snapDist = (min_distance_to_snap + width) * 0.5f;

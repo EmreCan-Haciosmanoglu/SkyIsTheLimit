@@ -44,14 +44,12 @@ namespace Can
 		void DrawStraightGuidelines(const v3& pointA, const v3& pointB, s8 eA, s8 eB);
 		void DrawCurvedGuidelines(const std::array<v3, 4>& curvePoints);
 
-		bool CheckStraightRoadRoadCollision(const std::array<std::array<v2, 3>, 2>& polygon);
-		void CheckStraightRoadBuildingCollision(const std::array<std::array<v2, 3>, 2>& polygon);
-		void CheckStraightRoadTreeCollision(const std::array<std::array<v2, 3>, 2>& polygon);
-
-		// need template
-		bool CheckRoadRoadCollision(const std::array<std::array<v2, 3>, 2>& box, const std::array<std::array<v2, 3>, (10 - 1) * 2>& polygon);
-		void CheckRoadBuildingCollision(const std::array<std::array<v2, 3>, 2>& box, const std::array<std::array<v2, 3>, (10 - 1) * 2>& polygon);
-		void CheckRoadTreeCollision(const std::array<std::array<v2, 3>, 2>& box, const std::array<std::array<v2, 3>, (10 - 1) * 2>& polygon);
+		bool check_road_road_collision(const std::array<v3, 2>& bounding_box, const std::vector<std::array<v3, 3>>& bounding_polygon);
+		bool check_road_building_collision(class Building* building, const std::array<v3, 2>& bounding_box, const std::vector<std::array<v3, 3>>& bounding_polygon);
+		bool check_road_tree_collision(Object* tree, const std::array<v3, 2>& bounding_box, const std::vector<std::array<v3, 3>>& bounding_polygon);
+		
+		void highlight_road_building_collisions(const std::array<v3, 2>& bounding_box, const std::vector<std::array<v3, 3>>& bounding_polygon);
+		void highlight_road_tree_collisions(const std::array<v3, 2>& bounding_box, const std::vector<std::array<v3, 3>>& bounding_polygon);
 
 		bool OnMousePressed(MouseCode button);
 		bool OnMousePressed_Straight();

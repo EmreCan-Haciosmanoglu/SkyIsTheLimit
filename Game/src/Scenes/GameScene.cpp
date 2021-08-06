@@ -24,7 +24,7 @@ namespace Can
 			0.1f,
 			1000.0f,
 			v3{ 2.0f, -3.0f, 5.0f },
-			v3{ 0.0f, -30.0f, 90.0f }
+			v3{ 0.0f, -45.0f, 90.0f }
 		)
 	{
 		m_Terrain->owns_prefab = true;
