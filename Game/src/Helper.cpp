@@ -338,7 +338,7 @@ namespace  Can::Helper
 			tr[2].y *= TERRAIN_SCALE_DOWN;
 
 			f32 margin = 0.01f;
-			f32 val = reset? 0.0f : std::min({ tr[0].z, tr[1].z, tr[2].z }) - margin;
+			f32 val = reset ? 0.0f : std::min({ tr[0].z, tr[1].z, tr[2].z }) - margin;
 
 
 			v3* minvx = &tr[0];
@@ -502,7 +502,7 @@ namespace  Can::Helper
 						vertices[dist_x0 + 32] = 0.0f;
 						vertices[dist_x0 + 42] = 0.0f;
 						vertices[dist_x0 + 52] = 0.0f;
-					}						
+					}
 					if (y > 0)
 					{
 						u64 dist_0y = ((x + 0) + (w - 1) * (y - 1)) * 60;
@@ -594,7 +594,6 @@ namespace  Can::Helper
 		v4 color;
 		v3 normal;
 	};
-
 	Prefab* GetPrefabForTerrain(const std::string& texturePath)
 	{
 		Prefab* terrain = nullptr;
@@ -618,46 +617,48 @@ namespace  Can::Helper
 			{
 				u8 p_x0 = data[((x + 1) + texture_width * (y + 0)) * texture_channels];
 				u8 p_xy = data[((x + 1) + texture_width * (y + 1)) * texture_channels];
+
+				f32 ratio = Math::lerp((x * 1.0f) / terrain_width, 1.0f, 0.5);
 				{
 					terrain_vertices[index].position.x = ((x + 0) / TERRAIN_SCALE_DOWN);
 					terrain_vertices[index].position.y = ((y + 0) / TERRAIN_SCALE_DOWN);
 					terrain_vertices[index].position.z = (p_00 / (255.0f / TEMP));
-					terrain_vertices[index].color = COLOR * ((x*1.0f) / terrain_width);
+					terrain_vertices[index].color = COLOR * ratio;
 					index++;
 				}
 				{
 					terrain_vertices[index].position.x = ((x + 1) / TERRAIN_SCALE_DOWN);
 					terrain_vertices[index].position.y = ((y + 0) / TERRAIN_SCALE_DOWN);
 					terrain_vertices[index].position.z = (p_x0 / (255.0f / TEMP));
-					terrain_vertices[index].color = COLOR * ((x * 1.0f) / terrain_width);
+					terrain_vertices[index].color = COLOR * ratio;
 					index++;
 				}
 				{
 					terrain_vertices[index].position.x = ((x + 1) / TERRAIN_SCALE_DOWN);
 					terrain_vertices[index].position.y = ((y + 1) / TERRAIN_SCALE_DOWN);
 					terrain_vertices[index].position.z = (p_xy / (255.0f / TEMP));
-					terrain_vertices[index].color = COLOR * ((x * 1.0f) / terrain_width);
+					terrain_vertices[index].color = COLOR * ratio;
 					index++;
 				}
 				{
 					terrain_vertices[index].position.x = ((x + 0) / TERRAIN_SCALE_DOWN);
 					terrain_vertices[index].position.y = ((y + 0) / TERRAIN_SCALE_DOWN);
 					terrain_vertices[index].position.z = (p_00 / (255.0f / TEMP));
-					terrain_vertices[index].color = COLOR * ((x * 1.0f) / terrain_width);
+					terrain_vertices[index].color = COLOR * ratio;
 					index++;
 				}
 				{
 					terrain_vertices[index].position.x = ((x + 1) / TERRAIN_SCALE_DOWN);
 					terrain_vertices[index].position.y = ((y + 1) / TERRAIN_SCALE_DOWN);
 					terrain_vertices[index].position.z = (p_xy / (255.0f / TEMP));
-					terrain_vertices[index].color = COLOR * ((x * 1.0f) / terrain_width);
+					terrain_vertices[index].color = COLOR * ratio;
 					index++;
 				}
 				{
 					terrain_vertices[index].position.x = ((x + 0) / TERRAIN_SCALE_DOWN);
 					terrain_vertices[index].position.y = ((y + 1) / TERRAIN_SCALE_DOWN);
 					terrain_vertices[index].position.z = (p_0y / (255.0f / TEMP));
-					terrain_vertices[index].color = COLOR * ((x * 1.0f) / terrain_width);
+					terrain_vertices[index].color = COLOR * ratio;
 					index++;
 				}
 				p_00 = p_x0;
@@ -715,180 +716,6 @@ namespace  Can::Helper
 
 		return terrain;
 	}
-
-	/*Prefab* GetPrefabForTerrainXZY(const std::string& texturePath)
-	{
-#define TEMP_TERRAIN_SHADER "assets/shaders/Cube.glsl"
-
-		std::array<v4, COLOR_COUNT> colors = {
-			v4{ 9.0f / 255.0f, 255.0f / 255.0f, 4.0f / 255.0f, 1.0f },
-			v4{ 25.0f / 255.0f, 93.0f / 255.0f, 24.0f / 255.0f, 1.0f },
-			v4{ 182.0f / 255.0f, 64.0f / 255.0f, 16.0f / 255.0f, 1.0f },
-			v4{ 61.0f / 255.0f, 28.0f / 255.0f, 10.0f / 255.0f, 1.0f },
-			v4{ 112.0f / 255.0f, 217.0f / 255.0f, 238.0f / 255.0f, 1.0f }
-		};
-
-		int width, height, channels;
-		unsigned char* data = stbi_load(texturePath.c_str(), &width, &height, &channels, 0);
-
-		u64 w = width - 1;
-		u64 h = height - 1;
-
-		u64 indexCount = w * h * 2 * 3;
-		u64 vertexCount = indexCount * (3 + 4 + 3);
-		f32* vertices = new f32[vertexCount];
-		u64 terrain_vertex_count = w * h * 2 * 3;
-		TerrainVertices* terrain_vertices = new TerrainVertices[terrain_vertex_count];
-
-		int vertexIndex = 0;
-		for (u64 y = 0; y < h; y++)
-		{
-			for (u64 x = 0; x < w; x++)
-			{
-				unsigned char* p1 = &data[((x + 0) + (width) * (y + 0)) * channels];
-				unsigned char* p2 = &data[((x + 0) + (width) * (y + 1)) * channels];
-				unsigned char* p3 = &data[((x + 1) + (width) * (y + 1)) * channels];
-				unsigned char* p4 = &data[((x + 1) + (width) * (y + 0)) * channels];
-
-				{
-
-					f32 z = (p1[0] / 256.0f) * COLOR_COUNT;
-					u64 heightIndex = (u64)z;
-					vertices[vertexIndex++] = x / TERRAIN_SCALE_DOWN;
-					vertices[vertexIndex++] = z;
-					vertices[vertexIndex++] = -(y / TERRAIN_SCALE_DOWN);
-
-					vertices[vertexIndex++] = colors[heightIndex].r;
-					vertices[vertexIndex++] = colors[heightIndex].g;
-					vertices[vertexIndex++] = colors[heightIndex].b;
-					vertices[vertexIndex++] = colors[heightIndex].a;
-
-					vertexIndex += 3;
-				}
-				{
-					f32 z = (p4[0] / 256.0f) * COLOR_COUNT;
-					u64 heightIndex = (u64)z;
-					vertices[vertexIndex++] = (x + 1) / TERRAIN_SCALE_DOWN;
-					vertices[vertexIndex++] = z;
-					vertices[vertexIndex++] = -(y / TERRAIN_SCALE_DOWN);
-
-					vertices[vertexIndex++] = colors[heightIndex].r;
-					vertices[vertexIndex++] = colors[heightIndex].g;
-					vertices[vertexIndex++] = colors[heightIndex].b;
-					vertices[vertexIndex++] = colors[heightIndex].a;
-
-					vertexIndex += 3;
-				}
-				{
-					f32 z = (p3[0] / 256.0f) * COLOR_COUNT;
-					u64 heightIndex = (u64)z;
-					vertices[vertexIndex++] = (x + 1) / TERRAIN_SCALE_DOWN;
-					vertices[vertexIndex++] = z;
-					vertices[vertexIndex++] = -((y + 1) / TERRAIN_SCALE_DOWN);
-
-					vertices[vertexIndex++] = colors[heightIndex].r;
-					vertices[vertexIndex++] = colors[heightIndex].g;
-					vertices[vertexIndex++] = colors[heightIndex].b;
-					vertices[vertexIndex++] = colors[heightIndex].a;
-
-					vertexIndex += 3;
-				}
-				{
-					f32 z = (p1[0] / 256.0f) * COLOR_COUNT;
-					u64 heightIndex = (u64)z;
-					vertices[vertexIndex++] = x / TERRAIN_SCALE_DOWN;
-					vertices[vertexIndex++] = z;
-					vertices[vertexIndex++] = -(y / TERRAIN_SCALE_DOWN);
-
-					vertices[vertexIndex++] = colors[heightIndex].r;
-					vertices[vertexIndex++] = colors[heightIndex].g;
-					vertices[vertexIndex++] = colors[heightIndex].b;
-					vertices[vertexIndex++] = colors[heightIndex].a;
-
-					vertexIndex += 3;
-				}
-				{
-					f32 z = (p3[0] / 256.0f) * COLOR_COUNT;
-					u64 heightIndex = (u64)z;
-					vertices[vertexIndex++] = (x + 1) / TERRAIN_SCALE_DOWN;
-					vertices[vertexIndex++] = z;
-					vertices[vertexIndex++] = -((y + 1) / TERRAIN_SCALE_DOWN);
-
-					vertices[vertexIndex++] = colors[heightIndex].r;
-					vertices[vertexIndex++] = colors[heightIndex].g;
-					vertices[vertexIndex++] = colors[heightIndex].b;
-					vertices[vertexIndex++] = colors[heightIndex].a;
-
-					vertexIndex += 3;
-				}
-				{
-					f32 z = (p2[0] / 256.0f) * COLOR_COUNT;
-					u64 heightIndex = (u64)z;
-					vertices[vertexIndex++] = x / TERRAIN_SCALE_DOWN;
-					vertices[vertexIndex++] = z;
-					vertices[vertexIndex++] = -((y + 1) / TERRAIN_SCALE_DOWN);
-
-					vertices[vertexIndex++] = colors[heightIndex].r;
-					vertices[vertexIndex++] = colors[heightIndex].g;
-					vertices[vertexIndex++] = colors[heightIndex].b;
-					vertices[vertexIndex++] = colors[heightIndex].a;
-
-					vertexIndex += 3;
-				}
-			}
-		}
-		vertexIndex = 0;
-		for (f32 x = 0; x < w; x++)
-		{
-			for (f32 y = 0; y < h; y++)
-			{
-				v3 a00(vertices[vertexIndex + 0U + 0], vertices[vertexIndex + 0U + 1], vertices[vertexIndex + 0U + 2]);
-				v3 a10(vertices[vertexIndex + 10 + 0], vertices[vertexIndex + 10 + 1], vertices[vertexIndex + 10 + 2]);
-				v3 a11(vertices[vertexIndex + 20 + 0], vertices[vertexIndex + 20 + 1], vertices[vertexIndex + 20 + 2]);
-				v3 a01(vertices[vertexIndex + 50 + 0], vertices[vertexIndex + 50 + 1], vertices[vertexIndex + 50 + 2]);
-
-				v3 u1 = a11 - a00;
-				v3 v1 = a10 - a00;
-
-				v3 u2 = a01 - a00;
-				v3 v2 = a11 - a00;
-
-				v3 norm1 = glm::normalize(glm::cross(v1, u1));
-				v3 norm2 = glm::normalize(glm::cross(v2, u2));
-
-				vertices[vertexIndex + 0 + 7] = norm1.x;
-				vertices[vertexIndex + 0 + 8] = norm1.y;
-				vertices[vertexIndex + 0 + 9] = norm1.z;
-
-				vertices[vertexIndex + 10 + 7] = norm1.x;
-				vertices[vertexIndex + 10 + 8] = norm1.y;
-				vertices[vertexIndex + 10 + 9] = norm1.z;
-
-				vertices[vertexIndex + 20 + 7] = norm1.x;
-				vertices[vertexIndex + 20 + 8] = norm1.y;
-				vertices[vertexIndex + 20 + 9] = norm1.z;
-
-				vertices[vertexIndex + 30 + 7] = norm2.x;
-				vertices[vertexIndex + 30 + 8] = norm2.y;
-				vertices[vertexIndex + 30 + 9] = norm2.z;
-
-				vertices[vertexIndex + 40 + 7] = norm2.x;
-				vertices[vertexIndex + 40 + 8] = norm2.y;
-				vertices[vertexIndex + 40 + 9] = norm2.z;
-
-				vertices[vertexIndex + 50 + 7] = norm2.x;
-				vertices[vertexIndex + 50 + 8] = norm2.y;
-				vertices[vertexIndex + 50 + 9] = norm2.z;
-				vertexIndex += 60;
-			}
-		}
-
-		Prefab* terrainPrefab = new Prefab("", TEMP_TERRAIN_SHADER, "", vertices, indexCount, vertexCount, BufferLayout{ { ShaderDataType::Float3, "a_Position"}, { ShaderDataType::Float4, "a_Color"}, { ShaderDataType::Float3, "a_Normal"} });
-		terrainPrefab->boundingBoxL = { 0.0f, 0.0f, -(height / TERRAIN_SCALE_DOWN) };
-		terrainPrefab->boundingBoxM = { width / TERRAIN_SCALE_DOWN, 1.0f * COLOR_COUNT, 0.0f };
-
-		return terrainPrefab;
-	}*/
 
 	v2 RotateAPointAroundAPoint(const v2& p1, f32 angleInRadians, const v2& p2)
 	{
