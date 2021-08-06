@@ -273,6 +273,10 @@ namespace  Can::Helper
 		return files;
 	}
 
+	void UpdateTheTerrain(GameApp* app, const std::vector<std::array<v3, 3>>& polygon, bool reset)
+	{
+
+	}
 	void UpdateTheTerrain(GameApp* app, RoadSegment* rs, bool reset)
 	{
 		std::vector<RoadNode>& nodes = app->gameScene->m_RoadManager.m_Nodes;
@@ -289,47 +293,15 @@ namespace  Can::Helper
 		u64 w = app->terrainTexture->GetWidth();
 		u64 h = app->terrainTexture->GetHeight();
 
-		v3 least = rs->object->prefab->boundingBoxL;
-		v3 most = rs->object->prefab->boundingBoxM;
-
-		std::vector<v3>& curve_samples = rs->curve_samples;
-		std::array<v3, 4> cps = rs->CurvePoints;
-		f32 halfWidth = rs->type.road_width * 0.5f;
-
-		std::vector<std::array<v3, 3>> boundingPoligon{};
-		v3 p0 = cps[0];
-		v3 p1 = curve_samples[1];
-		v3 d1 = halfWidth * glm::normalize(p1 - p0);
-		d1 = v3{ -d1.y, d1.x, d1.z };
-
-		float Size = curve_samples.size();
-		for (size_t i = 2; i < Size; i++)
-		{
-			v3 p2 = curve_samples[i];
-			v3 d2 = halfWidth * glm::normalize(p2 - p1);
-			d2 = v3{ -d2.y, d2.x, d2.z };
-
-			boundingPoligon.push_back(std::array<v3, 3>{ p0 + d1, p0 - d1, p1 + d2 });
-			boundingPoligon.push_back(std::array<v3, 3>{ p0 - d1, p1 + d2, p1 - d2 });
-
-			p0 = p1;
-			p1 = p2;
-			d1 = d2;
-		}
-		v3 d2 = halfWidth * glm::normalize(p1 - curve_samples[2]);
-		d2 = v3{ -d2.y, d2.x, d2.z };
-		boundingPoligon.push_back(std::array<v3, 3>{ p0 + d1, p0 - d1, p1 + d2 });
-		boundingPoligon.push_back(std::array<v3, 3>{ p0 - d1, p1 + d2, p1 - d2 });
-
 		u64 minX = w - 1;
 		u64 maxX = 0;
 		u64 minY = h - 1;
 		u64 maxY = 0;
 
-		u64 count = boundingPoligon.size();
+		u64 count = rs->bounding_polygon.size();
 		for (u64 index = 0; index < count; index += 1)
 		{
-			std::array<v3, 3> tr = boundingPoligon[index];
+			std::array<v3, 3> tr = rs->bounding_polygon[index];
 			tr[0].x *= TERRAIN_SCALE_DOWN;
 			tr[1].x *= TERRAIN_SCALE_DOWN;
 			tr[2].x *= TERRAIN_SCALE_DOWN;

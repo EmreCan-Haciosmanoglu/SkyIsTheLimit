@@ -252,7 +252,7 @@ namespace Can
 				f32 pitch = glm::acos(std::abs(dir.x)) * ((float)(dir.y < 0.0f) * 2.0f - 1.0f);
 
 
-				car->object->SetTransform(car->position, v3{ 0.0f, pitch, yaw + glm::radians(180.0f) });
+				car->object->SetTransform(car->position, v3{ 0.0f, -pitch, yaw + glm::radians(180.0f) });
 				if (car->t >= 1.0f)
 				{
 					car->inJunction = false;
@@ -349,7 +349,7 @@ namespace Can
 						dir = glm::normalize(v2{ dirR.x, dirR.z });
 						f32 pitch = glm::acos(std::abs(dir.x)) * ((float)(dir.y < 0.0f) * 2.0f - 1.0f);
 
-						car->object->SetTransform(car->position, v3{ 0.0f, pitch, yaw + glm::radians(180.0f) });
+						car->object->SetTransform(car->position, v3{ 0.0f, -pitch, yaw + glm::radians(180.0f) });
 					}
 
 				}
