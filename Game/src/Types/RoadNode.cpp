@@ -77,7 +77,7 @@ namespace Can
 		auto& segments = GameScene::ActiveGameScene->m_RoadManager.m_Segments;
 		auto& nodes = GameScene::ActiveGameScene->m_RoadManager.m_Nodes;
 
-		Helper::UpdateTheTerrain(GameScene::ActiveGameScene->MainApplication, bounding_polygon, true);
+		Helper::UpdateTheTerrain(bounding_polygon, true);
 		bounding_polygon.clear();
 
 		RoadSegment& rs = segments[roadSegments[0]];
@@ -129,7 +129,8 @@ namespace Can
 
 			object->owns_prefab = false;
 
-			Helper::UpdateTheTerrain(GameScene::ActiveGameScene->MainApplication, bounding_polygon, false);
+			if (elevation_type == 0)
+				Helper::UpdateTheTerrain(bounding_polygon, false);
 			return;
 		}
 
@@ -264,6 +265,17 @@ namespace Can
 			if (offsetl > lcp)
 				rs.SetCurvePoint(2 - (u64)(index == rs.StartNode), temp + RoadDir * 0.1f);
 
+			{
+				v3 A = intersection1;
+				v3 B = position;
+				v3 C = intersection2;
+				v3 D = temp - shiftAmount;
+				v3 E = temp + shiftAmount;
+				bounding_polygon.push_back(std::array<v3, 3>{A, B, C});
+				bounding_polygon.push_back(std::array<v3, 3>{A, C, D});
+				bounding_polygon.push_back(std::array<v3, 3>{A, D, E});
+			}
+
 			f32 angle = index == rs.StartNode ? rs.GetStartRotation().y : rs.GetEndRotation().y;
 			for (u64 j = 0; j < prefabIndexCount; j++)
 			{
@@ -343,5 +355,7 @@ namespace Can
 		);
 		object = new Object(newPrefab, position);
 		object->owns_prefab = true;
+		if(elevation_type == 0)
+		Helper::UpdateTheTerrain(bounding_polygon, false);
 	}
 }

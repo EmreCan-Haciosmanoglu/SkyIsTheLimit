@@ -1543,6 +1543,9 @@ namespace Can
 		if (selected_road_segment == -1)
 			return false;
 		RoadSegment& rs = m_Segments[selected_road_segment];
+		if (rs.elevation_type == 0)
+			Helper::UpdateTheTerrain(&rs, true);
+
 		auto& currentType = rs.type;
 		auto& newType = m_Scene->MainApplication->road_types[m_Type];
 		if (newType.road == currentType.road)
@@ -2012,9 +2015,8 @@ namespace Can
 	{
 		RoadSegment& rs = m_Segments[roadSegment];
 
-		GameApp* app = GameScene::ActiveGameScene->MainApplication;
 		if (rs.elevation_type == 0)
-			Helper::UpdateTheTerrain(app, &m_Segments[roadSegment], true);
+			Helper::UpdateTheTerrain(&m_Segments[roadSegment], true);
 
 		for (Building* building : rs.Buildings)
 		{
@@ -2031,6 +2033,7 @@ namespace Can
 		startNode.RemoveRoadSegment(roadSegment);
 		if (startNode.roadSegments.size() == 0)
 		{
+			Helper::UpdateTheTerrain(startNode.bounding_polygon, true);
 			u64 count = m_Segments.size();
 			for (u64 rsIndex = 0; rsIndex < count; rsIndex++)
 			{
@@ -2048,6 +2051,7 @@ namespace Can
 		endNode.RemoveRoadSegment(roadSegment);
 		if (endNode.roadSegments.size() == 0)
 		{
+			Helper::UpdateTheTerrain(endNode.bounding_polygon, true);
 			u64 count = m_Segments.size();
 			for (u64 rsIndex = 0; rsIndex < count; rsIndex++)
 			{

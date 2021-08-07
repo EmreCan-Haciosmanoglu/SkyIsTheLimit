@@ -530,8 +530,9 @@ namespace  Can::Helper
 		return { minX, maxX, minY, maxY };
 	}
 
-	void UpdateTheTerrain(GameApp* app, const std::vector<std::array<v3, 3>>& polygon, bool reset)
+	void UpdateTheTerrain(const std::vector<std::array<v3, 3>>& polygon, bool reset)
 	{
+		GameApp* app = GameScene::ActiveGameScene->MainApplication;
 		float* vertices = app->terrainPrefab->vertices;
 		u64 w = app->terrainTexture->GetWidth();
 		u64 h = app->terrainTexture->GetHeight();
@@ -556,8 +557,9 @@ namespace  Can::Helper
 		app->terrainPrefab->vertexBuffer->Unbind();
 	}
 	
-	void UpdateTheTerrain(GameApp* app, RoadSegment* rs, bool reset)
+	void UpdateTheTerrain( RoadSegment* rs, bool reset)
 	{
+		GameApp* app = GameScene::ActiveGameScene->MainApplication;
 		std::vector<RoadNode>& nodes = app->gameScene->m_RoadManager.m_Nodes;
 		if (rs->StartNode >= nodes.size())
 			return;
@@ -576,14 +578,28 @@ namespace  Can::Helper
 
 		if (start_node_is_tunnel)
 		{
-			v3 AB = rs->bounding_polygon[0][1] - rs->bounding_polygon[0][0];
-			v3 current_point = rs->bounding_polygon[0][0];
+			auto tr = rs->bounding_polygon[0];
+			tr[0].x *= TERRAIN_SCALE_DOWN;
+			tr[1].x *= TERRAIN_SCALE_DOWN;
+			tr[2].x *= TERRAIN_SCALE_DOWN;
+			tr[0].y *= TERRAIN_SCALE_DOWN;
+			tr[1].y *= TERRAIN_SCALE_DOWN;
+			tr[2].y *= TERRAIN_SCALE_DOWN;
+			v3 AB = tr[1] - tr[0];
+			v3 current_point = tr[0];
 			name_me_cutting(w, h, AB, current_point, vertices);
 		}
 		else if (end_node_is_tunnel)
 		{
-			v3 AB = rs->bounding_polygon[rs->bounding_polygon.size() - 1][1] - rs->bounding_polygon[rs->bounding_polygon.size() - 1][2];
-			v3 current_point = rs->bounding_polygon[rs->bounding_polygon.size() - 1][2];
+			auto tr = rs->bounding_polygon[rs->bounding_polygon.size() - 1];
+			tr[0].x *= TERRAIN_SCALE_DOWN;
+			tr[1].x *= TERRAIN_SCALE_DOWN;
+			tr[2].x *= TERRAIN_SCALE_DOWN;
+			tr[0].y *= TERRAIN_SCALE_DOWN;
+			tr[1].y *= TERRAIN_SCALE_DOWN;
+			tr[2].y *= TERRAIN_SCALE_DOWN;
+			v3 AB = tr[1] - tr[2];
+			v3 current_point = tr[2];
 			name_me_cutting(w, h, AB, current_point, vertices);
 		}
 

@@ -213,9 +213,8 @@ namespace Can
 		object = new Object(newPrefab, CurvePoints[0]);
 		object->owns_prefab = true;
 
-		GameApp* app = GameScene::ActiveGameScene->MainApplication;
 		if (elevation_type == 0)
-			Helper::UpdateTheTerrain(app, this, false);
+			Helper::UpdateTheTerrain(this, false);
 	}
 
 	void RoadSegment::CalcRotsAndDirs()
@@ -274,9 +273,8 @@ namespace Can
 	}
 	void RoadSegment::SetCurvePoints(const std::array<v3, 4>& curvePoints)
 	{
-		GameApp* app = GameScene::ActiveGameScene->MainApplication;
 		if (elevation_type == 0)
-			Helper::UpdateTheTerrain(app, this, true);
+			Helper::UpdateTheTerrain(this, true);
 		CurvePoints = curvePoints;
 		CalcRotsAndDirs();
 		ReConstruct();
