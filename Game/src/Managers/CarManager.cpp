@@ -45,16 +45,16 @@ namespace Can
 		for (u64 rsIndex = 0; rsIndex < count; rsIndex++)
 		{
 			RoadSegment& rs = m_Scene->m_RoadManager.m_Segments[rsIndex];
-			float roadWidth = rs.type.road_width;
-			float roadLength = rs.type.road_length;
-			float snapDistance = roadWidth * 0.5f;
+			f32 roadWidth = rs.type.road_width;
+			f32 roadLength = rs.type.road_length;
+			f32 snapDistance = roadWidth * 0.5f;
 
 			const std::array<v3, 4>& vs = rs.GetCurvePoints();
 			std::array<std::array<v2, 3>, 2> roadPolygon = Math::GetBoundingBoxOfBezierCurve(vs, snapDistance);
 
-			if (Math::CheckPolygonPointCollision(roadPolygon, v2{ prevLocation.x, prevLocation.z }))
+			if (Math::CheckPolygonPointCollision(roadPolygon, (v2)prevLocation))
 			{
-				std::vector<float> ts{ 0.0f };
+				std::vector<f32> ts{ 0.0f };
 				std::vector<v3> ps = Math::GetCubicCurveSamples(vs, roadLength, ts);
 				u64 size = ps.size();
 				v3 p0 = ps[0];
@@ -62,26 +62,27 @@ namespace Can
 				{
 					v3 p1 = ps[i];
 					v3 dirToP1 = p1 - p0;
-					dirToP1.y = 0.0f;
+					dirToP1.z = 0.0f;
 					dirToP1 = glm::normalize(dirToP1);
 
 					v3 dirToPrev = prevLocation - p0;
-					float l1 = glm::length(dirToPrev);
+					dirToPrev.z = 0.0f;
+					f32 l1 = glm::length(dirToPrev);
 
-					float angle = glm::acos(glm::dot(dirToP1, dirToPrev) / l1);
-					float dist = l1 * glm::sin(angle);
+					f32 angle = glm::acos(glm::dot(dirToP1, dirToPrev) / l1);
+					f32 dist = l1 * glm::sin(angle);
 
 					if (dist < snapDistance)
 					{
-						float c = l1 * glm::cos(angle);
+						f32 c = l1 * glm::cos(angle);
 						if (c >= -0.5f * roadLength && c <= 1.5f * roadLength) // needs lil' bit more length to each directions
 						{
 							prevLocation = rs.GetStartPosition();
 							m_SnappedRoadSegment = rsIndex;
 							v3 r{
 								0.0f,
-								rs.GetStartRotation().y + glm::radians(180.f),
-								rs.GetStartRotation().x
+								rs.GetStartRotation().x,
+								rs.GetStartRotation().y + glm::radians(180.f)
 							};
 							m_Guideline->SetTransform(prevLocation, r);
 							goto snapped;
@@ -140,8 +141,8 @@ namespace Can
 		if (m_SnappedRoadSegment != -1)
 		{
 			auto& segments = m_Scene->m_RoadManager.m_Segments;
-			std::vector<float> ts{ 0 };
-			float lengthRoad = m_Scene->MainApplication->cars[m_Type]->boundingBoxM.x - m_Scene->MainApplication->cars[m_Type]->boundingBoxL.x;
+			std::vector<f32> ts{ 0 };
+			f32 lengthRoad = m_Scene->MainApplication->cars[m_Type]->boundingBoxM.x - m_Scene->MainApplication->cars[m_Type]->boundingBoxL.x;
 			std::vector<v3> samples = Math::GetCubicCurveSamples(segments[m_SnappedRoadSegment].GetCurvePoints(), lengthRoad, ts);
 			v3 targeT = samples[1];
 			Car* car = new Car(

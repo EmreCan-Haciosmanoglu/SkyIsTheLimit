@@ -10,9 +10,10 @@
 
 namespace Can
 {
-	RoadNode::RoadNode(const std::vector<u64>& roadSegments, const v3& position)
+	RoadNode::RoadNode(const std::vector<u64>& roadSegments, const v3& position, u8 elevation_type)
 		: roadSegments(roadSegments)
 		, position(position)
+		, elevation_type(elevation_type)
 	{
 		Reconstruct();
 	}
@@ -21,6 +22,8 @@ namespace Can
 		, roadSegments(other.roadSegments)
 		, position(other.position)
 		, index(other.index)
+		, elevation_type(other.elevation_type)
+		, bounding_polygon(other.bounding_polygon)
 	{
 		other.roadSegments.clear();
 		other.object = nullptr;
@@ -39,8 +42,11 @@ namespace Can
 		roadSegments = other.roadSegments;
 		position = other.position;
 		index = other.index;
+		elevation_type = other.elevation_type;
+		bounding_polygon = other.bounding_polygon;
 
 		other.roadSegments.clear();
+		other.bounding_polygon.clear();
 		other.object = nullptr;
 		return *this;
 	}
@@ -71,35 +77,60 @@ namespace Can
 		auto& segments = GameScene::ActiveGameScene->m_RoadManager.m_Segments;
 		auto& nodes = GameScene::ActiveGameScene->m_RoadManager.m_Nodes;
 
+		Helper::UpdateTheTerrain(bounding_polygon, true);
+		bounding_polygon.clear();
+
 		RoadSegment& rs = segments[roadSegments[0]];
 		if (roadSegments.size() == 1)
 		{
 			v3 rotation = v3(0.0f);
 			bool isStartNode = index == rs.StartNode;
+
 			if (isStartNode)
 			{
 				rs.SetStartPosition(position);
-				rotation = { 0.0f,
-					rs.GetStartRotation().y + glm::radians(180.0f),
-					rs.GetStartRotation().x
+				rotation = {
+					0.0f,
+					0.0f, //-rs.GetStartRotation().x,
+					rs.GetStartRotation().y + glm::radians(180.0f)
 				};
 			}
 			else
 			{
 				rs.SetEndPosition(position);
-				rotation = { 0.0f,
-					rs.GetEndRotation().y + glm::radians(180.0f),
-					rs.GetEndRotation().x
+				rotation = {
+					0.0f,
+					0.0f, //-rs.GetEndRotation().x,
+					rs.GetEndRotation().y + glm::radians(180.0f)
 				};
 			}
+			Prefab* prefab =
+				rs.elevation_type == -1 ? (rs.type.asymmetric && isStartNode ? rs.type.tunnel_end_mirror : rs.type.tunnel_end) :
+				rs.elevation_type == 0 ? (rs.type.asymmetric && isStartNode ? rs.type.road_end_mirror : rs.type.road_end) : nullptr;
 
-			object = new Object(
-				rs.type.asymmetric && isStartNode ? rs.type.end_mirror : rs.type.end,
-				position,
-				rotation
-			);
+			object = new Object(prefab, position, rotation);
+			v3 A = prefab->boundingBoxL;
+			v3 B = prefab->boundingBoxL;
+			v3 C = prefab->boundingBoxL;
+			v3 D = prefab->boundingBoxM;
+			B.y = D.y;
+			C.x = D.x;
+			D.z = A.z;
+
+			A = glm::rotateZ(A, rotation.z) + position;
+			B = glm::rotateZ(B, rotation.z) + position;
+			C = glm::rotateZ(C, rotation.z) + position;
+			D = glm::rotateZ(D, rotation.z) + position;
+
+			bounding_polygon = {
+				std::array<v3, 3>{ A, B, C},
+				std::array<v3, 3>{ B, C, D}
+			};
 
 			object->owns_prefab = false;
+
+			if (elevation_type == 0)
+				Helper::UpdateTheTerrain(bounding_polygon, false);
 			return;
 		}
 
@@ -117,42 +148,46 @@ namespace Can
 
 			v3 r1Dir = index == rs1.StartNode ? rs1.GetStartDirection() : rs1.GetEndDirection();
 			v3 r2Dir = index == rs2.StartNode ? rs2.GetStartDirection() : rs2.GetEndDirection();
-			r1Dir.y = 0.0f;
-			r2Dir.y = 0.0f;
 
-			v3 shiftR1Dir = glm::normalize(v3{ +r1Dir.z, 0.0f, -r1Dir.x });
-			v3 shiftR2Dir = glm::normalize(v3{ -r2Dir.z, 0.0f, +r2Dir.x });
+			v3 shiftR1Dir = glm::normalize(v3{ -r1Dir.y, +r1Dir.x, 0.0f });
+			v3 shiftR2Dir = glm::normalize(v3{ +r2Dir.y, -r2Dir.x, 0.0f });
 
 			v3 shiftR1Amount = shiftR1Dir * (rs1.type.road_width * 0.5f);
 			v3 shiftR2Amount = shiftR2Dir * (rs2.type.road_width * 0.5f);
 
-			f32 angleDiff = glm::acos(std::min(glm::dot(shiftR1Dir, shiftR2Dir), 1.0f));
+			f32 dot_product = glm::dot(shiftR1Dir, shiftR2Dir);
+			f32 len_product = glm::length(shiftR1Dir) * glm::length(shiftR2Dir);
+			f32 cos_value = dot_product / len_product;
+			f32 minned_maxxed = std::max(-1.0f, std::min(cos_value, 1.0f));
+			f32 angleDiff = glm::acos(minned_maxxed);
 			if (angleDiff < glm::radians(2.5f) || angleDiff > glm::radians(177.5f))
 			{
-				Intersections[i].x = position.x + shiftR1Amount.x;
-				Intersections[i].z = position.z + shiftR1Amount.z;
+				Intersections[i] = position + shiftR1Amount;
 			}
 			else
 			{
-				v3 intersection = Helper::RayPlaneIntersection(
+				Intersections[i] = Helper::RayPlaneIntersection(
 					position + shiftR1Amount,
 					r1Dir,
 					position + shiftR2Amount,
 					shiftR2Dir);
-
-				Intersections[i].x = intersection.x;
-				Intersections[i].z = intersection.z;
 			}
+			if (isnan(Intersections[i].x) || isinf(Intersections[i].x))
+				std::cout << "";
 		}
 
+		bool isTunnel = elevation_type == -1;
 		u64 indexCount = 0;
-		//Prefab* junction_prefab = 
 		for (u64 i = 0; i < count; i++)
 		{
 			const RoadSegment& rs = segments[roadSegments[i]];
 			bool asym = rs.type.asymmetric;
 			bool isStartNode = index == rs.StartNode;
-			indexCount += (asym && !isStartNode ? rs.type.junction_mirror : rs.type.junction)->indexCount;
+			bool isFromGround = rs.elevation_type == 0;
+			indexCount += (isTunnel ?
+				(asym && !isStartNode ? rs.type.tunnel_junction_mirror : rs.type.tunnel_junction) :
+				(asym && !isStartNode ? rs.type.road_junction_mirror : rs.type.road_junction))->indexCount;
+			indexCount += isTunnel && isFromGround ? rs.type.tunnel_entrance->indexCount : 0U;
 		}
 
 		TexturedObjectVertex* TOVertices = new TexturedObjectVertex[indexCount];
@@ -166,11 +201,24 @@ namespace Can
 			RoadSegment& rs = segments[roadSegments[i]];
 			bool asym = rs.type.asymmetric;
 			bool isStartNode = index == rs.StartNode;
-			Prefab* prefab = asym && !isStartNode ? rs.type.junction_mirror : rs.type.junction;
+			bool isFromGround = rs.elevation_type == 0;
+			Prefab* prefab = nullptr;
+			f32 halfWidth = 0.0f;
+			f32 junction_length = 0.0f;
+			if (isTunnel)
+			{
+				halfWidth = rs.type.tunnel_width * 0.5f;
+				junction_length = rs.type.tunnel_junction_length;
+				prefab = asym && !isStartNode ? rs.type.tunnel_junction_mirror : rs.type.tunnel_junction;
+			}
+			else
+			{
+				halfWidth = rs.type.road_width * 0.5f;
+				junction_length = rs.type.road_junction_length;
+				prefab = asym && !isStartNode ? rs.type.road_junction_mirror : rs.type.road_junction;
+			}
 			f32* prefabVertices = prefab->vertices;
 			u64 prefabIndexCount = prefab->indexCount;
-			f32 halfWidth = rs.type.road_width * 0.5f;
-			f32 junction_length = rs.type.junction_length;
 
 
 			f32 textureIndex = -1.0f;
@@ -194,10 +242,10 @@ namespace Can
 
 			v3 RoadPos = index == rs.StartNode ? rs.GetCurvePoint(1) : rs.GetCurvePoint(2);
 			v3 RoadDir = index == rs.StartNode ? rs.GetStartDirection() : rs.GetEndDirection();
-			RoadDir.y = 0.0f;
+			RoadDir.z = 0.0f;
 			RoadDir = glm::normalize(RoadDir);
 
-			v3 shiftAmount{ +RoadDir.z * halfWidth, 0.0f, -RoadDir.x * halfWidth };
+			v3 shiftAmount{ -RoadDir.y * halfWidth, +RoadDir.x * halfWidth, 0.0f };
 
 			v3 rp = RoadPos + shiftAmount;
 			v3 rn = RoadPos - shiftAmount;
@@ -207,13 +255,8 @@ namespace Can
 
 			f32 ljp = glm::length(rp - jp) - glm::length(rp - intersection1);
 			f32 ljn = glm::length(rn - jn) - glm::length(rn - intersection2);
-			//f32 ljp = glm::length(rp - intersection1);
-			//f32 ljn = glm::length(rn - intersection2);
 
 			f32 l = ljn > ljp ? ljn : ljp;
-			//f32 l = std::max(ljn, ljp);
-			//f32 l = ljn < ljp ? ljn : ljp;
-			//f32 l = std::min(ljn, ljp);
 
 			f32 offsetl = l + junction_length;
 			v3 temp = position + RoadDir * offsetl;
@@ -222,44 +265,88 @@ namespace Can
 			if (offsetl > lcp)
 				rs.SetCurvePoint(2 - (u64)(index == rs.StartNode), temp + RoadDir * 0.1f);
 
+			{
+				v3 A = intersection1;
+				v3 B = position;
+				v3 C = intersection2;
+				v3 D = temp - shiftAmount;
+				v3 E = temp + shiftAmount;
+				bounding_polygon.push_back(std::array<v3, 3>{A, B, C});
+				bounding_polygon.push_back(std::array<v3, 3>{A, C, D});
+				bounding_polygon.push_back(std::array<v3, 3>{A, D, E});
+			}
+
 			f32 angle = index == rs.StartNode ? rs.GetStartRotation().y : rs.GetEndRotation().y;
 			for (u64 j = 0; j < prefabIndexCount; j++)
 			{
 				u64 index = j * oneVertexSize;
 				v2 point{
 					prefabVertices[index + 0],
-					prefabVertices[index + 2]
+					prefabVertices[index + 1]
 				};
 				if (point.x < 0.001f)
 				{
 					f32 percent = std::abs(point.y / halfWidth);
 					if (point.y < 0.001f)
-						point.x += percent * ljp;
-					else if (point.y > 0.001f)
 						point.x += percent * ljn;
+					else if (point.y > 0.001f)
+						point.x += percent * ljp;
 				}
 				else
 				{
 					point.x += l;
 				}
 
-				v2 rotatedPoint = Math::RotatePoint(point, -angle);
+				v2 rotatedPoint = Math::RotatePoint(point, angle);
 
 				TOVertices[offset + j].Position.x = rotatedPoint.x;
-				TOVertices[offset + j].Position.y = prefabVertices[index + 1];
-				TOVertices[offset + j].Position.z = rotatedPoint.y;
+				TOVertices[offset + j].Position.y = rotatedPoint.y;
+				TOVertices[offset + j].Position.z = prefabVertices[index + 2];
 				TOVertices[offset + j].UV.x = prefabVertices[index + 3];
 				TOVertices[offset + j].UV.y = prefabVertices[index + 4];
 				TOVertices[offset + j].Normal.x = prefabVertices[index + 5];
-				TOVertices[offset + j].Normal.x = prefabVertices[index + 6];
-				TOVertices[offset + j].Normal.x = prefabVertices[index + 7];
+				TOVertices[offset + j].Normal.y = prefabVertices[index + 6];
+				TOVertices[offset + j].Normal.z = prefabVertices[index + 7];
 				TOVertices[offset + j].TextureIndex = textureIndex;
 			}
 			offset += prefabIndexCount;
+			if (isTunnel && isFromGround)
+			{
+				Prefab* tunnel_entrance = asym && !isStartNode ? rs.type.tunnel_entrance_mirror : rs.type.tunnel_entrance;
+				TexturedObjectVertex* verts = (TexturedObjectVertex*)(tunnel_entrance->vertices);
+				textureIndex = -1.0f;
+				for (uint8_t i = 0; i < textureSlotIndex; i++)
+				{
+					if (*(textures[i].get()) == *(tunnel_entrance->textures[0].get()))
+					{
+						textureIndex = i;
+						break;
+					}
+				}
+				if (textureIndex == -1.0f)
+				{
+					textureIndex = (f32)textureSlotIndex;
+					textures[textureSlotIndex] = tunnel_entrance->textures[0];
+					textureSlotIndex++;
+				}
+				for (u64 j = 0; j < tunnel_entrance->indexCount; j++)
+				{
+					v3 point = verts[j].Position;
+					point.x += junction_length;
+					point = glm::rotateZ(point, angle);
+
+					TOVertices[offset + j].Position = point;
+					TOVertices[offset + j].UV = verts[j].UV;
+					TOVertices[offset + j].Normal = verts[j].Normal;
+					TOVertices[offset + j].TextureIndex = textureIndex;
+				}
+				offset += tunnel_entrance->indexCount;
+			}
 		}
+
 		Prefab* newPrefab = new Prefab(
 			"",
-			segments[roadSegments[0]].type.junction->shaderPath, // we may have different shaders in the future
+			segments[roadSegments[0]].type.road_junction->shaderPath, // we may have different shaders in the future
 			textures,
 			textureSlotIndex,
 			(f32*)TOVertices,
@@ -268,5 +355,7 @@ namespace Can
 		);
 		object = new Object(newPrefab, position);
 		object->owns_prefab = true;
+		if(elevation_type == 0)
+		Helper::UpdateTheTerrain(bounding_polygon, false);
 	}
 }

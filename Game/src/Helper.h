@@ -9,34 +9,39 @@ namespace Can::Helper
 #define TERRAIN_SCALE_DOWN 10.0f
 #define COLOR_COUNT 5
 
-	bool CheckBoundingBoxHit(const glm::vec3& rayStartPoint, const glm::vec3& ray, const glm::vec3& least, const glm::vec3& most);
+	bool CheckBoundingBoxHit(const v3& rayStartPoint, const v3& ray, const v3& least, const v3& most);
 
-	glm::vec2 CheckRotatedRectangleCollision(
-		const glm::vec2& r1l,
-		const glm::vec2& r1m,
-		float rot1,
-		const glm::vec2& pos1,
-		const glm::vec2& r2l,
-		const glm::vec2& r2m,
-		float rot2,
-		const glm::vec2& pos2
+	v2 CheckRotatedRectangleCollision(
+		const v2& r1l,
+		const v2& r1m,
+		f32 rot1,
+		const v2& pos1,
+		const v2& r2l,
+		const v2& r2m,
+		f32 rot2,
+		const v2& pos2
 	);
 
-	glm::vec3 GetRayHitPointOnTerrain(void* s, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection);
+	v3 GetRayHitPointOnTerrain(void* s, const v3& cameraPosition, const v3& cameraDirection);
 
-	glm::vec3 RayPlaneIntersection(const glm::vec3& X, const glm::vec3& v, const glm::vec3& C, const glm::vec3& n);
+	v3 RayPlaneIntersection(const v3& X, const v3& v, const v3& C, const v3& n);
 
-	float DistanceBetweenLineSLineS(glm::vec2 p1, glm::vec2 p2, glm::vec2 p3, glm::vec2 p4);
+	f32 DistanceBetweenLineSLineS(v2 p1, v2 p2, v2 p3, v2 p4);
 
-	bool RayTriangleIntersection(const glm::vec3& camPos, const glm::vec3& ray, const glm::vec3& A, const glm::vec3& B, const glm::vec3& C, const glm::vec3& normal, glm::vec3& intersection);
+	bool RayTriangleIntersection(const v3& camPos, const v3& ray, const v3& A, const v3& B, const v3& C, const v3& normal, v3& intersection);
 
-	glm::vec2 RotateAPointAroundAPoint(const glm::vec2& p1, float angleInRadians, const glm::vec2& p2 = { 0.0f, 0.0f });
+	v2 RotateAPointAroundAPoint(const v2& p1, f32 angleInRadians, const v2& p2 = { 0.0f, 0.0f });
 
-	void LevelTheTerrain(const glm::vec2& startIndex, const glm::vec2& endIndex, const glm::vec3& startCoord, const glm::vec3& endCoord, Object* terrain, float width);
+	void UpdateTheTerrain(const std::vector < std::array<v3, 3>>& polygon, bool reset);
+	void UpdateTheTerrain(RoadSegment* rs, bool reset);
 
 	Prefab* GetPrefabForTerrain(const std::string& texturePath);
 
 	std::vector<std::string> GetFiles(const std::string& folder, const std::string& filter, const std::string& fileType);
+
+	void name_me_normals(u64 w, u64 h, u64 min_x, u64 max_x, u64 min_y, u64 max_y, f32* vertices);
+	void name_me_cutting(u64 w, u64 h, v3 AB, v3 current_point, f32* vertices);
+	std::array<u64, 4> name_me_digging(u64 w, u64 h, const std::vector<std::array<v3, 3>>& polygon, f32* vertices, bool reset);
 
 	struct sort_by_angle
 	{
@@ -45,8 +50,8 @@ namespace Can::Helper
 			auto& segments = GameScene::ActiveGameScene->m_RoadManager.m_Segments;
 			RoadSegment& rs1 = segments[roadSegment1];
 			RoadSegment& rs2 = segments[roadSegment2];
-			float roadSegmentR1 = 0.002f;
-			float roadSegmentR2 = 0.001f;
+			f32 roadSegmentR1 = 0.002f;
+			f32 roadSegmentR2 = 0.001f;
 			if (rs1.EndNode == rs2.EndNode)
 			{
 				roadSegmentR1 = rs1.GetEndRotation().y;

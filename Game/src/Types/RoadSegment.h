@@ -7,10 +7,8 @@
 namespace Can
 {
 	class Car;
-	class Prefab;
 	class Object;
 	class Building;
-	class RoadSegment;
 	class RoadNode;
 
 	class RoadSegment
@@ -18,7 +16,8 @@ namespace Can
 	public:
 		RoadSegment(
 			const RoadType& type,
-			const std::array<glm::vec3, 4>& curvePoints
+			const std::array<v3, 4>& curvePoints,
+			s8 elevation_type
 		);
 		RoadSegment(RoadSegment&& other);
 		~RoadSegment();
@@ -29,23 +28,24 @@ namespace Can
 		void ReConstruct();
 		void SetType(const RoadType& type) { this->type = type; ReConstruct(); }
 
-		inline const std::array<glm::vec3, 4>& GetCurvePoints() const { return CurvePoints; }
-		inline const glm::vec3& GetCurvePoint(size_t index) const { return CurvePoints[index]; }
-		inline glm::vec3 GetCurvePoint(size_t index) { return CurvePoints[index]; }
+		inline const std::array<v3, 4>& GetCurvePoints() const { return CurvePoints; }
+		inline const v3& GetCurvePoint(size_t index) const { return CurvePoints[index]; }
+		inline v3 GetCurvePoint(size_t index) { return CurvePoints[index]; }
 
-		inline const glm::vec3& GetStartPosition() const { return CurvePoints[0]; }
-		inline const glm::vec3& GetEndPosition() const { return CurvePoints[3]; }
+		inline const v3& GetStartPosition() const { return CurvePoints[0]; }
+		inline void SetStartPosition(const v3& position) { SetCurvePoint(0, position); }
 
-		void SetStartPosition(const glm::vec3& position);
-		void SetEndPosition(const glm::vec3& position);
-		void SetCurvePoints(const std::array<glm::vec3, 4>& curvePoints);
-		void SetCurvePoint(size_t index, const glm::vec3& curvePoint);
+		inline const v3& GetEndPosition() const { return CurvePoints[3]; }
+		inline void SetEndPosition(const v3& position) { SetCurvePoint(3, position); }
 
-		inline const glm::vec2& GetStartRotation() const { return Rotations[0]; }
-		inline const glm::vec2& GetEndRotation() const { return Rotations[1]; }
+		void SetCurvePoints(const std::array<v3, 4>& curvePoints);
+		void SetCurvePoint(u64 index, const v3& curvePoint);
 
-		inline const glm::vec3& GetStartDirection() const { return Directions[0]; }
-		inline const glm::vec3& GetEndDirection() const { return Directions[1]; }
+		inline const v2& GetStartRotation() const { return Rotations[0]; }
+		inline const v2& GetEndRotation() const { return Rotations[1]; }
+
+		inline const v3& GetStartDirection() const { return Directions[0]; }
+		inline const v3& GetEndDirection() const { return Directions[1]; }
 
 	private:
 		void Construct();
@@ -59,19 +59,27 @@ namespace Can
 		u64 StartNode = (u64)-1;
 		u64 EndNode = (u64)-1;
 
-		std::vector<glm::vec3> curve_samples{};
+		std::vector<v3> curve_samples{};
 		std::vector<float> curve_t_samples{};
 
 		Object* object = nullptr;
 
-		std::array<glm::vec3, 4> CurvePoints;
-		std::array<std::array<glm::vec2, 3>, 2> bounding_box{};
+		std::array<v3, 4> CurvePoints;
+		std::array<std::array<v2, 3>, 2> bounding_rect{};
+		std::vector<std::array<v3, 3>> bounding_polygon{};
+
+		// better name
+		s8 elevation_type = 0;
+		// -1 tunnel
+		// +0 ground
+		// +1 bridge
+
 	private:
 
-		std::array<glm::vec3, 2> Directions;
-		std::array<glm::vec2, 2> Rotations{
-			glm::vec2(0.0f),
-			glm::vec2(0.0f)
+		std::array<v3, 2> Directions;
+		std::array<v2, 2> Rotations{
+			v2(0.0f),
+			v2(0.0f)
 		};
-};
+	};
 }

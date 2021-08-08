@@ -25,6 +25,7 @@ namespace Can
 		s64 segment = -1;
 		s64 node = -1;
 		f32 T = 0.0f;
+		s8 elevation_type = 0;
 	};
 
 	class RoadManager
@@ -33,24 +34,22 @@ namespace Can
 		RoadManager(GameScene* scene);
 		~RoadManager();
 
-		void OnUpdate(v3& prevLocation, const v3& cameraPosition, const v3& cameraDirection);
-		void OnUpdate_Straight(v3& prevLocation, const v3& cameraPosition, const v3& cameraDirection);
-		void OnUpdate_QuadraticCurve(v3& prevLocation, const v3& cameraPosition, const v3& cameraDirection);
-		void OnUpdate_CubicCurve(v3& prevLocation, const v3& cameraPosition, const v3& cameraDirection);
-		void OnUpdate_Change(v3& prevLocation, const v3& cameraPosition, const v3& cameraDirection);
-		void OnUpdate_Destruction(v3& prevLocation, const v3& cameraPosition, const v3& cameraDirection);
+		void OnUpdate(v3& prevLocation, f32 ts);
+		void OnUpdate_Straight(v3& prevLocation, f32 ts);
+		void OnUpdate_QuadraticCurve(v3& prevLocation, f32 ts);
+		void OnUpdate_CubicCurve(v3& prevLocation, f32 ts);
+		void OnUpdate_Change(v3& prevLocation, f32 ts);
+		void OnUpdate_Destruction(v3& prevLocatio, f32 ts);
 
-		void DrawStraightGuidelines(const v3& pointA, const v3& pointB);
+		void DrawStraightGuidelines(const v3& pointA, const v3& pointB, s8 eA, s8 eB);
 		void DrawCurvedGuidelines(const std::array<v3, 4>& curvePoints);
 
-		bool CheckStraightRoadRoadCollision(const std::array<std::array<v2, 3>, 2>& polygon);
-		void CheckStraightRoadBuildingCollision(const std::array<std::array<v2, 3>, 2>& polygon);
-		void CheckStraightRoadTreeCollision(const std::array<std::array<v2, 3>, 2>& polygon);
-
-		// need template
-		bool CheckRoadRoadCollision(const std::array<std::array<v2, 3>, 2>& box, const std::array<std::array<v2, 3>, (10 - 1) * 2>& polygon);
-		void CheckRoadBuildingCollision(const std::array<std::array<v2, 3>, 2>& box, const std::array<std::array<v2, 3>, (10 - 1) * 2>& polygon);
-		void CheckRoadTreeCollision(const std::array<std::array<v2, 3>, 2>& box, const std::array<std::array<v2, 3>, (10 - 1) * 2>& polygon);
+		bool check_road_road_collision(const std::array<v3, 2>& bounding_box, const std::vector<std::array<v3, 3>>& bounding_polygon);
+		bool check_road_building_collision(class Building* building, const std::array<v3, 2>& bounding_box, const std::vector<std::array<v3, 3>>& bounding_polygon);
+		bool check_road_tree_collision(Object* tree, const std::array<v3, 2>& bounding_box, const std::vector<std::array<v3, 3>>& bounding_polygon);
+		
+		void highlight_road_building_collisions(const std::array<v3, 2>& bounding_box, const std::vector<std::array<v3, 3>>& bounding_polygon);
+		void highlight_road_tree_collisions(const std::array<v3, 2>& bounding_box, const std::vector<std::array<v3, 3>>& bounding_polygon);
 
 		bool OnMousePressed(MouseCode button);
 		bool OnMousePressed_Straight();
@@ -70,7 +69,7 @@ namespace Can
 		//inline const std::vector<RoadSegment*>& GetRoadSegments() const { return m_RoadSegments; }
 		//inline std::vector<RoadSegment*>& GetRoadSegments() { return m_RoadSegments; }
 
-		void AddRoadSegment(const std::array<v3, 4>& curvePoints);
+		u64 AddRoadSegment(const std::array<v3, 4>& curvePoints, s8 elevation_type);
 		void RemoveRoadSegment(u64 roadSIndex);
 
 		SnapInformation CheckSnapping(const v3& prevLocation);
@@ -82,16 +81,16 @@ namespace Can
 		void SnapToHeight(const std::vector<u8>& indices, u8 index, v3& AB);
 		void SnapToAngle(v3& AB, s64 snappedNode, s64 snappedRoadSegment, f32 snappedT);
 		void ResetGuideLines();
-		bool RestrictSmallAngles(v3 direction, s64 snappedNode, s64 snappedRoadSegment, f32 snappedT);
+		bool RestrictSmallAngles(v2 direction, s64 snappedNode, s64 snappedRoadSegment, f32 snappedT);
 
 	public:
 
 		u8 snapFlags = 0b01001;
-#define SNAP_TO_ROAD    0x01
-#define SNAP_TO_LENGTH  0x02
-#define SNAP_TO_HEIGHT  0x04
-#define SNAP_TO_ANGLE   0x08
-#define SNAP_TO_GRID    0x10
+#define SNAP_TO_ROAD   0b00001
+#define SNAP_TO_LENGTH 0b00010
+#define SNAP_TO_HEIGHT 0b00100
+#define SNAP_TO_ANGLE  0b01000
+#define SNAP_TO_GRID   0b10000
 
 		u8 restrictionFlags = 0b111;
 #define RESTRICT_SMALL_ANGLES 0x1
@@ -116,6 +115,11 @@ namespace Can
 			v3(0.0f)
 		};
 
+		std::array<s8, 4> m_Elevationtypes = { 0, 0, 0, 0 };
+
+		std::array<f32, 4> m_Elevations = { 0.0f, 0.0f, 0.0f, 0.0f };
+		f32 m_CurrentElevation = 0.0f;
+
 		// Start Snap
 		bool b_ConstructionStartSnapped = false;
 		s64 m_StartSnappedSegment = -1;
@@ -136,10 +140,16 @@ namespace Can
 		s64 selected_road_segment = -1;
 		s64 selected_road_node = -1;
 
-		std::vector<std::vector<Object*>> m_Guidelines{};
-		std::vector<u64> m_GuidelinesInUse{};
-		Object* m_GuidelinesStart = nullptr;
-		Object* m_GuidelinesEnd = nullptr;
+		std::vector<std::vector<Object*>> m_GroundGuidelines{};
+		std::vector<std::vector<Object*>> m_TunnelGuidelines{};
+		std::vector<u64> m_GroundGuidelinesInUse{};
+		std::vector<u64> m_TunnelGuidelinesInUse{};
+
+		Object* m_GroundGuidelinesStart = nullptr;
+		Object* m_GroundGuidelinesEnd = nullptr;
+
+		Object* m_TunnelGuidelinesStart = nullptr;
+		Object* m_TunnelGuidelinesEnd = nullptr;
 
 		bool b_ConstructionRestricted = false;
 

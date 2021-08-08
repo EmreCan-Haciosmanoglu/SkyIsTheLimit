@@ -30,6 +30,10 @@ namespace Can
 		if (!is_open)
 			return;
 
+		ImGui::Begin("DeleteMe");
+		ImGui::Text("Elevation: %f", roadManager->m_CurrentElevation);
+		ImGui::End();
+
 		ImGui::Begin("Debug");
 
 		ImGui::Text("Construction Type");

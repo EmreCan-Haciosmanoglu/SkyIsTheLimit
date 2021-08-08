@@ -25,6 +25,8 @@ namespace Can
 
 	public:
 		Prefab* terrainPrefab;
+		Ref<Texture2D> terrainTexture;
+
 		Ref<Texture2D> treeMap;
 		
 		Ref<Texture2D> addTexture;				// Put better name
