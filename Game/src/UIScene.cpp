@@ -18,7 +18,7 @@ namespace Can
 		unsigned int w = app.GetWindow().GetWidth();
 		unsigned int h = app.GetWindow().GetHeight();
 
-		m_ButtonPause = new Button(ButtonConstructorParameters{
+		ButtonConstructorParameters buttonPauseParams = ButtonConstructorParameters{
 			m_Scene->m_Registry,
 			m_Scene->entityID,
 			glm::vec3{width - 4.0f, 0.5f, 0.2f},
@@ -38,8 +38,9 @@ namespace Can
 			0.1f,
 			false,
 			glm::vec4{ 255.0f / 255.0f, 166.0f / 255.0f, 158.0f / 255.0f, 1.0f },
-			});
-		m_ButtonNormal = new Button(ButtonConstructorParameters{
+		};
+		m_ButtonPause = new Button(buttonPauseParams);
+		ButtonConstructorParameters buttonNormalParams = ButtonConstructorParameters{
 			m_Scene->m_Registry,
 			m_Scene->entityID,
 			glm::vec3{width - 3.0f, 0.5f, 0.2f},
@@ -59,8 +60,9 @@ namespace Can
 			0.1f,
 			true,
 			glm::vec4{ 255.0f / 255.0f, 166.0f / 255.0f, 158.0f / 255.0f, 1.0f },
-			});
-		m_Button2Times = new Button(ButtonConstructorParameters{
+		};
+		m_ButtonNormal = new Button(buttonNormalParams);
+		ButtonConstructorParameters button2TimesParams = ButtonConstructorParameters{
 			m_Scene->m_Registry,
 			m_Scene->entityID,
 			glm::vec3{width - 2.0f, 0.5f, 0.2f},
@@ -80,8 +82,9 @@ namespace Can
 			0.1f,
 			false,
 			glm::vec4{ 255.0f / 255.0f, 166.0f / 255.0f, 158.0f / 255.0f, 1.0f },
-			});
-		m_Button4Times = new Button(ButtonConstructorParameters{
+		};
+		m_Button2Times = new Button(button2TimesParams);
+		ButtonConstructorParameters button4TimesParams = ButtonConstructorParameters{
 			m_Scene->m_Registry,
 			m_Scene->entityID,
 			glm::vec3{width - 1.0f, 0.5f, 0.2f},
@@ -101,9 +104,10 @@ namespace Can
 			0.1f,
 			false,
 			glm::vec4{ 255.0f / 255.0f, 166.0f / 255.0f, 158.0f / 255.0f, 1.0f },
-			});
+		};
+		m_Button4Times = new Button(button4TimesParams);
 
-		m_ButtonRoads = new Button(ButtonConstructorParameters{
+		ButtonConstructorParameters buttonRoadsParams = ButtonConstructorParameters{
 			m_Scene->m_Registry,
 			m_Scene->entityID,
 			glm::vec3{ 1.0f, height - 6.5f, 0.0011f },
@@ -164,8 +168,9 @@ namespace Can
 				}
 			},
 			0.3f
-			});
-		m_ButtonBuildings = new Button(ButtonConstructorParameters{
+		};
+		m_ButtonRoads = new Button(buttonRoadsParams);
+		ButtonConstructorParameters buttonBuildingsParams = ButtonConstructorParameters{
 			m_Scene->m_Registry,
 			m_Scene->entityID,
 			glm::vec3{ 5.0f, height - 6.5f, 0.0011f },
@@ -227,8 +232,9 @@ namespace Can
 				}
 			},
 			0.3f
-			});
-		m_ButtonTrees = new Button(ButtonConstructorParameters{
+		};
+		m_ButtonBuildings = new Button(buttonBuildingsParams);
+		ButtonConstructorParameters buttonTreesParams = ButtonConstructorParameters{
 			m_Scene->m_Registry,
 			m_Scene->entityID,
 			glm::vec3{ 9.0f, height - 6.5f, 0.0011f },
@@ -288,8 +294,9 @@ namespace Can
 				}
 			},
 			0.3f
-			});
-		m_ButtonCars = new Button(ButtonConstructorParameters{
+		};
+		m_ButtonTrees = new Button(buttonTreesParams);
+		ButtonConstructorParameters buttonCarsParams = ButtonConstructorParameters{
 			m_Scene->m_Registry,
 			m_Scene->entityID,
 			glm::vec3{ 13.0f, height - 6.5f, 0.0011f },
@@ -350,9 +357,10 @@ namespace Can
 				}
 			},
 			0.3f
-			});
+		};
+		m_ButtonCars = new Button(buttonCarsParams);
 
-		m_ButtonNeeds = new Button(ButtonConstructorParameters{
+		ButtonConstructorParameters buttonNeedsParams = ButtonConstructorParameters{
 			m_Scene->m_Registry,
 			m_Scene->entityID,
 			glm::vec3{ 0.75f, 0.5f, 0.0011f },
@@ -378,8 +386,9 @@ namespace Can
 				}
 			},
 			0.2f
-			});
-		m_ButtonTools = new Button(ButtonConstructorParameters{
+		};
+		m_ButtonNeeds = new Button(buttonNeedsParams);
+		ButtonConstructorParameters buttonToolsParams = ButtonConstructorParameters{
 			m_Scene->m_Registry,
 			m_Scene->entityID,
 			glm::vec3{ 2.0f, 0.5f, 0.0011f },
@@ -405,7 +414,8 @@ namespace Can
 				}
 			},
 			0.2f
-			});
+		};
+		m_ButtonTools = new Button(buttonToolsParams);
 
 		std::vector<entt::entity> buttonList = {
 			m_ButtonPause->entityID,
@@ -421,8 +431,7 @@ namespace Can
 		};
 		m_Scene->m_Registry.emplace<ChildrenComponent>(m_Scene->entityID, buttonList);
 
-
-		m_PanelRoads = new Panel(PanelConstructorParameters{
+		PanelConstructorParameters panelRoadsParams = PanelConstructorParameters{
 			m_Scene->m_Registry,
 			m_ButtonRoads->entityID,
 			glm::vec3{ 0.5f, height - 5.4f, 0.001f },
@@ -431,10 +440,11 @@ namespace Can
 			nullptr,
 			[]() {std::cout << "You clicked the panel that is for Roads!" << std::endl; },
 			0.1f
-			});
+		};
+		m_PanelRoads = new Panel(panelRoadsParams);
 		//m_Scene->m_Registry.emplace<HiddenComponent>(m_PanelRoads->entityID);
 		m_Scene->m_Registry.emplace<ChildrenComponent>(m_ButtonRoads->entityID, std::vector<entt::entity>{ m_PanelRoads->entityID });
-		m_PanelBuildings = new Panel(PanelConstructorParameters{
+		PanelConstructorParameters panelBuildingsParams = PanelConstructorParameters{
 					m_Scene->m_Registry,
 					m_ButtonBuildings->entityID,
 					glm::vec3{ 0.5f, height - 5.4f, 0.001f },
@@ -443,10 +453,11 @@ namespace Can
 					nullptr,
 					[]() {std::cout << "You clicked the panel that is for Buildings!" << std::endl; },
 					0.1f
-			});
+		};
+		m_PanelBuildings = new Panel(panelBuildingsParams);
 		m_Scene->m_Registry.emplace<HiddenComponent>(m_PanelBuildings->entityID);
 		m_Scene->m_Registry.emplace<ChildrenComponent>(m_ButtonBuildings->entityID, std::vector<entt::entity>{ m_PanelBuildings->entityID });
-		m_PanelTrees = new Panel(PanelConstructorParameters{
+		PanelConstructorParameters panelTreesParams = PanelConstructorParameters{
 					m_Scene->m_Registry,
 					m_ButtonTrees->entityID,
 					glm::vec3{ 0.5f, height - 5.4f, 0.001f },
@@ -455,10 +466,11 @@ namespace Can
 					nullptr,
 					[]() {std::cout << "You clicked the panel that is for Trees!" << std::endl; },
 					0.1f
-			});
+		};
+		m_PanelTrees = new Panel(panelTreesParams);
 		m_Scene->m_Registry.emplace<HiddenComponent>(m_PanelTrees->entityID);
 		m_Scene->m_Registry.emplace<ChildrenComponent>(m_ButtonTrees->entityID, std::vector<entt::entity>{ m_PanelTrees->entityID });
-		m_PanelCars = new Panel(PanelConstructorParameters{
+		PanelConstructorParameters panelCarsParams = PanelConstructorParameters{
 					m_Scene->m_Registry,
 					m_ButtonCars->entityID,
 					glm::vec3{ 0.5f, height - 5.4f, 0.001f },
@@ -467,10 +479,11 @@ namespace Can
 					nullptr,
 					[]() {std::cout << "You clicked the panel that is for Cars!" << std::endl; },
 					0.1f
-			});
+		};
+		m_PanelCars = new Panel(panelCarsParams);
 		m_Scene->m_Registry.emplace<HiddenComponent>(m_PanelCars->entityID);
 		m_Scene->m_Registry.emplace<ChildrenComponent>(m_ButtonCars->entityID, std::vector<entt::entity>{ m_PanelCars->entityID });
-		m_PanelNeeds = new Panel(PanelConstructorParameters{
+		PanelConstructorParameters panelNeedsParams = PanelConstructorParameters{
 					m_Scene->m_Registry,
 					m_ButtonTools->entityID,
 					glm::vec3{ 0.5f, 1.75f, 0.001f },
@@ -479,10 +492,11 @@ namespace Can
 					nullptr,
 					[]() {std::cout << "You clicked the panel that is for Needs!" << std::endl; },
 					0.1f
-			});
+		};
+		m_PanelNeeds = new Panel(panelNeedsParams);
 		m_Scene->m_Registry.emplace<HiddenComponent>(m_PanelNeeds->entityID);
 		m_Scene->m_Registry.emplace<ChildrenComponent>(m_ButtonNeeds->entityID, std::vector<entt::entity>{ m_PanelNeeds->entityID });
-		m_PanelTools = new Panel(PanelConstructorParameters{
+		PanelConstructorParameters panelToolsParams = PanelConstructorParameters{
 					m_Scene->m_Registry,
 					m_ButtonTools->entityID,
 					glm::vec3{ 0.5f, 1.75f, 0.001f },
@@ -491,21 +505,21 @@ namespace Can
 					nullptr,
 					[]() {std::cout << "You clicked the panel that is for Tools!" << std::endl; },
 					0.1f
-			});
+		};
+		m_PanelTools = new Panel(panelToolsParams);
 		m_Scene->m_Registry.emplace<HiddenComponent>(m_PanelTools->entityID);
 		m_Scene->m_Registry.emplace<ChildrenComponent>(m_ButtonTools->entityID, std::vector<entt::entity>{ m_PanelTools->entityID });
 
-		m_ScrollViewRoads = new ScrollView(
-			ScrollViewConstructorParameters{
+		ScrollViewConstructorParameters scrollViewRoadsParams = ScrollViewConstructorParameters{
 				m_Scene->m_Registry,
 				m_PanelRoads->entityID,
-				glm::vec3{ width * 0.25f, height - 5.3f, 0.01f },
-				glm::vec2{ width * 0.75f - 0.6f, 5.0f},
+				glm::vec3{ width * 0.25f - 0.6f, height - 5.3f, 0.01f },
+				glm::vec2{ width * 0.75f, 5.0f},
 				glm::vec4{ 201.0f / 255.0f, 235.0f / 255.0f, 227.0f / 255.0f, 1.0f },
 				2,
 				[]() {std::cout << "You clicked to the ScrollView For roads!" << std::endl; }
-			},
-			ScrollBarConstructorParameters{
+		};
+		ScrollBarConstructorParameters scrollBarRoadsParams = ScrollBarConstructorParameters{
 				m_Scene->m_Registry,
 				entt::null,
 				glm::vec3(0.0f),
@@ -547,18 +561,18 @@ namespace Can
 					if (!Input::IsMouseButtonPressed(MouseCode::Button0))
 						mainRegistry.remove<OnDragCallbackComponent>(scrollbarID);
 				}
-			});
-		m_ScrollViewBuildings = new ScrollView(
-			ScrollViewConstructorParameters{
+		};
+		m_ScrollViewRoads = new ScrollView(scrollViewRoadsParams, scrollBarRoadsParams);
+		ScrollViewConstructorParameters scrollViewBuildingsParams = ScrollViewConstructorParameters{
 				m_Scene->m_Registry,
 				m_PanelBuildings->entityID,
-				glm::vec3{ width * 0.25f, height - 5.3f, 0.01f },
-				glm::vec2{ width * 0.75f - 0.6f, 5.0f},
+				glm::vec3{ width * 0.25f - 0.6f, height - 5.3f, 0.01f },
+				glm::vec2{ width * 0.75f, 5.0f},
 				glm::vec4{ 201.0f / 255.0f, 235.0f / 255.0f, 227.0f / 255.0f, 1.0f },
 				2,
 				[]() {std::cout << "You clicked to the ScrollView for buildings!" << std::endl; }
-			},
-			ScrollBarConstructorParameters{
+		};
+		ScrollBarConstructorParameters scrollBarBuildingsParams = ScrollBarConstructorParameters{
 				m_Scene->m_Registry,
 				entt::null,
 				glm::vec3(0.0f),
@@ -600,18 +614,18 @@ namespace Can
 					if (!Input::IsMouseButtonPressed(MouseCode::Button0))
 						mainRegistry.remove<OnDragCallbackComponent>(scrollbarID);
 				}
-			});
-		m_ScrollViewTrees = new ScrollView(
-			ScrollViewConstructorParameters{
+		};
+		m_ScrollViewBuildings = new ScrollView(scrollViewBuildingsParams, scrollBarBuildingsParams);
+		ScrollViewConstructorParameters scrollViewTreesParams = ScrollViewConstructorParameters{
 				m_Scene->m_Registry,
 				m_PanelTrees->entityID,
-				glm::vec3{ width * 0.25f, height - 5.3f, 0.01f },
-				glm::vec2{ width * 0.75f - 0.6f, 5.0f},
+				glm::vec3{ width * 0.25f - 0.6f, height - 5.3f, 0.01f },
+				glm::vec2{ width * 0.75f, 5.0f},
 				glm::vec4{ 201.0f / 255.0f, 235.0f / 255.0f, 227.0f / 255.0f, 1.0f },
 				2,
 				[]() {std::cout << "You clicked to the ScrollView for trees!" << std::endl; }
-			},
-			ScrollBarConstructorParameters{
+		};
+		ScrollBarConstructorParameters scrollBarTreesParams = ScrollBarConstructorParameters{
 				m_Scene->m_Registry,
 				entt::null,
 				glm::vec3(0.0f),
@@ -653,18 +667,18 @@ namespace Can
 					if (!Input::IsMouseButtonPressed(MouseCode::Button0))
 						mainRegistry.remove<OnDragCallbackComponent>(scrollbarID);
 				}
-			});
-		m_ScrollViewCars = new ScrollView(
-			ScrollViewConstructorParameters{
+		};
+		m_ScrollViewTrees = new ScrollView(scrollViewTreesParams, scrollBarTreesParams);
+		ScrollViewConstructorParameters scrollViewCarsParams = ScrollViewConstructorParameters{
 				m_Scene->m_Registry,
 				m_PanelCars->entityID,
-				glm::vec3{ width * 0.25f, height - 5.3f, 0.01f },
-				glm::vec2{ width * 0.75f - 0.6f, 5.0f},
+				glm::vec3{ width * 0.25f - 0.6f, height - 5.3f, 0.01f },
+				glm::vec2{ width * 0.75f, 5.0f},
 				glm::vec4{ 201.0f / 255.0f, 235.0f / 255.0f, 227.0f / 255.0f, 1.0f },
 				2,
 				[]() {std::cout << "You clicked to the ScrollView for cars!" << std::endl; }
-			},
-			ScrollBarConstructorParameters{
+		};
+		ScrollBarConstructorParameters scrollBarCarsParams = ScrollBarConstructorParameters{
 				m_Scene->m_Registry,
 				entt::null,
 				glm::vec3(0.0f),
@@ -706,264 +720,276 @@ namespace Can
 					if (!Input::IsMouseButtonPressed(MouseCode::Button0))
 						mainRegistry.remove<OnDragCallbackComponent>(scrollbarID);
 				}
-			});
+		};
+		m_ScrollViewCars = new ScrollView(scrollViewCarsParams, scrollBarCarsParams);
 
-		m_StraightRoadButton = new Button(ButtonConstructorParameters{
-			m_Scene->m_Registry,
-			m_PanelRoads->entityID,
-			glm::vec3{1.0f, height - 5.0f, 0.01f},
-			glm::vec2(0.8f),
-			glm::vec4(1.0f),
-			m_Parent->straightTexture,
-			[this]() {
-				entt::registry& mainRegistry = m_Scene->m_Registry;
-				GameScene* gameScene = m_Parent->gameScene;
+		v2 roadConstructionModeButtonsSize(0.8f);
+		f32 padding = 0.2f;
+		ButtonConstructorParameters straightRoadButtonParams = ButtonConstructorParameters{
+					m_Scene->m_Registry,
+					m_PanelRoads->entityID,
+					glm::vec3{1.0f, height - 5.0f, 0.01f},
+					roadConstructionModeButtonsSize,
+					glm::vec4(1.0f),
+					m_Parent->straightTexture,
+					[this]() {
+						entt::registry& mainRegistry = m_Scene->m_Registry;
+						GameScene* gameScene = m_Parent->gameScene;
 
-				mainRegistry.get<SpriteRendererComponent>(m_StraightRoadButton->entityID).border = true;
-				mainRegistry.get<SpriteRendererComponent>(m_QuadraticRoadButton->entityID).border = false;
-				mainRegistry.get<SpriteRendererComponent>(m_Cubic1234RoadButton->entityID).border = false;
-				mainRegistry.get<SpriteRendererComponent>(m_Cubic1243RoadButton->entityID).border = false;
-				mainRegistry.get<SpriteRendererComponent>(m_Cubic1342RoadButton->entityID).border = false;
-				mainRegistry.get<SpriteRendererComponent>(m_Cubic1432RoadButton->entityID).border = false;
-				mainRegistry.get<SpriteRendererComponent>(m_DestructRoadButton->entityID).border = false;
-				mainRegistry.get<SpriteRendererComponent>(m_UpgradeRoadButton->entityID).border = false;
-				mainRegistry.get<SpriteRendererComponent>(m_CancelRoadButton->entityID).border = false;
+						mainRegistry.get<SpriteRendererComponent>(m_StraightRoadButton->entityID).border = true;
+						mainRegistry.get<SpriteRendererComponent>(m_QuadraticRoadButton->entityID).border = false;
+						mainRegistry.get<SpriteRendererComponent>(m_Cubic1234RoadButton->entityID).border = false;
+						mainRegistry.get<SpriteRendererComponent>(m_Cubic1243RoadButton->entityID).border = false;
+						mainRegistry.get<SpriteRendererComponent>(m_Cubic1342RoadButton->entityID).border = false;
+						mainRegistry.get<SpriteRendererComponent>(m_Cubic1432RoadButton->entityID).border = false;
+						mainRegistry.get<SpriteRendererComponent>(m_DestructRoadButton->entityID).border = false;
+						mainRegistry.get<SpriteRendererComponent>(m_ChangeRoadButton->entityID).border = false;
+						mainRegistry.get<SpriteRendererComponent>(m_CancelRoadButton->entityID).border = false;
 
-				gameScene->SetConstructionMode(ConstructionMode::Road);
-				gameScene->m_RoadManager.SetConstructionMode(RoadConstructionMode::Straight);
-			},
-			0.1f,
-			false,
-			glm::vec4{ 255.0f / 255.0f, 166.0f / 255.0f, 158.0f / 255.0f, 1.0f },
-			});
-		m_QuadraticRoadButton = new Button(ButtonConstructorParameters{
-			m_Scene->m_Registry,
-			m_PanelRoads->entityID,
-			glm::vec3{2.0f, height - 5.0f, 0.01f},
-			glm::vec2(0.8f),
-			glm::vec4(1.0f),
-			m_Parent->quadraticTexture,
-			[this]() {
-				entt::registry& mainRegistry = m_Scene->m_Registry;
-				GameScene* gameScene = m_Parent->gameScene;
+						gameScene->SetConstructionMode(ConstructionMode::Road);
+						gameScene->m_RoadManager.SetConstructionMode(RoadConstructionMode::Straight);
+					},
+					0.1f,
+					false,
+					glm::vec4{ 255.0f / 255.0f, 166.0f / 255.0f, 158.0f / 255.0f, 1.0f },
+		};
+		m_StraightRoadButton = new Button(straightRoadButtonParams);
+		ButtonConstructorParameters quadraticRoadButtonParams = ButtonConstructorParameters{
+					m_Scene->m_Registry,
+					m_PanelRoads->entityID,
+					glm::vec3{1.0f + (roadConstructionModeButtonsSize.x + padding) * 1.0f, height - 5.0f, 0.01f},
+					roadConstructionModeButtonsSize,
+					glm::vec4(1.0f),
+					m_Parent->quadraticTexture,
+					[this]() {
+						entt::registry& mainRegistry = m_Scene->m_Registry;
+						GameScene* gameScene = m_Parent->gameScene;
 
-				mainRegistry.get<SpriteRendererComponent>(m_StraightRoadButton->entityID).border = false;
-				mainRegistry.get<SpriteRendererComponent>(m_QuadraticRoadButton->entityID).border = true;
-				mainRegistry.get<SpriteRendererComponent>(m_Cubic1234RoadButton->entityID).border = false;
-				mainRegistry.get<SpriteRendererComponent>(m_Cubic1243RoadButton->entityID).border = false;
-				mainRegistry.get<SpriteRendererComponent>(m_Cubic1342RoadButton->entityID).border = false;
-				mainRegistry.get<SpriteRendererComponent>(m_Cubic1432RoadButton->entityID).border = false;
-				mainRegistry.get<SpriteRendererComponent>(m_DestructRoadButton->entityID).border = false;
-				mainRegistry.get<SpriteRendererComponent>(m_UpgradeRoadButton->entityID).border = false;
-				mainRegistry.get<SpriteRendererComponent>(m_CancelRoadButton->entityID).border = false;
+						mainRegistry.get<SpriteRendererComponent>(m_StraightRoadButton->entityID).border = false;
+						mainRegistry.get<SpriteRendererComponent>(m_QuadraticRoadButton->entityID).border = true;
+						mainRegistry.get<SpriteRendererComponent>(m_Cubic1234RoadButton->entityID).border = false;
+						mainRegistry.get<SpriteRendererComponent>(m_Cubic1243RoadButton->entityID).border = false;
+						mainRegistry.get<SpriteRendererComponent>(m_Cubic1342RoadButton->entityID).border = false;
+						mainRegistry.get<SpriteRendererComponent>(m_Cubic1432RoadButton->entityID).border = false;
+						mainRegistry.get<SpriteRendererComponent>(m_DestructRoadButton->entityID).border = false;
+						mainRegistry.get<SpriteRendererComponent>(m_ChangeRoadButton->entityID).border = false;
+						mainRegistry.get<SpriteRendererComponent>(m_CancelRoadButton->entityID).border = false;
 
-				gameScene->SetConstructionMode(ConstructionMode::Road);
-				gameScene->m_RoadManager.SetConstructionMode(RoadConstructionMode::QuadraticCurve);
-			},
-			0.1f,
-			false,
-			glm::vec4{ 255.0f / 255.0f, 166.0f / 255.0f, 158.0f / 255.0f, 1.0f },
-			});
-		m_Cubic1234RoadButton = new Button(ButtonConstructorParameters{
-			m_Scene->m_Registry,
-			m_PanelRoads->entityID,
-			glm::vec3{3.0f, (height - 5.0f) + 0.0f, 0.01f},
-			glm::vec2(0.8f),
-			glm::vec4(1.0f),
-			m_Parent->cubic1234Texture,
-			[this]() {
-				entt::registry& mainRegistry = m_Scene->m_Registry;
-				GameScene* gameScene = m_Parent->gameScene;
+						gameScene->SetConstructionMode(ConstructionMode::Road);
+						gameScene->m_RoadManager.SetConstructionMode(RoadConstructionMode::QuadraticCurve);
+					},
+					0.1f,
+					false,
+					glm::vec4{ 255.0f / 255.0f, 166.0f / 255.0f, 158.0f / 255.0f, 1.0f },
+		};
+		m_QuadraticRoadButton = new Button(quadraticRoadButtonParams);
+		ButtonConstructorParameters cubic1234RoadButtonParams = ButtonConstructorParameters{
+					m_Scene->m_Registry,
+					m_PanelRoads->entityID,
+					glm::vec3{1.0f + (roadConstructionModeButtonsSize.x + padding) * 2.0f, (height - 5.0f), 0.01f},
+					roadConstructionModeButtonsSize,
+					glm::vec4(1.0f),
+					m_Parent->cubic1234Texture,
+					[this]() {
+						entt::registry& mainRegistry = m_Scene->m_Registry;
+						GameScene* gameScene = m_Parent->gameScene;
 
-				mainRegistry.get<SpriteRendererComponent>(m_StraightRoadButton->entityID).border = false;
-				mainRegistry.get<SpriteRendererComponent>(m_QuadraticRoadButton->entityID).border = false;
-				mainRegistry.get<SpriteRendererComponent>(m_Cubic1234RoadButton->entityID).border = true;
-				mainRegistry.get<SpriteRendererComponent>(m_Cubic1243RoadButton->entityID).border = false;
-				mainRegistry.get<SpriteRendererComponent>(m_Cubic1342RoadButton->entityID).border = false;
-				mainRegistry.get<SpriteRendererComponent>(m_Cubic1432RoadButton->entityID).border = false;
-				mainRegistry.get<SpriteRendererComponent>(m_DestructRoadButton->entityID).border = false;
-				mainRegistry.get<SpriteRendererComponent>(m_UpgradeRoadButton->entityID).border = false;
-				mainRegistry.get<SpriteRendererComponent>(m_CancelRoadButton->entityID).border = false;
+						mainRegistry.get<SpriteRendererComponent>(m_StraightRoadButton->entityID).border = false;
+						mainRegistry.get<SpriteRendererComponent>(m_QuadraticRoadButton->entityID).border = false;
+						mainRegistry.get<SpriteRendererComponent>(m_Cubic1234RoadButton->entityID).border = true;
+						mainRegistry.get<SpriteRendererComponent>(m_Cubic1243RoadButton->entityID).border = false;
+						mainRegistry.get<SpriteRendererComponent>(m_Cubic1342RoadButton->entityID).border = false;
+						mainRegistry.get<SpriteRendererComponent>(m_Cubic1432RoadButton->entityID).border = false;
+						mainRegistry.get<SpriteRendererComponent>(m_DestructRoadButton->entityID).border = false;
+						mainRegistry.get<SpriteRendererComponent>(m_ChangeRoadButton->entityID).border = false;
+						mainRegistry.get<SpriteRendererComponent>(m_CancelRoadButton->entityID).border = false;
 
-				gameScene->SetConstructionMode(ConstructionMode::Road);
-				gameScene->m_RoadManager.SetConstructionMode(RoadConstructionMode::CubicCurve);
-				gameScene->m_RoadManager.cubicCurveOrder = std::array<uint8_t, 4>{ 0, 1, 2, 3};
-			},
-			0.1f,
-			false,
-			glm::vec4{ 255.0f / 255.0f, 166.0f / 255.0f, 158.0f / 255.0f, 1.0f },
-			});
-		m_Cubic1243RoadButton = new Button(ButtonConstructorParameters{
-			m_Scene->m_Registry,
-			m_PanelRoads->entityID,
-			glm::vec3{3.0f, (height - 5.0f) + 1.0f, 0.01f},
-			glm::vec2(0.8f),
-			glm::vec4(1.0f),
-			m_Parent->cubic1243Texture,
-			[this]() {
-				entt::registry& mainRegistry = m_Scene->m_Registry;
-				GameScene* gameScene = m_Parent->gameScene;
+						gameScene->SetConstructionMode(ConstructionMode::Road);
+						gameScene->m_RoadManager.SetConstructionMode(RoadConstructionMode::CubicCurve);
+						gameScene->m_RoadManager.cubicCurveOrder = std::array<uint8_t, 4>{ 0, 1, 2, 3};
+					},
+					0.1f,
+					false,
+					glm::vec4{ 255.0f / 255.0f, 166.0f / 255.0f, 158.0f / 255.0f, 1.0f },
+		};
+		m_Cubic1234RoadButton = new Button(cubic1234RoadButtonParams);
+		ButtonConstructorParameters cubic1243RoadButtonParams = ButtonConstructorParameters{
+					m_Scene->m_Registry,
+					m_PanelRoads->entityID,
+					glm::vec3{1.0f + (roadConstructionModeButtonsSize.x + padding) * 2.0f, (height - 5.0f) + (roadConstructionModeButtonsSize.y + padding) * 1.0f, 0.01f},
+					roadConstructionModeButtonsSize,
+					glm::vec4(1.0f),
+					m_Parent->cubic1243Texture,
+					[this]() {
+						entt::registry& mainRegistry = m_Scene->m_Registry;
+						GameScene* gameScene = m_Parent->gameScene;
 
-				mainRegistry.get<SpriteRendererComponent>(m_StraightRoadButton->entityID).border = false;
-				mainRegistry.get<SpriteRendererComponent>(m_QuadraticRoadButton->entityID).border = false;
-				mainRegistry.get<SpriteRendererComponent>(m_Cubic1234RoadButton->entityID).border = false;
-				mainRegistry.get<SpriteRendererComponent>(m_Cubic1243RoadButton->entityID).border = true;
-				mainRegistry.get<SpriteRendererComponent>(m_Cubic1342RoadButton->entityID).border = false;
-				mainRegistry.get<SpriteRendererComponent>(m_Cubic1432RoadButton->entityID).border = false;
-				mainRegistry.get<SpriteRendererComponent>(m_DestructRoadButton->entityID).border = false;
-				mainRegistry.get<SpriteRendererComponent>(m_UpgradeRoadButton->entityID).border = false;
-				mainRegistry.get<SpriteRendererComponent>(m_CancelRoadButton->entityID).border = false;
+						mainRegistry.get<SpriteRendererComponent>(m_StraightRoadButton->entityID).border = false;
+						mainRegistry.get<SpriteRendererComponent>(m_QuadraticRoadButton->entityID).border = false;
+						mainRegistry.get<SpriteRendererComponent>(m_Cubic1234RoadButton->entityID).border = false;
+						mainRegistry.get<SpriteRendererComponent>(m_Cubic1243RoadButton->entityID).border = true;
+						mainRegistry.get<SpriteRendererComponent>(m_Cubic1342RoadButton->entityID).border = false;
+						mainRegistry.get<SpriteRendererComponent>(m_Cubic1432RoadButton->entityID).border = false;
+						mainRegistry.get<SpriteRendererComponent>(m_DestructRoadButton->entityID).border = false;
+						mainRegistry.get<SpriteRendererComponent>(m_ChangeRoadButton->entityID).border = false;
+						mainRegistry.get<SpriteRendererComponent>(m_CancelRoadButton->entityID).border = false;
 
-				gameScene->SetConstructionMode(ConstructionMode::Road);
-				gameScene->m_RoadManager.SetConstructionMode(RoadConstructionMode::CubicCurve);
-				gameScene->m_RoadManager.cubicCurveOrder = std::array<uint8_t, 4>{0, 1, 3, 2};
-			},
-			0.1f,
-			false,
-			glm::vec4{ 255.0f / 255.0f, 166.0f / 255.0f, 158.0f / 255.0f, 1.0f },
-			});
-		m_Cubic1342RoadButton = new Button(ButtonConstructorParameters{
-			m_Scene->m_Registry,
-			m_PanelRoads->entityID,
-			glm::vec3{3.0f, (height - 5.0f) + 2.0f, 0.01f},
-			glm::vec2(0.8f),
-			glm::vec4(1.0f),
-			m_Parent->cubic1342Texture,
-			[this]() {
-				entt::registry& mainRegistry = m_Scene->m_Registry;
-				GameScene* gameScene = m_Parent->gameScene;
+						gameScene->SetConstructionMode(ConstructionMode::Road);
+						gameScene->m_RoadManager.SetConstructionMode(RoadConstructionMode::CubicCurve);
+						gameScene->m_RoadManager.cubicCurveOrder = std::array<uint8_t, 4>{0, 1, 3, 2};
+					},
+					0.1f,
+					false,
+					glm::vec4{ 255.0f / 255.0f, 166.0f / 255.0f, 158.0f / 255.0f, 1.0f },
+		};
+		m_Cubic1243RoadButton = new Button(cubic1243RoadButtonParams);
+		ButtonConstructorParameters cubic1342RoadButtonParams = ButtonConstructorParameters{
+					m_Scene->m_Registry,
+					m_PanelRoads->entityID,
+					glm::vec3{1.0f + (roadConstructionModeButtonsSize.x + padding) * 2.0f, (height - 5.0f) + (roadConstructionModeButtonsSize.y + padding) * 2.0f, 0.01f},
+					roadConstructionModeButtonsSize,
+					glm::vec4(1.0f),
+					m_Parent->cubic1342Texture,
+					[this]() {
+						entt::registry& mainRegistry = m_Scene->m_Registry;
+						GameScene* gameScene = m_Parent->gameScene;
 
-				mainRegistry.get<SpriteRendererComponent>(m_StraightRoadButton->entityID).border = false;
-				mainRegistry.get<SpriteRendererComponent>(m_QuadraticRoadButton->entityID).border = false;
-				mainRegistry.get<SpriteRendererComponent>(m_Cubic1234RoadButton->entityID).border = false;
-				mainRegistry.get<SpriteRendererComponent>(m_Cubic1243RoadButton->entityID).border = false;
-				mainRegistry.get<SpriteRendererComponent>(m_Cubic1342RoadButton->entityID).border = true;
-				mainRegistry.get<SpriteRendererComponent>(m_Cubic1432RoadButton->entityID).border = false;
-				mainRegistry.get<SpriteRendererComponent>(m_DestructRoadButton->entityID).border = false;
-				mainRegistry.get<SpriteRendererComponent>(m_UpgradeRoadButton->entityID).border = false;
-				mainRegistry.get<SpriteRendererComponent>(m_CancelRoadButton->entityID).border = false;
+						mainRegistry.get<SpriteRendererComponent>(m_StraightRoadButton->entityID).border = false;
+						mainRegistry.get<SpriteRendererComponent>(m_QuadraticRoadButton->entityID).border = false;
+						mainRegistry.get<SpriteRendererComponent>(m_Cubic1234RoadButton->entityID).border = false;
+						mainRegistry.get<SpriteRendererComponent>(m_Cubic1243RoadButton->entityID).border = false;
+						mainRegistry.get<SpriteRendererComponent>(m_Cubic1342RoadButton->entityID).border = true;
+						mainRegistry.get<SpriteRendererComponent>(m_Cubic1432RoadButton->entityID).border = false;
+						mainRegistry.get<SpriteRendererComponent>(m_DestructRoadButton->entityID).border = false;
+						mainRegistry.get<SpriteRendererComponent>(m_ChangeRoadButton->entityID).border = false;
+						mainRegistry.get<SpriteRendererComponent>(m_CancelRoadButton->entityID).border = false;
 
-				gameScene->SetConstructionMode(ConstructionMode::Road);
-				gameScene->m_RoadManager.SetConstructionMode(RoadConstructionMode::CubicCurve);
-				gameScene->m_RoadManager.cubicCurveOrder = std::array<uint8_t, 4>{0, 3, 1, 2};
-			},
-			0.1f,
-			false,
-			glm::vec4{ 255.0f / 255.0f, 166.0f / 255.0f, 158.0f / 255.0f, 1.0f },
-			});
-		m_Cubic1432RoadButton = new Button(ButtonConstructorParameters{
-			m_Scene->m_Registry,
-			m_PanelRoads->entityID,
-			glm::vec3{3.0f, (height - 5.0f) + 3.0f, 0.01f},
-			glm::vec2(0.8f),
-			glm::vec4(1.0f),
-			m_Parent->cubic1432Texture,
-			[this]() {
-				entt::registry& mainRegistry = m_Scene->m_Registry;
-				GameScene* gameScene = m_Parent->gameScene;
+						gameScene->SetConstructionMode(ConstructionMode::Road);
+						gameScene->m_RoadManager.SetConstructionMode(RoadConstructionMode::CubicCurve);
+						gameScene->m_RoadManager.cubicCurveOrder = std::array<uint8_t, 4>{0, 3, 1, 2};
+					},
+					0.1f,
+					false,
+					glm::vec4{ 255.0f / 255.0f, 166.0f / 255.0f, 158.0f / 255.0f, 1.0f },
+		};
+		m_Cubic1342RoadButton = new Button(cubic1342RoadButtonParams);
+		ButtonConstructorParameters cubic1432RoadButtonParams = ButtonConstructorParameters{
+					m_Scene->m_Registry,
+					m_PanelRoads->entityID,
+					glm::vec3{1.0f + (roadConstructionModeButtonsSize.x + padding) * 2.0f, (height - 5.0f) + (roadConstructionModeButtonsSize.y + padding) * 3.0f, 0.01f},
+					roadConstructionModeButtonsSize,
+					glm::vec4(1.0f),
+					m_Parent->cubic1432Texture,
+					[this]() {
+						entt::registry& mainRegistry = m_Scene->m_Registry;
+						GameScene* gameScene = m_Parent->gameScene;
 
-				mainRegistry.get<SpriteRendererComponent>(m_StraightRoadButton->entityID).border = false;
-				mainRegistry.get<SpriteRendererComponent>(m_QuadraticRoadButton->entityID).border = false;
-				mainRegistry.get<SpriteRendererComponent>(m_Cubic1234RoadButton->entityID).border = false;
-				mainRegistry.get<SpriteRendererComponent>(m_Cubic1243RoadButton->entityID).border = false;
-				mainRegistry.get<SpriteRendererComponent>(m_Cubic1342RoadButton->entityID).border = false;
-				mainRegistry.get<SpriteRendererComponent>(m_Cubic1432RoadButton->entityID).border = true;
-				mainRegistry.get<SpriteRendererComponent>(m_DestructRoadButton->entityID).border = false;
-				mainRegistry.get<SpriteRendererComponent>(m_UpgradeRoadButton->entityID).border = false;
-				mainRegistry.get<SpriteRendererComponent>(m_CancelRoadButton->entityID).border = false;
+						mainRegistry.get<SpriteRendererComponent>(m_StraightRoadButton->entityID).border = false;
+						mainRegistry.get<SpriteRendererComponent>(m_QuadraticRoadButton->entityID).border = false;
+						mainRegistry.get<SpriteRendererComponent>(m_Cubic1234RoadButton->entityID).border = false;
+						mainRegistry.get<SpriteRendererComponent>(m_Cubic1243RoadButton->entityID).border = false;
+						mainRegistry.get<SpriteRendererComponent>(m_Cubic1342RoadButton->entityID).border = false;
+						mainRegistry.get<SpriteRendererComponent>(m_Cubic1432RoadButton->entityID).border = true;
+						mainRegistry.get<SpriteRendererComponent>(m_DestructRoadButton->entityID).border = false;
+						mainRegistry.get<SpriteRendererComponent>(m_ChangeRoadButton->entityID).border = false;
+						mainRegistry.get<SpriteRendererComponent>(m_CancelRoadButton->entityID).border = false;
 
-				gameScene->SetConstructionMode(ConstructionMode::Road);
-				gameScene->m_RoadManager.SetConstructionMode(RoadConstructionMode::CubicCurve);
-				gameScene->m_RoadManager.cubicCurveOrder = std::array<uint8_t, 4>{0, 3, 2, 1};
-			},
-			0.1f,
-			false,
-			glm::vec4{ 255.0f / 255.0f, 166.0f / 255.0f, 158.0f / 255.0f, 1.0f },
-			});
-		m_DestructRoadButton = new Button(ButtonConstructorParameters{
-			m_Scene->m_Registry,
-			m_PanelRoads->entityID,
-			glm::vec3{4.0f, height - 5.0f, 0.01f},
-			glm::vec2(0.8f),
-			glm::vec4(1.0f),
-			m_Parent->removeTexture,
-			[this]() {
-				entt::registry& mainRegistry = m_Scene->m_Registry;
-				GameScene* gameScene = m_Parent->gameScene;
+						gameScene->SetConstructionMode(ConstructionMode::Road);
+						gameScene->m_RoadManager.SetConstructionMode(RoadConstructionMode::CubicCurve);
+						gameScene->m_RoadManager.cubicCurveOrder = std::array<uint8_t, 4>{0, 3, 2, 1};
+					},
+					0.1f,
+					false,
+					glm::vec4{ 255.0f / 255.0f, 166.0f / 255.0f, 158.0f / 255.0f, 1.0f },
+		};
+		m_Cubic1432RoadButton = new Button(cubic1432RoadButtonParams);
+		ButtonConstructorParameters destructRoadButtonParams = ButtonConstructorParameters{
+					m_Scene->m_Registry,
+					m_PanelRoads->entityID,
+					glm::vec3{1.0f + (roadConstructionModeButtonsSize.x + padding) * 3.0f, height - 5.0f, 0.01f},
+					roadConstructionModeButtonsSize,
+					glm::vec4(1.0f),
+					m_Parent->removeTexture,
+					[this]() {
+						entt::registry& mainRegistry = m_Scene->m_Registry;
+						GameScene* gameScene = m_Parent->gameScene;
 
-				mainRegistry.get<SpriteRendererComponent>(m_StraightRoadButton->entityID).border = false;
-				mainRegistry.get<SpriteRendererComponent>(m_QuadraticRoadButton->entityID).border = false;
-				mainRegistry.get<SpriteRendererComponent>(m_Cubic1234RoadButton->entityID).border = false;
-				mainRegistry.get<SpriteRendererComponent>(m_Cubic1243RoadButton->entityID).border = false;
-				mainRegistry.get<SpriteRendererComponent>(m_Cubic1342RoadButton->entityID).border = false;
-				mainRegistry.get<SpriteRendererComponent>(m_Cubic1432RoadButton->entityID).border = false;
-				mainRegistry.get<SpriteRendererComponent>(m_DestructRoadButton->entityID).border = true;
-				mainRegistry.get<SpriteRendererComponent>(m_UpgradeRoadButton->entityID).border = false;
-				mainRegistry.get<SpriteRendererComponent>(m_CancelRoadButton->entityID).border = false;
+						mainRegistry.get<SpriteRendererComponent>(m_StraightRoadButton->entityID).border = false;
+						mainRegistry.get<SpriteRendererComponent>(m_QuadraticRoadButton->entityID).border = false;
+						mainRegistry.get<SpriteRendererComponent>(m_Cubic1234RoadButton->entityID).border = false;
+						mainRegistry.get<SpriteRendererComponent>(m_Cubic1243RoadButton->entityID).border = false;
+						mainRegistry.get<SpriteRendererComponent>(m_Cubic1342RoadButton->entityID).border = false;
+						mainRegistry.get<SpriteRendererComponent>(m_Cubic1432RoadButton->entityID).border = false;
+						mainRegistry.get<SpriteRendererComponent>(m_DestructRoadButton->entityID).border = true;
+						mainRegistry.get<SpriteRendererComponent>(m_ChangeRoadButton->entityID).border = false;
+						mainRegistry.get<SpriteRendererComponent>(m_CancelRoadButton->entityID).border = false;
 
-				gameScene->SetConstructionMode(ConstructionMode::Road);
-				gameScene->m_RoadManager.SetConstructionMode(RoadConstructionMode::Destruct);
-			},
-			0.1f,
-			false,
-			glm::vec4{ 255.0f / 255.0f, 166.0f / 255.0f, 158.0f / 255.0f, 1.0f },
-			});
-		m_UpgradeRoadButton = new Button(ButtonConstructorParameters{
-			m_Scene->m_Registry,
-			m_PanelRoads->entityID,
-			glm::vec3{5.0f, height - 5.0f, 0.01f},
-			glm::vec2(0.8f),
-			glm::vec4(1.0f),
-			m_Parent->upgradeTexture,
-			[this]() {
-				entt::registry& mainRegistry = m_Scene->m_Registry;
-				GameScene* gameScene = m_Parent->gameScene;
+						gameScene->SetConstructionMode(ConstructionMode::Road);
+						gameScene->m_RoadManager.SetConstructionMode(RoadConstructionMode::Destruct);
+					},
+					0.1f,
+					false,
+					glm::vec4{ 255.0f / 255.0f, 166.0f / 255.0f, 158.0f / 255.0f, 1.0f },
+		};
+		m_DestructRoadButton = new Button(destructRoadButtonParams);
+		ButtonConstructorParameters changeRoadButtonParams = ButtonConstructorParameters{
+					m_Scene->m_Registry,
+					m_PanelRoads->entityID,
+					glm::vec3{1.0f + (roadConstructionModeButtonsSize.x + padding) * 4.0f, height - 5.0f, 0.01f},
+					roadConstructionModeButtonsSize,
+					glm::vec4(1.0f),
+					m_Parent->changeTexture,
+					[this]() {
+						entt::registry& mainRegistry = m_Scene->m_Registry;
+						GameScene* gameScene = m_Parent->gameScene;
 
-				mainRegistry.get<SpriteRendererComponent>(m_StraightRoadButton->entityID).border = false;
-				mainRegistry.get<SpriteRendererComponent>(m_QuadraticRoadButton->entityID).border = false;
-				mainRegistry.get<SpriteRendererComponent>(m_Cubic1234RoadButton->entityID).border = false;
-				mainRegistry.get<SpriteRendererComponent>(m_Cubic1243RoadButton->entityID).border = false;
-				mainRegistry.get<SpriteRendererComponent>(m_Cubic1342RoadButton->entityID).border = false;
-				mainRegistry.get<SpriteRendererComponent>(m_Cubic1432RoadButton->entityID).border = false;
-				mainRegistry.get<SpriteRendererComponent>(m_DestructRoadButton->entityID).border = false;
-				mainRegistry.get<SpriteRendererComponent>(m_UpgradeRoadButton->entityID).border = true;
-				mainRegistry.get<SpriteRendererComponent>(m_CancelRoadButton->entityID).border = false;
+						mainRegistry.get<SpriteRendererComponent>(m_StraightRoadButton->entityID).border = false;
+						mainRegistry.get<SpriteRendererComponent>(m_QuadraticRoadButton->entityID).border = false;
+						mainRegistry.get<SpriteRendererComponent>(m_Cubic1234RoadButton->entityID).border = false;
+						mainRegistry.get<SpriteRendererComponent>(m_Cubic1243RoadButton->entityID).border = false;
+						mainRegistry.get<SpriteRendererComponent>(m_Cubic1342RoadButton->entityID).border = false;
+						mainRegistry.get<SpriteRendererComponent>(m_Cubic1432RoadButton->entityID).border = false;
+						mainRegistry.get<SpriteRendererComponent>(m_DestructRoadButton->entityID).border = false;
+						mainRegistry.get<SpriteRendererComponent>(m_ChangeRoadButton->entityID).border = true;
+						mainRegistry.get<SpriteRendererComponent>(m_CancelRoadButton->entityID).border = false;
 
-				gameScene->SetConstructionMode(ConstructionMode::Road);
-				gameScene->m_RoadManager.SetConstructionMode(RoadConstructionMode::Upgrade);
-			},
-			0.1f,
-			false,
-			glm::vec4{ 255.0f / 255.0f, 166.0f / 255.0f, 158.0f / 255.0f, 1.0f },
-			});
-		m_CancelRoadButton = new Button(ButtonConstructorParameters{
-			m_Scene->m_Registry,
-			m_PanelRoads->entityID,
-			glm::vec3{6.0f, height - 5.0f, 0.01f},
-			glm::vec2(0.8f),
-			glm::vec4(1.0f),
-			m_Parent->cancelTexture,
-			[this]() {
-				entt::registry& mainRegistry = m_Scene->m_Registry;
-				GameScene* gameScene = m_Parent->gameScene;
+						gameScene->SetConstructionMode(ConstructionMode::Road);
+						gameScene->m_RoadManager.SetConstructionMode(RoadConstructionMode::Change);
+					},
+					0.1f,
+					false,
+					glm::vec4{ 255.0f / 255.0f, 166.0f / 255.0f, 158.0f / 255.0f, 1.0f },
+		};
+		m_ChangeRoadButton = new Button(changeRoadButtonParams);
+		ButtonConstructorParameters cancelRoadButtonParams = ButtonConstructorParameters{
+					m_Scene->m_Registry,
+					m_PanelRoads->entityID,
+					glm::vec3{1.0f + (roadConstructionModeButtonsSize.x + padding) * 5.0f, height - 5.0f, 0.01f},
+					roadConstructionModeButtonsSize,
+					glm::vec4(1.0f),
+					m_Parent->cancelTexture,
+					[this]() {
+						entt::registry& mainRegistry = m_Scene->m_Registry;
+						GameScene* gameScene = m_Parent->gameScene;
 
-				mainRegistry.get<SpriteRendererComponent>(m_StraightRoadButton->entityID).border = false;
-				mainRegistry.get<SpriteRendererComponent>(m_QuadraticRoadButton->entityID).border = false;
-				mainRegistry.get<SpriteRendererComponent>(m_Cubic1234RoadButton->entityID).border = false;
-				mainRegistry.get<SpriteRendererComponent>(m_Cubic1243RoadButton->entityID).border = false;
-				mainRegistry.get<SpriteRendererComponent>(m_Cubic1342RoadButton->entityID).border = false;
-				mainRegistry.get<SpriteRendererComponent>(m_Cubic1432RoadButton->entityID).border = false;
-				mainRegistry.get<SpriteRendererComponent>(m_DestructRoadButton->entityID).border = false;
-				mainRegistry.get<SpriteRendererComponent>(m_UpgradeRoadButton->entityID).border = false;
-				mainRegistry.get<SpriteRendererComponent>(m_CancelRoadButton->entityID).border = true;
+						mainRegistry.get<SpriteRendererComponent>(m_StraightRoadButton->entityID).border = false;
+						mainRegistry.get<SpriteRendererComponent>(m_QuadraticRoadButton->entityID).border = false;
+						mainRegistry.get<SpriteRendererComponent>(m_Cubic1234RoadButton->entityID).border = false;
+						mainRegistry.get<SpriteRendererComponent>(m_Cubic1243RoadButton->entityID).border = false;
+						mainRegistry.get<SpriteRendererComponent>(m_Cubic1342RoadButton->entityID).border = false;
+						mainRegistry.get<SpriteRendererComponent>(m_Cubic1432RoadButton->entityID).border = false;
+						mainRegistry.get<SpriteRendererComponent>(m_DestructRoadButton->entityID).border = false;
+						mainRegistry.get<SpriteRendererComponent>(m_ChangeRoadButton->entityID).border = false;
+						mainRegistry.get<SpriteRendererComponent>(m_CancelRoadButton->entityID).border = true;
 
-				gameScene->SetConstructionMode(ConstructionMode::Road);
-				gameScene->m_RoadManager.SetConstructionMode(RoadConstructionMode::None);
-			},
-			0.1f,
-			true,
-			glm::vec4{ 255.0f / 255.0f, 166.0f / 255.0f, 158.0f / 255.0f, 1.0f },
-			});
+						gameScene->SetConstructionMode(ConstructionMode::Road);
+						gameScene->m_RoadManager.SetConstructionMode(RoadConstructionMode::None);
+					},
+					0.1f,
+					true,
+					glm::vec4{ 255.0f / 255.0f, 166.0f / 255.0f, 158.0f / 255.0f, 1.0f },
+		};
+		m_CancelRoadButton = new Button(cancelRoadButtonParams);
 		m_Scene->m_Registry.emplace<ChildrenComponent>(m_PanelRoads->entityID, std::vector<entt::entity>{
 			m_ScrollViewRoads->entityID,
 			m_StraightRoadButton->entityID,
@@ -973,11 +999,11 @@ namespace Can
 			m_Cubic1342RoadButton->entityID,
 			m_Cubic1432RoadButton->entityID,
 			m_DestructRoadButton->entityID,
-			m_UpgradeRoadButton->entityID,
+			m_ChangeRoadButton->entityID,
 			m_CancelRoadButton->entityID
 			});
 
-		m_ConstructBuildingButton = new Button(ButtonConstructorParameters{
+		ButtonConstructorParameters constructBuildingButtonParams = ButtonConstructorParameters{
 			m_Scene->m_Registry,
 			m_PanelBuildings->entityID,
 			glm::vec3{2.0f, height - 5.0f, 0.01f},
@@ -999,8 +1025,9 @@ namespace Can
 			0.1f,
 			false,
 			glm::vec4{ 69.0f / 255.0f, 123.0f / 255.0f, 157.0f / 255.0f, 1.0f },
-			});
-		m_DestructBuildingButton = new Button(ButtonConstructorParameters{
+		};
+		m_ConstructBuildingButton = new Button(constructBuildingButtonParams);
+		ButtonConstructorParameters destructBuildingButtonParams = ButtonConstructorParameters{
 			m_Scene->m_Registry,
 			m_PanelBuildings->entityID,
 			glm::vec3{3.0f, height - 5.0f, 0.01f},
@@ -1022,8 +1049,9 @@ namespace Can
 			0.1f,
 			false,
 			glm::vec4{ 69.0f / 255.0f, 123.0f / 255.0f, 157.0f / 255.0f, 1.0f },
-			});
-		m_UpgradeBuildingButton = new Button(ButtonConstructorParameters{
+		};
+		m_DestructBuildingButton = new Button(destructBuildingButtonParams);
+		ButtonConstructorParameters upgradeBuildingButtonParams = ButtonConstructorParameters{
 			m_Scene->m_Registry,
 			m_PanelBuildings->entityID,
 			glm::vec3{4.0f, height - 5.0f, 0.01f},
@@ -1045,8 +1073,9 @@ namespace Can
 			0.1f,
 			false,
 			glm::vec4{ 69.0f / 255.0f, 123.0f / 255.0f, 157.0f / 255.0f, 1.0f },
-			});
-		m_CancelBuildingButton = new Button(ButtonConstructorParameters{
+		};
+		m_UpgradeBuildingButton = new Button(upgradeBuildingButtonParams);
+		ButtonConstructorParameters cancelBuildingButtonParams = ButtonConstructorParameters{
 			m_Scene->m_Registry,
 			m_PanelBuildings->entityID,
 			glm::vec3{5.0f, height - 5.0f, 0.01f},
@@ -1068,7 +1097,8 @@ namespace Can
 			0.1f,
 			true,
 			glm::vec4{ 69.0f / 255.0f, 123.0f / 255.0f, 157.0f / 255.0f, 1.0f },
-			});
+		};
+		m_CancelBuildingButton = new Button(cancelBuildingButtonParams);
 		m_Scene->m_Registry.emplace<ChildrenComponent>(m_PanelBuildings->entityID, std::vector<entt::entity>{
 			m_ScrollViewBuildings->entityID ,
 			m_ConstructBuildingButton->entityID,
@@ -1077,7 +1107,7 @@ namespace Can
 			m_CancelBuildingButton->entityID
 			});
 
-		m_AddTreePanelButton = new Button(ButtonConstructorParameters{
+		ButtonConstructorParameters addTreeButtonParams = ButtonConstructorParameters{
 			m_Scene->m_Registry,
 			m_PanelTrees->entityID,
 			glm::vec3{2.0f, height - 5.0f, 0.01f},
@@ -1088,9 +1118,9 @@ namespace Can
 				entt::registry& mainRegistry = m_Scene->m_Registry;
 				GameScene* gameScene = m_Parent->gameScene;
 
-				mainRegistry.get<SpriteRendererComponent>(m_AddTreePanelButton->entityID).border = true;
-				mainRegistry.get<SpriteRendererComponent>(m_RemoveTreePanelButton->entityID).border = false;
-				mainRegistry.get<SpriteRendererComponent>(m_CancelTreePanelButton->entityID).border = false;
+				mainRegistry.get<SpriteRendererComponent>(m_AddTreeButton->entityID).border = true;
+				mainRegistry.get<SpriteRendererComponent>(m_RemoveTreeButton->entityID).border = false;
+				mainRegistry.get<SpriteRendererComponent>(m_CancelTreeButton->entityID).border = false;
 
 				gameScene->SetConstructionMode(ConstructionMode::Tree);
 				gameScene->m_TreeManager.SetConstructionMode(TreeConstructionMode::Adding);
@@ -1098,8 +1128,9 @@ namespace Can
 			0.1f,
 			false,
 			glm::vec4{ 221.0f / 255.0f, 255.0f / 255.0f, 247.0f / 255.0f, 1.0f },
-			});
-		m_RemoveTreePanelButton = new Button(ButtonConstructorParameters{
+		};
+		m_AddTreeButton = new Button(addTreeButtonParams);
+		ButtonConstructorParameters removeTreeButtonParams = ButtonConstructorParameters{
 			m_Scene->m_Registry,
 			m_PanelTrees->entityID,
 			glm::vec3{3.0f, height - 5.0f, 0.01f},
@@ -1110,9 +1141,9 @@ namespace Can
 				entt::registry& mainRegistry = m_Scene->m_Registry;
 				GameScene* gameScene = m_Parent->gameScene;
 
-				mainRegistry.get<SpriteRendererComponent>(m_AddTreePanelButton->entityID).border = false;
-				mainRegistry.get<SpriteRendererComponent>(m_RemoveTreePanelButton->entityID).border = true;
-				mainRegistry.get<SpriteRendererComponent>(m_CancelTreePanelButton->entityID).border = false;
+				mainRegistry.get<SpriteRendererComponent>(m_AddTreeButton->entityID).border = false;
+				mainRegistry.get<SpriteRendererComponent>(m_RemoveTreeButton->entityID).border = true;
+				mainRegistry.get<SpriteRendererComponent>(m_CancelTreeButton->entityID).border = false;
 
 				gameScene->SetConstructionMode(ConstructionMode::Tree);
 				gameScene->m_TreeManager.SetConstructionMode(TreeConstructionMode::Removing);
@@ -1120,8 +1151,9 @@ namespace Can
 			0.1f,
 			false,
 			glm::vec4{ 221.0f / 255.0f, 255.0f / 255.0f, 247.0f / 255.0f, 1.0f },
-			});
-		m_CancelTreePanelButton = new Button(ButtonConstructorParameters{
+		};
+		m_RemoveTreeButton = new Button(removeTreeButtonParams);
+		ButtonConstructorParameters cancelTreeButtonParams = ButtonConstructorParameters{
 			m_Scene->m_Registry,
 			m_PanelTrees->entityID,
 			glm::vec3{4.0f, height - 5.0f, 0.01f},
@@ -1132,9 +1164,9 @@ namespace Can
 				entt::registry& mainRegistry = m_Scene->m_Registry;
 				GameScene* gameScene = m_Parent->gameScene;
 
-				mainRegistry.get<SpriteRendererComponent>(m_AddTreePanelButton->entityID).border = false;
-				mainRegistry.get<SpriteRendererComponent>(m_RemoveTreePanelButton->entityID).border = false;
-				mainRegistry.get<SpriteRendererComponent>(m_CancelTreePanelButton->entityID).border = true;
+				mainRegistry.get<SpriteRendererComponent>(m_AddTreeButton->entityID).border = false;
+				mainRegistry.get<SpriteRendererComponent>(m_RemoveTreeButton->entityID).border = false;
+				mainRegistry.get<SpriteRendererComponent>(m_CancelTreeButton->entityID).border = true;
 
 				gameScene->SetConstructionMode(ConstructionMode::Tree);
 				gameScene->m_TreeManager.SetConstructionMode(TreeConstructionMode::None);
@@ -1142,12 +1174,13 @@ namespace Can
 			0.1f,
 			true,
 			glm::vec4{ 221.0f / 255.0f, 255.0f / 255.0f, 247.0f / 255.0f, 1.0f },
-			});
+		};
+		m_CancelTreeButton = new Button(cancelTreeButtonParams);
 		m_Scene->m_Registry.emplace<ChildrenComponent>(m_PanelTrees->entityID, std::vector<entt::entity>{
 			m_ScrollViewTrees->entityID,
-			m_AddTreePanelButton->entityID,
-			m_RemoveTreePanelButton->entityID,
-			m_CancelTreePanelButton->entityID
+			m_AddTreeButton->entityID,
+			m_RemoveTreeButton->entityID,
+			m_CancelTreeButton->entityID
 			});
 
 		m_Scene->m_Registry.emplace<ChildrenComponent>(m_PanelCars->entityID, std::vector<entt::entity>{
@@ -1157,48 +1190,160 @@ namespace Can
 		/*Buttons in the tools panel*/ {
 			glm::vec2 buttonSize{ 1.0f, 1.0f };
 			glm::vec4 buttonColor{ 1.0f, 1.0f, 1.0f, 1.0f };
-			m_ButtonTools_01 = new Button(ButtonConstructorParameters{ m_Scene->m_Registry, m_PanelTools->entityID, glm::vec3{ 0.75f, 2.0f, 0.0011f }, buttonSize, buttonColor, nullptr,
-				[]() {std::cout << "You clicked the 1st Button inside the tools panel!" << std::endl; }, 0.2f
-				});
-			m_ButtonTools_02 = new Button(ButtonConstructorParameters{ m_Scene->m_Registry, m_PanelTools->entityID, glm::vec3{ 2.0f, 2.0f, 0.0011f }, buttonSize, buttonColor, nullptr,
-				[]() {std::cout << "You clicked the 2nd Button inside the tools panel!" << std::endl; }, 0.2f
-				});
-			m_ButtonTools_03 = new Button(ButtonConstructorParameters{ m_Scene->m_Registry, m_PanelTools->entityID, glm::vec3{ 0.75f, 3.25f, 0.0011f }, buttonSize, buttonColor, nullptr,
-				[]() {std::cout << "You clicked the 3rd Button inside the tools panel!" << std::endl; }, 0.2f
-				});
-			m_ButtonTools_04 = new Button(ButtonConstructorParameters{ m_Scene->m_Registry, m_PanelTools->entityID, glm::vec3{ 2.0f, 3.25f, 0.0011f }, buttonSize, buttonColor, nullptr,
-				[]() {std::cout << "You clicked the 4th Button inside the tools panel!" << std::endl; }, 0.2f
-				});
-			m_ButtonTools_05 = new Button(ButtonConstructorParameters{ m_Scene->m_Registry, m_PanelTools->entityID, glm::vec3{ 0.75f, 4.5f, 0.0011f }, buttonSize, buttonColor, nullptr,
-				[]() {std::cout << "You clicked the 5th Button inside the tools panel!" << std::endl; }, 0.2f
-				});
-			m_ButtonTools_06 = new Button(ButtonConstructorParameters{ m_Scene->m_Registry, m_PanelTools->entityID, glm::vec3{ 2.0f, 4.5, 0.0011f }, buttonSize, buttonColor, nullptr,
-				[]() {std::cout << "You clicked the 6th Button inside the tools panel!" << std::endl; }, 0.2f
-				});
-			m_ButtonTools_07 = new Button(ButtonConstructorParameters{ m_Scene->m_Registry, m_PanelTools->entityID, glm::vec3{ 0.75f, 5.75, 0.0011f }, buttonSize, buttonColor, nullptr,
-				[]() {std::cout << "You clicked the 7th Button inside the tools panel!" << std::endl; }, 0.2f
-				});
-			m_ButtonTools_08 = new Button(ButtonConstructorParameters{ m_Scene->m_Registry, m_PanelTools->entityID, glm::vec3{ 2.0f, 5.75, 0.0011f }, buttonSize, buttonColor, nullptr,
-				[]() {std::cout << "You clicked the 8th Button inside the tools panel!" << std::endl; }, 0.2f
-				});
-			m_ButtonTools_09 = new Button(ButtonConstructorParameters{ m_Scene->m_Registry, m_PanelTools->entityID, glm::vec3{ 0.75f, 7.0f, 0.0011f }, buttonSize, buttonColor, nullptr,
-				[]() {std::cout << "You clicked the 9th Button inside the tools panel!" << std::endl; }, 0.2f
-				});
-			m_ButtonTools_10 = new Button(ButtonConstructorParameters{ m_Scene->m_Registry, m_PanelTools->entityID, glm::vec3{ 2.0f, 7.0f, 0.0011f }, buttonSize, buttonColor, nullptr,
-				[]() {std::cout << "You clicked the 10th Button inside the tools panel!" << std::endl; }, 0.2f
-				});
-			m_ButtonTools_11 = new Button(ButtonConstructorParameters{ m_Scene->m_Registry, m_PanelTools->entityID, glm::vec3{ 0.75f, 8.25, 0.0011f }, buttonSize, buttonColor, nullptr,
-				[]() {std::cout << "You clicked the 11th Button inside the tools panel!" << std::endl; }, 0.2f
-				});
-			m_ButtonTools_12 = new Button(ButtonConstructorParameters{ m_Scene->m_Registry, m_PanelTools->entityID, glm::vec3{ 2.0f, 8.25, 0.0011f }, buttonSize, buttonColor, nullptr,
-				[]() {std::cout << "You clicked the 12th Button inside the tools panel!" << std::endl; }, 0.2f
-				});
-			m_ButtonTools_13 = new Button(ButtonConstructorParameters{ m_Scene->m_Registry, m_PanelTools->entityID, glm::vec3{ 0.75f, 9.5, 0.0011f }, buttonSize, buttonColor, nullptr,
-				[]() {std::cout << "You clicked the 13th Button inside the tools panel!" << std::endl; }, 0.2f
-				});
-			m_ButtonTools_14 = new Button(ButtonConstructorParameters{ m_Scene->m_Registry, m_PanelTools->entityID, glm::vec3{ 2.0f, 9.5, 0.0011f }, buttonSize, buttonColor, nullptr,
-				[]() {std::cout << "You clicked the 14th Button inside the tools panel!" << std::endl; }, 0.2f
-				});
+			ButtonConstructorParameters buttonTools_01Params = ButtonConstructorParameters{
+				m_Scene->m_Registry,
+				m_PanelTools->entityID,
+				glm::vec3{ 0.75f, 2.0f, 0.0011f },
+				buttonSize,
+				buttonColor,
+				nullptr,
+				[]() {std::cout << "You clicked the 1st Button inside the tools panel!" << std::endl; },
+				0.2f
+			};
+			m_ButtonTools_01 = new Button(buttonTools_01Params);
+			ButtonConstructorParameters buttonTools_02Params = ButtonConstructorParameters{
+				m_Scene->m_Registry,
+				m_PanelTools->entityID,
+				glm::vec3{ 2.0f, 2.0f, 0.0011f },
+				buttonSize,
+				buttonColor,
+				nullptr,
+				[]() {std::cout << "You clicked the 2nd Button inside the tools panel!" << std::endl; },
+				0.2f
+			};
+			m_ButtonTools_02 = new Button(buttonTools_02Params);
+			ButtonConstructorParameters buttonTools_03Params = ButtonConstructorParameters{
+				m_Scene->m_Registry,
+				m_PanelTools->entityID,
+				glm::vec3{ 0.75f, 3.25f, 0.0011f },
+				buttonSize,
+				buttonColor,
+				nullptr,
+				[]() {std::cout << "You clicked the 3rd Button inside the tools panel!" << std::endl; },
+				0.2f
+			};
+			m_ButtonTools_03 = new Button(buttonTools_03Params);
+			ButtonConstructorParameters buttonTools_04Params = ButtonConstructorParameters{
+				m_Scene->m_Registry,
+				m_PanelTools->entityID,
+				glm::vec3{ 2.0f, 3.25f, 0.0011f },
+				buttonSize,
+				buttonColor,
+				nullptr,
+				[]() {std::cout << "You clicked the 4th Button inside the tools panel!" << std::endl; },
+				0.2f
+			};
+			m_ButtonTools_04 = new Button(buttonTools_04Params);
+			ButtonConstructorParameters buttonTools_05Params = ButtonConstructorParameters{
+				m_Scene->m_Registry,
+				m_PanelTools->entityID,
+				glm::vec3{ 0.75f, 4.5f, 0.0011f },
+				buttonSize,
+				buttonColor,
+				nullptr,
+				[]() {std::cout << "You clicked the 5th Button inside the tools panel!" << std::endl; },
+				0.2f
+			};
+			m_ButtonTools_05 = new Button(buttonTools_05Params);
+			ButtonConstructorParameters buttonTools_06Params = ButtonConstructorParameters{
+				m_Scene->m_Registry,
+				m_PanelTools->entityID,
+				glm::vec3{ 2.0f, 4.5, 0.0011f },
+				buttonSize,
+				buttonColor,
+				nullptr,
+				[]() {std::cout << "You clicked the 6th Button inside the tools panel!" << std::endl; },
+				0.2f
+			};
+			m_ButtonTools_06 = new Button(buttonTools_06Params);
+			ButtonConstructorParameters buttonTools_07Params = ButtonConstructorParameters{
+				m_Scene->m_Registry,
+				m_PanelTools->entityID,
+				glm::vec3{ 0.75f, 5.75, 0.0011f },
+				buttonSize,
+				buttonColor,
+				nullptr,
+				[]() {std::cout << "You clicked the 7th Button inside the tools panel!" << std::endl; },
+				0.2f
+			};
+			m_ButtonTools_07 = new Button(buttonTools_07Params);
+			ButtonConstructorParameters buttonTools_08Params = ButtonConstructorParameters{
+				m_Scene->m_Registry,
+				m_PanelTools->entityID,
+				glm::vec3{ 2.0f, 5.75, 0.0011f },
+				buttonSize,
+				buttonColor,
+				nullptr,
+				[]() {std::cout << "You clicked the 8th Button inside the tools panel!" << std::endl; },
+				0.2f
+			};
+			m_ButtonTools_08 = new Button(buttonTools_08Params);
+			ButtonConstructorParameters buttonTools_09Params = ButtonConstructorParameters{
+				m_Scene->m_Registry,
+				m_PanelTools->entityID,
+				glm::vec3{ 0.75f, 7.0f, 0.0011f },
+				buttonSize,
+				buttonColor,
+				nullptr,
+				[]() {std::cout << "You clicked the 9th Button inside the tools panel!" << std::endl; },
+				0.2f
+			};
+			m_ButtonTools_09 = new Button(buttonTools_09Params);
+			ButtonConstructorParameters buttonTools_10Params = ButtonConstructorParameters{
+				m_Scene->m_Registry,
+				m_PanelTools->entityID,
+				glm::vec3{ 2.0f, 7.0f, 0.0011f },
+				buttonSize,
+				buttonColor,
+				nullptr,
+				[]() {std::cout << "You clicked the 10th Button inside the tools panel!" << std::endl; },
+				0.2f
+			};
+			m_ButtonTools_10 = new Button(buttonTools_10Params);
+			ButtonConstructorParameters buttonTools_11Params = ButtonConstructorParameters{
+				m_Scene->m_Registry,
+				m_PanelTools->entityID,
+				glm::vec3{ 0.75f, 8.25, 0.0011f },
+				buttonSize,
+				buttonColor,
+				nullptr,
+				[]() {std::cout << "You clicked the 11th Button inside the tools panel!" << std::endl; },
+				0.2f
+			};
+			m_ButtonTools_11 = new Button(buttonTools_11Params);
+			ButtonConstructorParameters buttonTools_12Params = ButtonConstructorParameters{
+				m_Scene->m_Registry,
+				m_PanelTools->entityID,
+				glm::vec3{ 2.0f, 8.25, 0.0011f },
+				buttonSize,
+				buttonColor,
+				nullptr,
+				[]() {std::cout << "You clicked the 12th Button inside the tools panel!" << std::endl; },
+				0.2f
+			};
+			m_ButtonTools_12 = new Button(buttonTools_12Params);
+			ButtonConstructorParameters buttonTools_13Params = ButtonConstructorParameters{
+				m_Scene->m_Registry,
+				m_PanelTools->entityID,
+				glm::vec3{ 0.75f, 9.5, 0.0011f },
+				buttonSize,
+				buttonColor,
+				nullptr,
+				[]() {std::cout << "You clicked the 13th Button inside the tools panel!" << std::endl; },
+				0.2f
+			};
+			m_ButtonTools_13 = new Button(buttonTools_13Params);
+			ButtonConstructorParameters buttonTools_14Params = ButtonConstructorParameters{
+				m_Scene->m_Registry,
+				m_PanelTools->entityID,
+				glm::vec3{ 2.0f, 9.5, 0.0011f },
+				buttonSize,
+				buttonColor,
+				nullptr,
+				[]() {std::cout << "You clicked the 14th Button inside the tools panel!" << std::endl; },
+				0.2f
+			};
+			m_ButtonTools_14 = new Button(buttonTools_14Params);
 			std::vector<entt::entity> toolsButtonList = {
 			 m_ButtonTools_01->entityID,
 			 m_ButtonTools_02->entityID,
@@ -1217,51 +1362,163 @@ namespace Can
 			};
 			m_Scene->m_Registry.emplace<ChildrenComponent>(m_PanelTools->entityID, toolsButtonList);
 		}
-		/*Buttons in the Needs panel*/ {
+		/*Buttons in the needs panel*/{
 			glm::vec2 buttonSize{ 1.0f, 1.0f };
 			glm::vec4 buttonColor{ 1.0f, 1.0f, 1.0f, 1.0f };
-			m_ButtonNeeds_01 = new Button(ButtonConstructorParameters{ m_Scene->m_Registry, m_PanelNeeds->entityID, glm::vec3{ 0.75f, 2.0f, 0.0011f }, buttonSize, buttonColor, nullptr,
-				[]() {std::cout << "You clicked the 1st Button inside the Needs panel!" << std::endl; }, 0.2f
-				});
-			m_ButtonNeeds_02 = new Button(ButtonConstructorParameters{ m_Scene->m_Registry, m_PanelNeeds->entityID, glm::vec3{ 2.0f, 2.0f, 0.0011f }, buttonSize, buttonColor, nullptr,
-				[]() {std::cout << "You clicked the 2nd Button inside the Needs panel!" << std::endl; }, 0.2f
-				});
-			m_ButtonNeeds_03 = new Button(ButtonConstructorParameters{ m_Scene->m_Registry, m_PanelNeeds->entityID, glm::vec3{ 0.75f, 3.25f, 0.0011f }, buttonSize, buttonColor, nullptr,
-				[]() {std::cout << "You clicked the 3rd Button inside the Needs panel!" << std::endl; }, 0.2f
-				});
-			m_ButtonNeeds_04 = new Button(ButtonConstructorParameters{ m_Scene->m_Registry, m_PanelNeeds->entityID, glm::vec3{ 2.0f, 3.25f, 0.0011f }, buttonSize, buttonColor, nullptr,
-				[]() {std::cout << "You clicked the 4th Button inside the Needs panel!" << std::endl; }, 0.2f
-				});
-			m_ButtonNeeds_05 = new Button(ButtonConstructorParameters{ m_Scene->m_Registry, m_PanelNeeds->entityID, glm::vec3{ 0.75f, 4.5f, 0.0011f }, buttonSize, buttonColor, nullptr,
-				[]() {std::cout << "You clicked the 5th Button inside the Needs panel!" << std::endl; }, 0.2f
-				});
-			m_ButtonNeeds_06 = new Button(ButtonConstructorParameters{ m_Scene->m_Registry, m_PanelNeeds->entityID, glm::vec3{ 2.0f, 4.5, 0.0011f }, buttonSize, buttonColor, nullptr,
-				[]() {std::cout << "You clicked the 6th Button inside the Needs panel!" << std::endl; }, 0.2f
-				});
-			m_ButtonNeeds_07 = new Button(ButtonConstructorParameters{ m_Scene->m_Registry, m_PanelNeeds->entityID, glm::vec3{ 0.75f, 5.75, 0.0011f }, buttonSize, buttonColor, nullptr,
-				[]() {std::cout << "You clicked the 7th Button inside the Needs panel!" << std::endl; }, 0.2f
-				});
-			m_ButtonNeeds_08 = new Button(ButtonConstructorParameters{ m_Scene->m_Registry, m_PanelNeeds->entityID, glm::vec3{ 2.0f, 5.75, 0.0011f }, buttonSize, buttonColor, nullptr,
-				[]() {std::cout << "You clicked the 8th Button inside the Needs panel!" << std::endl; }, 0.2f
-				});
-			m_ButtonNeeds_09 = new Button(ButtonConstructorParameters{ m_Scene->m_Registry, m_PanelNeeds->entityID, glm::vec3{ 0.75f, 7.0f, 0.0011f }, buttonSize, buttonColor, nullptr,
-				[]() {std::cout << "You clicked the 9th Button inside the Needs panel!" << std::endl; }, 0.2f
-				});
-			m_ButtonNeeds_10 = new Button(ButtonConstructorParameters{ m_Scene->m_Registry, m_PanelNeeds->entityID, glm::vec3{ 2.0f, 7.0f, 0.0011f }, buttonSize, buttonColor, nullptr,
-				[]() {std::cout << "You clicked the 10th Button inside the Needs panel!" << std::endl; }, 0.2f
-				});
-			m_ButtonNeeds_11 = new Button(ButtonConstructorParameters{ m_Scene->m_Registry, m_PanelNeeds->entityID, glm::vec3{ 0.75f, 8.25, 0.0011f }, buttonSize, buttonColor, nullptr,
-				[]() {std::cout << "You clicked the 11th Button inside the Needs panel!" << std::endl; }, 0.2f
-				});
-			m_ButtonNeeds_12 = new Button(ButtonConstructorParameters{ m_Scene->m_Registry, m_PanelNeeds->entityID, glm::vec3{ 2.0f, 8.25, 0.0011f }, buttonSize, buttonColor, nullptr,
-				[]() {std::cout << "You clicked the 12th Button inside the Needs panel!" << std::endl; }, 0.2f
-				});
-			m_ButtonNeeds_13 = new Button(ButtonConstructorParameters{ m_Scene->m_Registry, m_PanelNeeds->entityID, glm::vec3{ 0.75f, 9.5, 0.0011f }, buttonSize, buttonColor, nullptr,
-				[]() {std::cout << "You clicked the 13th Button inside the Needs panel!" << std::endl; }, 0.2f
-				});
-			m_ButtonNeeds_14 = new Button(ButtonConstructorParameters{ m_Scene->m_Registry, m_PanelNeeds->entityID, glm::vec3{ 2.0f, 9.5, 0.0011f }, buttonSize, buttonColor, nullptr,
-				[]() {std::cout << "You clicked the 14th Button inside the Needs panel!" << std::endl; }, 0.2f
-				});
+			ButtonConstructorParameters buttonNeeds_01Params = ButtonConstructorParameters{
+				m_Scene->m_Registry,
+				m_PanelNeeds->entityID,
+				glm::vec3{ 0.75f, 2.0f, 0.0011f },
+				buttonSize,
+				buttonColor,
+				nullptr,
+				[]() {std::cout << "You clicked the 1st Button inside the needs panel!" << std::endl; },
+				0.2f
+			};
+			m_ButtonNeeds_01 = new Button(buttonNeeds_01Params);
+			ButtonConstructorParameters buttonNeeds_02Params = ButtonConstructorParameters{
+				m_Scene->m_Registry,
+				m_PanelNeeds->entityID,
+				glm::vec3{ 2.0f, 2.0f, 0.0011f },
+				buttonSize,
+				buttonColor,
+				nullptr,
+				[]() {std::cout << "You clicked the 2nd Button inside the needs panel!" << std::endl; },
+				0.2f
+			};
+			m_ButtonNeeds_02 = new Button(buttonNeeds_02Params);
+			ButtonConstructorParameters buttonNeeds_03Params = ButtonConstructorParameters{
+				m_Scene->m_Registry,
+				m_PanelNeeds->entityID,
+				glm::vec3{ 0.75f, 3.25f, 0.0011f },
+				buttonSize,
+				buttonColor,
+				nullptr,
+				[]() {std::cout << "You clicked the 3rd Button inside the needs panel!" << std::endl; },
+				0.2f
+			};
+			m_ButtonNeeds_03 = new Button(buttonNeeds_03Params);
+			ButtonConstructorParameters buttonNeeds_04Params = ButtonConstructorParameters{
+				m_Scene->m_Registry,
+				m_PanelNeeds->entityID,
+				glm::vec3{ 2.0f, 3.25f, 0.0011f },
+				buttonSize,
+				buttonColor,
+				nullptr,
+				[]() {std::cout << "You clicked the 4th Button inside the needs panel!" << std::endl; },
+				0.2f
+			};
+			m_ButtonNeeds_04 = new Button(buttonNeeds_04Params);
+			ButtonConstructorParameters buttonNeeds_05Params = ButtonConstructorParameters{
+				m_Scene->m_Registry,
+				m_PanelNeeds->entityID,
+				glm::vec3{ 0.75f, 4.5f, 0.0011f },
+				buttonSize,
+				buttonColor,
+				nullptr,
+				[]() {std::cout << "You clicked the 5th Button inside the needs panel!" << std::endl; },
+				0.2f
+			};
+			m_ButtonNeeds_05 = new Button(buttonNeeds_05Params);
+			ButtonConstructorParameters buttonNeeds_06Params = ButtonConstructorParameters{
+				m_Scene->m_Registry,
+				m_PanelNeeds->entityID,
+				glm::vec3{ 2.0f, 4.5, 0.0011f },
+				buttonSize,
+				buttonColor,
+				nullptr,
+				[]() {std::cout << "You clicked the 6th Button inside the needs panel!" << std::endl; },
+				0.2f
+			};
+			m_ButtonNeeds_06 = new Button(buttonNeeds_06Params);
+			ButtonConstructorParameters buttonNeeds_07Params = ButtonConstructorParameters{
+				m_Scene->m_Registry,
+				m_PanelNeeds->entityID,
+				glm::vec3{ 0.75f, 5.75, 0.0011f },
+				buttonSize,
+				buttonColor,
+				nullptr,
+				[]() {std::cout << "You clicked the 7th Button inside the needs panel!" << std::endl; },
+				0.2f
+			};
+			m_ButtonNeeds_07 = new Button(buttonNeeds_07Params);
+			ButtonConstructorParameters buttonNeeds_08Params = ButtonConstructorParameters{
+				m_Scene->m_Registry,
+				m_PanelNeeds->entityID,
+				glm::vec3{ 2.0f, 5.75, 0.0011f },
+				buttonSize,
+				buttonColor,
+				nullptr,
+				[]() {std::cout << "You clicked the 8th Button inside the needs panel!" << std::endl; },
+				0.2f
+			};
+			m_ButtonNeeds_08 = new Button(buttonNeeds_08Params);
+			ButtonConstructorParameters buttonNeeds_09Params = ButtonConstructorParameters{
+				m_Scene->m_Registry,
+				m_PanelNeeds->entityID,
+				glm::vec3{ 0.75f, 7.0f, 0.0011f },
+				buttonSize,
+				buttonColor,
+				nullptr,
+				[]() {std::cout << "You clicked the 9th Button inside the needs panel!" << std::endl; },
+				0.2f
+			};
+			m_ButtonNeeds_09 = new Button(buttonNeeds_09Params);
+			ButtonConstructorParameters buttonNeeds_10Params = ButtonConstructorParameters{
+				m_Scene->m_Registry,
+				m_PanelNeeds->entityID,
+				glm::vec3{ 2.0f, 7.0f, 0.0011f },
+				buttonSize,
+				buttonColor,
+				nullptr,
+				[]() {std::cout << "You clicked the 10th Button inside the needs panel!" << std::endl; },
+				0.2f
+			};
+			m_ButtonNeeds_10 = new Button(buttonNeeds_10Params);
+			ButtonConstructorParameters buttonNeeds_11Params = ButtonConstructorParameters{
+				m_Scene->m_Registry,
+				m_PanelNeeds->entityID,
+				glm::vec3{ 0.75f, 8.25, 0.0011f },
+				buttonSize,
+				buttonColor,
+				nullptr,
+				[]() {std::cout << "You clicked the 11th Button inside the needs panel!" << std::endl; },
+				0.2f
+			};
+			m_ButtonNeeds_11 = new Button(buttonNeeds_11Params);
+			ButtonConstructorParameters buttonNeeds_12Params = ButtonConstructorParameters{
+				m_Scene->m_Registry,
+				m_PanelNeeds->entityID,
+				glm::vec3{ 2.0f, 8.25, 0.0011f },
+				buttonSize,
+				buttonColor,
+				nullptr,
+				[]() {std::cout << "You clicked the 12th Button inside the needs panel!" << std::endl; },
+				0.2f
+			};
+			m_ButtonNeeds_12 = new Button(buttonNeeds_12Params);
+			ButtonConstructorParameters buttonNeeds_13Params = ButtonConstructorParameters{
+				m_Scene->m_Registry,
+				m_PanelNeeds->entityID,
+				glm::vec3{ 0.75f, 9.5, 0.0011f },
+				buttonSize,
+				buttonColor,
+				nullptr,
+				[]() {std::cout << "You clicked the 13th Button inside the needs panel!" << std::endl; },
+				0.2f
+			};
+			m_ButtonNeeds_13 = new Button(buttonNeeds_13Params);
+			ButtonConstructorParameters buttonNeeds_14Params = ButtonConstructorParameters{
+				m_Scene->m_Registry,
+				m_PanelNeeds->entityID,
+				glm::vec3{ 2.0f, 9.5, 0.0011f },
+				buttonSize,
+				buttonColor,
+				nullptr,
+				[]() {std::cout << "You clicked the 14th Button inside the needs panel!" << std::endl; },
+				0.2f
+			};
+			m_ButtonNeeds_14 = new Button(buttonNeeds_14Params);
 			std::vector<entt::entity> needsButtonList = {
 			 m_ButtonNeeds_01->entityID,
 			 m_ButtonNeeds_02->entityID,
@@ -1285,9 +1542,6 @@ namespace Can
 		std::vector<Prefab*> result;
 		namespace fs = std::filesystem;
 		std::string s = fs::current_path().string();
-		std::string pathr = s + "\\assets\\objects\\Roads";
-
-		std::vector<std::string> roadtumbnailimagefiles = Helper::GetFiles(pathr, "Thumbnail_", ".png");
 
 		std::string pathh = s + "\\assets\\objects\\Houses";
 
@@ -1302,17 +1556,17 @@ namespace Can
 		std::vector<std::string> cartumbnailimagefiles = Helper::GetFiles(pathc, "Thumbnail_", ".png");
 
 		/*Buttons in the Roads panel*/ {
-			size_t roadCount = m_Parent->roads.size();
+			size_t roadCount = m_Parent->road_types.size();
 			ChildrenComponent& children = m_Scene->m_Registry.get_or_emplace<ChildrenComponent>(m_ScrollViewRoads->entityID, std::vector<entt::entity>{});
 			for (size_t i = 0; i < roadCount; i++)
 			{
-				Button* roadPanelbutton = new Button(ButtonConstructorParameters{
+				ButtonConstructorParameters roadPanelButtonParams = ButtonConstructorParameters{
 					m_Scene->m_Registry,
 					m_ScrollViewRoads->entityID,
 					glm::vec3(0.0f),
 					glm::vec2(3.5f),
 					glm::vec4{ 1.0f, 1.0f, 1.0f, 1.0f },
-					Texture2D::Create(roadtumbnailimagefiles[i]),
+					m_Parent->road_types[i].thumbnail,
 					[i, this]() {
 						if (!Input::IsMouseButtonPressed(MouseCode::Button0))
 							return;
@@ -1324,9 +1578,10 @@ namespace Can
 						this->m_Parent->gameScene->m_RoadManager.SetType(i);
 					},
 					0.1f
-					});
-				children.Children.push_back(roadPanelbutton->entityID);
-				m_RoadPanelButtonList.push_back(roadPanelbutton);
+				};
+				Button* roadPanelButton = new Button(roadPanelButtonParams);
+				children.Children.push_back(roadPanelButton->entityID);
+				m_RoadPanelButtonList.push_back(roadPanelButton);
 			}
 			m_ScrollViewRoads->Update();
 		}
@@ -1335,7 +1590,7 @@ namespace Can
 			ChildrenComponent& children = m_Scene->m_Registry.emplace<ChildrenComponent>(m_ScrollViewBuildings->entityID, std::vector<entt::entity>{});
 			for (size_t i = 0; i < buildingCount; i++)
 			{
-				Button* buildingPanelbutton = new Button(ButtonConstructorParameters{
+				ButtonConstructorParameters buildingPanelButtonParams = ButtonConstructorParameters{
 					m_Scene->m_Registry,
 					m_ScrollViewBuildings->entityID,
 					glm::vec3(0.0f),
@@ -1353,9 +1608,10 @@ namespace Can
 						this->m_Parent->gameScene->m_BuildingManager.SetType(i);
 					},
 					0.1f
-					});
-				children.Children.push_back(buildingPanelbutton->entityID);
-				m_BuildingPanelButtonList.push_back(buildingPanelbutton);
+				};
+				Button* buildingPanelButton = new Button(buildingPanelButtonParams);
+				children.Children.push_back(buildingPanelButton->entityID);
+				m_BuildingPanelButtonList.push_back(buildingPanelButton);
 			}
 			m_ScrollViewBuildings->Update();
 		}
@@ -1364,7 +1620,7 @@ namespace Can
 			ChildrenComponent& children = m_Scene->m_Registry.emplace<ChildrenComponent>(m_ScrollViewTrees->entityID, std::vector<entt::entity>{});
 			for (size_t i = 0; i < treeCount; i++)
 			{
-				Button* treePanelbutton = new Button(ButtonConstructorParameters{
+				ButtonConstructorParameters treePanelButtonParams = ButtonConstructorParameters{
 					m_Scene->m_Registry,
 					m_ScrollViewTrees->entityID,
 					glm::vec3(0.0f),
@@ -1382,9 +1638,10 @@ namespace Can
 						this->m_Parent->gameScene->m_TreeManager.SetType(i);
 					},
 					0.1f
-					});
-				children.Children.push_back(treePanelbutton->entityID);
-				m_TreePanelButtonList.push_back(treePanelbutton);
+				};
+				Button* treePanelButton = new Button(treePanelButtonParams);
+				children.Children.push_back(treePanelButton->entityID);
+				m_TreePanelButtonList.push_back(treePanelButton);
 			}
 			m_ScrollViewTrees->Update();
 		}
@@ -1393,7 +1650,7 @@ namespace Can
 			ChildrenComponent& children = m_Scene->m_Registry.emplace<ChildrenComponent>(m_ScrollViewCars->entityID, std::vector<entt::entity>{});
 			for (size_t i = 0; i < carCount; i++)
 			{
-				Button* carPanelbutton = new Button(ButtonConstructorParameters{
+				ButtonConstructorParameters carPanelButtonParams = ButtonConstructorParameters{
 					m_Scene->m_Registry,
 					m_ScrollViewCars->entityID,
 					glm::vec3(0.0f),
@@ -1411,7 +1668,8 @@ namespace Can
 						this->m_Parent->gameScene->m_CarManager.SetType(i);
 					},
 					0.1f
-					});
+				};
+				Button* carPanelbutton = new Button(carPanelButtonParams);
 				children.Children.push_back(carPanelbutton->entityID);
 				m_CarPanelButtonList.push_back(carPanelbutton);
 			}
@@ -1421,22 +1679,48 @@ namespace Can
 
 	UIScene::~UIScene()
 	{
+		delete m_ButtonPause;
+		delete m_ButtonNormal;
+		delete m_Button2Times;
+		delete m_Button4Times;
 
 		delete m_ButtonRoads;
 		delete m_ButtonBuildings;
 		delete m_ButtonTrees;
+		delete m_ButtonCars;
 		delete m_ButtonNeeds;
 		delete m_ButtonTools;
 
 		delete m_PanelRoads;
 		delete m_PanelBuildings;
 		delete m_PanelTrees;
+		delete m_PanelCars;
 		delete m_PanelNeeds;
 		delete m_PanelTools;
+
+		delete m_StraightRoadButton;
+		delete m_QuadraticRoadButton;
+		delete m_Cubic1234RoadButton;
+		delete m_Cubic1243RoadButton;
+		delete m_Cubic1342RoadButton;
+		delete m_Cubic1432RoadButton;
+		delete m_DestructRoadButton;
+		delete m_ChangeRoadButton;
+		delete m_CancelRoadButton;
+
+		delete m_ConstructBuildingButton;
+		delete m_DestructBuildingButton;
+		delete m_UpgradeBuildingButton;
+		delete m_CancelBuildingButton;
+
+		delete m_AddTreeButton;
+		delete m_RemoveTreeButton;
+		delete m_CancelTreeButton;
 
 		delete m_ScrollViewRoads;
 		delete m_ScrollViewBuildings;
 		delete m_ScrollViewTrees;
+		delete m_ScrollViewCars;
 
 		delete m_ButtonTools_01;
 		delete m_ButtonTools_02;
@@ -1469,10 +1753,38 @@ namespace Can
 		delete m_ButtonNeeds_14;
 
 
-		//Delete lists??
-		// delete[] m_RoadPanelButtonList;
-		// delete[] m_BuildingPanelButtonList;
-		// delete[] m_TreePanelButtonList;
+		u64 index = m_RoadPanelButtonList.size();
+		while (index != 0)
+		{
+			index--;
+			Button* b = m_RoadPanelButtonList[index];
+			m_RoadPanelButtonList.pop_back();
+			delete b;
+		}
+		index = m_BuildingPanelButtonList.size();
+		while (index != 0)
+		{
+			index--;
+			Button* b = m_BuildingPanelButtonList[index];
+			m_BuildingPanelButtonList.pop_back();
+			delete b;
+		}
+		index = m_TreePanelButtonList.size();
+		while (index != 0)
+		{
+			index--;
+			Button* b = m_TreePanelButtonList[index];
+			m_TreePanelButtonList.pop_back();
+			delete b;
+		}
+		index = m_CarPanelButtonList.size();
+		while (index != 0)
+		{
+			index--;
+			Button* b = m_CarPanelButtonList[index];
+			m_CarPanelButtonList.pop_back();
+			delete b;
+		}
 
 		delete m_Scene;
 	}
@@ -1499,8 +1811,8 @@ namespace Can
 
 		for (entt::entity e : view)
 			m_Scene->m_Registry.get<OnDragCallbackComponent>(e)();
-		char fpsText[10];
-		sprintf(fpsText, "FPS: %3.2f", (1.0f / ts));
+		char fpsText[15];
+		sprintf(fpsText, "FPS:%3.2f", (1.0f / ts));
 		Renderer2D::DrawText(
 			fpsText,
 			glm::vec3{ -1330.0f , -420.0f, 2.0f },
