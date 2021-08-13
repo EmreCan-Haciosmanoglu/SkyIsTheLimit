@@ -44,6 +44,8 @@
       <Filter>Types</Filter>
     </ClInclude>
     <ClInclude Include="src\UIScene.h" />
+    <ClInclude Include="src\Scenes\Main_Menu\Main_Menu.h" />
+    <ClInclude Include="src\Scenes\Main_Menu\Main_Menu_UI.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Building.cpp" />
@@ -75,5 +77,7 @@
       <Filter>Types</Filter>
     </ClCompile>
     <ClCompile Include="src\UIScene.cpp" />
+    <ClCompile Include="src\Scenes\Main_Menu\Main_Menu.cpp" />
+    <ClCompile Include="src\Scenes\Main_Menu\Main_Menu_UI.cpp" />
   </ItemGroup>
 </Project>

@@ -43,24 +43,30 @@ namespace Can
 		LoadTrees();
 		LoadCars();
 
-		gameScene = new GameScene(this);
-		PushLayer(gameScene);
+		//gameScene = new GameScene(this);
+		//PushLayer(gameScene);
+		//
+		//uiScene = new UIScene(this);
+		//PushOverlay(uiScene);
+		//
+		//debugScene = new Debug(this);
+		//PushOverlay(debugScene);
 
-		uiScene = new UIScene(this);
-		PushOverlay(uiScene);
 
-		debugScene = new Debug(this);
-		PushOverlay(debugScene);
+		init_main_menu(*this, main_menu);
+		load_main_menu(*this, main_menu);
 	}
 
 	GameApp::~GameApp()
 	{
-		PopLayer(gameScene);
-		delete gameScene;
-		PopOverlay(uiScene);
-		delete uiScene;
-		PopOverlay(debugScene);
-		delete debugScene;
+		//PopLayer(gameScene);
+		//delete gameScene;
+		//PopOverlay(uiScene);
+		//delete uiScene;
+		//PopOverlay(debugScene);
+		//delete debugScene;
+
+		unload_main_menu(*this, main_menu);
 	}
 
 	void GameApp::LoadRoadTypes()
