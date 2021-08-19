@@ -537,7 +537,7 @@ namespace Can
 					entt::registry& mainRegistry = this->m_Scene->m_Registry;
 					entt::entity scrollbarID = this->m_ScrollViewRoads->scrollbar->entityID;
 
-					auto [mouseX, mouseY] = Input::GetMousePos();
+					auto [mouseX, mouseY] = Input::get_mouse_pos_float();
 					bool changed = this->m_ScrollViewRoads->scrollbar->Update(glm::vec2{
 							(mouseX * width) / w,
 							(mouseY * height) / h
@@ -550,7 +550,7 @@ namespace Can
 					entt::registry& mainRegistry = this->m_Scene->m_Registry;
 					entt::entity scrollbarID = this->m_ScrollViewRoads->scrollbar->entityID;
 
-					auto [mouseX, mouseY] = Input::GetMousePos();
+					auto [mouseX, mouseY] = Input::get_mouse_pos_float();
 					bool changed = this->m_ScrollViewRoads->scrollbar->Update(glm::vec2{
 							(mouseX * width) / w,
 							(mouseY * height) / h
@@ -590,7 +590,7 @@ namespace Can
 					entt::registry& mainRegistry = this->m_Scene->m_Registry;
 					entt::entity scrollbarID = this->m_ScrollViewBuildings->scrollbar->entityID;
 
-					auto [mouseX, mouseY] = Input::GetMousePos();
+					auto [mouseX, mouseY] = Input::get_mouse_pos_float();
 					bool changed = this->m_ScrollViewBuildings->scrollbar->Update(glm::vec2{
 							(mouseX * width) / w,
 							(mouseY * height) / h
@@ -603,7 +603,7 @@ namespace Can
 					entt::registry& mainRegistry = this->m_Scene->m_Registry;
 					entt::entity scrollbarID = this->m_ScrollViewBuildings->scrollbar->entityID;
 
-					auto [mouseX, mouseY] = Input::GetMousePos();
+					auto [mouseX, mouseY] = Input::get_mouse_pos_float();
 					bool changed = this->m_ScrollViewBuildings->scrollbar->Update(glm::vec2{
 							(mouseX * width) / w,
 							(mouseY * height) / h
@@ -643,7 +643,7 @@ namespace Can
 					entt::registry& mainRegistry = this->m_Scene->m_Registry;
 					entt::entity scrollbarID = this->m_ScrollViewTrees->scrollbar->entityID;
 
-					auto [mouseX, mouseY] = Input::GetMousePos();
+					auto [mouseX, mouseY] = Input::get_mouse_pos_float();
 					bool changed = this->m_ScrollViewTrees->scrollbar->Update(glm::vec2{
 							(mouseX * width) / w,
 							(mouseY * height) / h
@@ -656,7 +656,7 @@ namespace Can
 					entt::registry& mainRegistry = this->m_Scene->m_Registry;
 					entt::entity scrollbarID = this->m_ScrollViewTrees->scrollbar->entityID;
 
-					auto [mouseX, mouseY] = Input::GetMousePos();
+					auto [mouseX, mouseY] = Input::get_mouse_pos_float();
 					bool changed = this->m_ScrollViewTrees->scrollbar->Update(glm::vec2{
 							(mouseX * width) / w,
 							(mouseY * height) / h
@@ -696,7 +696,7 @@ namespace Can
 					entt::registry& mainRegistry = this->m_Scene->m_Registry;
 					entt::entity scrollbarID = this->m_ScrollViewCars->scrollbar->entityID;
 
-					auto [mouseX, mouseY] = Input::GetMousePos();
+					auto [mouseX, mouseY] = Input::get_mouse_pos_float();
 					bool changed = this->m_ScrollViewCars->scrollbar->Update(glm::vec2{
 							(mouseX * width) / w,
 							(mouseY * height) / h
@@ -709,7 +709,7 @@ namespace Can
 					entt::registry& mainRegistry = this->m_Scene->m_Registry;
 					entt::entity scrollbarID = this->m_ScrollViewCars->scrollbar->entityID;
 
-					auto [mouseX, mouseY] = Input::GetMousePos();
+					auto [mouseX, mouseY] = Input::get_mouse_pos_float();
 					bool changed = this->m_ScrollViewCars->scrollbar->Update(glm::vec2{
 							(mouseX * width) / w,
 							(mouseY * height) / h

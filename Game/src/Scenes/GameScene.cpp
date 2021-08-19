@@ -197,7 +197,7 @@ namespace Can
 	}
 	v3 GameScene::GetRayCastedFromScreen()
 	{
-		auto [mouseX, mouseY] = Can::Input::GetMousePos();
+		auto [mouseX, mouseY] = Can::Input::get_mouse_pos_float();
 		Application& app = Application::Get();
 		float w = (float)(app.GetWindow().GetWidth());
 		float h = (float)(app.GetWindow().GetHeight());
