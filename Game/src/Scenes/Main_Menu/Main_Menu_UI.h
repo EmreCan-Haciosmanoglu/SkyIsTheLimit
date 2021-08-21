@@ -8,9 +8,18 @@ namespace Can
 {
 	enum class Menus
 	{
-		MainMenu=0,
+		MainMenu = 0,
 		Options,
 		Credits
+	};
+
+	enum class Options_Submenus
+	{
+		Controls = 0,
+		Key_Bindings,
+		Graphics,
+		Audio,
+		Others,
 	};
 
 	struct Main_Menu_UI : public Layer::Layer
@@ -27,6 +36,7 @@ namespace Can
 		Orthographic_Camera_Controller camera_controller;
 
 		Menus current_menu = Menus::MainMenu;
+		Options_Submenus current_options_submenus = Options_Submenus::Controls;
 	};
 
 	void init_main_menu_ui_layer(Main_Menu_UI& ui);

@@ -76,7 +76,7 @@ namespace Can
 	void on_main_menu_ui_layer_event(Main_Menu_UI& ui, Event::Event& event)
 	{
 	}
-	
+
 	void main_menu_screen(Main_Menu_UI& ui)
 	{
 		auto& window = main_application->GetWindow();
@@ -118,28 +118,28 @@ namespace Can
 
 		label_theme.font_size_in_pixel = 24;
 		label_theme.font = nullptr;
-		u16 flags = immediate_button(button_rect, text_1, button_theme, 1);
+		u16 flags = immediate_button(button_rect, text_1, button_theme, __LINE__);
 		if (flags & BUTTON_STATE_FLAGS_PRESSED)
 			std::cout << "Continue The Game is Pressed\n";
 		if (flags & BUTTON_STATE_FLAGS_RELEASED)
 			std::cout << "Continue The Game is Released\n";
 
 		button_rect.y = 350;
-		flags = immediate_button(button_rect, text_2, button_theme, 2);
+		flags = immediate_button(button_rect, text_2, button_theme, __LINE__);
 		if (flags & BUTTON_STATE_FLAGS_PRESSED)
 			std::cout << "Start New Game is Pressed\n";
 		if (flags & BUTTON_STATE_FLAGS_RELEASED)
 			std::cout << "Start New Game is Released\n";
 
 		button_rect.y = 300;
-		flags = immediate_button(button_rect, text_3, button_theme, 3);
+		flags = immediate_button(button_rect, text_3, button_theme, __LINE__);
 		if (flags & BUTTON_STATE_FLAGS_PRESSED)
 			std::cout << "Load A Game is Pressed\n";
 		if (flags & BUTTON_STATE_FLAGS_RELEASED)
 			std::cout << "Load A Game is Released\n";
 
 		button_rect.y = 250;
-		flags = immediate_button(button_rect, text_4, button_theme, 4);
+		flags = immediate_button(button_rect, text_4, button_theme, __LINE__);
 		if (flags & BUTTON_STATE_FLAGS_PRESSED)
 			std::cout << "Options is Pressed\n";
 		if (flags & BUTTON_STATE_FLAGS_RELEASED)
@@ -150,7 +150,7 @@ namespace Can
 		}
 
 		button_rect.y = 200;
-		flags = immediate_button(button_rect, text_5, button_theme, 5);
+		flags = immediate_button(button_rect, text_5, button_theme, __LINE__);
 		if (flags & BUTTON_STATE_FLAGS_PRESSED)
 			std::cout << "Credits is Pressed\n";
 		if (flags & BUTTON_STATE_FLAGS_RELEASED)
@@ -161,7 +161,7 @@ namespace Can
 		}
 
 		button_rect.y = 80;
-		flags = immediate_button(button_rect, text_6, button_theme, 6);
+		flags = immediate_button(button_rect, text_6, button_theme, __LINE__);
 		if (flags & BUTTON_STATE_FLAGS_PRESSED)
 			std::cout << "Exit is Pressed\n";
 		if (flags & BUTTON_STATE_FLAGS_RELEASED)
@@ -192,7 +192,12 @@ namespace Can
 		title_rect.h = 200;
 
 		std::string title = "Options";
-		std::string back = "Back";
+		std::string text_1 = "Controls";
+		std::string text_2 = "Key Bindings";
+		std::string text_3 = "Graphics";
+		std::string text_4 = "Audio";
+		std::string text_5 = "Others";
+		std::string text_6 = "Back";
 
 		immediate_text(title, title_rect, label_theme);
 
@@ -205,11 +210,66 @@ namespace Can
 
 		Rect button_rect;
 		button_rect.x = 80;
-		button_rect.y = 80;
+		button_rect.y = 400;
 		button_rect.w = 250;
 		button_rect.h = 40;
+		u16 flags = immediate_button(button_rect, text_1, button_theme, __LINE__);
+		if (flags & BUTTON_STATE_FLAGS_PRESSED)
+			std::cout << "Controls is Pressed\n";
+		if (flags & BUTTON_STATE_FLAGS_RELEASED)
+		{
+			std::cout << "Controls is Released\n";
+			if (flags & BUTTON_STATE_FLAGS_OVER)
+				ui.current_options_submenus = Options_Submenus::Controls;
+		}
 
-		u16 flags = immediate_button(button_rect, back, button_theme, 7);
+		button_rect.y = 350;
+		flags = immediate_button(button_rect, text_2, button_theme, __LINE__);
+		if (flags & BUTTON_STATE_FLAGS_PRESSED)
+			std::cout << "Key Bindings is Pressed\n";
+		if (flags & BUTTON_STATE_FLAGS_RELEASED)
+		{
+			std::cout << "Key Bindings is Released\n";
+			if (flags & BUTTON_STATE_FLAGS_OVER)
+				ui.current_options_submenus = Options_Submenus::Key_Bindings;
+		}
+
+		button_rect.y = 300;
+		flags = immediate_button(button_rect, text_3, button_theme, __LINE__);
+		if (flags & BUTTON_STATE_FLAGS_PRESSED)
+			std::cout << "Graphics is Pressed\n";
+		if (flags & BUTTON_STATE_FLAGS_RELEASED)
+		{
+			std::cout << "Graphics is Released\n";
+			if (flags & BUTTON_STATE_FLAGS_OVER)
+				ui.current_options_submenus = Options_Submenus::Graphics;
+		}
+
+		button_rect.y = 250;
+		flags = immediate_button(button_rect, text_4, button_theme, __LINE__);
+		if (flags & BUTTON_STATE_FLAGS_PRESSED)
+			std::cout << "Audio is Pressed\n";
+		if (flags & BUTTON_STATE_FLAGS_RELEASED)
+		{
+			std::cout << "Audio is Released\n";
+			if (flags & BUTTON_STATE_FLAGS_OVER)
+				ui.current_options_submenus = Options_Submenus::Audio;
+		}
+
+		button_rect.y = 200;
+		flags = immediate_button(button_rect, text_5, button_theme, __LINE__);
+		if (flags & BUTTON_STATE_FLAGS_PRESSED)
+			std::cout << "Others is Pressed\n";
+		if (flags & BUTTON_STATE_FLAGS_RELEASED)
+		{
+			std::cout << "Others is Released\n";
+			if (flags & BUTTON_STATE_FLAGS_OVER)
+				ui.current_options_submenus = Options_Submenus::Others;
+		}
+
+
+		button_rect.y = 80;
+		flags = immediate_button(button_rect, text_6, button_theme, __LINE__);
 		if (flags & BUTTON_STATE_FLAGS_PRESSED)
 			std::cout << "Back is Pressed\n";
 		if (flags & BUTTON_STATE_FLAGS_RELEASED)
@@ -217,6 +277,97 @@ namespace Can
 			std::cout << "Back is Released\n";
 			if (flags & BUTTON_STATE_FLAGS_OVER)
 				ui.current_menu = Menus::MainMenu;
+		}
+
+		if (ui.current_options_submenus == Options_Submenus::Controls)
+		{
+
+		}
+		else if (ui.current_options_submenus == Options_Submenus::Key_Bindings)
+		{
+
+		}
+		else if (ui.current_options_submenus == Options_Submenus::Graphics)
+		{
+			Label_Theme graphics_options_label_theme;
+			graphics_options_label_theme.font = buffer_data.default_font;
+			graphics_options_label_theme.font_size_in_pixel = 20;
+			graphics_options_label_theme.color = { 0.9f, 0.9f, 0.9f, 1.0f };
+			graphics_options_label_theme.flags = FontFlags::LeftAligned;
+
+			Button_Theme button_theme;
+			button_theme.label_theme = &graphics_options_label_theme;
+			button_theme.background_color = { 0.80f, 0.50f, 0.30f, 1.0f };
+			button_theme.background_color_over = { 0.90f, 0.70f, 0.55f, 1.0f };
+			button_theme.background_color_pressed = { 0.95f, 0.85f, 0.70f, 1.0f };
+
+			Button_Theme button_theme_selected;
+			button_theme_selected.label_theme = &graphics_options_label_theme;
+			button_theme_selected.background_color = { 0.70f, 0.50f, 0.40f, 1.0f };
+			button_theme_selected.background_color_over = { 0.80f, 0.70f, 0.60f, 1.0f };
+			button_theme_selected.background_color_pressed = { 0.90f, 0.85f, 0.80f, 1.0f };
+
+			Drop_Down_List_Theme drop_down_list_theme;
+			drop_down_list_theme.button_theme = &button_theme;
+			drop_down_list_theme.button_theme_selected = &button_theme_selected;
+			drop_down_list_theme.background_color = { 0.25f, 0.25f, 0.25f, 1.0f };
+
+			std::string text_res = "Window Resolution : ";
+
+			Rect r;
+			r.x = 400;
+			r.y = 400;
+			r.w = width_in_pixels - r.x - 50;
+			r.h = 50;
+			v4 background_color{ 0.65f, 0.65f, 0.65f, 1.0f };
+			immediate_quad(r, background_color);
+			immediate_text(text_res, r, graphics_options_label_theme);
+
+			Rect button_rect;
+			button_rect.w = 200;
+			button_rect.h = 50;
+			button_rect.x = width_in_pixels - button_rect.w - 50;
+			button_rect.y = r.y;
+
+			std::vector<std::string> items{
+				"1920 x 1080",
+				"1600 x 900",
+				"1280 x 1024",
+				"1280 x 720",
+				"800  x 600"
+			};
+
+			u64 selected_item = 3;
+			u16 flags = immediate_drop_down_list(button_rect, items, selected_item, drop_down_list_theme, __LINE__);
+			if (flags & DROP_DOWN_LIST_STATE_FLAGS_PRESSED)
+				std::cout << "drop down list is Pressed\n";
+			if (flags & DROP_DOWN_LIST_STATE_FLAGS_RELEASED)
+				std::cout << "drop down list is Released\n";
+			if (flags & DROP_DOWN_LIST_STATE_FLAGS_ITEM_CHANGED)
+			{
+				std::cout << "Active drop down list item is changed\n";
+				//Change The settings;
+				{/*Temp*/
+					if (selected_item == 0)
+						main_application->GetWindow().set_resolution(1920, 1080);
+					else if (selected_item == 1)
+						main_application->GetWindow().set_resolution(1600, 900);
+					else if (selected_item == 2)
+						main_application->GetWindow().set_resolution(1280, 1024);
+					else if (selected_item == 3)
+						main_application->GetWindow().set_resolution(1280, 720);
+					else if (selected_item == 4)
+						main_application->GetWindow().set_resolution(800, 600);
+				}
+			}
+		}
+		else if (ui.current_options_submenus == Options_Submenus::Audio)
+		{
+
+		}
+		else if (ui.current_options_submenus == Options_Submenus::Others)
+		{
+
 		}
 	}
 	void credits_screen(Main_Menu_UI& ui)
@@ -271,13 +422,13 @@ namespace Can
 		button_rect.w = 250;
 		button_rect.h = 40;
 
-		u16 flags = immediate_button(button_rect, back, button_theme, 7);
+		u16 flags = immediate_button(button_rect, back, button_theme, __LINE__);
 		if (flags & BUTTON_STATE_FLAGS_PRESSED)
 			std::cout << "Back is Pressed\n";
 		if (flags & BUTTON_STATE_FLAGS_RELEASED)
 		{
 			std::cout << "Back is Released\n";
-			if(flags & BUTTON_STATE_FLAGS_OVER)
+			if (flags & BUTTON_STATE_FLAGS_OVER)
 				ui.current_menu = Menus::MainMenu;
 		}
 	}
