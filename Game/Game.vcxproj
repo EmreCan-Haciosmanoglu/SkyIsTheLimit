@@ -176,6 +176,9 @@
     <ProjectReference Include="..\Engine\Can\Can\Can.vcxproj">
       <Project>{D7DC870B-43E6-877C-CC61-9E7C386A937C}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\Engine\Can\Can\vendor\freetype\FreeType.vcxproj">
+      <Project>{49610F50-352E-6A5B-5E47-58034A739FE9}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -34,7 +34,7 @@ namespace Can
 		init_orthographic_camera_controller(ui.camera_controller, 16.0f / 9.0f, 10.0f, false);
 		auto ptr = &ui.camera_controller;
 		buffer_data.camera_controller = ptr;
-		//ui.font = new Font("assets/fonts/DancingScript/DancingScript-Regular.ttf");
+		ui.font = load_font("assets/fonts/DancingScript/DancingScript-Regular.ttf");
 	}
 
 	void on_main_menu_ui_layer_attach(Main_Menu_UI& ui)
@@ -47,9 +47,6 @@ namespace Can
 	void on_main_menu_ui_layer_update(Main_Menu_UI& ui, TimeStep ts)
 	{
 		auto& camera_controller = ui.camera_controller;
-		auto& window = main_application->GetWindow();
-		u64 width_in_pixels = window.GetWidth();
-		u64 height_in_pixels = window.GetHeight();
 
 		RenderCommand::SetClearColor({ 0.35f, 0.35f, 0.35f, 1.0f });
 		RenderCommand::Clear();
@@ -57,15 +54,45 @@ namespace Can
 
 		set_camera_for_immediate_renderer();
 
+		switch (ui.current_menu)
+		{
+		case Menus::MainMenu:
+			main_menu_screen(ui);
+			break;
+		case Menus::Options:
+			options_screen(ui);
+			break;
+		case Menus::Credits:
+			credits_screen(ui);
+			break;
+		default:
+			break;
+		}
+
+		immediate_flush();
+		RenderCommand::enable_depth_testing(true);
+	}
+
+	void on_main_menu_ui_layer_event(Main_Menu_UI& ui, Event::Event& event)
+	{
+	}
+	
+	void main_menu_screen(Main_Menu_UI& ui)
+	{
+		auto& window = main_application->GetWindow();
+		u64 width_in_pixels = window.GetWidth();
+		u64 height_in_pixels = window.GetHeight();
 
 		Rect button_rect;
-		button_rect.x = 100;
+		button_rect.x = 80;
 		button_rect.y = 400;
 		button_rect.w = 250;
 		button_rect.h = 40;
 
 		Label_Theme label_theme;
 		label_theme.color = { 0.9f, 0.9f, 0.9f, 1.0f };
+		label_theme.font = (Font*)ui.font;
+		label_theme.font_size_in_pixel = 85;
 
 		Button_Theme button_theme;
 		button_theme.background_color = { 0.80f, 0.50f, 0.30f, 1.0f };
@@ -89,10 +116,9 @@ namespace Can
 
 		immediate_text(title, title_rect, label_theme);
 
-		//label_theme.font = ui.font;
-		label_theme.font_size_in_pixel = 18;
-
-		u8 flags = immediate_button(button_rect, text_1, button_theme, 1);
+		label_theme.font_size_in_pixel = 24;
+		label_theme.font = nullptr;
+		u16 flags = immediate_button(button_rect, text_1, button_theme, 1);
 		if (flags & BUTTON_STATE_FLAGS_PRESSED)
 			std::cout << "Continue The Game is Pressed\n";
 		if (flags & BUTTON_STATE_FLAGS_RELEASED)
@@ -117,26 +143,142 @@ namespace Can
 		if (flags & BUTTON_STATE_FLAGS_PRESSED)
 			std::cout << "Options is Pressed\n";
 		if (flags & BUTTON_STATE_FLAGS_RELEASED)
+		{
 			std::cout << "Options is Released\n";
+			if (flags & BUTTON_STATE_FLAGS_OVER)
+				ui.current_menu = Menus::Options;
+		}
 
 		button_rect.y = 200;
 		flags = immediate_button(button_rect, text_5, button_theme, 5);
 		if (flags & BUTTON_STATE_FLAGS_PRESSED)
 			std::cout << "Credits is Pressed\n";
 		if (flags & BUTTON_STATE_FLAGS_RELEASED)
+		{
 			std::cout << "Credits is Released\n";
+			if (flags & BUTTON_STATE_FLAGS_OVER)
+				ui.current_menu = Menus::Credits;
+		}
 
-		button_rect.y = 150;
+		button_rect.y = 80;
 		flags = immediate_button(button_rect, text_6, button_theme, 6);
 		if (flags & BUTTON_STATE_FLAGS_PRESSED)
 			std::cout << "Exit is Pressed\n";
 		if (flags & BUTTON_STATE_FLAGS_RELEASED)
+		{
 			std::cout << "Exit is Released\n";
-
-		immediate_flush();
-		RenderCommand::enable_depth_testing(true);
+			if (flags & BUTTON_STATE_FLAGS_OVER)
+				main_application->m_Running = false;
+		}
 	}
-	void on_main_menu_ui_layer_event(Main_Menu_UI& ui, Event::Event& event)
+	void options_screen(Main_Menu_UI& ui)
 	{
+		auto& window = main_application->GetWindow();
+		u64 width_in_pixels = window.GetWidth();
+		u64 height_in_pixels = window.GetHeight();
+
+		if (Input::IsKeyPressed(KeyCode::Escape))
+			ui.current_menu = Menus::MainMenu;
+
+		Label_Theme label_theme;
+		label_theme.font = buffer_data.default_font;
+		label_theme.font_size_in_pixel = 85;
+		label_theme.color = { 0.9f, 0.9f, 0.9f, 1.0f };
+
+		Rect title_rect;
+		title_rect.x = 0;
+		title_rect.y = height_in_pixels - 200;
+		title_rect.w = width_in_pixels;
+		title_rect.h = 200;
+
+		std::string title = "Options";
+		std::string back = "Back";
+
+		immediate_text(title, title_rect, label_theme);
+
+		label_theme.font_size_in_pixel = buffer_data.default_font_size_in_pixel;
+		Button_Theme button_theme;
+		button_theme.label_theme = &label_theme;
+		button_theme.background_color = { 0.80f, 0.50f, 0.30f, 1.0f };
+		button_theme.background_color_over = { 0.90f, 0.70f, 0.55f, 1.0f };
+		button_theme.background_color_pressed = { 0.95f, 0.85f, 0.70f, 1.0f };
+
+		Rect button_rect;
+		button_rect.x = 80;
+		button_rect.y = 80;
+		button_rect.w = 250;
+		button_rect.h = 40;
+
+		u16 flags = immediate_button(button_rect, back, button_theme, 7);
+		if (flags & BUTTON_STATE_FLAGS_PRESSED)
+			std::cout << "Back is Pressed\n";
+		if (flags & BUTTON_STATE_FLAGS_RELEASED)
+		{
+			std::cout << "Back is Released\n";
+			if (flags & BUTTON_STATE_FLAGS_OVER)
+				ui.current_menu = Menus::MainMenu;
+		}
+	}
+	void credits_screen(Main_Menu_UI& ui)
+	{
+		auto& window = main_application->GetWindow();
+		u64 width_in_pixels = window.GetWidth();
+		u64 height_in_pixels = window.GetHeight();
+
+		if (Input::IsKeyPressed(KeyCode::Escape))
+			ui.current_menu = Menus::MainMenu;
+
+		Label_Theme label_theme;
+		label_theme.font = buffer_data.default_font;
+		label_theme.font_size_in_pixel = 85;
+		label_theme.color = { 0.9f, 0.9f, 0.9f, 1.0f };
+
+		Rect title_rect;
+		title_rect.x = 0;
+		title_rect.y = height_in_pixels - 200;
+		title_rect.w = width_in_pixels;
+		title_rect.h = 200;
+
+		std::string title = "Credits";
+		std::string name_1 = "Emre Can Haciosmanoglu";
+		std::string name_2 = "Vice President: Muhammed Talha Demir";
+		std::string back = "Back";
+
+		immediate_text(title, title_rect, label_theme);
+
+		label_theme.font_size_in_pixel = 60;
+		title_rect.y = height_in_pixels - 400;
+		title_rect.h = 150;
+		immediate_text(name_1, title_rect, label_theme);
+
+		label_theme.font_size_in_pixel = 7;
+		title_rect.y = 0;
+		title_rect.h = 50;
+		label_theme.flags = FontFlags::RightAligned | FontFlags::BottomAligned;
+		immediate_text(name_2, title_rect, label_theme);
+
+		label_theme.font_size_in_pixel = buffer_data.default_font_size_in_pixel;
+		label_theme.flags = 0;
+		Button_Theme button_theme;
+		button_theme.label_theme = &label_theme;
+		button_theme.background_color = { 0.80f, 0.50f, 0.30f, 1.0f };
+		button_theme.background_color_over = { 0.90f, 0.70f, 0.55f, 1.0f };
+		button_theme.background_color_pressed = { 0.95f, 0.85f, 0.70f, 1.0f };
+
+		Rect button_rect;
+		button_rect.x = 80;
+		button_rect.y = 80;
+		button_rect.w = 250;
+		button_rect.h = 40;
+
+		u16 flags = immediate_button(button_rect, back, button_theme, 7);
+		if (flags & BUTTON_STATE_FLAGS_PRESSED)
+			std::cout << "Back is Pressed\n";
+		if (flags & BUTTON_STATE_FLAGS_RELEASED)
+		{
+			std::cout << "Back is Released\n";
+			if(flags & BUTTON_STATE_FLAGS_OVER)
+				ui.current_menu = Menus::MainMenu;
+		}
 	}
 }

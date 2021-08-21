@@ -7,6 +7,9 @@
     <Filter Include="Scenes">
       <UniqueIdentifier>{86EEB3D0-7290-DEA6-5B4B-F2FA478C65F7}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Scenes\Main_Menu">
+      <UniqueIdentifier>{4E07EA71-3A00-09C4-6332-EE484F8AE8CF}</UniqueIdentifier>
+    </Filter>
     <Filter Include="Types">
       <UniqueIdentifier>{3A4E330E-A662-5BBF-6FE4-FE1EDBB757F0}</UniqueIdentifier>
     </Filter>
@@ -31,6 +34,12 @@
     <ClInclude Include="src\Scenes\GameScene.h">
       <Filter>Scenes</Filter>
     </ClInclude>
+    <ClInclude Include="src\Scenes\Main_Menu\Main_Menu.h">
+      <Filter>Scenes\Main_Menu</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Scenes\Main_Menu\Main_Menu_UI.h">
+      <Filter>Scenes\Main_Menu</Filter>
+    </ClInclude>
     <ClInclude Include="src\Types\Car.h">
       <Filter>Types</Filter>
     </ClInclude>
@@ -44,8 +53,6 @@
       <Filter>Types</Filter>
     </ClInclude>
     <ClInclude Include="src\UIScene.h" />
-    <ClInclude Include="src\Scenes\Main_Menu\Main_Menu.h" />
-    <ClInclude Include="src\Scenes\Main_Menu\Main_Menu_UI.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Building.cpp" />
@@ -67,6 +74,12 @@
     <ClCompile Include="src\Scenes\GameScene.cpp">
       <Filter>Scenes</Filter>
     </ClCompile>
+    <ClCompile Include="src\Scenes\Main_Menu\Main_Menu.cpp">
+      <Filter>Scenes\Main_Menu</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Scenes\Main_Menu\Main_Menu_UI.cpp">
+      <Filter>Scenes\Main_Menu</Filter>
+    </ClCompile>
     <ClCompile Include="src\Types\Car.cpp">
       <Filter>Types</Filter>
     </ClCompile>
@@ -77,7 +90,5 @@
       <Filter>Types</Filter>
     </ClCompile>
     <ClCompile Include="src\UIScene.cpp" />
-    <ClCompile Include="src\Scenes\Main_Menu\Main_Menu.cpp" />
-    <ClCompile Include="src\Scenes\Main_Menu\Main_Menu_UI.cpp" />
   </ItemGroup>
 </Project>

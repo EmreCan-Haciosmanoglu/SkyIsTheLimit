@@ -3,8 +3,16 @@
 
 #include "Can/Camera/Orthographic_Camera_Controller.h"
 
+
 namespace Can
 {
+	enum class Menus
+	{
+		MainMenu=0,
+		Options,
+		Credits
+	};
+
 	struct Main_Menu_UI : public Layer::Layer
 	{
 		Main_Menu_UI() {}
@@ -15,8 +23,10 @@ namespace Can
 		virtual void OnUpdate(TimeStep ts) override;
 		virtual void OnEvent(Event::Event& event) override;
 
-
+		void* font = nullptr;
 		Orthographic_Camera_Controller camera_controller;
+
+		Menus current_menu = Menus::MainMenu;
 	};
 
 	void init_main_menu_ui_layer(Main_Menu_UI& ui);
@@ -26,4 +36,9 @@ namespace Can
 
 	void on_main_menu_ui_layer_update(Main_Menu_UI& ui, TimeStep ts);
 	void on_main_menu_ui_layer_event(Main_Menu_UI& ui, Event::Event& event);
+
+
+	void main_menu_screen(Main_Menu_UI& ui);
+	void options_screen(Main_Menu_UI& ui);
+	void credits_screen(Main_Menu_UI& ui);
 }
