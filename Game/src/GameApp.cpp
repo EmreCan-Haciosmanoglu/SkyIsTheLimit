@@ -38,7 +38,7 @@ namespace Can
 		twoTimesSpeedTexture = Texture2D::Create("assets/textures/Buttons/TwoTimesSpeed.png");
 		fourTimesSpeedTexture = Texture2D::Create("assets/textures/Buttons/FourTimesSpeed.png");
 
-		LoadRoadTypes();
+		load_road_types();
 		LoadBuildings();
 		LoadTrees();
 		LoadCars();
@@ -69,7 +69,7 @@ namespace Can
 		unload_main_menu(*this, main_menu);
 	}
 
-	void GameApp::LoadRoadTypes()
+	void GameApp::load_road_types()
 	{
 #define TEMP_SHADER_FILE_PATH "assets/shaders/3DTexturedObject.glsl"
 

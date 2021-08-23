@@ -20,7 +20,7 @@ namespace Can
 	private:
 		std::vector<Prefab*> LoadPrefabs(const std::string& folder, const std::string& filter);
 
-		void LoadRoadTypes();
+		void load_road_types();
 		void LoadBuildings();
 		void LoadTrees();
 		void LoadCars();

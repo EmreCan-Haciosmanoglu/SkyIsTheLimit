@@ -79,6 +79,8 @@ namespace Can
 
 	void main_menu_screen(Main_Menu_UI& ui)
 	{
+		const s32 margin = 10;
+
 		auto& window = main_application->GetWindow();
 		u64 width_in_pixels = window.GetWidth();
 		u64 height_in_pixels = window.GetHeight();
@@ -88,6 +90,7 @@ namespace Can
 		button_rect.y = 400;
 		button_rect.w = 250;
 		button_rect.h = 40;
+		
 
 		Label_Theme label_theme;
 		label_theme.color = { 0.9f, 0.9f, 0.9f, 1.0f };
@@ -124,21 +127,21 @@ namespace Can
 		if (flags & BUTTON_STATE_FLAGS_RELEASED)
 			std::cout << "Continue The Game is Released\n";
 
-		button_rect.y = 350;
+		button_rect.y -= button_rect.h + margin;
 		flags = immediate_button(button_rect, text_2, button_theme, __LINE__);
 		if (flags & BUTTON_STATE_FLAGS_PRESSED)
 			std::cout << "Start New Game is Pressed\n";
 		if (flags & BUTTON_STATE_FLAGS_RELEASED)
 			std::cout << "Start New Game is Released\n";
 
-		button_rect.y = 300;
+		button_rect.y -= button_rect.h + margin;
 		flags = immediate_button(button_rect, text_3, button_theme, __LINE__);
 		if (flags & BUTTON_STATE_FLAGS_PRESSED)
 			std::cout << "Load A Game is Pressed\n";
 		if (flags & BUTTON_STATE_FLAGS_RELEASED)
 			std::cout << "Load A Game is Released\n";
 
-		button_rect.y = 250;
+		button_rect.y -= button_rect.h + margin;
 		flags = immediate_button(button_rect, text_4, button_theme, __LINE__);
 		if (flags & BUTTON_STATE_FLAGS_PRESSED)
 			std::cout << "Options is Pressed\n";
@@ -149,7 +152,7 @@ namespace Can
 				ui.current_menu = Menus::Options;
 		}
 
-		button_rect.y = 200;
+		button_rect.y -= button_rect.h + margin;
 		flags = immediate_button(button_rect, text_5, button_theme, __LINE__);
 		if (flags & BUTTON_STATE_FLAGS_PRESSED)
 			std::cout << "Credits is Pressed\n";
@@ -173,6 +176,8 @@ namespace Can
 	}
 	void options_screen(Main_Menu_UI& ui)
 	{
+		const s32 margin = 10;
+
 		auto& window = main_application->GetWindow();
 		u64 width_in_pixels = window.GetWidth();
 		u64 height_in_pixels = window.GetHeight();
@@ -223,7 +228,7 @@ namespace Can
 				ui.current_options_submenus = Options_Submenus::Controls;
 		}
 
-		button_rect.y = 350;
+		button_rect.y -= button_rect.h + margin;
 		flags = immediate_button(button_rect, text_2, button_theme, __LINE__);
 		if (flags & BUTTON_STATE_FLAGS_PRESSED)
 			std::cout << "Key Bindings is Pressed\n";
@@ -234,7 +239,7 @@ namespace Can
 				ui.current_options_submenus = Options_Submenus::Key_Bindings;
 		}
 
-		button_rect.y = 300;
+		button_rect.y -= button_rect.h + margin;
 		flags = immediate_button(button_rect, text_3, button_theme, __LINE__);
 		if (flags & BUTTON_STATE_FLAGS_PRESSED)
 			std::cout << "Graphics is Pressed\n";
@@ -245,7 +250,7 @@ namespace Can
 				ui.current_options_submenus = Options_Submenus::Graphics;
 		}
 
-		button_rect.y = 250;
+		button_rect.y -= button_rect.h + margin;
 		flags = immediate_button(button_rect, text_4, button_theme, __LINE__);
 		if (flags & BUTTON_STATE_FLAGS_PRESSED)
 			std::cout << "Audio is Pressed\n";
@@ -256,7 +261,7 @@ namespace Can
 				ui.current_options_submenus = Options_Submenus::Audio;
 		}
 
-		button_rect.y = 200;
+		button_rect.y -= button_rect.h + margin;
 		flags = immediate_button(button_rect, text_5, button_theme, __LINE__);
 		if (flags & BUTTON_STATE_FLAGS_PRESSED)
 			std::cout << "Others is Pressed\n";
