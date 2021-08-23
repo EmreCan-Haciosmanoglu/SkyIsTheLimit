@@ -81,9 +81,12 @@ namespace Can
 			}
 		}
 
+		
 		for (uint8_t i = 0; i < (uint8_t)e_SpeedMode; i++)
+		{
 			MoveMe2AnotherFile(ts);
-
+			m_PersonManager.Update(ts);
+		}
 
 		Renderer3D::BeginScene(camera_controller.camera);
 		m_ShadowMapMasterRenderer->Render(m_LightDirection);

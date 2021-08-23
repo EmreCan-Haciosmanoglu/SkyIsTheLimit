@@ -9,7 +9,7 @@ namespace Can
 {
 	Person::Person(
 		Prefab* type,
-		float speed
+		f32 speed
 		
 	)
 		: speed(speed)

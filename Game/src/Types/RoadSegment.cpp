@@ -21,6 +21,7 @@ namespace Can
 	RoadSegment::RoadSegment(RoadSegment&& other)
 		: type(other.type)
 		, Buildings(other.Buildings)
+		, peoples(other.peoples)
 		, Cars(other.Cars)
 		, StartNode(other.StartNode)
 		, EndNode(other.EndNode)
@@ -40,6 +41,7 @@ namespace Can
 		other.bounding_polygon.clear();
 		other.Buildings.clear();
 		other.Cars.clear();
+		other.peoples.clear();
 	}
 	RoadSegment::~RoadSegment()
 	{
@@ -54,6 +56,7 @@ namespace Can
 		type = other.type;
 		Buildings = other.Buildings;
 		Cars = other.Cars;
+		peoples = other.peoples;
 		StartNode = other.StartNode;
 		EndNode = other.EndNode;
 		curve_samples = other.curve_samples;
@@ -71,6 +74,7 @@ namespace Can
 		other.bounding_polygon.clear();
 		other.Buildings.clear();
 		other.Cars.clear();
+		other.peoples.clear();
 
 		return *this;
 	}

@@ -336,8 +336,11 @@ namespace Can
 				auto& manager = m_Scene->m_PersonManager;
 				for (u64 i = 0; i < domicilled; i++)
 				{
-					Person* p = new Person(nullptr, 10);
+					Prefab* treeman = (m_Scene->MainApplication->trees[0]);
+					Person* p = new Person(treeman, 1);
 					p->home = newBuilding;
+					p->status = PersonStatus::AtHome;
+					p->time_left = Utility::Random::Float(1.0f,5.0f);
 					newBuilding->residents.push_back(p);
 
 					manager.m_People.push_back(p);
