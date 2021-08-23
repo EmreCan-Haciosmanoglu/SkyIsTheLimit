@@ -8,7 +8,7 @@ namespace Can
 	Building::Building(Prefab* prefab, RoadSegment* connectedRoadSegment, float snappedT, const glm::vec3& position, const glm::vec3& rotation)
 		: connectedRoadSegment(connectedRoadSegment)
 		, snappedT(snappedT)
-		, object(new Object(prefab, prefab, position, glm::vec3{ 1.0f, 1.0f, 1.0f }, rotation))
+		, object(new Object(prefab, position, glm::vec3{ 1.0f, 1.0f, 1.0f }, rotation))
 		, position(position)
 	{
 	}

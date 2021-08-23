@@ -193,7 +193,7 @@ namespace Can
 			indexCount,
 			indexCount * (int)(sizeof(TexturedObjectVertex) / sizeof(float))
 		);
-		object = new Object(newPrefab, newPrefab, position);
+		object = new Object(newPrefab, position);
 	}
 	void Junction::ReconstructObject()
 	{

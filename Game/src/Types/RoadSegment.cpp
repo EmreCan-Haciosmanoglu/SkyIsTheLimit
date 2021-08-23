@@ -102,7 +102,7 @@ namespace Can
 			}
 		}
 
-		object = new Object(newPrefab, Type[0], CurvePoints[0], glm::vec3(1.0f), glm::vec3(0.0f));
+		object = new Object(newPrefab, CurvePoints[0]);
 	}
 
 	void RoadSegment::CalcRotsAndDirs()

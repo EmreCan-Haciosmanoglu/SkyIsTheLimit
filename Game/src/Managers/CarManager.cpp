@@ -12,7 +12,7 @@ namespace Can
 	CarManager::CarManager(GameScene* scene)
 		: m_Scene(scene)
 	{
-		m_Guideline = new Object(m_Scene->MainApplication->cars[m_Type], m_Scene->MainApplication->cars[m_Type], glm::vec3(0.0f), glm::vec3(1.0f), glm::vec3(0.0f), false);
+		m_Guideline = new Object(m_Scene->MainApplication->cars[m_Type]);
 	}
 	CarManager::~CarManager()
 	{
@@ -38,7 +38,7 @@ namespace Can
 	{
 		m_SnappedRoadSegment = nullptr;
 		m_Guideline->SetTransform(prevLocation);
-		Prefab* selectedCar = m_Guideline->type;
+		Prefab* selectedCar = m_Guideline->prefab;
 
 		for (RoadSegment* roadSegment : m_Scene->m_RoadManager.GetRoadSegments())
 		{
@@ -175,7 +175,7 @@ namespace Can
 	{
 		m_Type = type;
 		delete m_Guideline;
-		m_Guideline = new Object(m_Scene->MainApplication->cars[m_Type], m_Scene->MainApplication->cars[m_Type], glm::vec3(0.0f), glm::vec3(1.0f), glm::vec3(0.0f));
+		m_Guideline = new Object(m_Scene->MainApplication->cars[m_Type]);
 
 	}
 	void CarManager::SetConstructionMode(CarConstructionMode mode)

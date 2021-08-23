@@ -41,12 +41,12 @@ namespace Can
 	}
 	void GameScene::OnUpdate(TimeStep ts)
 	{
-		m_MainCameraController.OnUpdate(ts);
+		m_MainCameraController.on_update(ts);
 
 		RenderCommand::SetClearColor({ 0.9f, 0.9f, 0.9f, 1.0f });
 		RenderCommand::Clear();
 
-		glm::vec3 camPos = m_MainCameraController.GetCamera().GetPosition();
+		glm::vec3 camPos = m_MainCameraController.camera.position;
 		glm::vec3 forward = GetRayCastedFromScreen();
 
 		glm::vec3 I = Helper::RayPlaneIntersection(camPos, forward, { 0.0f, 0.0f, 0.0f, }, { 0.0f, 1.0f, 0.0f, });
@@ -76,13 +76,13 @@ namespace Can
 			MoveMe2AnotherFile(ts);
 
 
-		Renderer3D::BeginScene(m_MainCameraController.GetCamera());
+		Renderer3D::BeginScene(m_MainCameraController.camera);
 		m_ShadowMapMasterRenderer->Render(m_LightDirection);
 
 		Renderer3D::DrawObjects(
 			m_ShadowMapMasterRenderer->GetLS(),
 			m_ShadowMapMasterRenderer->GetShadowMap(),
-			m_MainCameraController.GetCamera(),
+			m_MainCameraController.camera,
 			m_LightPosition
 		);
 
@@ -91,14 +91,14 @@ namespace Can
 	}
 	void GameScene::OnEvent(Event::Event& event)
 	{
-		m_MainCameraController.OnEvent(event);
+		m_MainCameraController.on_event(event);
 		Can::Event::EventDispatcher dispatcher(event);
 		dispatcher.Dispatch<Can::Event::MouseButtonPressedEvent>(CAN_BIND_EVENT_FN(GameScene::OnMousePressed));
 	}
 	bool GameScene::OnMousePressed(Event::MouseButtonPressedEvent& event)
 	{
 		MouseCode button = event.GetMouseButton();
-		glm::vec3 camPos = m_MainCameraController.GetCamera().GetPosition();
+		glm::vec3 camPos = m_MainCameraController.camera.position;
 		glm::vec3 forward = GetRayCastedFromScreen();
 
 
@@ -177,16 +177,16 @@ namespace Can
 	}
 	glm::vec3 GameScene::GetRayCastedFromScreen()
 	{
-		auto [mouseX, mouseY] = Can::Input::GetMousePos();
+		auto [mouseX, mouseY] = Can::Input::get_mouse_pos_float();
 		Application& app = Application::Get();
 		float w = (float)(app.GetWindow().GetWidth());
 		float h = (float)(app.GetWindow().GetHeight());
 
-		auto camera = m_MainCameraController.GetCamera();
-		glm::vec3 camPos = camera.GetPosition();
-		glm::vec3 camRot = camera.GetRotation();
+		auto camera = m_MainCameraController.camera;
+		glm::vec3 camPos = camera.position;
+		glm::vec3 camRot = camera.rotation;
 
-		float fovyX = m_MainCameraController.GetFOV();
+		float fovyX = m_MainCameraController.camera.field_of_view_angle;
 		float xoffSet = glm::degrees(glm::atan(glm::tan(glm::radians(fovyX)) * (((w / 2.0f) - mouseX) / (w / 2.0f))));
 		float yoffSet = glm::degrees(glm::atan(((h - 2.0f * mouseY) * glm::sin(glm::radians(xoffSet))) / (w - 2.0f * mouseX)));
 

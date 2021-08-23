@@ -108,6 +108,6 @@ namespace Can
 		float m_ZoomLevel;
 		float m_AspectRatio;
 
-		Camera::OrthographicCameraController m_CameraController;
+		Orthographic_Camera_Controller m_CameraController;
 	};
 }

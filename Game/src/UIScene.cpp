@@ -9,9 +9,10 @@ namespace Can
 		: m_Parent(parent)
 		, m_ZoomLevel(10.0f)
 		, m_AspectRatio(16.0f / 9.0f)
-		, m_CameraController(m_AspectRatio, m_ZoomLevel, false)
 		, m_Scene(new Scene())
 	{
+		init_orthographic_camera_controller(m_CameraController, m_AspectRatio, m_ZoomLevel, false);
+
 		float width = m_AspectRatio * m_ZoomLevel * 2.0f;
 		float height = m_ZoomLevel * 2.0f;
 		Application& app = Application::Get();
@@ -523,7 +524,7 @@ namespace Can
 					entt::registry& mainRegistry = this->m_Scene->m_Registry;
 					entt::entity scrollbarID = this->m_ScrollViewRoads->scrollbar->entityID;
 
-					auto [mouseX, mouseY] = Input::GetMousePos();
+					auto [mouseX, mouseY] = Input::get_mouse_pos_float();
 					bool changed = this->m_ScrollViewRoads->scrollbar->Update(glm::vec2{
 							(mouseX * width) / w,
 							(mouseY * height) / h
@@ -536,7 +537,7 @@ namespace Can
 					entt::registry& mainRegistry = this->m_Scene->m_Registry;
 					entt::entity scrollbarID = this->m_ScrollViewRoads->scrollbar->entityID;
 
-					auto [mouseX, mouseY] = Input::GetMousePos();
+					auto [mouseX, mouseY] = Input::get_mouse_pos_float();
 					bool changed = this->m_ScrollViewRoads->scrollbar->Update(glm::vec2{
 							(mouseX * width) / w,
 							(mouseY * height) / h
@@ -576,7 +577,7 @@ namespace Can
 					entt::registry& mainRegistry = this->m_Scene->m_Registry;
 					entt::entity scrollbarID = this->m_ScrollViewBuildings->scrollbar->entityID;
 
-					auto [mouseX, mouseY] = Input::GetMousePos();
+					auto [mouseX, mouseY] = Input::get_mouse_pos_float();
 					bool changed = this->m_ScrollViewBuildings->scrollbar->Update(glm::vec2{
 							(mouseX * width) / w,
 							(mouseY * height) / h
@@ -589,7 +590,7 @@ namespace Can
 					entt::registry& mainRegistry = this->m_Scene->m_Registry;
 					entt::entity scrollbarID = this->m_ScrollViewBuildings->scrollbar->entityID;
 
-					auto [mouseX, mouseY] = Input::GetMousePos();
+					auto [mouseX, mouseY] = Input::get_mouse_pos_float();
 					bool changed = this->m_ScrollViewBuildings->scrollbar->Update(glm::vec2{
 							(mouseX * width) / w,
 							(mouseY * height) / h
@@ -629,7 +630,7 @@ namespace Can
 					entt::registry& mainRegistry = this->m_Scene->m_Registry;
 					entt::entity scrollbarID = this->m_ScrollViewTrees->scrollbar->entityID;
 
-					auto [mouseX, mouseY] = Input::GetMousePos();
+					auto [mouseX, mouseY] = Input::get_mouse_pos_float();
 					bool changed = this->m_ScrollViewTrees->scrollbar->Update(glm::vec2{
 							(mouseX * width) / w,
 							(mouseY * height) / h
@@ -642,7 +643,7 @@ namespace Can
 					entt::registry& mainRegistry = this->m_Scene->m_Registry;
 					entt::entity scrollbarID = this->m_ScrollViewTrees->scrollbar->entityID;
 
-					auto [mouseX, mouseY] = Input::GetMousePos();
+					auto [mouseX, mouseY] = Input::get_mouse_pos_float();
 					bool changed = this->m_ScrollViewTrees->scrollbar->Update(glm::vec2{
 							(mouseX * width) / w,
 							(mouseY * height) / h
@@ -682,7 +683,7 @@ namespace Can
 					entt::registry& mainRegistry = this->m_Scene->m_Registry;
 					entt::entity scrollbarID = this->m_ScrollViewCars->scrollbar->entityID;
 
-					auto [mouseX, mouseY] = Input::GetMousePos();
+					auto [mouseX, mouseY] = Input::get_mouse_pos_float();
 					bool changed = this->m_ScrollViewCars->scrollbar->Update(glm::vec2{
 							(mouseX * width) / w,
 							(mouseY * height) / h
@@ -695,7 +696,7 @@ namespace Can
 					entt::registry& mainRegistry = this->m_Scene->m_Registry;
 					entt::entity scrollbarID = this->m_ScrollViewCars->scrollbar->entityID;
 
-					auto [mouseX, mouseY] = Input::GetMousePos();
+					auto [mouseX, mouseY] = Input::get_mouse_pos_float();
 					bool changed = this->m_ScrollViewCars->scrollbar->Update(glm::vec2{
 							(mouseX * width) / w,
 							(mouseY * height) / h
@@ -1489,7 +1490,7 @@ namespace Can
 		//RenderCommand::SetClearColor({ 0.9f, 0.9f, 0.9f, 1.0f });
 		//RenderCommand::Clear();
 
-		Renderer2D::BeginScene(m_CameraController.GetCamera());
+		Renderer2D::BeginScene(m_CameraController.m_Camera);
 		glm::vec2 offset = { -widthHalf, heightHalf };
 		ChildrenComponent& children = m_Scene->m_Registry.get_or_emplace<ChildrenComponent>(m_Scene->entityID, std::vector<entt::entity>{});
 		for (auto entity : children)

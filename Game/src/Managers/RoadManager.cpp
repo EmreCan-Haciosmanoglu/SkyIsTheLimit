@@ -19,15 +19,15 @@ namespace Can
 	RoadManager::RoadManager(GameScene* scene)
 		: m_Scene(scene)
 	{
-		m_GuidelinesStart = new Object(m_Scene->MainApplication->roads[m_Type][2], m_Scene->MainApplication->roads[m_Type][2], glm::vec3(0.0f), glm::vec3(1.0f), glm::vec3(0.0f), false);
-		m_GuidelinesEnd = new Object(m_Scene->MainApplication->roads[m_Type][2], m_Scene->MainApplication->roads[m_Type][2], glm::vec3(0.0f), glm::vec3(1.0f), glm::vec3(0.0f), false);
+		m_GuidelinesStart = new Object(m_Scene->MainApplication->roads[m_Type][2]);
+		m_GuidelinesEnd = new Object(m_Scene->MainApplication->roads[m_Type][2]);
 
 		size_t roadTypeCount = m_Scene->MainApplication->roads.size();
 		for (size_t i = 0; i < roadTypeCount; i++)
 		{
 			m_GuidelinesInUse.push_back(0);
 			m_Guidelines.push_back({});
-			m_Guidelines[i].push_back(new Object(m_Scene->MainApplication->roads[i][0], m_Scene->MainApplication->roads[i][0], glm::vec3(0.0f), glm::vec3(1.0f), glm::vec3(0.0f), false));
+			m_Guidelines[i].push_back(new Object(m_Scene->MainApplication->roads[i][0]));
 		}
 	}
 	RoadManager::~RoadManager()
@@ -415,7 +415,7 @@ namespace Can
 			}
 			if (m_EndSnappedRoadSegment != nullptr)
 			{
-				float snappedRoadPrefabLength = m_EndSnappedRoad->type[0]->boundingBoxM.x - m_EndSnappedRoad->type[0]->boundingBoxL.x;
+				float snappedRoadPrefabLength = m_EndSnappedRoad->prefab[0]->boundingBoxM.x - m_EndSnappedRoad->prefab[0]->boundingBoxL.x;
 				size_t snappedRoadTypeIndex = m_EndSnappedRoad->typeIndex;
 				m_EndSnappedRoad->object->enabled = false;
 				glm::vec3 R0I = m_ConstructionPositions[3] - m_EndSnappedRoad->GetStartPosition();
@@ -2262,7 +2262,7 @@ namespace Can
 		m_GuidelinesInUse[m_Type] += countAB;
 		if (m_GuidelinesInUse[m_Type] > m_Guidelines[m_Type].size())
 			for (size_t j = m_Guidelines[m_Type].size(); j < m_GuidelinesInUse[m_Type]; j++)
-				m_Guidelines[m_Type].push_back(new Object(m_Scene->MainApplication->roads[m_Type][0], m_Scene->MainApplication->roads[m_Type][0]));
+				m_Guidelines[m_Type].push_back(new Object(m_Scene->MainApplication->roads[m_Type][0]));
 
 		for (size_t j = 0; j < countAB; j++)
 		{
@@ -2335,7 +2335,7 @@ namespace Can
 
 		if (m_GuidelinesInUse[m_Type] > m_Guidelines[m_Type].size())
 			for (size_t j = m_Guidelines[m_Type].size(); j < m_GuidelinesInUse[m_Type]; j++)
-				m_Guidelines[m_Type].push_back(new Object(m_Scene->MainApplication->roads[m_Type][0], m_Scene->MainApplication->roads[m_Type][0]));
+				m_Guidelines[m_Type].push_back(new Object(m_Scene->MainApplication->roads[m_Type][0]));
 
 		glm::vec3 p1 = curvePoints[0];
 		for (int c = 0; c < count; c++)
@@ -2735,8 +2735,8 @@ namespace Can
 		m_Type = type;
 		delete m_GuidelinesEnd;
 		delete m_GuidelinesStart;
-		m_GuidelinesStart = new Object(m_Scene->MainApplication->roads[m_Type][2], m_Scene->MainApplication->roads[m_Type][2], glm::vec3(0.0f), glm::vec3(1.0f), glm::vec3(0.0f));
-		m_GuidelinesEnd = new Object(m_Scene->MainApplication->roads[m_Type][2], m_Scene->MainApplication->roads[m_Type][2], glm::vec3(0.0f), glm::vec3(1.0f), glm::vec3(0.0f));
+		m_GuidelinesStart = new Object(m_Scene->MainApplication->roads[m_Type][2]);
+		m_GuidelinesEnd = new Object(m_Scene->MainApplication->roads[m_Type][2]);
 	}
 	void RoadManager::SetConstructionMode(RoadConstructionMode mode)
 	{
@@ -3006,7 +3006,7 @@ namespace Can
 			{
 				int t_index = car->t_index;
 				std::vector<float> ts{ 0 };
-				float lengthRoad = car->roadSegment->object->type->boundingBoxM.x - car->roadSegment->object->type->boundingBoxL.x;
+				float lengthRoad = car->roadSegment->object->prefab->boundingBoxM.x - car->roadSegment->object->prefab->boundingBoxL.x;
 				std::vector<glm::vec3> samples = Math::GetCubicCurveSamples(car->roadSegment->GetCurvePoints(), lengthRoad, ts);
 				if (t_index >= ts.size())
 				{
@@ -3225,7 +3225,7 @@ namespace Can
 			{
 				int t_index = car->t_index;
 				std::vector<float> ts{ 0 };
-				float lengthRoad = car->roadSegment->object->type->boundingBoxM.x - car->roadSegment->object->type->boundingBoxL.x;
+				float lengthRoad = car->roadSegment->object->prefab->boundingBoxM.x - car->roadSegment->object->prefab->boundingBoxL.x;
 				std::vector<glm::vec3> samples = Math::GetCubicCurveSamples(car->roadSegment->GetCurvePoints(), lengthRoad, ts);
 				if (t_index >= ts.size())
 				{
