@@ -18,7 +18,7 @@ namespace Can
 		s64 connectedRoadSegment;
 		float snappedT = 0.0f;
 		u8 capacity = 0;
-
+		std::vector<Person*> residents;
 		Object* object;
 		glm::vec3 position;
 	};
