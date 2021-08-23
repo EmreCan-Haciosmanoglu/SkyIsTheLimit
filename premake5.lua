@@ -28,7 +28,8 @@ project "Game"
     links
     {
         "imgui",
-        "Can"
+        "Can",
+        "FreeType"
     }
         
     filter "system:windows"

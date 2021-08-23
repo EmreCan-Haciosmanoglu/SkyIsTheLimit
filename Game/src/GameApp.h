@@ -7,6 +7,8 @@
 
 #include "Types/RoadType.h"
 
+#include "Scenes/Main_Menu/Main_Menu.h"
+
 namespace Can
 {
 	class GameApp : public Can::Application
@@ -18,7 +20,7 @@ namespace Can
 	private:
 		std::vector<Prefab*> LoadPrefabs(const std::string& folder, const std::string& filter);
 
-		void LoadRoadTypes();
+		void load_road_types();
 		void LoadBuildings();
 		void LoadTrees();
 		void LoadCars();
@@ -52,6 +54,8 @@ namespace Can
 		std::vector<Prefab*> buildings;
 		std::vector<Prefab*> trees;
 		std::vector<Prefab*> cars;
+
+		Main_Menu main_menu{};
 		
 		GameScene* gameScene = nullptr;
 		UIScene* uiScene = nullptr;
