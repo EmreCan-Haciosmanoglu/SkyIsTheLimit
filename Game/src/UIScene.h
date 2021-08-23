@@ -51,7 +51,7 @@ namespace Can
 		Button* m_Cubic1342RoadButton = nullptr;
 		Button* m_Cubic1432RoadButton = nullptr;
 		Button* m_DestructRoadButton  = nullptr;
-		Button* m_UpgradeRoadButton   = nullptr;
+		Button* m_ChangeRoadButton   = nullptr;
 		Button* m_CancelRoadButton    = nullptr;
 
 		Button* m_ConstructBuildingButton = nullptr;
@@ -59,9 +59,9 @@ namespace Can
 		Button* m_UpgradeBuildingButton = nullptr;
 		Button* m_CancelBuildingButton = nullptr;
 
-		Button* m_AddTreePanelButton = nullptr;
-		Button* m_RemoveTreePanelButton = nullptr;
-		Button* m_CancelTreePanelButton = nullptr;
+		Button* m_AddTreeButton = nullptr;
+		Button* m_RemoveTreeButton = nullptr;
+		Button* m_CancelTreeButton = nullptr;
 
 		ScrollView* m_ScrollViewRoads = nullptr;
 		ScrollView* m_ScrollViewBuildings = nullptr;

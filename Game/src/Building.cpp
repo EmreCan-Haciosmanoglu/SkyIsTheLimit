@@ -5,14 +5,14 @@
 
 namespace Can
 {
-	Building::Building(Prefab* prefab, RoadSegment* connectedRoadSegment, float snappedT, const glm::vec3& position, const glm::vec3& rotation)
+	Building::Building(Prefab* prefab, s64 connectedRoadSegment, float snappedT, const glm::vec3& position, const glm::vec3& rotation)
 		: connectedRoadSegment(connectedRoadSegment)
 		, snappedT(snappedT)
-		, object(new Object(prefab, position, glm::vec3{ 1.0f, 1.0f, 1.0f }, rotation))
+		, object(new Object(prefab, position, rotation))
 		, position(position)
 	{
 	}
-	Building::Building(Object* object, RoadSegment* connectedRoadSegment, float snappedT, const glm::vec3& position, const glm::vec3& rotation)
+	Building::Building(Object* object, s64 connectedRoadSegment, float snappedT, const glm::vec3& position, const glm::vec3& rotation)
 		: connectedRoadSegment(connectedRoadSegment)
 		, snappedT(snappedT)
 		, object(object)

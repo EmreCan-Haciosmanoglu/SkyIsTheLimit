@@ -9,14 +9,13 @@ namespace Can
 	class Building
 	{
 	public:
-		Building(Prefab* prefab, RoadSegment* connectedRoadSegment, float snappedT, const glm::vec3& position, const glm::vec3& rotation);
-		Building(Object* object, RoadSegment* connectedRoadSegment, float snappedT, const glm::vec3& position, const glm::vec3& rotation);
+		Building(Prefab* prefab, s64 connectedRoadSegment, float snappedT, const glm::vec3& position, const glm::vec3& rotation);
+		Building(Object* object, s64 connectedRoadSegment, float snappedT, const glm::vec3& position, const glm::vec3& rotation);
 		~Building();
 
 	public:
 
-		RoadSegment* connectedRoadSegment;
-		std::vector<Person*> residents;
+		s64 connectedRoadSegment;
 		float snappedT = 0.0f;
 		u8 capacity = 0;
 

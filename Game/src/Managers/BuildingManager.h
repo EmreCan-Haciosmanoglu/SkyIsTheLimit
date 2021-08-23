@@ -22,9 +22,9 @@ namespace Can
 		BuildingManager(GameScene* scene);
 		~BuildingManager();
 
-		void OnUpdate(glm::vec3& prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection);
-		void OnUpdate_Construction(glm::vec3& prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection);
-		void OnUpdate_Destruction(glm::vec3& prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection);
+		void OnUpdate(v3& prevLocation, const v3& cameraPosition, const v3& cameraDirection);
+		void OnUpdate_Construction(v3& prevLocation, const v3& cameraPosition, const v3& cameraDirection);
+		void OnUpdate_Destruction(v3& prevLocation, const v3& cameraPosition, const v3& cameraDirection);
 
 		bool OnMousePressed(MouseCode button);
 		bool OnMousePressed_Construction();
@@ -45,11 +45,11 @@ namespace Can
 		Building* getAvailableWorkBuilding();
 	public:
 
-		std::array<bool, 2> snapOptions { false, false };
+		std::array<bool, 2> snapOptions { true, true };
 		// 0 : Roads
 		// 1 : Buildings
 
-		std::array<bool, 2> restrictions { false, false };
+		std::array<bool, 2> restrictions { true, true };
 		// 0 : Collision
 		// 1 : Snapping to a road
 
@@ -64,10 +64,10 @@ namespace Can
 		std::vector<Building*> m_HomeBuildings;
 		std::vector<Building*> m_WorkBuildings;
 
-		glm::vec3 m_GuidelinePosition = glm::vec3(0.0f);
-		glm::vec3 m_GuidelineRotation = glm::vec3(0.0f);
+		v3 m_GuidelinePosition = v3(0.0f);
+		v3 m_GuidelineRotation = v3(0.0f);
 
-		RoadSegment* m_SnappedRoadSegment = nullptr;
+		u64 m_SnappedRoadSegment = (u64)-1;
 		float m_SnappedT = -1.0f;
 
 		std::vector<Building*>::iterator& m_SelectedBuildingToDestruct = m_Buildings.end();

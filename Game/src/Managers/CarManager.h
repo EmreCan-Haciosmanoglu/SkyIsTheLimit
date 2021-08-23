@@ -22,16 +22,16 @@ namespace Can
 		CarManager(GameScene* scene);
 		~CarManager();
 
-		void OnUpdate(glm::vec3& prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection);
-		void OnUpdate_Adding(glm::vec3& prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection);
-		void OnUpdate_Removing(glm::vec3& prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection);
+		void OnUpdate(v3& prevLocation, const v3& cameraPosition, const v3& cameraDirection);
+		void OnUpdate_Adding(v3& prevLocation, const v3& cameraPosition, const v3& cameraDirection);
+		void OnUpdate_Removing(v3& prevLocation, const v3& cameraPosition, const v3& cameraDirection);
 
 		bool OnMousePressed(MouseCode button);
 		bool OnMousePressed_Adding();
 		bool OnMousePressed_Removing();
 
-		void SetType(size_t type);
-		inline size_t GetType() { return m_Type; }
+		void SetType(u64 type);
+		inline u64 GetType() { return m_Type; }
 
 		void SetConstructionMode(CarConstructionMode mode);
 
@@ -48,11 +48,11 @@ namespace Can
 
 		CarConstructionMode m_ConstructionMode = CarConstructionMode::None;
 
-		size_t m_Type = 0;
+		u64 m_Type = 0;
 
 		std::vector<Car*> m_Cars = {};
 
-		RoadSegment* m_SnappedRoadSegment = nullptr;
+		s64 m_SnappedRoadSegment = -1;
 		
 
 		std::vector<Car*>::iterator& m_SelectedCarToRemove = m_Cars.end();
