@@ -248,58 +248,58 @@ namespace Can
 					else if (std::equal(line.begin(), seperator, zone_key))
 						zone = std::string(print_from);
 					else if (std::equal(line.begin(), seperator, road_object_key))
-						road_obj = road_obj.append(std::string(print_from));
+						road_obj.append(print_from);
 					else if (std::equal(line.begin(), seperator, road_texture_key))
-						road_png = road_png.append(std::string(print_from));
+						road_png.append(print_from);
 					else if (std::equal(line.begin(), seperator, road_junction_object_key))
-						road_junction_obj = road_junction_obj.append(std::string(print_from));
+						road_junction_obj.append(print_from);
 					else if (std::equal(line.begin(), seperator, road_junction_texture_key))
-						road_junction_png = road_junction_png.append(std::string(print_from));
+						road_junction_png.append(print_from);
 					else if (std::equal(line.begin(), seperator, road_junction_mirror_object_key))
-						road_junction_mirror_obj = road_junction_mirror_obj.append(std::string(print_from));
+						road_junction_mirror_obj.append(print_from);
 					else if (std::equal(line.begin(), seperator, road_junction_mirror_texture_key))
-						road_junction_mirror_png = road_junction_mirror_png.append(std::string(print_from));
+						road_junction_mirror_png.append(print_from);
 					else if (std::equal(line.begin(), seperator, road_end_object_key))
-						road_end_obj = road_end_obj.append(std::string(print_from));
+						road_end_obj.append(print_from);
 					else if (std::equal(line.begin(), seperator, road_end_texture_key))
-						road_end_png = road_end_png.append(std::string(print_from));
+						road_end_png.append(print_from);
 					else if (std::equal(line.begin(), seperator, road_end_mirror_object_key))
-						road_end_mirror_obj = road_end_mirror_obj.append(std::string(print_from));
+						road_end_mirror_obj.append(print_from);
 					else if (std::equal(line.begin(), seperator, road_end_mirror_texture_key))
-						road_end_mirror_png = road_end_mirror_png.append(std::string(print_from));
+						road_end_mirror_png.append(print_from);
 					else if (std::equal(line.begin(), seperator, tunnel_object_key))
 					{
-						tunnel_obj = tunnel_obj.append(std::string(print_from));
+						tunnel_obj.append(print_from);
 						tunnel_is_found = true;
 					}
 					else if (std::equal(line.begin(), seperator, tunnel_texture_key))
-						tunnel_png = tunnel_png.append(std::string(print_from));
+						tunnel_png.append(print_from);
 					else if (std::equal(line.begin(), seperator, tunnel_junction_object_key))
-						tunnel_junction_obj = tunnel_junction_obj.append(std::string(print_from));
+						tunnel_junction_obj.append(print_from);
 					else if (std::equal(line.begin(), seperator, tunnel_junction_texture_key))
-						tunnel_junction_png = tunnel_junction_png.append(std::string(print_from));
+						tunnel_junction_png.append(print_from);
 					else if (std::equal(line.begin(), seperator, tunnel_junction_mirror_object_key))
-						tunnel_junction_mirror_obj = tunnel_junction_mirror_obj.append(std::string(print_from));
+						tunnel_junction_mirror_obj.append(print_from);
 					else if (std::equal(line.begin(), seperator, tunnel_junction_mirror_texture_key))
-						tunnel_junction_mirror_png = tunnel_junction_mirror_png.append(std::string(print_from));
+						tunnel_junction_mirror_png.append(print_from);
 					else if (std::equal(line.begin(), seperator, tunnel_end_object_key))
-						tunnel_end_obj = tunnel_end_obj.append(std::string(print_from));
+						tunnel_end_obj.append(print_from);
 					else if (std::equal(line.begin(), seperator, tunnel_end_texture_key))
-						tunnel_end_png = tunnel_end_png.append(std::string(print_from));
+						tunnel_end_png.append(print_from);
 					else if (std::equal(line.begin(), seperator, tunnel_end_mirror_object_key))
-						tunnel_end_mirror_obj = tunnel_end_mirror_obj.append(std::string(print_from));
+						tunnel_end_mirror_obj.append(print_from);
 					else if (std::equal(line.begin(), seperator, tunnel_end_mirror_texture_key))
-						tunnel_end_mirror_png = tunnel_end_mirror_png.append(std::string(print_from));
+						tunnel_end_mirror_png.append(print_from);
 					else if (std::equal(line.begin(), seperator, tunnel_entrance_object_key))
-						tunnel_entrance_obj = tunnel_entrance_obj.append(std::string(print_from));
+						tunnel_entrance_obj.append(print_from);
 					else if (std::equal(line.begin(), seperator, tunnel_entrance_texture_key))
-						tunnel_entrance_png = tunnel_entrance_png.append(std::string(print_from));
+						tunnel_entrance_png.append(print_from);
 					else if (std::equal(line.begin(), seperator, tunnel_entrance_mirror_object_key))
-						tunnel_entrance_mirror_obj = tunnel_entrance_mirror_obj.append(std::string(print_from));
+						tunnel_entrance_mirror_obj.append(print_from);
 					else if (std::equal(line.begin(), seperator, tunnel_entrance_mirror_texture_key))
-						tunnel_entrance_mirror_png = tunnel_entrance_mirror_png.append(std::string(print_from));
+						tunnel_entrance_mirror_png.append(print_from);
 					else if (std::equal(line.begin(), seperator, thumbnail_key))
-						thumbnail_png = thumbnail_png.append(std::string(print_from));
+						thumbnail_png.append(print_from);
 				}
 			}
 			file.close();

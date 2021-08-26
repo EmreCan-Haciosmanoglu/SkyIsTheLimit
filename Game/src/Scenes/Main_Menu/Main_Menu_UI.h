@@ -37,6 +37,8 @@ namespace Can
 
 		Menus current_menu = Menus::MainMenu;
 		Options_Submenus current_options_submenus = Options_Submenus::Controls;
+
+		f32 test_value = 4.0f;
 	};
 
 	void init_main_menu_ui_layer(Main_Menu_UI& ui);

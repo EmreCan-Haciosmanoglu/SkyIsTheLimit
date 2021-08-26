@@ -48,7 +48,7 @@ namespace Can
 	{
 		auto& camera_controller = ui.camera_controller;
 
-		RenderCommand::SetClearColor({ 0.35f, 0.35f, 0.35f, 1.0f });
+		RenderCommand::SetClearColor({ 0.35f, 0.35f, 0.35f, 0.0f });
 		RenderCommand::Clear();
 		RenderCommand::enable_depth_testing(false);
 
@@ -90,7 +90,7 @@ namespace Can
 		button_rect.y = 400;
 		button_rect.w = 250;
 		button_rect.h = 40;
-		
+
 
 		Label_Theme label_theme;
 		label_theme.color = { 0.9f, 0.9f, 0.9f, 1.0f };
@@ -190,6 +190,30 @@ namespace Can
 		label_theme.font_size_in_pixel = 85;
 		label_theme.color = { 0.9f, 0.9f, 0.9f, 1.0f };
 
+		Label_Theme graphics_options_label_theme;
+		graphics_options_label_theme.font = buffer_data.default_font;
+		graphics_options_label_theme.font_size_in_pixel = 20;
+		graphics_options_label_theme.color = { 0.9f, 0.9f, 0.9f, 1.0f };
+		graphics_options_label_theme.flags = FontFlags::LeftAligned;
+
+		Button_Theme button_theme;
+		button_theme.label_theme = &label_theme;
+		button_theme.background_color = { 0.80f, 0.50f, 0.30f, 1.0f };
+		button_theme.background_color_over = { 0.90f, 0.70f, 0.55f, 1.0f };
+		button_theme.background_color_pressed = { 0.95f, 0.85f, 0.70f, 1.0f };
+
+		Button_Theme button_theme_selected;
+		button_theme_selected.label_theme = &graphics_options_label_theme;
+		button_theme_selected.background_color = { 0.70f, 0.50f, 0.40f, 1.0f };
+		button_theme_selected.background_color_over = { 0.80f, 0.70f, 0.60f, 1.0f };
+		button_theme_selected.background_color_pressed = { 0.90f, 0.85f, 0.80f, 1.0f };
+
+		Drop_Down_List_Theme drop_down_list_theme;
+		drop_down_list_theme.button_theme = &button_theme;
+		drop_down_list_theme.button_theme_selected = &button_theme_selected;
+		drop_down_list_theme.background_color = { 0.25f, 0.25f, 0.25f, 1.0f };
+
+
 		Rect title_rect;
 		title_rect.x = 0;
 		title_rect.y = height_in_pixels - 200;
@@ -206,18 +230,13 @@ namespace Can
 
 		immediate_text(title, title_rect, label_theme);
 
-		label_theme.font_size_in_pixel = buffer_data.default_font_size_in_pixel;
-		Button_Theme button_theme;
-		button_theme.label_theme = &label_theme;
-		button_theme.background_color = { 0.80f, 0.50f, 0.30f, 1.0f };
-		button_theme.background_color_over = { 0.90f, 0.70f, 0.55f, 1.0f };
-		button_theme.background_color_pressed = { 0.95f, 0.85f, 0.70f, 1.0f };
-
 		Rect button_rect;
 		button_rect.x = 80;
 		button_rect.y = 400;
 		button_rect.w = 250;
 		button_rect.h = 40;
+
+		label_theme.font_size_in_pixel = buffer_data.default_font_size_in_pixel;
 		u16 flags = immediate_button(button_rect, text_1, button_theme, __LINE__);
 		if (flags & BUTTON_STATE_FLAGS_PRESSED)
 			std::cout << "Controls is Pressed\n";
@@ -284,9 +303,84 @@ namespace Can
 				ui.current_menu = Menus::MainMenu;
 		}
 
+		button_theme.label_theme = &graphics_options_label_theme;
 		if (ui.current_options_submenus == Options_Submenus::Controls)
 		{
+			std::string text_type = "Control Type : ";
+			std::string text_sensitivity = "Control Sensitivity : ";
 
+			std::ostringstream test_value;
+			test_value << ui.test_value;
+			std::string text_sensitivity_value(test_value.str());
+
+			s32 left_screen_margin = 50;
+			s32 options_y_margin = 5;
+
+			Rect r;
+			r.x = 400;
+			r.y = 400;
+			r.w = width_in_pixels - r.x - 50;
+			r.h = 50;
+			v4 background_color{ 0.65f, 0.65f, 0.65f, 1.0f };
+			immediate_quad(r, background_color);
+			immediate_text(text_type, r, graphics_options_label_theme);
+
+			Rect drop_list_rect;
+			drop_list_rect.w = 200;
+			drop_list_rect.h = 50;
+			drop_list_rect.x = width_in_pixels - drop_list_rect.w - left_screen_margin;
+			drop_list_rect.y = r.y;
+
+			std::vector<std::string> items{
+				"Key Board",
+				"Game Pad (Not Implemented)"
+			};
+
+			u64 selected_item = 0;
+			u16 flags = immediate_drop_down_list(drop_list_rect, items, selected_item, drop_down_list_theme, __LINE__);
+			if (flags & DROP_DOWN_LIST_STATE_FLAGS_PRESSED)
+				std::cout << "drop down list is Pressed\n";
+			if (flags & DROP_DOWN_LIST_STATE_FLAGS_RELEASED)
+				std::cout << "drop down list is Released\n";
+			if (flags & DROP_DOWN_LIST_STATE_FLAGS_ITEM_CHANGED)
+				std::cout << "Active drop down list item is changed, but it doesn't affect the game\n";
+
+			r.y -= r.h + options_y_margin;
+			immediate_quad(r, background_color);
+			immediate_text(text_sensitivity, r, graphics_options_label_theme);
+
+
+			Rect track_rect;
+			track_rect.w = 200;
+			track_rect.h = 8;
+			track_rect.x = width_in_pixels - track_rect.w - left_screen_margin;
+			track_rect.y = r.y + r.h / 2 - track_rect.h / 2;
+
+			Rect thumb_rect;
+			thumb_rect.w = 30;
+			thumb_rect.h = 30;
+
+			Slider_Theme slider_theme;
+			slider_theme.track_theme = drop_down_list_theme.button_theme;
+			slider_theme.thumb_theme = drop_down_list_theme.button_theme_selected;
+			slider_theme.flags = SLIDER_THEME_FLAGS_CLAMP_VALUE;
+			//slider_theme.flags |= SLIDER_THEME_FLAGS_THUMB_AT_BOTTOM;
+			//slider_theme.y_offset_in_pixels = 5;
+
+			s32 some_value = 50;
+			Rect value_rect = r;
+			value_rect.w = some_value;
+			value_rect.x = track_rect.x - (value_rect.w + margin);
+			Label_Theme value_theme;
+			value_theme.color = graphics_options_label_theme.color;
+			value_theme.flags = FontFlags::LeftAligned;
+			value_theme.font = graphics_options_label_theme.font;
+			value_theme.font_size_in_pixel = graphics_options_label_theme.font_size_in_pixel;
+			immediate_text(text_sensitivity_value, value_rect, value_theme);
+
+			flags = immediate_slider_float(track_rect, thumb_rect, std::string(""), 3.0f, ui.test_value, 6.0f, slider_theme, __LINE__);
+			if (flags & SLIDER_STATE_FLAGS_VALUE_CHANGED)
+				std::cout << "Slider value has been changed, but nothing have happened!\n";
 		}
 		else if (ui.current_options_submenus == Options_Submenus::Key_Bindings)
 		{
@@ -294,28 +388,6 @@ namespace Can
 		}
 		else if (ui.current_options_submenus == Options_Submenus::Graphics)
 		{
-			Label_Theme graphics_options_label_theme;
-			graphics_options_label_theme.font = buffer_data.default_font;
-			graphics_options_label_theme.font_size_in_pixel = 20;
-			graphics_options_label_theme.color = { 0.9f, 0.9f, 0.9f, 1.0f };
-			graphics_options_label_theme.flags = FontFlags::LeftAligned;
-
-			Button_Theme button_theme;
-			button_theme.label_theme = &graphics_options_label_theme;
-			button_theme.background_color = { 0.80f, 0.50f, 0.30f, 1.0f };
-			button_theme.background_color_over = { 0.90f, 0.70f, 0.55f, 1.0f };
-			button_theme.background_color_pressed = { 0.95f, 0.85f, 0.70f, 1.0f };
-
-			Button_Theme button_theme_selected;
-			button_theme_selected.label_theme = &graphics_options_label_theme;
-			button_theme_selected.background_color = { 0.70f, 0.50f, 0.40f, 1.0f };
-			button_theme_selected.background_color_over = { 0.80f, 0.70f, 0.60f, 1.0f };
-			button_theme_selected.background_color_pressed = { 0.90f, 0.85f, 0.80f, 1.0f };
-
-			Drop_Down_List_Theme drop_down_list_theme;
-			drop_down_list_theme.button_theme = &button_theme;
-			drop_down_list_theme.button_theme_selected = &button_theme_selected;
-			drop_down_list_theme.background_color = { 0.25f, 0.25f, 0.25f, 1.0f };
 
 			std::string text_res = "Window Resolution : ";
 
