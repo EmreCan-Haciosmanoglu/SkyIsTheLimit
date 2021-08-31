@@ -167,7 +167,7 @@ namespace Can
 	}
 	bool Debug::OnKeyPressed(Event::KeyPressedEvent& event)
 	{
-		if (event.GetKeyCode() == CAN_KEY_GRAVE_ACCENT)
+		if (event.GetKeyCode() == KeyCode::GraveAccent)
 			is_open = !is_open;
 		return ImGui::GetIO().WantCaptureKeyboard;
 	}

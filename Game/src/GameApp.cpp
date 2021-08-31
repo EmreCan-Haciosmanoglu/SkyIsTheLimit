@@ -11,9 +11,21 @@ Can::Application* Can::CreateApplication(const Can::WindowProps& props)
 
 namespace Can
 {
+	GameApp* GameApp::instance = nullptr;
+
 	GameApp::GameApp(const Can::WindowProps& props)
-		:Application(props)
+		: Application(props)
+		, perspective_camera_controller(
+			45.0f,
+			16.0f / 9.0f,
+			0.1f,
+			1000.0f,
+			v3{ 2.0f, -3.0f, 5.0f },
+			v3{ 0.0f, -45.0f, 90.0f }
+		)
 	{
+		instance = this;
+
 		terrainPrefab = Helper::GetPrefabForTerrain("assets/objects/flat_land.png");
 		terrainTexture = Texture2D::Create("assets/objects/flat_land.png");
 		//terrainPrefab = Helper::GetPrefabForTerrain("assets/objects/flat_land_small.png");
