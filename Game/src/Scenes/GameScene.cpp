@@ -100,8 +100,8 @@ namespace Can
 	void GameScene::OnEvent(Event::Event& event)
 	{
 		camera_controller.on_event(event);
-		Can::Event::EventDispatcher dispatcher(event);
-		dispatcher.Dispatch<Can::Event::MouseButtonPressedEvent>(CAN_BIND_EVENT_FN(GameScene::OnMousePressed));
+		Event::EventDispatcher dispatcher(event);
+		dispatcher.Dispatch<Event::MouseButtonPressedEvent>(CAN_BIND_EVENT_FN(GameScene::OnMousePressed));
 	}
 	bool GameScene::OnMousePressed(Event::MouseButtonPressedEvent& event)
 	{
