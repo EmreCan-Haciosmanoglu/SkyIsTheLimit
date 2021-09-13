@@ -111,16 +111,17 @@ namespace Can
 	void main_menu_screen(Main_Menu_UI& ui)
 	{
 		const s32 margin = 10;
+		const s32 button_rect_y_up_limit = 500;
 
 		auto& window = main_application->GetWindow();
 		u64 width_in_pixels = window.GetWidth();
 		u64 height_in_pixels = window.GetHeight();
 
 		Rect button_rect;
-		button_rect.x = 80;
-		button_rect.y = 400;
 		button_rect.w = 250;
 		button_rect.h = 40;
+		button_rect.x = 80;
+		button_rect.y = button_rect_y_up_limit - button_rect.h;
 
 
 		Label_Theme label_theme;
@@ -208,9 +209,11 @@ namespace Can
 	void options_screen(Main_Menu_UI& ui)
 	{
 		const s32 margin = 10;
+		const s32 button_rect_y_up_limit = 500;
 		s32 left_screen_margin = 50;
 		s32 options_y_margin = 5;
 		auto& camera_controller = GameApp::instance->perspective_camera_controller;
+
 
 		auto& window = main_application->GetWindow();
 		u64 width_in_pixels = window.GetWidth();
@@ -253,10 +256,45 @@ namespace Can
 		}
 
 		Drop_Down_List_Theme drop_down_list_theme;
-		drop_down_list_theme.button_theme = &button_theme;
-		drop_down_list_theme.button_theme_selected = &button_theme_selected;
-		drop_down_list_theme.background_color = { 0.25f, 0.25f, 0.25f, 1.0f };
+		/*Drop_Down_List_Themes*/ {
+			drop_down_list_theme.button_theme = &button_theme;
+			drop_down_list_theme.button_theme_selected = &button_theme_selected;
+			drop_down_list_theme.background_color = { 0.25f, 0.25f, 0.25f, 1.0f };
+		}
 
+		Slider_Theme horizontal_slider_theme;
+		Slider_Theme vertical_slider_theme;
+		/*Slider_Themes*/ {
+			horizontal_slider_theme.track_theme = &button_theme;
+			horizontal_slider_theme.thumb_theme = &button_theme_selected;
+			horizontal_slider_theme.flags = SLIDER_THEME_FLAGS_CLAMP_VALUE;
+			horizontal_slider_theme.flags |= SLIDER_THEME_FLAGS_THUMB_IS_INSIDE;
+			horizontal_slider_theme.flags |= SLIDER_THEME_FLAGS_IS_HORIZONTAL;
+
+			vertical_slider_theme.track_theme = &button_theme;
+			vertical_slider_theme.thumb_theme = &button_theme_selected;
+			vertical_slider_theme.flags = SLIDER_THEME_FLAGS_CLAMP_VALUE;
+			vertical_slider_theme.flags |= SLIDER_THEME_FLAGS_THUMB_IS_INSIDE;
+		}
+
+		Sub_Region_Theme sub_region_theme;
+		/*Sub_Region_Themes*/ {
+			//sub_region_theme.background_color = { 0.9f, 0.9f, 0.9f, 1.0f };
+			sub_region_theme.background_color = v4(0.1f);
+			sub_region_theme.horizontal_slider_theme = &horizontal_slider_theme;
+			sub_region_theme.vertical_slider_theme = &vertical_slider_theme;
+			sub_region_theme.flags |= SUB_REGION_THEME_FLAGS_HORIZONTALLY_SCROLLABLE;
+			sub_region_theme.flags |= SUB_REGION_THEME_FLAGS_VERTICALLY_SCROLLABLE;
+		}
+
+		Check_Box_Theme check_box_theme;
+		/*Check_Box_Themes*/ {
+			check_box_theme.background_color = { 0.80f, 0.50f, 0.30f, 1.0f };
+			check_box_theme.background_color_over = { 0.90f, 0.70f, 0.55f, 1.0f };
+			check_box_theme.background_color_pressed = { 0.95f, 0.85f, 0.70f, 1.0f };
+			check_box_theme.background_color_checked = { 0.10f, 0.10f, 0.10f, 1.0f };
+			check_box_theme.background_color_unchecked = { 0.90f, 0.90f, 0.90f, 1.0f };
+		}
 
 		Rect title_rect;
 		Rect background_rect;
@@ -275,10 +313,10 @@ namespace Can
 			background_rect.w = width_in_pixels;
 			background_rect.h = height_in_pixels;
 
-			button_rect.x = 80;
-			button_rect.y = 400;
 			button_rect.w = 250;
 			button_rect.h = 40;
+			button_rect.x = 80;
+			button_rect.y = button_rect_y_up_limit - button_rect.h;
 
 			cross_rect.w = 30;
 			cross_rect.h = 30;
@@ -308,70 +346,40 @@ namespace Can
 
 		label_theme.font_size_in_pixel = buffer_data.default_font_size_in_pixel;
 		u16 flags = immediate_button(button_rect, text_1, button_theme, __LINE__);
-		if (flags & BUTTON_STATE_FLAGS_PRESSED)
-			std::cout << "Controls is Pressed\n";
 		if (flags & BUTTON_STATE_FLAGS_RELEASED)
-		{
-			std::cout << "Controls is Released\n";
 			if (flags & BUTTON_STATE_FLAGS_OVER)
 				ui.current_options_submenus = Options_Submenus::Controls;
-		}
 
 		button_rect.y -= button_rect.h + margin;
 		flags = immediate_button(button_rect, text_2, button_theme, __LINE__);
-		if (flags & BUTTON_STATE_FLAGS_PRESSED)
-			std::cout << "Key Bindings is Pressed\n";
 		if (flags & BUTTON_STATE_FLAGS_RELEASED)
-		{
-			std::cout << "Key Bindings is Released\n";
 			if (flags & BUTTON_STATE_FLAGS_OVER)
 				ui.current_options_submenus = Options_Submenus::Key_Bindings;
-		}
 
 		button_rect.y -= button_rect.h + margin;
 		flags = immediate_button(button_rect, text_3, button_theme, __LINE__);
-		if (flags & BUTTON_STATE_FLAGS_PRESSED)
-			std::cout << "Graphics is Pressed\n";
 		if (flags & BUTTON_STATE_FLAGS_RELEASED)
-		{
-			std::cout << "Graphics is Released\n";
 			if (flags & BUTTON_STATE_FLAGS_OVER)
 				ui.current_options_submenus = Options_Submenus::Graphics;
-		}
 
 		button_rect.y -= button_rect.h + margin;
 		flags = immediate_button(button_rect, text_4, button_theme, __LINE__);
-		if (flags & BUTTON_STATE_FLAGS_PRESSED)
-			std::cout << "Audio is Pressed\n";
 		if (flags & BUTTON_STATE_FLAGS_RELEASED)
-		{
-			std::cout << "Audio is Released\n";
 			if (flags & BUTTON_STATE_FLAGS_OVER)
 				ui.current_options_submenus = Options_Submenus::Audio;
-		}
 
 		button_rect.y -= button_rect.h + margin;
 		flags = immediate_button(button_rect, text_5, button_theme, __LINE__);
-		if (flags & BUTTON_STATE_FLAGS_PRESSED)
-			std::cout << "Others is Pressed\n";
 		if (flags & BUTTON_STATE_FLAGS_RELEASED)
-		{
-			std::cout << "Others is Released\n";
 			if (flags & BUTTON_STATE_FLAGS_OVER)
 				ui.current_options_submenus = Options_Submenus::Others;
-		}
-
 
 		button_rect.y = 80;
 		flags = immediate_button(button_rect, text_6, button_theme, __LINE__);
-		if (flags & BUTTON_STATE_FLAGS_PRESSED)
-			std::cout << "Back is Pressed\n";
 		if (flags & BUTTON_STATE_FLAGS_RELEASED)
-		{
-			std::cout << "Back is Released\n";
 			if (flags & BUTTON_STATE_FLAGS_OVER)
 				ui.current_menu = Menus::MainMenu;
-		}
+
 
 		button_theme.label_theme = &graphics_options_label_theme;
 		if (ui.current_options_submenus == Options_Submenus::Controls)
@@ -396,9 +404,10 @@ namespace Can
 
 			Rect r;
 			r.x = 400;
-			r.y = 400;
-			r.w = width_in_pixels - r.x - 50;
 			r.h = 50;
+			r.w = width_in_pixels - r.x - 50;
+			r.y = button_rect_y_up_limit - r.h;
+
 			v4 background_color{ 0.65f, 0.65f, 0.65f, 1.0f };
 			immediate_quad(r, background_color);
 			r.z++;
@@ -414,7 +423,7 @@ namespace Can
 
 			std::vector<std::string> items{
 				"Key Board",
-				"Game Pad (Not Implemented)"
+				"Game Pad"
 			};
 
 			u64 selected_item = 0;
@@ -444,12 +453,6 @@ namespace Can
 			thumb_rect.w = 30;
 			thumb_rect.h = 30;
 
-			Slider_Theme slider_theme;
-			slider_theme.track_theme = drop_down_list_theme.button_theme;
-			slider_theme.thumb_theme = drop_down_list_theme.button_theme_selected;
-			slider_theme.flags = SLIDER_THEME_FLAGS_CLAMP_VALUE;
-			//slider_theme.flags |= SLIDER_THEME_FLAGS_THUMB_AT_BOTTOM;
-			//slider_theme.y_offset_in_pixels = 5;
 
 			s32 some_value = 50;
 			Rect value_rect = r;
@@ -463,7 +466,7 @@ namespace Can
 			value_theme.font_size_in_pixel = graphics_options_label_theme.font_size_in_pixel;
 
 			immediate_text(text_fpc_sensitivity, value_rect, value_theme);
-			immediate_slider_float(track_rect, thumb_rect, std::string(""), 3.0f, ui.fpc_sensitivity, 6.0f, slider_theme, __LINE__);
+			immediate_slider_float(track_rect, thumb_rect, std::string(""), 3.0f, ui.fpc_sensitivity, 6.0f, horizontal_slider_theme, __LINE__);
 
 			r.y -= r.h + options_y_margin;
 			immediate_quad(r, background_color);
@@ -473,7 +476,7 @@ namespace Can
 			track_rect.y = r.y + r.h / 2 - track_rect.h / 2;
 			value_rect.y = r.y;
 			immediate_text(text_tdc_sensitivity, value_rect, value_theme);
-			immediate_slider_float(track_rect, thumb_rect, std::string(""), 3.0f, ui.tdc_sensitivity, 6.0f, slider_theme, __LINE__);
+			immediate_slider_float(track_rect, thumb_rect, std::string(""), 3.0f, ui.tdc_sensitivity, 6.0f, horizontal_slider_theme, __LINE__);
 
 
 			r.y -= r.h + options_y_margin;
@@ -484,17 +487,29 @@ namespace Can
 			track_rect.y = r.y + r.h / 2 - track_rect.h / 2;
 			value_rect.y = r.y;
 			immediate_text(text_fov, value_rect, value_theme);
-			immediate_slider_float(track_rect, thumb_rect, std::string(""), 10.0f, ui.field_of_view_angle, 90.0f, slider_theme, __LINE__);
+			immediate_slider_float(track_rect, thumb_rect, std::string(""), 10.0f, ui.field_of_view_angle, 90.0f, horizontal_slider_theme, __LINE__);
 		}
 		else if (ui.current_options_submenus == Options_Submenus::Key_Bindings)
 		{
+			const s32 track_width = 20;
+			const s32 sub_region_button_margin = 5;
+
+			Rect sub_region_rect;
+			sub_region_rect.x = 400;
+			sub_region_rect.y = button_rect.y;
+			sub_region_rect.h = button_rect_y_up_limit - sub_region_rect.y;
+			sub_region_rect.w = width_in_pixels - sub_region_rect.x - track_width - 50;
+
 			Rect r;
-			r.x = 400;
-			r.y = 600;
-			r.w = width_in_pixels - r.x - 50;
+			r.x = sub_region_button_margin;
 			r.h = 50;
+			r.y = sub_region_rect.h - r.h - sub_region_button_margin;
+			r.w = sub_region_rect.w - 2 * sub_region_button_margin - track_width;
+			r.z = sub_region_rect.z + 1;
 			v4 background_color{ 0.65f, 0.65f, 0.65f, 1.0f };
+			key_selection_rect.x = sub_region_rect.w - key_selection_rect.w - sub_region_button_margin;
 			key_selection_rect.z = r.z + 1;
+
 
 			std::string text_forward_key_bind = "Forward :";
 			std::string text_backward_key_bind = "Backward :";
@@ -526,8 +541,9 @@ namespace Can
 			const std::string& text_selected_decrease_fov_key = keycode_to_string(camera_controller.decrease_fov_key);
 			std::string text_cross = "X";
 
+			immediate_begin_sub_region(sub_region_rect, sub_region_theme, __LINE__);
 			{
-				immediate_quad(r, background_color);
+				immediate_quad(r, background_color, true);
 				r.z++;
 				immediate_text(text_forward_key_bind, r, graphics_options_label_theme);
 				r.z--;
@@ -540,8 +556,8 @@ namespace Can
 				}
 			}
 			{
-				r.y -= r.h + options_y_margin;
-				immediate_quad(r, background_color);
+				r.y -= r.h + sub_region_button_margin;
+				immediate_quad(r, background_color, true);
 				r.z++;
 				immediate_text(text_backward_key_bind, r, graphics_options_label_theme);
 				r.z--;
@@ -554,8 +570,8 @@ namespace Can
 				}
 			}
 			{
-				r.y -= r.h + options_y_margin;
-				immediate_quad(r, background_color);
+				r.y -= r.h + sub_region_button_margin;
+				immediate_quad(r, background_color, true);
 				r.z++;
 				immediate_text(text_left_key_bind, r, graphics_options_label_theme);
 				r.z--;
@@ -568,8 +584,8 @@ namespace Can
 				}
 			}
 			{
-				r.y -= r.h + options_y_margin;
-				immediate_quad(r, background_color);
+				r.y -= r.h + sub_region_button_margin;
+				immediate_quad(r, background_color, true);
 				r.z++;
 				immediate_text(text_right_key_bind, r, graphics_options_label_theme);
 				r.z--;
@@ -582,8 +598,8 @@ namespace Can
 				}
 			}
 			{
-				r.y -= r.h + options_y_margin;
-				immediate_quad(r, background_color);
+				r.y -= r.h + sub_region_button_margin;
+				immediate_quad(r, background_color, true);
 				r.z++;
 				immediate_text(text_rotate_cw_key_bind, r, graphics_options_label_theme);
 				r.z--;
@@ -596,8 +612,8 @@ namespace Can
 				}
 			}
 			{
-				r.y -= r.h + options_y_margin;
-				immediate_quad(r, background_color);
+				r.y -= r.h + sub_region_button_margin;
+				immediate_quad(r, background_color, true);
 				r.z++;
 				immediate_text(text_rotate_ccw_key_bind, r, graphics_options_label_theme);
 				r.z--;
@@ -610,8 +626,8 @@ namespace Can
 				}
 			}
 			{
-				r.y -= r.h + options_y_margin;
-				immediate_quad(r, background_color);
+				r.y -= r.h + sub_region_button_margin;
+				immediate_quad(r, background_color, true);
 				r.z++;
 				immediate_text(text_pitch_down_key_bind, r, graphics_options_label_theme);
 				r.z--;
@@ -624,8 +640,8 @@ namespace Can
 				}
 			}
 			{
-				r.y -= r.h + options_y_margin;
-				immediate_quad(r, background_color);
+				r.y -= r.h + sub_region_button_margin;
+				immediate_quad(r, background_color, true);
 				r.z++;
 				immediate_text(text_pitch_up_key_bind, r, graphics_options_label_theme);
 				r.z--;
@@ -638,8 +654,8 @@ namespace Can
 				}
 			}
 			{
-				r.y -= r.h + options_y_margin;
-				immediate_quad(r, background_color);
+				r.y -= r.h + sub_region_button_margin;
+				immediate_quad(r, background_color, true);
 				r.z++;
 				immediate_text(text_raise_key_bind, r, graphics_options_label_theme);
 				r.z--;
@@ -652,8 +668,8 @@ namespace Can
 				}
 			}
 			{
-				r.y -= r.h + options_y_margin;
-				immediate_quad(r, background_color);
+				r.y -= r.h + sub_region_button_margin;
+				immediate_quad(r, background_color, true);
 				r.z++;
 				immediate_text(text_lower_key_bind, r, graphics_options_label_theme);
 				r.z--;
@@ -666,8 +682,8 @@ namespace Can
 				}
 			}
 			{
-				r.y -= r.h + options_y_margin;
-				immediate_quad(r, background_color);
+				r.y -= r.h + sub_region_button_margin;
+				immediate_quad(r, background_color, true);
 				r.z++;
 				immediate_text(text_increase_fov_key_bind, r, graphics_options_label_theme);
 				r.z--;
@@ -680,8 +696,8 @@ namespace Can
 				}
 			}
 			{
-				r.y -= r.h + options_y_margin;
-				immediate_quad(r, background_color);
+				r.y -= r.h + sub_region_button_margin;
+				immediate_quad(r, background_color, true);
 				r.z++;
 				immediate_text(text_decrease_fov_key_bind, r, graphics_options_label_theme);
 				r.z--;
@@ -693,6 +709,7 @@ namespace Can
 					ui.selected_key = 11;
 				}
 			}
+			immediate_end_sub_region(track_width);
 
 			if (ui.key_bind_selection_is_openned)
 			{
@@ -719,67 +736,252 @@ namespace Can
 		}
 		else if (ui.current_options_submenus == Options_Submenus::Graphics)
 		{
+			const s32 drop_down_list_margin = 5;
+			std::string text_resolution = "Window Resolution : ";
+			std::string text_quality = "Graphic Quality : ";
+			std::string text_mode = "Display Mode : ";
+			std::string text_v_sync = "V-Sync : ";
 
-			std::string text_res = "Window Resolution : ";
-
-			Rect r;
-			r.x = 400;
-			r.y = 400;
-			r.w = width_in_pixels - r.x - 50;
-			r.h = 50;
-			v4 background_color{ 0.65f, 0.65f, 0.65f, 1.0f };
-			immediate_quad(r, background_color);
-			r.z++;
-			immediate_text(text_res, r, graphics_options_label_theme);
-			r.z--;
-
-			Rect res_rect;
-			res_rect.w = 200;
-			res_rect.h = 50;
-			res_rect.x = width_in_pixels - res_rect.w - 50;
-			res_rect.y = r.y;
-			res_rect.z = r.z + 1;
-
-			std::vector<std::string> items{
+			std::vector<std::string> quality_settings{
+				"Low",
+				"Medium",
+				"Good",
+				"Ultra"
+			};
+			std::vector<std::string> resolutions{
 				"1920 x 1080",
 				"1600 x 900",
 				"1280 x 1024",
 				"1280 x 720",
 				"800  x 600"
 			};
+			std::vector<std::string> modes{
+				"Windowed",
+				"Windowed FullScreen",
+				"FullScreen"
+			};
 
-			u64 selected_item = 3;
-			u16 flags = immediate_drop_down_list(res_rect, items, selected_item, drop_down_list_theme, __LINE__);
+			u64 selected_ressolution_item = 3;
+			u64 selected_quality_item = 0;
+			u64 selected_mode_item = 0;
+
+			Rect r;
+			r.x = 400;
+			r.h = 50;
+			r.y = button_rect_y_up_limit - r.h;
+			r.w = width_in_pixels - r.x - 50;
+
+			Rect drop_down_list_rect;
+			drop_down_list_rect.w = 200;
+			drop_down_list_rect.h = 50;
+			drop_down_list_rect.x = width_in_pixels - drop_down_list_rect.w - 50;
+			drop_down_list_rect.y = r.y;
+			drop_down_list_rect.z = r.z + 1;
+
+			v4 background_color{ 0.65f, 0.65f, 0.65f, 1.0f };
+
+			{
+				immediate_quad(r, background_color);
+				r.z++;
+				immediate_text(text_quality, r, graphics_options_label_theme);
+				r.z--;
+				immediate_drop_down_list(drop_down_list_rect, quality_settings, selected_quality_item, drop_down_list_theme, __LINE__);
+			}
+			{
+				r.y -= r.h + drop_down_list_margin;
+				drop_down_list_rect.y = r.y;
+
+				immediate_quad(r, background_color);
+				r.z++;
+				immediate_text(text_resolution, r, graphics_options_label_theme);
+				r.z--;
+				u16 flags = immediate_drop_down_list(drop_down_list_rect, resolutions, selected_ressolution_item, drop_down_list_theme, __LINE__);
+				if (flags & DROP_DOWN_LIST_STATE_FLAGS_ITEM_CHANGED)
+				{
+					auto& window = main_application->GetWindow();
+					if (selected_ressolution_item == 0)
+						window.set_resolution(1920, 1080);
+					else if (selected_ressolution_item == 1)
+						window.set_resolution(1600, 900);
+					else if (selected_ressolution_item == 2)
+						window.set_resolution(1280, 1024);
+					else if (selected_ressolution_item == 3)
+						window.set_resolution(1280, 720);
+					else if (selected_ressolution_item == 4)
+						window.set_resolution(800, 600);
+				}
+			}
+			{
+				r.y -= r.h + drop_down_list_margin;
+				drop_down_list_rect.y = r.y;
+
+				immediate_quad(r, background_color);
+				r.z++;
+				immediate_text(text_mode, r, graphics_options_label_theme);
+				r.z--;
+				immediate_drop_down_list(drop_down_list_rect, modes, selected_mode_item, drop_down_list_theme, __LINE__);
+			}
+			{
+				r.y -= r.h + drop_down_list_margin;
+				Rect check_box_rect;
+				check_box_rect.w = 30;
+				check_box_rect.h = 30;
+				check_box_rect.y = r.y + r.h / 2 - check_box_rect.h / 2;
+				check_box_rect.x = r.x + r.w - r.h / 2 - check_box_rect.w / 2;
+				check_box_rect.z += r.z + 1;
+
+				immediate_quad(r, background_color);
+				r.z++;
+				immediate_text(text_v_sync, r, graphics_options_label_theme);
+				r.z--;
+				immediate_check_box(check_box_rect, ui.v_sync, check_box_theme, __LINE__);
+			}
+
+		}
+		else if (ui.current_options_submenus == Options_Submenus::Audio)
+		{
+			const s32 some_value = 50;
+
+			Label_Theme value_theme;
+			value_theme.color = graphics_options_label_theme.color;
+			value_theme.flags = FontFlags::LeftAligned;
+			value_theme.font = graphics_options_label_theme.font;
+			value_theme.font_size_in_pixel = graphics_options_label_theme.font_size_in_pixel;
+
+			std::string text_master_volume = "Master Volume : ";
+			std::string text_music_volume = "Music Volume : ";
+			std::string text_weather_volume = "Weather Volume : ";
+			std::string text_city_volume = "City Volume : ";
+			std::string text_notifications_volume = "Notifications Volume : ";
+
+			std::ostringstream ss_master_volume;
+			ss_master_volume << ui.master_volume;
+			std::string ss_text_master_volume(ss_master_volume.str());
+
+			std::ostringstream ss_music_volume;
+			ss_music_volume << ui.music_volume;
+			std::string ss_text_music_volume(ss_music_volume.str());
+
+			std::ostringstream ss_weather_volume;
+			ss_weather_volume << ui.weather_volume;
+			std::string ss_text_weather_volume(ss_weather_volume.str());
+
+			std::ostringstream ss_city_volume;
+			ss_city_volume << ui.city_volume;
+			std::string ss_text_city_volume(ss_city_volume.str());
+
+			std::ostringstream ss_notifications_volume;
+			ss_notifications_volume << ui.notifications_volume;
+			std::string ss_text_notifications_volume(ss_notifications_volume.str());
+
+
+			Rect r;
+			r.x = 400;
+			r.h = 50;
+			r.w = width_in_pixels - r.x - 50;
+			r.y = button_rect_y_up_limit - r.h;
+			v4 background_color{ 0.65f, 0.65f, 0.65f, 1.0f };
+
+			Rect track_rect;
+			track_rect.w = 200;
+			track_rect.h = 8;
+			track_rect.x = width_in_pixels - track_rect.w - left_screen_margin;
+			track_rect.y = r.y + r.h / 2 - track_rect.h / 2;
+			track_rect.z = r.z + 1;
+
+			Rect thumb_rect;
+			thumb_rect.w = 30;
+			thumb_rect.h = 30;
+
+			Rect value_rect = r;
+			value_rect.w = some_value;
+			value_rect.x = track_rect.x - (value_rect.w + margin);
+			value_rect.z = r.z + 1;
+
+			immediate_quad(r, background_color);
+			r.z++;
+			immediate_text(text_master_volume, r, graphics_options_label_theme);
+			r.z--;
+			immediate_text(ss_text_master_volume, value_rect, value_theme);
+			immediate_slider(track_rect, thumb_rect, std::string(""), 0, ui.master_volume, 100, horizontal_slider_theme, __LINE__);
+
+			r.y -= r.h + options_y_margin;
+			immediate_quad(r, background_color);
+			r.z++;
+			immediate_text(text_music_volume, r, graphics_options_label_theme);
+			r.z--;
+			track_rect.y = r.y + r.h / 2 - track_rect.h / 2;
+			value_rect.y = r.y;
+			immediate_text(ss_text_music_volume, value_rect, value_theme);
+			immediate_slider(track_rect, thumb_rect, std::string(""), 0, ui.music_volume, 100, horizontal_slider_theme, __LINE__);;
+
+			r.y -= r.h + options_y_margin;
+			immediate_quad(r, background_color);
+			r.z++;
+			immediate_text(text_weather_volume, r, graphics_options_label_theme);
+			r.z--;
+			track_rect.y = r.y + r.h / 2 - track_rect.h / 2;
+			value_rect.y = r.y;
+			immediate_text(ss_text_weather_volume, value_rect, value_theme);
+			immediate_slider(track_rect, thumb_rect, std::string(""), 0, ui.weather_volume, 100, horizontal_slider_theme, __LINE__);;
+
+			r.y -= r.h + options_y_margin;
+			immediate_quad(r, background_color);
+			r.z++;
+			immediate_text(text_city_volume, r, graphics_options_label_theme);
+			r.z--;
+			track_rect.y = r.y + r.h / 2 - track_rect.h / 2;
+			value_rect.y = r.y;
+			immediate_text(ss_text_city_volume, value_rect, value_theme);
+			immediate_slider(track_rect, thumb_rect, std::string(""), 0, ui.city_volume, 100, horizontal_slider_theme, __LINE__);;
+
+			r.y -= r.h + options_y_margin;
+			immediate_quad(r, background_color);
+			r.z++;
+			immediate_text(text_notifications_volume, r, graphics_options_label_theme);
+			r.z--;
+			track_rect.y = r.y + r.h / 2 - track_rect.h / 2;
+			value_rect.y = r.y;
+			immediate_text(ss_text_notifications_volume, value_rect, value_theme);
+			immediate_slider(track_rect, thumb_rect, std::string(""), 0, ui.notifications_volume, 100, horizontal_slider_theme, __LINE__);
+		}
+		else if (ui.current_options_submenus == Options_Submenus::Others)
+		{
+			std::string text_language = "Language : ";
+
+			Rect r;
+			r.x = 400;
+			r.h = 50;
+			r.w = width_in_pixels - r.x - 50;
+			r.y = button_rect_y_up_limit - r.h;
+
+			v4 background_color{ 0.65f, 0.65f, 0.65f, 1.0f };
+			immediate_quad(r, background_color);
+			r.z++;
+			immediate_text(text_language, r, graphics_options_label_theme);
+			r.z--;
+
+			Rect drop_list_rect;
+			drop_list_rect.w = 200;
+			drop_list_rect.h = 50;
+			drop_list_rect.x = width_in_pixels - drop_list_rect.w - left_screen_margin;
+			drop_list_rect.y = r.y;
+			drop_list_rect.z = r.z + 10;
+
+			std::vector<std::string> items{
+				"English",
+				"Türkçe",
+				"Español"
+			};
+
+			u64 selected_item = 0;
+			u16 flags = immediate_drop_down_list(drop_list_rect, items, selected_item, drop_down_list_theme, __LINE__);
 			if (flags & DROP_DOWN_LIST_STATE_FLAGS_PRESSED)
 				std::cout << "drop down list is Pressed\n";
 			if (flags & DROP_DOWN_LIST_STATE_FLAGS_RELEASED)
 				std::cout << "drop down list is Released\n";
 			if (flags & DROP_DOWN_LIST_STATE_FLAGS_ITEM_CHANGED)
-			{
-				std::cout << "Active drop down list item is changed\n";
-				//Change The settings;
-				{/*Temp*/
-					auto& window = main_application->GetWindow();
-					if (selected_item == 0)
-						window.set_resolution(1920, 1080);
-					else if (selected_item == 1)
-						window.set_resolution(1600, 900);
-					else if (selected_item == 2)
-						window.set_resolution(1280, 1024);
-					else if (selected_item == 3)
-						window.set_resolution(1280, 720);
-					else if (selected_item == 4)
-						window.set_resolution(800, 600);
-				}
-			}
-		}
-		else if (ui.current_options_submenus == Options_Submenus::Audio)
-		{
-
-		}
-		else if (ui.current_options_submenus == Options_Submenus::Others)
-		{
-
+				std::cout << "Active drop down list item is changed, but it doesn't affect the game\n";
 		}
 	}
 	void credits_screen(Main_Menu_UI& ui)

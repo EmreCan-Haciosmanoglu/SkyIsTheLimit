@@ -43,8 +43,15 @@ namespace Can
 		f32 tdc_sensitivity = 4.0f;
 		f32 field_of_view_angle = 45.0f;
 
+		s16 master_volume = 33;
+		s16 music_volume = 72;
+		s16 weather_volume = 25;
+		s16 city_volume = 42;
+		s16 notifications_volume = 48;
+
 		bool key_bind_selection_is_openned = false;
 		bool key_is_pressed = false;
+		bool v_sync = false;
 
 		u16 selected_key = 0;
 
