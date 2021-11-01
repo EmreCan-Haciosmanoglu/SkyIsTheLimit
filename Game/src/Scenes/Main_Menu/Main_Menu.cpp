@@ -20,5 +20,6 @@ namespace Can
 	}
 	void deinit_main_menu(GameApp& app, Main_Menu& main_menu)
 	{
+		deinit_main_menu_ui_layer(main_menu.ui_layer);
 	}
 }

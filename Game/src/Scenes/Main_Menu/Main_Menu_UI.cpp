@@ -20,19 +20,25 @@ namespace Can
 	{
 		on_main_menu_ui_layer_detach(*this);
 	}
-	void Main_Menu_UI::OnUpdate(TimeStep ts)
+	bool Main_Menu_UI::OnUpdate(TimeStep ts)
 	{
-		on_main_menu_ui_layer_update(*this, ts);
+		return on_main_menu_ui_layer_update(*this, ts);
 	}
 	void Main_Menu_UI::OnEvent(Event::Event& event)
 	{
 		Event::EventDispatcher dispatcher(event);
 		dispatcher.Dispatch<Event::KeyReleasedEvent>(CAN_BIND_EVENT_FN(Main_Menu_UI::OnKeyReleased));
+		dispatcher.Dispatch<Event::KeyTypedEvent>(CAN_BIND_EVENT_FN(Main_Menu_UI::OnKeyTyped));
 	}
 
 	bool Main_Menu_UI::OnKeyReleased(Event::KeyReleasedEvent& event)
 	{
 		return on_main_menu_ui_layer_key_released(*this, event);
+	}
+	bool Main_Menu_UI::OnKeyTyped(Event::KeyTypedEvent& event)
+	{
+		on_main_menu_ui_layer_key_typed(*this, event);
+		return false;
 	}
 
 	extern Buffer_Data buffer_data;
@@ -42,6 +48,12 @@ namespace Can
 		auto ptr = &ui.camera_controller;
 		buffer_data.camera_controller = ptr;
 		ui.font = load_font("assets/fonts/DancingScript/DancingScript-Regular.ttf");
+		ui.text_buffer.resize(ui.max_char);
+	}
+
+	void deinit_main_menu_ui_layer(Main_Menu_UI& ui)
+	{
+		//we've got to do "something" here
 	}
 
 	void on_main_menu_ui_layer_attach(Main_Menu_UI& ui)
@@ -51,7 +63,7 @@ namespace Can
 	{
 	}
 
-	void on_main_menu_ui_layer_update(Main_Menu_UI& ui, TimeStep ts)
+	bool on_main_menu_ui_layer_update(Main_Menu_UI& ui, TimeStep ts)
 	{
 		auto& camera_controller = ui.camera_controller;
 
@@ -78,34 +90,107 @@ namespace Can
 
 		immediate_flush();
 		//RenderCommand::enable_depth_testing(true);
+
+		return ui.force_update;
 	}
 
 
 	bool on_main_menu_ui_layer_key_released(Main_Menu_UI& ui, Event::KeyReleasedEvent& event)
 	{
 		Perspective_Camera_Controller& controller = GameApp::instance->perspective_camera_controller;
+		KeyCode keycode = event.GetKeyCode();
 		if (ui.key_bind_selection_is_openned)
 		{
 			ui.key_is_pressed = true;
 			ui.key_bind_selection_is_openned = false;
-			auto key = event.GetKeyCode();
 
-			if (ui.selected_key == 0) controller.forward_key = key;
-			else if (ui.selected_key == 1) controller.backward_key = key;
-			else if (ui.selected_key == 2) controller.left_key = key;
-			else if (ui.selected_key == 3) controller.right_key = key;
-			else if (ui.selected_key == 4) controller.rotate_cw_key = key;
-			else if (ui.selected_key == 5) controller.rotate_ccw_key = key;
-			else if (ui.selected_key == 6) controller.pitch_down_key = key;
-			else if (ui.selected_key == 7) controller.pitch_up_key = key;
-			else if (ui.selected_key == 8) controller.raise_key = key;
-			else if (ui.selected_key == 9) controller.lower_key = key;
-			else if (ui.selected_key == 10) controller.increase_fov_key = key;
-			else if (ui.selected_key == 11) controller.decrease_fov_key = key;
+			if (ui.selected_key == 0) controller.forward_key = keycode;
+			else if (ui.selected_key == 1) controller.backward_key = keycode;
+			else if (ui.selected_key == 2) controller.left_key = keycode;
+			else if (ui.selected_key == 3) controller.right_key = keycode;
+			else if (ui.selected_key == 4) controller.rotate_cw_key = keycode;
+			else if (ui.selected_key == 5) controller.rotate_ccw_key = keycode;
+			else if (ui.selected_key == 6) controller.pitch_down_key = keycode;
+			else if (ui.selected_key == 7) controller.pitch_up_key = keycode;
+			else if (ui.selected_key == 8) controller.raise_key = keycode;
+			else if (ui.selected_key == 9) controller.lower_key = keycode;
+			else if (ui.selected_key == 10) controller.increase_fov_key = keycode;
+			else if (ui.selected_key == 11) controller.decrease_fov_key = keycode;
 
 			return true;
 		}
+		else
+		{
+			if (ui.global_focus)
+			{
+
+				if (keycode == KeyCode::Backspace)
+				{
+					if (ui.cursor > 0)
+					{
+						if (ui.char_count == ui.cursor)
+						{
+							ui.cursor--;
+							ui.char_count--;
+						}
+						else
+						{
+							ui.cursor--;
+							ui.char_count--;
+							for (u16 i = ui.cursor; i < ui.char_count; i++)
+								ui.text_buffer[i] = ui.text_buffer[i + 1];
+						}
+					}
+				}
+				else if (keycode == KeyCode::Delete)
+				{
+
+					if (ui.cursor < ui.max_char - 1)
+					{
+						if (ui.char_count == ui.cursor)
+						{
+							//nothing
+						}
+						else
+						{
+							ui.char_count--;
+							for (u16 i = ui.cursor; i < ui.char_count; i++)
+								ui.text_buffer[i] = ui.text_buffer[i + 1];
+						}
+					}
+				}
+			}
+		}
 		return false;
+	}
+
+	void on_main_menu_ui_layer_key_typed(Main_Menu_UI& ui, Event::KeyTypedEvent& event)
+	{
+		if (!ui.global_focus) return;
+		KeyCode keycode = event.GetKeyCode();
+
+		if (ui.char_count >= ui.max_char)
+			return;
+		char key = (char)keycode;
+
+		if (!(key >= 32 && key <= 126))	return;
+
+		if (ui.char_count == ui.cursor)
+		{
+			ui.text_buffer[ui.cursor] = key;
+			ui.cursor++;
+			ui.char_count++;
+		}
+		else
+		{
+			ui.char_count++;
+
+			for (u16 i = ui.char_count; i > ui.cursor; i--)
+				ui.text_buffer[i] = ui.text_buffer[i - 1];
+			ui.text_buffer[ui.cursor] = key;
+			ui.cursor++;
+		}
+
 	}
 
 	void main_menu_screen(Main_Menu_UI& ui)
@@ -129,13 +214,78 @@ namespace Can
 		label_theme.font = (Font*)ui.font;
 		label_theme.font_size_in_pixel = 85;
 
+		Label_Theme graphics_options_label_theme;
+		/*Label_Themes*/ {
+
+			graphics_options_label_theme.font = buffer_data.default_font;
+			graphics_options_label_theme.font_size_in_pixel = 20;
+			graphics_options_label_theme.color = { 0.9f, 0.9f, 0.9f, 1.0f };
+			graphics_options_label_theme.flags = FontFlags::LeftAligned;
+		}
+
 		Button_Theme button_theme;
 		button_theme.background_color = { 0.80f, 0.50f, 0.30f, 1.0f };
 		button_theme.background_color_over = { 0.90f, 0.70f, 0.55f, 1.0f };
 		button_theme.background_color_pressed = { 0.95f, 0.85f, 0.70f, 1.0f };
 		button_theme.label_theme = &label_theme;
+		Button_Theme button_theme_selected;
+		Button_Theme button_theme_centered;
+		/*Button_Themes*/ {
+			button_theme_selected.label_theme = &graphics_options_label_theme;
+			button_theme_selected.background_color = { 0.70f, 0.50f, 0.40f, 1.0f };
+			button_theme_selected.background_color_over = { 0.80f, 0.70f, 0.60f, 1.0f };
+			button_theme_selected.background_color_pressed = { 0.90f, 0.85f, 0.80f, 1.0f };
+
+			button_theme_centered.label_theme = &label_theme;
+			button_theme_centered.background_color = { 0.80f, 0.50f, 0.30f, 1.0f };
+			button_theme_centered.background_color_over = { 0.90f, 0.70f, 0.55f, 1.0f };
+			button_theme_centered.background_color_pressed = { 0.95f, 0.85f, 0.70f, 1.0f };
+		}
+
+		Slider_Theme horizontal_slider_theme;
+		Slider_Theme vertical_slider_theme;
+		/*Slider_Themes*/ {
+			horizontal_slider_theme.track_theme = &button_theme;
+			horizontal_slider_theme.thumb_theme = &button_theme_selected;
+			horizontal_slider_theme.flags = SLIDER_THEME_FLAGS_CLAMP_VALUE;
+			horizontal_slider_theme.flags |= SLIDER_THEME_FLAGS_THUMB_IS_INSIDE;
+			horizontal_slider_theme.flags |= SLIDER_THEME_FLAGS_IS_HORIZONTAL;
+
+			vertical_slider_theme.track_theme = &button_theme;
+			vertical_slider_theme.thumb_theme = &button_theme_selected;
+			vertical_slider_theme.flags = SLIDER_THEME_FLAGS_CLAMP_VALUE;
+			vertical_slider_theme.flags |= SLIDER_THEME_FLAGS_THUMB_IS_INSIDE;
+		}
+
+		Sub_Region_Theme sub_region_theme;
+		/*Sub_Region_Themes*/ {
+			//sub_region_theme.background_color = { 0.9f, 0.9f, 0.9f, 1.0f };
+			sub_region_theme.background_color = v4(0.1f);
+			sub_region_theme.horizontal_slider_theme = &horizontal_slider_theme;
+			sub_region_theme.vertical_slider_theme = &vertical_slider_theme;
+			sub_region_theme.flags |= SUB_REGION_THEME_FLAGS_HORIZONTALLY_SCROLLABLE;
+			sub_region_theme.flags |= SUB_REGION_THEME_FLAGS_VERTICALLY_SCROLLABLE;
+		}
+
+		Check_Box_Theme check_box_theme;
+		/*Check_Box_Themes*/ {
+			check_box_theme.background_color = { 0.80f, 0.50f, 0.30f, 1.0f };
+			check_box_theme.background_color_over = { 0.90f, 0.70f, 0.55f, 1.0f };
+			check_box_theme.background_color_pressed = { 0.95f, 0.85f, 0.70f, 1.0f };
+			check_box_theme.background_color_checked = { 0.10f, 0.10f, 0.10f, 1.0f };
+			check_box_theme.background_color_unchecked = { 0.90f, 0.90f, 0.90f, 1.0f };
+		}
+
+		Text_Box_Theme text_box_theme;
+		/*Text_Box_Theme*/ {
+			text_box_theme.background_color = { 0.80f, 0.50f, 0.30f, 1.0f };
+			text_box_theme.background_color_active = { 0.95f, 0.85f, 0.70f, 1.0f };
+			text_box_theme.label_theme = &label_theme;
+		}
 
 		std::string title = "Sky Is The Limit";
+		if ((GetKeyState(VK_CAPITAL) & 0x0001) != 0)
+			title = "SKY IS THE LIMIT";
 		std::string text_1 = "Continue The Game";
 		std::string text_2 = "Start New Game";
 		std::string text_3 = "Load A Game";
@@ -157,21 +307,34 @@ namespace Can
 		if (flags & BUTTON_STATE_FLAGS_PRESSED)
 			std::cout << "Continue The Game is Pressed\n";
 		if (flags & BUTTON_STATE_FLAGS_RELEASED)
+		{
 			std::cout << "Continue The Game is Released\n";
+			GameApp::instance->start_the_game();
+			ui.force_update = true;
+			return;
+		}
 
 		button_rect.y -= button_rect.h + margin;
 		flags = immediate_button(button_rect, text_2, button_theme, __LINE__);
 		if (flags & BUTTON_STATE_FLAGS_PRESSED)
 			std::cout << "Start New Game is Pressed\n";
 		if (flags & BUTTON_STATE_FLAGS_RELEASED)
+		{
 			std::cout << "Start New Game is Released\n";
+			ui.new_game_menu_is_openned ^= true;
+			ui.load_game_menu_is_openned = false;
+		}
 
 		button_rect.y -= button_rect.h + margin;
 		flags = immediate_button(button_rect, text_3, button_theme, __LINE__);
 		if (flags & BUTTON_STATE_FLAGS_PRESSED)
 			std::cout << "Load A Game is Pressed\n";
 		if (flags & BUTTON_STATE_FLAGS_RELEASED)
+		{
 			std::cout << "Load A Game is Released\n";
+			ui.load_game_menu_is_openned ^= true;
+			ui.new_game_menu_is_openned = false;
+		}
 
 		button_rect.y -= button_rect.h + margin;
 		flags = immediate_button(button_rect, text_4, button_theme, __LINE__);
@@ -204,6 +367,167 @@ namespace Can
 			std::cout << "Exit is Released\n";
 			if (flags & BUTTON_STATE_FLAGS_OVER)
 				main_application->m_Running = false;
+		}
+
+		const s32 track_width = 20;
+		const s32 sub_region_button_margin = 5;
+		Rect sub_region_rect;
+		sub_region_rect.x = 400;
+		sub_region_rect.y = button_rect.y + sub_region_button_margin + button_rect.h;
+		sub_region_rect.h = button_rect_y_up_limit - sub_region_rect.y - button_rect.h - sub_region_button_margin;
+		sub_region_rect.w = width_in_pixels - sub_region_rect.x - track_width - 50;
+
+		if (ui.new_game_menu_is_openned)
+		{
+			std::string text_start_a_game = "Start A New Game";
+
+			Rect text_box_rect;
+			text_box_rect.x = 400;
+			text_box_rect.h = 50;
+			text_box_rect.w = width_in_pixels - text_box_rect.x - 50;
+			text_box_rect.y = button_rect_y_up_limit - text_box_rect.h;
+
+			immediate_text_box(text_box_rect, ui.text_buffer, ui.cursor, ui.char_count, ui.max_char, ui.global_focus, ui.global_focus_hash, text_box_theme, __LINE__);
+
+			text_box_rect.y -= text_box_rect.h + sub_region_button_margin;
+			immediate_text_box(text_box_rect, ui.text_buffer, ui.cursor, ui.char_count, ui.max_char, ui.global_focus, ui.global_focus_hash, text_box_theme, __LINE__);
+
+			button_rect.y = sub_region_rect.y - sub_region_button_margin - button_rect.h;
+			button_rect.x = sub_region_rect.x + sub_region_rect.w - button_rect.w;
+			flags = immediate_button(button_rect, text_start_a_game, button_theme, __LINE__);
+			if (flags & BUTTON_STATE_FLAGS_PRESSED)
+				std::cout << "Start A New Game is Pressed\n";
+			if (flags & BUTTON_STATE_FLAGS_RELEASED)
+			{
+				std::cout << "Start A New Game is Released\n";
+				GameApp::instance->start_the_game();
+				ui.force_update = true;
+				return;
+			}
+		}
+		else if (ui.load_game_menu_is_openned)
+		{
+			v4 background_color{ 0.65f, 0.65f, 0.65f, 1.0f };
+
+			std::vector<std::string> game_instance = {
+				"PlaceHolder Game #1",
+				"PlaceHolder Game #2",
+				"PlaceHolder Game #3",
+				"PlaceHolder Game #4",
+				"PlaceHolder Game #5"
+			};
+
+			std::string text_start_the_game = "Start The Selected Game";
+
+
+
+			Rect r;
+			r.x = sub_region_button_margin;
+			r.h = 50;
+			r.y = sub_region_rect.h - r.h - sub_region_button_margin;
+			r.w = sub_region_rect.w - 2 * sub_region_button_margin - track_width;
+			r.z = sub_region_rect.z + 1;
+
+			Rect check_box_rect;
+			check_box_rect.w = 30;
+			check_box_rect.h = 30;
+			check_box_rect.y = r.y + r.h / 2 - check_box_rect.h / 2;
+			check_box_rect.x = r.x + r.w - r.h / 2 - check_box_rect.w / 2;
+			check_box_rect.z += r.z + 1;
+
+			immediate_begin_sub_region(sub_region_rect, sub_region_theme, __LINE__);
+			{
+				immediate_quad(r, background_color, true);
+				r.z++;
+				immediate_text(game_instance[0], r, graphics_options_label_theme);
+				r.z--;
+
+				bool is_this_selected = ui.selected_game_instance == 0;
+				flags = immediate_check_box(check_box_rect, is_this_selected, check_box_theme, __LINE__);
+				if (flags & CHECK_BOX_STATE_FLAGS_VALUE_CHANGED)
+				{
+					if (is_this_selected)
+						ui.selected_game_instance = 0;
+				}
+			}
+			{
+				r.y -= r.h + sub_region_button_margin;
+				check_box_rect.y = r.y + r.h / 2 - check_box_rect.h / 2;
+
+				immediate_quad(r, background_color, true);
+				r.z++;
+				immediate_text(game_instance[1], r, graphics_options_label_theme);
+				r.z--;
+
+				bool is_this_selected = ui.selected_game_instance == 1;
+				flags = immediate_check_box(check_box_rect, is_this_selected, check_box_theme, __LINE__);
+				if (flags & CHECK_BOX_STATE_FLAGS_VALUE_CHANGED)
+				{
+					if (is_this_selected)
+						ui.selected_game_instance = 1;
+				}
+			}
+			{
+				r.y -= r.h + sub_region_button_margin;
+				check_box_rect.y = r.y + r.h / 2 - check_box_rect.h / 2;
+
+				immediate_quad(r, background_color, true);
+				r.z++;
+				immediate_text(game_instance[2], r, graphics_options_label_theme);
+				r.z--;
+
+				bool is_this_selected = ui.selected_game_instance == 2;
+				flags = immediate_check_box(check_box_rect, is_this_selected, check_box_theme, __LINE__);
+				if (flags & CHECK_BOX_STATE_FLAGS_VALUE_CHANGED)
+				{
+					if (is_this_selected)
+						ui.selected_game_instance = 2;
+				}
+			}
+			{
+				r.y -= r.h + sub_region_button_margin;
+				check_box_rect.y = r.y + r.h / 2 - check_box_rect.h / 2;
+
+				immediate_quad(r, background_color, true);
+				r.z++;
+				immediate_text(game_instance[3], r, graphics_options_label_theme);
+				r.z--;
+
+				bool is_this_selected = ui.selected_game_instance == 3;
+				flags = immediate_check_box(check_box_rect, is_this_selected, check_box_theme, __LINE__);
+				if (flags & CHECK_BOX_STATE_FLAGS_VALUE_CHANGED)
+				{
+					if (is_this_selected)
+						ui.selected_game_instance = 3;
+				}
+			}
+			{
+				r.y -= r.h + sub_region_button_margin;
+				check_box_rect.y = r.y + r.h / 2 - check_box_rect.h / 2;
+
+				immediate_quad(r, background_color, true);
+				r.z++;
+				immediate_text(game_instance[4], r, graphics_options_label_theme);
+				r.z--;
+
+				bool is_this_selected = ui.selected_game_instance == 4;
+				flags = immediate_check_box(check_box_rect, is_this_selected, check_box_theme, __LINE__);
+				if (flags & CHECK_BOX_STATE_FLAGS_VALUE_CHANGED)
+				{
+					if (is_this_selected)
+						ui.selected_game_instance = 4;
+				}
+			}
+			immediate_end_sub_region(track_width);
+
+			button_rect.w = 320;
+			button_rect.y = sub_region_rect.y - sub_region_button_margin - button_rect.h;
+			button_rect.x = sub_region_rect.x + sub_region_rect.w - button_rect.w;
+			flags = immediate_button(button_rect, text_start_the_game, button_theme, __LINE__);
+			if (flags & BUTTON_STATE_FLAGS_PRESSED)
+				std::cout << "Start The Selected Game is Pressed\n";
+			if (flags & BUTTON_STATE_FLAGS_RELEASED)
+				std::cout << "Start The Selected Game is Released\n";
 		}
 	}
 	void options_screen(Main_Menu_UI& ui)

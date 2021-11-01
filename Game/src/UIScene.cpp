@@ -1793,7 +1793,7 @@ namespace Can
 	{
 	}
 
-	void UIScene::OnUpdate(Can::TimeStep ts)
+	bool UIScene::OnUpdate(Can::TimeStep ts)
 	{
 		float widthHalf = m_AspectRatio * m_ZoomLevel;
 		float heightHalf = m_ZoomLevel;
@@ -1820,6 +1820,7 @@ namespace Can
 			m_ZoomLevel
 		);
 		Renderer2D::EndScene();
+		return false;
 	}
 	void UIScene::OnEvent(Can::Event::Event& event)
 	{

@@ -55,18 +55,25 @@ namespace Can
 		LoadTrees();
 		LoadCars();
 
-		//gameScene = new GameScene(this);
-		//PushLayer(gameScene);
-		//
-		//uiScene = new UIScene(this);
-		//PushOverlay(uiScene);
-		//
-		//debugScene = new Debug(this);
-		//PushOverlay(debugScene);
 
 
 		init_main_menu(*this, main_menu);
 		load_main_menu(*this, main_menu);
+	}
+
+	void GameApp::start_the_game()
+	{
+		unload_main_menu(*this, main_menu);
+		deinit_main_menu(*this, main_menu);
+
+		gameScene = new GameScene(this);
+		PushLayer(gameScene);
+		
+		uiScene = new UIScene(this);
+		PushOverlay(uiScene);
+		
+		debugScene = new Debug(this);
+		PushOverlay(debugScene);
 	}
 
 	GameApp::~GameApp()
@@ -78,7 +85,7 @@ namespace Can
 		//PopOverlay(debugScene);
 		//delete debugScene;
 
-		unload_main_menu(*this, main_menu);
+		//unload_main_menu(*this, main_menu);
 	}
 
 	void GameApp::load_road_types()

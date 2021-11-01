@@ -42,7 +42,7 @@ namespace Can
 	void GameScene::OnDetach()
 	{
 	}
-	void GameScene::OnUpdate(TimeStep ts)
+	bool GameScene::OnUpdate(TimeStep ts)
 	{
 		camera_controller.on_update(ts);
 
@@ -96,6 +96,8 @@ namespace Can
 
 		Renderer3D::EndScene();
 		//m_Framebuffer->Unbind();
+
+		return false;
 	}
 	void GameScene::OnEvent(Event::Event& event)
 	{
