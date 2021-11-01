@@ -42,7 +42,7 @@ namespace Can
 	void GameScene::OnDetach()
 	{
 	}
-	void GameScene::OnUpdate(TimeStep ts)
+	bool GameScene::OnUpdate(TimeStep ts)
 	{
 		camera_controller.on_update(ts);
 
@@ -96,12 +96,14 @@ namespace Can
 
 		Renderer3D::EndScene();
 		//m_Framebuffer->Unbind();
+
+		return false;
 	}
 	void GameScene::OnEvent(Event::Event& event)
 	{
 		camera_controller.on_event(event);
-		Can::Event::EventDispatcher dispatcher(event);
-		dispatcher.Dispatch<Can::Event::MouseButtonPressedEvent>(CAN_BIND_EVENT_FN(GameScene::OnMousePressed));
+		Event::EventDispatcher dispatcher(event);
+		dispatcher.Dispatch<Event::MouseButtonPressedEvent>(CAN_BIND_EVENT_FN(GameScene::OnMousePressed));
 	}
 	bool GameScene::OnMousePressed(Event::MouseButtonPressedEvent& event)
 	{
@@ -197,7 +199,7 @@ namespace Can
 	}
 	v3 GameScene::GetRayCastedFromScreen()
 	{
-		auto [mouseX, mouseY] = Can::Input::GetMousePos();
+		auto [mouseX, mouseY] = Can::Input::get_mouse_pos_float();
 		Application& app = Application::Get();
 		float w = (float)(app.GetWindow().GetWidth());
 		float h = (float)(app.GetWindow().GetHeight());

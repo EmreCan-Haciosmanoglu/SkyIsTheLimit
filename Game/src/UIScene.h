@@ -17,7 +17,7 @@ namespace Can
 		virtual void OnAttach() override;
 		virtual void OnDetach() override {}
 
-		virtual void OnUpdate(TimeStep ts) override;
+		virtual bool OnUpdate(TimeStep ts) override;
 		virtual void OnEvent(Event::Event& event) override;
 
 		bool OnMousePressed(Event::MouseButtonPressedEvent& event);
@@ -108,6 +108,6 @@ namespace Can
 		float m_ZoomLevel;
 		float m_AspectRatio;
 
-		Camera::OrthographicCameraController m_CameraController;
+		Orthographic_Camera_Controller m_CameraController;
 	};
 }
