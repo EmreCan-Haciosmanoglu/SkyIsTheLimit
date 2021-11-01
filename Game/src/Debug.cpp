@@ -9,8 +9,9 @@ namespace Can
 	{
 	}
 
-	void Debug::OnUpdate(Can::TimeStep ts)
+	bool Debug::OnUpdate(Can::TimeStep ts)
 	{
+		return false;
 	}
 
 	void Debug::OnEvent(Can::Event::Event& event)
