@@ -15,6 +15,7 @@ namespace Can
 	{
 	public:
 		GameApp(const Can::WindowProps& props);
+		void start_the_game();
 		~GameApp();
 
 	private:
