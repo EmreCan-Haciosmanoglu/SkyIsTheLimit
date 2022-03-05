@@ -52,7 +52,6 @@ namespace Can
 		// 0 : Collision
 		// 1 : Snapping to a road
 
-	private:
 		GameScene* m_Scene = nullptr;
 
 		BuildingConstructionMode m_ConstructionMode = BuildingConstructionMode::None;

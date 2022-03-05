@@ -67,6 +67,11 @@ namespace Can
 		u16 char_count = 0;
 		u16 cursor = 0;
 
+		std::string save_name = "";
+
+		bool char_is_typed = false;
+
+		std::vector<std::string> game_instances = {};
 
 		bool force_update = false;
 	};

@@ -9,6 +9,7 @@
 
 #include "Can/Font/FontFlags.h"
 #include "GameApp.h"
+#include "Helper.h"
 
 namespace Can
 {
@@ -49,6 +50,15 @@ namespace Can
 		buffer_data.camera_controller = ptr;
 		ui.font = load_font("assets/fonts/DancingScript/DancingScript-Regular.ttf");
 		ui.text_buffer.resize(ui.max_char);
+
+		namespace fs = std::filesystem;
+		std::string s = fs::current_path().string();
+		std::string path = s.append("\\");
+		ui.game_instances = Helper::GetFiles(path, "", ".csf");
+		for (std::string& save_name : ui.game_instances)
+		{
+			save_name = Helper::trim_path_and_extension(save_name);
+		}
 	}
 
 	void deinit_main_menu_ui_layer(Main_Menu_UI& ui)
@@ -65,8 +75,6 @@ namespace Can
 
 	bool on_main_menu_ui_layer_update(Main_Menu_UI& ui, TimeStep ts)
 	{
-		auto& camera_controller = ui.camera_controller;
-
 		RenderCommand::SetClearColor({ 0.35f, 0.35f, 0.35f, 0.0f });
 		RenderCommand::Clear();
 		//RenderCommand::enable_depth_testing(false);
@@ -190,7 +198,7 @@ namespace Can
 			ui.text_buffer[ui.cursor] = key;
 			ui.cursor++;
 		}
-
+		ui.char_is_typed = true;
 	}
 
 	void main_menu_screen(Main_Menu_UI& ui)
@@ -309,7 +317,7 @@ namespace Can
 		if (flags & BUTTON_STATE_FLAGS_RELEASED)
 		{
 			std::cout << "Continue The Game is Released\n";
-			GameApp::instance->start_the_game();
+			GameApp::instance->start_the_game(ui.game_instances[0], true);
 			ui.force_update = true;
 			return;
 		}
@@ -387,7 +395,14 @@ namespace Can
 			text_box_rect.w = width_in_pixels - text_box_rect.x - 50;
 			text_box_rect.y = button_rect_y_up_limit - text_box_rect.h;
 
-			immediate_text_box(text_box_rect, ui.text_buffer, ui.cursor, ui.char_count, ui.max_char, ui.global_focus, ui.global_focus_hash, text_box_theme, __LINE__);
+			flags = immediate_text_box(text_box_rect, ui.text_buffer, ui.cursor, ui.char_count, ui.max_char, ui.global_focus, ui.global_focus_hash, text_box_theme, __LINE__);
+			if (flags & TEXT_BOX_STATE_FLAGS_ACTIVE)
+			{
+				if (ui.char_is_typed)
+				{
+					ui.save_name = ui.text_buffer.substr(0, ui.char_count);
+				}
+			}
 
 			text_box_rect.y -= text_box_rect.h + sub_region_button_margin;
 			immediate_text_box(text_box_rect, ui.text_buffer, ui.cursor, ui.char_count, ui.max_char, ui.global_focus, ui.global_focus_hash, text_box_theme, __LINE__);
@@ -400,25 +415,22 @@ namespace Can
 			if (flags & BUTTON_STATE_FLAGS_RELEASED)
 			{
 				std::cout << "Start A New Game is Released\n";
-				GameApp::instance->start_the_game();
-				ui.force_update = true;
-				return;
+				if (ui.char_count >= 4)
+				{
+					GameApp::instance->start_the_game(ui.save_name);
+					ui.force_update = true;
+					return;
+				}
+				else
+					std::cout << "Save name should be at least 4 character!";
 			}
 		}
 		else if (ui.load_game_menu_is_openned)
 		{
 			v4 background_color{ 0.65f, 0.65f, 0.65f, 1.0f };
 
-			std::vector<std::string> game_instance = {
-				"PlaceHolder Game #1",
-				"PlaceHolder Game #2",
-				"PlaceHolder Game #3",
-				"PlaceHolder Game #4",
-				"PlaceHolder Game #5"
-			};
 
 			std::string text_start_the_game = "Start The Selected Game";
-
 
 
 			Rect r;
@@ -439,7 +451,7 @@ namespace Can
 			{
 				immediate_quad(r, background_color, true);
 				r.z++;
-				immediate_text(game_instance[0], r, graphics_options_label_theme);
+				immediate_text(ui.game_instances[0], r, graphics_options_label_theme);
 				r.z--;
 
 				bool is_this_selected = ui.selected_game_instance == 0;
@@ -450,72 +462,22 @@ namespace Can
 						ui.selected_game_instance = 0;
 				}
 			}
+			for(u64 i = 1; i < ui.game_instances.size(); i++)
 			{
 				r.y -= r.h + sub_region_button_margin;
 				check_box_rect.y = r.y + r.h / 2 - check_box_rect.h / 2;
 
 				immediate_quad(r, background_color, true);
 				r.z++;
-				immediate_text(game_instance[1], r, graphics_options_label_theme);
+				immediate_text(ui.game_instances[i], r, graphics_options_label_theme);
 				r.z--;
 
-				bool is_this_selected = ui.selected_game_instance == 1;
-				flags = immediate_check_box(check_box_rect, is_this_selected, check_box_theme, __LINE__);
+				bool is_this_selected = ui.selected_game_instance == i;
+				flags = immediate_check_box(check_box_rect, is_this_selected, check_box_theme, __LINE__ + i);
 				if (flags & CHECK_BOX_STATE_FLAGS_VALUE_CHANGED)
 				{
 					if (is_this_selected)
-						ui.selected_game_instance = 1;
-				}
-			}
-			{
-				r.y -= r.h + sub_region_button_margin;
-				check_box_rect.y = r.y + r.h / 2 - check_box_rect.h / 2;
-
-				immediate_quad(r, background_color, true);
-				r.z++;
-				immediate_text(game_instance[2], r, graphics_options_label_theme);
-				r.z--;
-
-				bool is_this_selected = ui.selected_game_instance == 2;
-				flags = immediate_check_box(check_box_rect, is_this_selected, check_box_theme, __LINE__);
-				if (flags & CHECK_BOX_STATE_FLAGS_VALUE_CHANGED)
-				{
-					if (is_this_selected)
-						ui.selected_game_instance = 2;
-				}
-			}
-			{
-				r.y -= r.h + sub_region_button_margin;
-				check_box_rect.y = r.y + r.h / 2 - check_box_rect.h / 2;
-
-				immediate_quad(r, background_color, true);
-				r.z++;
-				immediate_text(game_instance[3], r, graphics_options_label_theme);
-				r.z--;
-
-				bool is_this_selected = ui.selected_game_instance == 3;
-				flags = immediate_check_box(check_box_rect, is_this_selected, check_box_theme, __LINE__);
-				if (flags & CHECK_BOX_STATE_FLAGS_VALUE_CHANGED)
-				{
-					if (is_this_selected)
-						ui.selected_game_instance = 3;
-				}
-			}
-			{
-				r.y -= r.h + sub_region_button_margin;
-				check_box_rect.y = r.y + r.h / 2 - check_box_rect.h / 2;
-
-				immediate_quad(r, background_color, true);
-				r.z++;
-				immediate_text(game_instance[4], r, graphics_options_label_theme);
-				r.z--;
-
-				bool is_this_selected = ui.selected_game_instance == 4;
-				flags = immediate_check_box(check_box_rect, is_this_selected, check_box_theme, __LINE__);
-				if (flags & CHECK_BOX_STATE_FLAGS_VALUE_CHANGED)
-				{
-					if (is_this_selected)
-						ui.selected_game_instance = 4;
+						ui.selected_game_instance = i;
 				}
 			}
 			immediate_end_sub_region(track_width);
@@ -527,7 +489,12 @@ namespace Can
 			if (flags & BUTTON_STATE_FLAGS_PRESSED)
 				std::cout << "Start The Selected Game is Pressed\n";
 			if (flags & BUTTON_STATE_FLAGS_RELEASED)
+			{
 				std::cout << "Start The Selected Game is Released\n";
+				GameApp::instance->start_the_game(ui.game_instances[ui.selected_game_instance], true);
+				ui.force_update = true;
+				return;
+			}
 		}
 	}
 	void options_screen(Main_Menu_UI& ui)

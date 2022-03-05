@@ -8,6 +8,9 @@ bin-int/
 #Model
 *.blend1
 
+#SaveFiles
+*.csf
+
 # User-specific files
 *.suo
 *.user

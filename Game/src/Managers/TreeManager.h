@@ -45,7 +45,6 @@ namespace Can
 		std::array<bool, 1> restrictions = { true };
 		// 0 : Collision
 
-	private:
 		GameScene* m_Scene = nullptr;
 
 		TreeConstructionMode m_ConstructionMode = TreeConstructionMode::None;

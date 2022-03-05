@@ -34,6 +34,7 @@ namespace Can
 
 		treeMap = Texture2D::Create("assets/textures/treeMap.png");
 		addTexture = Texture2D::Create("assets/textures/Buttons/Add.png");
+		saveTexture = Texture2D::Create("assets/textures/Buttons/Save.png");
 		pauseTexture = Texture2D::Create("assets/textures/Buttons/Pause.png");
 		removeTexture = Texture2D::Create("assets/textures/Buttons/Remove.png");
 		cancelTexture = Texture2D::Create("assets/textures/Buttons/Cancel.png");
@@ -61,13 +62,15 @@ namespace Can
 		load_main_menu(*this, main_menu);
 	}
 
-	void GameApp::start_the_game()
+	void GameApp::start_the_game(std::string& save_name, bool is_old_game)
 	{
 		unload_main_menu(*this, main_menu);
 		deinit_main_menu(*this, main_menu);
 
-		gameScene = new GameScene(this);
+		gameScene = new GameScene(this, save_name);
 		PushLayer(gameScene);
+		if (is_old_game)
+			gameScene->load_the_game();
 		
 		uiScene = new UIScene(this);
 		PushOverlay(uiScene);
@@ -329,12 +332,10 @@ namespace Can
 	{
 		buildings = LoadPrefabs("\\assets\\objects\\houses", "House_");
 	}
-
 	void GameApp::LoadTrees()
 	{
 		trees = LoadPrefabs("\\assets\\objects\\trees", "Tree_");
 	}
-
 	void GameApp::LoadCars()
 	{
 		cars = LoadPrefabs("\\assets\\objects\\cars", "Car_");

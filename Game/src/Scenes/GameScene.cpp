@@ -6,13 +6,16 @@
 #include "Can/Math.h"
 
 #include "Types/RoadNode.h"
+#include "Types/Car.h"
+#include "Building.h"
 
 namespace Can
 {
 	GameScene* GameScene::ActiveGameScene = nullptr;
 
-	GameScene::GameScene(GameApp* application)
+	GameScene::GameScene(GameApp* application, std::string& save_name)
 		: MainApplication(application)
+		, save_name(save_name)
 		, m_Terrain(new Object(MainApplication->terrainPrefab))
 		, m_RoadManager(this)
 		, m_TreeManager(this)
@@ -30,6 +33,7 @@ namespace Can
 		m_Terrain->owns_prefab = true;
 		m_LightDirection = glm::normalize(m_LightDirection);
 		m_ShadowMapMasterRenderer = new ShadowMapMasterRenderer(&camera_controller);
+
 	}
 	GameScene::~GameScene()
 	{
@@ -196,6 +200,138 @@ namespace Can
 	{
 		// More Stuff???
 		e_SpeedMode = mode;
+	}
+	void GameScene::load_the_game()
+	{
+		namespace fs = std::filesystem;
+		std::string s = fs::current_path().string();
+		std::string path = s.append("\\");
+		path.append(save_name).append(".csf");
+		FILE* read_file = fopen(path.c_str(), "rb");
+		if (read_file == NULL) return;
+
+		auto& road_types = this->MainApplication->road_types;
+		//RoadManager
+		fread(&m_RoadManager.snapFlags, sizeof(u8), 1, read_file);
+		fread(&m_RoadManager.restrictionFlags, sizeof(u8), 1, read_file);
+		auto& nodes = m_RoadManager.m_Nodes;
+		u64 node_count;
+		fread(&node_count, sizeof(u64), 1, read_file);
+		nodes.reserve(node_count);
+		for (u64 i = 0; i < node_count; i++)
+		{
+			nodes.push_back(RoadNode({}, v3{ 0.0f, 0.0f, 0.0f }, 0));
+			fread(&nodes[i].position, sizeof(f32), 3, read_file);
+			fread(&nodes[i].index, sizeof(u64), 1, read_file);
+			fread(&nodes[i].elevation_type, sizeof(s8), 1, read_file);
+		}
+		auto& segments = m_RoadManager.m_Segments;
+		u64 segment_count;
+		fread(&segment_count, sizeof(u64), 1, read_file);
+		segments.reserve(segment_count);
+		for (u64 i = 0; i < segment_count; i++)
+		{
+			u8 road_type;
+			fread(&road_type, sizeof(u8), 1, read_file);
+			u64 start_node, end_node;
+			std::array<v3, 4> curve_points;
+			s8 elevation_type;
+			// an array of indices to  building objects
+			// an array of indices to  Car objects
+			fread(&start_node, sizeof(u64), 1, read_file);
+			fread(&end_node, sizeof(u64), 1, read_file);
+			fread(&curve_points, sizeof(f32), 3 * 4, read_file);
+			fread(&elevation_type, sizeof(s8), 1, read_file);
+			segments.push_back(RoadSegment{
+				road_types[road_type],
+				curve_points,
+				elevation_type
+				});
+			segments[i].StartNode = start_node;
+			segments[i].EndNode = end_node;
+			nodes[start_node].AddRoadSegment({ i });
+			nodes[end_node].AddRoadSegment({ i });
+			segments[i].ReConstruct();
+		}
+		/*for (u64 i = 0; i < node_count; i++)
+			nodes[i].Reconstruct();*/
+
+		///////////////////////////////////////////////////
+
+		fclose(read_file);
+	}
+	void GameScene::save_the_game()
+	{
+		FILE* save_file = fopen(std::string(save_name).append(".csf").c_str(), "wb");
+
+		//RoadManager
+		fwrite(&m_RoadManager.snapFlags, sizeof(u8), 1, save_file);
+		fwrite(&m_RoadManager.restrictionFlags, sizeof(u8), 1, save_file);
+		auto& nodes = m_RoadManager.m_Nodes;
+		u64 node_count = nodes.size();
+		fwrite(&node_count, sizeof(u64), 1, save_file);
+		for (u64 i = 0; i < node_count; i++)
+		{
+			fwrite(&nodes[i].position, sizeof(f32), 3, save_file);
+			fwrite(&nodes[i].index, sizeof(u64), 1, save_file);
+			fwrite(&nodes[i].elevation_type, sizeof(s8), 1, save_file);
+		}
+		auto& segments = m_RoadManager.m_Segments;
+		u64 segment_count = segments.size();
+		fwrite(&segment_count, sizeof(u64), 1, save_file);
+		for (u64 i = 0; i < segment_count; i++)
+		{
+			u8 road_type = 0;
+			fwrite(&road_type, sizeof(u8), 1, save_file);
+			// an array of indices to  building objects
+			// an array of indices to  Car objects
+			fwrite(&segments[i].StartNode, sizeof(u64), 1, save_file);
+			fwrite(&segments[i].EndNode, sizeof(u64), 1, save_file);
+			fwrite(&segments[i].CurvePoints, sizeof(f32), 3 * 4, save_file);
+			fwrite(&segments[i].elevation_type, sizeof(s8), 1, save_file);
+		}
+		///////////////////////////////////////////////////
+
+		//TreeManager
+		fwrite(m_TreeManager.restrictions.data(), sizeof(bool), 1, save_file);
+		auto& trees = m_TreeManager.m_Trees;
+		u64 tree_count = trees.size();
+		fwrite(&tree_count, sizeof(u64), 1, save_file);
+		// an array of indices to  Tree objects
+		///////////////////////////////////////////////////
+
+		//BuildingManager
+		fwrite(m_BuildingManager.snapOptions.data(), sizeof(bool), 2, save_file);
+		fwrite(m_BuildingManager.restrictions.data(), sizeof(bool), 2, save_file);
+		auto& buildings = m_BuildingManager.m_Buildings;
+		u64 building_count = buildings.size();
+		fwrite(&building_count, sizeof(u64), 1, save_file);
+		for (u64 i = 0; i < building_count; i++)
+		{
+			fwrite(&buildings[i]->connectedRoadSegment, sizeof(s64), 1, save_file);
+			fwrite(&buildings[i]->snappedT, sizeof(f32), 1, save_file);
+			fwrite(&buildings[i]->position, sizeof(f32), 3, save_file);
+		}
+		///////////////////////////////////////////////////
+
+		//CarManager
+		auto& cars = m_CarManager.m_Cars;
+		u64 car_count = cars.size();
+		fwrite(&car_count, sizeof(u64), 1, save_file);
+		for (u64 i = 0; i < car_count; i++)
+		{
+			fwrite(&cars[i]->roadSegment, sizeof(s64), 1, save_file);
+			fwrite(&cars[i]->t_index, sizeof(u64), 1, save_file);
+			fwrite(&cars[i]->speed, sizeof(f32), 1, save_file);
+			fwrite(&cars[i]->t, sizeof(f32), 1, save_file);
+			fwrite(cars[i]->driftpoints.data(), sizeof(f32), 3 * 3, save_file);
+			fwrite(&cars[i]->position, sizeof(f32), 3, save_file);
+			fwrite(&cars[i]->fromStart, sizeof(bool), 1, save_file);
+			fwrite(&cars[i]->inJunction, sizeof(bool), 1, save_file);
+		}
+		///////////////////////////////////////////////////
+
+		fclose(save_file);
 	}
 	v3 GameScene::GetRayCastedFromScreen()
 	{

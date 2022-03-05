@@ -530,6 +530,14 @@ namespace  Can::Helper
 		return { minX, maxX, minY, maxY };
 	}
 
+	std::string trim_path_and_extension(std::string& path)
+	{
+		u64 found = path.find_last_of("/\\");
+		std::string file = path.substr(found + 1);
+		found = file.find_last_of(".");
+		return file.substr(0, found);
+	}
+
 	void UpdateTheTerrain(const std::vector<std::array<v3, 3>>& polygon, bool reset)
 	{
 		GameApp* app = GameScene::ActiveGameScene->MainApplication;
@@ -556,8 +564,8 @@ namespace  Can::Helper
 		app->terrainPrefab->vertexBuffer->ReDo(app->terrainPrefab->vertices, sizeof(f32) * vertexCount);
 		app->terrainPrefab->vertexBuffer->Unbind();
 	}
-	
-	void UpdateTheTerrain( RoadSegment* rs, bool reset)
+
+	void UpdateTheTerrain(RoadSegment* rs, bool reset)
 	{
 		GameApp* app = GameScene::ActiveGameScene->MainApplication;
 		std::vector<RoadNode>& nodes = app->gameScene->m_RoadManager.m_Nodes;
