@@ -1585,13 +1585,19 @@ namespace Can
 	{
 		if (m_DestructionNode != -1)
 		{
-			RoadNode& node = m_Nodes[m_DestructionNode];
-			for (u64 rsIndex : node.roadSegments)
-				RemoveRoadSegment(rsIndex);
+			RoadNode* node = &m_Nodes[m_DestructionNode];
+			for (u64 i = node->roadSegments.size(); i > 0; i--) {
+				u8 amount_update = RemoveRoadSegment(node->roadSegments[i - 1], m_DestructionNode);
+				if (amount_update > 0) {
+					m_DestructionNode -= amount_update;
+					if (m_DestructionNode != -1)
+						node = &m_Nodes[m_DestructionNode];
+				}
+			}
 		}
 		else if (m_DestructionSegment != -1)
 		{
-			RemoveRoadSegment(m_DestructionSegment);
+			RemoveRoadSegment(m_DestructionSegment, 0);
 		}
 		return false;
 	}
@@ -2011,8 +2017,9 @@ namespace Can
 
 		return rsIndex;
 	}
-	void RoadManager::RemoveRoadSegment(u64 roadSegment)
+	u8 RoadManager::RemoveRoadSegment(u64 roadSegment, u64 roadNode)
 	{
+		u8 amount_decrease = 0;
 		RoadSegment& rs = m_Segments[roadSegment];
 
 		if (rs.elevation_type == 0)
@@ -2033,6 +2040,7 @@ namespace Can
 		startNode.RemoveRoadSegment(roadSegment);
 		if (startNode.roadSegments.size() == 0)
 		{
+			if (rs.StartNode < roadNode) amount_decrease++;
 			Helper::UpdateTheTerrain(startNode.bounding_polygon, true);
 			u64 count = m_Segments.size();
 			for (u64 rsIndex = 0; rsIndex < count; rsIndex++)
@@ -2051,6 +2059,7 @@ namespace Can
 		endNode.RemoveRoadSegment(roadSegment);
 		if (endNode.roadSegments.size() == 0)
 		{
+			if (rs.StartNode < roadNode) amount_decrease++;
 			Helper::UpdateTheTerrain(endNode.bounding_polygon, true);
 			u64 count = m_Segments.size();
 			for (u64 rsIndex = 0; rsIndex < count; rsIndex++)
@@ -2092,6 +2101,7 @@ namespace Can
 				building->connectedRoadSegment--;
 		}
 		m_Segments.erase(std::find(m_Segments.begin(), m_Segments.end(), rs));
+		return amount_decrease;
 	}
 
 	SnapInformation RoadManager::CheckSnapping(const v3& prevLocation)

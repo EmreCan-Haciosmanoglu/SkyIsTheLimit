@@ -8,7 +8,7 @@ namespace Can
 	class RoadSegment;
 	class RoadNode;
 
-	enum class RoadConstructionMode
+	enum class RoadConstructionMode:u8
 	{
 		None,
 		Straight,
@@ -70,7 +70,7 @@ namespace Can
 		//inline std::vector<RoadSegment*>& GetRoadSegments() { return m_RoadSegments; }
 
 		u64 AddRoadSegment(const std::array<v3, 4>& curvePoints, s8 elevation_type);
-		void RemoveRoadSegment(u64 roadSIndex);
+		u8 RemoveRoadSegment(u64 roadSIndex, u64 roadNode);
 
 		SnapInformation CheckSnapping(const v3& prevLocation);
 
