@@ -5,6 +5,7 @@
 namespace Can
 {
 	class GameScene;
+	class Tree;
 
 	enum class TreeConstructionMode
 	{
@@ -35,8 +36,8 @@ namespace Can
 		inline const TreeConstructionMode GetConstructionMode() const { return m_ConstructionMode; }
 		inline TreeConstructionMode GetConstructionMode() { return m_ConstructionMode; }
 
-		inline const std::vector<Object*>& GetTrees() const { return m_Trees; }
-		inline std::vector<Object*>& GetTrees() { return m_Trees; }
+		inline const std::vector<Tree*>& GetTrees() const { return m_Trees; }
+		inline std::vector<Tree*>& GetTrees() { return m_Trees; }
 
 		void ResetStates();
 
@@ -51,11 +52,11 @@ namespace Can
 
 		u64 m_Type = 0;
 
-		std::vector<Object*> m_Trees = {};
+		std::vector<Tree*> m_Trees = {};
 
 		v3 m_GuidelinePosition = v3(0.0f);
 
-		std::vector<Object*>::iterator& m_SelectedTreeToRemove = m_Trees.end();
+		std::vector<Tree*>::iterator& m_SelectedTreeToRemove = m_Trees.end();
 
 		Object* m_Guideline = nullptr;
 

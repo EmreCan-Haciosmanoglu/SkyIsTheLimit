@@ -15,7 +15,7 @@ namespace Can
 	{
 	public:
 		RoadSegment(
-			const RoadType& type,
+			u64 type,
 			const std::array<v3, 4>& curvePoints,
 			s8 elevation_type
 		);
@@ -26,7 +26,7 @@ namespace Can
 		friend bool operator==(const RoadSegment& left, const RoadSegment& right) { return &left == &right; }
 
 		void ReConstruct();
-		void SetType(const RoadType& type) { this->type = type; ReConstruct(); }
+		void SetType(u64 type) { this->type = type; ReConstruct(); }
 
 		inline const std::array<v3, 4>& GetCurvePoints() const { return CurvePoints; }
 		inline const v3& GetCurvePoint(size_t index) const { return CurvePoints[index]; }
@@ -52,7 +52,8 @@ namespace Can
 		void CalcRotsAndDirs();
 
 	public:
-		RoadType type{};
+
+		u64 type = 0;
 		std::vector<Building*> Buildings = {};
 		std::vector<Car*> Cars = {};
 

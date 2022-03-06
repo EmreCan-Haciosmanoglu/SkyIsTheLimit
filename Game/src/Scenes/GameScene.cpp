@@ -7,6 +7,7 @@
 
 #include "Types/RoadNode.h"
 #include "Types/Car.h"
+#include "Types/Tree.h"
 #include "Building.h"
 
 namespace Can
@@ -210,7 +211,7 @@ namespace Can
 		FILE* read_file = fopen(path.c_str(), "rb");
 		if (read_file == NULL) return;
 
-		auto& road_types = this->MainApplication->road_types;
+		auto& road_types = MainApplication->road_types;
 		//RoadManager
 		fread(&m_RoadManager.snapFlags, sizeof(u8), 1, read_file);
 		fread(&m_RoadManager.restrictionFlags, sizeof(u8), 1, read_file);
@@ -243,7 +244,7 @@ namespace Can
 			fread(&curve_points, sizeof(f32), 3 * 4, read_file);
 			fread(&elevation_type, sizeof(s8), 1, read_file);
 			segments.push_back(RoadSegment{
-				road_types[road_type],
+				road_type,
 				curve_points,
 				elevation_type
 				});
@@ -253,10 +254,28 @@ namespace Can
 			nodes[end_node].AddRoadSegment({ i });
 			segments[i].ReConstruct();
 		}
-		/*for (u64 i = 0; i < node_count; i++)
-			nodes[i].Reconstruct();*/
-
 		///////////////////////////////////////////////////
+
+		//TreeManager
+		fread(m_TreeManager.restrictions.data(), sizeof(bool), 1, read_file);
+		auto& trees = m_TreeManager.m_Trees;
+		u64 tree_count;
+		fread(&tree_count, sizeof(u64), 1, read_file);
+		m_TreeManager.m_Trees.reserve(tree_count);
+		for (u64 i = 0; i < tree_count; i++)
+		{
+			u64 type;
+			v3 pos, rot, scale;
+			fread(&type, sizeof(u64), 1, read_file);
+			fread(&pos, sizeof(f32), 3, read_file);
+			fread(&rot, sizeof(f32), 3, read_file);
+			fread(&scale, sizeof(f32), 3, read_file);
+
+			Object* tree = new Object(MainApplication->trees[type], pos, rot, scale);
+			trees.push_back(new Tree{ type, tree });
+		}
+		///////////////////////////////////////////////////
+
 
 		fclose(read_file);
 	}
@@ -281,8 +300,7 @@ namespace Can
 		fwrite(&segment_count, sizeof(u64), 1, save_file);
 		for (u64 i = 0; i < segment_count; i++)
 		{
-			u8 road_type = 0;
-			fwrite(&road_type, sizeof(u8), 1, save_file);
+			fwrite(&segments[i].type, sizeof(u8), 1, save_file);
 			// an array of indices to  building objects
 			// an array of indices to  Car objects
 			fwrite(&segments[i].StartNode, sizeof(u64), 1, save_file);
@@ -297,7 +315,13 @@ namespace Can
 		auto& trees = m_TreeManager.m_Trees;
 		u64 tree_count = trees.size();
 		fwrite(&tree_count, sizeof(u64), 1, save_file);
-		// an array of indices to  Tree objects
+		for (u64 i = 0; i < tree_count; i++)
+		{
+			fwrite(&trees[i]->type, sizeof(u64), 1, save_file);
+			fwrite(&trees[i]->object->position, sizeof(f32), 3, save_file);
+			fwrite(&trees[i]->object->rotation, sizeof(f32), 3, save_file);
+			fwrite(&trees[i]->object->scale, sizeof(f32), 3, save_file);
+		}
 		///////////////////////////////////////////////////
 
 		//BuildingManager
@@ -308,6 +332,7 @@ namespace Can
 		fwrite(&building_count, sizeof(u64), 1, save_file);
 		for (u64 i = 0; i < building_count; i++)
 		{
+			fwrite(&buildings[i]->type, sizeof(u64), 1, save_file);
 			fwrite(&buildings[i]->connectedRoadSegment, sizeof(s64), 1, save_file);
 			fwrite(&buildings[i]->snappedT, sizeof(f32), 1, save_file);
 			fwrite(&buildings[i]->position, sizeof(f32), 3, save_file);
@@ -332,6 +357,7 @@ namespace Can
 		///////////////////////////////////////////////////
 
 		fclose(save_file);
+		printf("Game is saved.\n");
 	}
 	v3 GameScene::GetRayCastedFromScreen()
 	{
@@ -364,6 +390,7 @@ namespace Can
 	}
 	void GameScene::MoveMe2AnotherFile(float ts)
 	{
+		auto& road_types = MainApplication->road_types;
 		auto& cars = m_CarManager.GetCars();
 		for (Car* car : cars)
 		{
@@ -409,7 +436,8 @@ namespace Can
 					car->position = car->target;
 					car->object->SetTransform(car->position);
 					std::vector<float> ts{ 0 };
-					float lengthRoad = road.type.road_length;
+
+					float lengthRoad = road_types[road.type].road_length;
 					std::vector<v3> samples = Math::GetCubicCurveSamples(road.GetCurvePoints(), lengthRoad, ts);
 
 					if ((samples.size() - 2 == car->t_index && car->fromStart) || (1 == car->t_index && !car->fromStart))
@@ -436,7 +464,7 @@ namespace Can
 
 							m_RoadManager.m_Segments[car->roadSegment].Cars.push_back(car);
 							std::vector<float> ts2{ 0 };
-							float lengthRoad2 = m_RoadManager.m_Segments[car->roadSegment].type.road_length;
+							float lengthRoad2 = road_types[m_RoadManager.m_Segments[car->roadSegment].type].road_length;
 							std::vector<v3> samples2 = Math::GetCubicCurveSamples(m_RoadManager.m_Segments[car->roadSegment].GetCurvePoints(), lengthRoad2, ts2);
 
 							if (nodeIndex == m_RoadManager.m_Segments[car->roadSegment].StartNode)

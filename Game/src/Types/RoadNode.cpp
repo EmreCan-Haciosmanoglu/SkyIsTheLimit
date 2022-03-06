@@ -70,6 +70,7 @@ namespace Can
 
 	void RoadNode::Reconstruct()
 	{
+		GameApp* app = GameScene::ActiveGameScene->MainApplication;
 		if (roadSegments.size() == 0)
 			return;
 
@@ -104,9 +105,10 @@ namespace Can
 					rs.GetEndRotation().y + glm::radians(180.0f)
 				};
 			}
+			RoadType& type = app->road_types[rs.type];
 			Prefab* prefab =
-				rs.elevation_type == -1 ? (rs.type.asymmetric && isStartNode ? rs.type.tunnel_end_mirror : rs.type.tunnel_end) :
-				rs.elevation_type == 0 ? (rs.type.asymmetric && isStartNode ? rs.type.road_end_mirror : rs.type.road_end) : nullptr;
+				rs.elevation_type == -1 ? (type.asymmetric && isStartNode ? type.tunnel_end_mirror : type.tunnel_end) :
+				rs.elevation_type == 0 ? (type.asymmetric && isStartNode ? type.road_end_mirror : type.road_end) : nullptr;
 
 			object = new Object(prefab, position, rotation);
 			v3 A = prefab->boundingBoxL;
@@ -152,8 +154,10 @@ namespace Can
 			v3 shiftR1Dir = glm::normalize(v3{ -r1Dir.y, +r1Dir.x, 0.0f });
 			v3 shiftR2Dir = glm::normalize(v3{ +r2Dir.y, -r2Dir.x, 0.0f });
 
-			v3 shiftR1Amount = shiftR1Dir * (rs1.type.road_width * 0.5f);
-			v3 shiftR2Amount = shiftR2Dir * (rs2.type.road_width * 0.5f);
+			RoadType& type1 = app->road_types[rs1.type];
+			RoadType& type2 = app->road_types[rs2.type];
+			v3 shiftR1Amount = shiftR1Dir * (type1.road_width * 0.5f);
+			v3 shiftR2Amount = shiftR2Dir * (type2.road_width * 0.5f);
 
 			f32 dot_product = glm::dot(shiftR1Dir, shiftR2Dir);
 			f32 len_product = glm::length(shiftR1Dir) * glm::length(shiftR2Dir);
@@ -181,13 +185,14 @@ namespace Can
 		for (u64 i = 0; i < count; i++)
 		{
 			const RoadSegment& rs = segments[roadSegments[i]];
-			bool asym = rs.type.asymmetric;
+			RoadType& type = app->road_types[rs.type];
+			bool asym = type.asymmetric;
 			bool isStartNode = index == rs.StartNode;
 			bool isFromGround = rs.elevation_type == 0;
 			indexCount += (isTunnel ?
-				(asym && !isStartNode ? rs.type.tunnel_junction_mirror : rs.type.tunnel_junction) :
-				(asym && !isStartNode ? rs.type.road_junction_mirror : rs.type.road_junction))->indexCount;
-			indexCount += isTunnel && isFromGround ? rs.type.tunnel_entrance->indexCount : 0U;
+				(asym && !isStartNode ? type.tunnel_junction_mirror : type.tunnel_junction) :
+				(asym && !isStartNode ? type.road_junction_mirror : type.road_junction))->indexCount;
+			indexCount += isTunnel && isFromGround ? type.tunnel_entrance->indexCount : 0U;
 		}
 
 		TexturedObjectVertex* TOVertices = new TexturedObjectVertex[indexCount];
@@ -199,7 +204,8 @@ namespace Can
 		for (u64 i = 0; i < count; i++)
 		{
 			RoadSegment& rs = segments[roadSegments[i]];
-			bool asym = rs.type.asymmetric;
+			RoadType& type = app->road_types[rs.type];
+			bool asym = type.asymmetric;
 			bool isStartNode = index == rs.StartNode;
 			bool isFromGround = rs.elevation_type == 0;
 			Prefab* prefab = nullptr;
@@ -207,15 +213,15 @@ namespace Can
 			f32 junction_length = 0.0f;
 			if (isTunnel)
 			{
-				halfWidth = rs.type.tunnel_width * 0.5f;
-				junction_length = rs.type.tunnel_junction_length;
-				prefab = asym && !isStartNode ? rs.type.tunnel_junction_mirror : rs.type.tunnel_junction;
+				halfWidth = type.tunnel_width * 0.5f;
+				junction_length = type.tunnel_junction_length;
+				prefab = asym && !isStartNode ? type.tunnel_junction_mirror : type.tunnel_junction;
 			}
 			else
 			{
-				halfWidth = rs.type.road_width * 0.5f;
-				junction_length = rs.type.road_junction_length;
-				prefab = asym && !isStartNode ? rs.type.road_junction_mirror : rs.type.road_junction;
+				halfWidth = type.road_width * 0.5f;
+				junction_length = type.road_junction_length;
+				prefab = asym && !isStartNode ? type.road_junction_mirror : type.road_junction;
 			}
 			f32* prefabVertices = prefab->vertices;
 			u64 prefabIndexCount = prefab->indexCount;
@@ -312,7 +318,8 @@ namespace Can
 			offset += prefabIndexCount;
 			if (isTunnel && isFromGround)
 			{
-				Prefab* tunnel_entrance = asym && !isStartNode ? rs.type.tunnel_entrance_mirror : rs.type.tunnel_entrance;
+				RoadType& type = app->road_types[rs.type];
+				Prefab* tunnel_entrance = asym && !isStartNode ? type.tunnel_entrance_mirror : type.tunnel_entrance;
 				TexturedObjectVertex* verts = (TexturedObjectVertex*)(tunnel_entrance->vertices);
 				textureIndex = -1.0f;
 				for (uint8_t i = 0; i < textureSlotIndex; i++)
@@ -346,7 +353,7 @@ namespace Can
 
 		Prefab* newPrefab = new Prefab(
 			"",
-			segments[roadSegments[0]].type.road_junction->shaderPath, // we may have different shaders in the future
+			app->road_types[segments[roadSegments[0]].type].road_junction->shaderPath, // we may have different shaders in the future
 			textures,
 			textureSlotIndex,
 			(f32*)TOVertices,

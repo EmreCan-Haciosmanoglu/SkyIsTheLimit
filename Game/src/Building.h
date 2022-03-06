@@ -13,6 +13,7 @@ namespace Can
 
 	public:
 
+		u64 type = 0;
 		s64 connectedRoadSegment;
 		float snappedT = 0.0f;
 
