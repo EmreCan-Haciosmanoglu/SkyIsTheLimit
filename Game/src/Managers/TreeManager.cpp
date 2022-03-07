@@ -117,7 +117,7 @@ namespace Can
 		m_GuidelinePosition = prevLocation;
 
 		bool collidedWithRoad = false;
-		if ((m_Scene->m_RoadManager.restrictionFlags & 0x4/*Change with #define*/) && restrictions[0])
+		if ((m_Scene->m_RoadManager.restrictionFlags & (u8)RoadRestrictions::RESTRICT_COLLISIONS) && restrictions[0])
 		{
 			Prefab* prefab = m_Guideline->prefab;
 			f32 tree_height = prefab->boundingBoxM.z - prefab->boundingBoxL.z;

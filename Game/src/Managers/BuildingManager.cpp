@@ -160,7 +160,7 @@ namespace Can
 		}
 
 		bool collidedWithRoad = false;
-		if (restrictions[0] && (m_Scene->m_RoadManager.restrictionFlags & 0x4/*change with #define*/))
+		if (restrictions[0] && (m_Scene->m_RoadManager.restrictionFlags & (u8)RoadRestrictions::RESTRICT_COLLISIONS))
 		{
 			Prefab* prefab = m_Guideline->prefab;
 			f32 building_height = prefab->boundingBoxM.z - prefab->boundingBoxL.z;

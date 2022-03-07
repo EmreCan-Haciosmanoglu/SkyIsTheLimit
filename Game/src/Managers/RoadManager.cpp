@@ -189,7 +189,7 @@ namespace Can
 			if (!b_ConstructionEndSnapped)
 			{
 				f32 length = glm::length(AB);
-				if ((snapFlags & SNAP_TO_LENGTH) && (length > 0.5f))
+				if ((snapFlags & (u8)RoadSnapOptions::SNAP_TO_LENGTH) && (length > 0.5f))
 				{
 					length = length - std::fmod(length, type.road_length);
 					AB = length * glm::normalize(AB);
@@ -227,12 +227,12 @@ namespace Can
 				v3{std::min({P1.x, P2.x, P3.x, P4.x}), std::min({P1.y, P2.y, P3.y, P4.y}), std::min({A.z, D.z}) },
 				v3{std::max({P1.x, P2.x, P3.x, P4.x}), std::max({P1.y, P2.y, P3.y, P4.y}), std::max({A.z, D.z}) + guideline_height}
 			};
-			bool lengthIsRestricted = (restrictionFlags & RESTRICT_SHORT_LENGTH) && (glm::length(AB) < (2.0f * type.road_length));
-			bool collisionIsRestricted = (restrictionFlags & RESTRICT_COLLISIONS) ? check_road_road_collision(new_road_bounding_box, new_road_bounding_polygon) : false;
+			bool lengthIsRestricted = (restrictionFlags & (u8)RoadRestrictions::RESTRICT_SHORT_LENGTH) && (glm::length(AB) < (2.0f * type.road_length));
+			bool collisionIsRestricted = (restrictionFlags & (u8)RoadRestrictions::RESTRICT_COLLISIONS) ? check_road_road_collision(new_road_bounding_box, new_road_bounding_polygon) : false;
 
-			if (m_Scene->m_BuildingManager.restrictions[0] && (restrictionFlags & RESTRICT_COLLISIONS))
+			if (m_Scene->m_BuildingManager.restrictions[0] && (restrictionFlags & (u8)RoadRestrictions::RESTRICT_COLLISIONS))
 				highlight_road_building_collisions(new_road_bounding_box, new_road_bounding_polygon);
-			if (m_Scene->m_TreeManager.restrictions[0] && (restrictionFlags & RESTRICT_COLLISIONS))
+			if (m_Scene->m_TreeManager.restrictions[0] && (restrictionFlags & (u8)RoadRestrictions::RESTRICT_COLLISIONS))
 				highlight_road_tree_collisions(new_road_bounding_box, new_road_bounding_polygon);
 
 			b_ConstructionRestricted |= angleIsRestricted;
@@ -370,11 +370,11 @@ namespace Can
 				v3{std::max({P1.x, P2.x, P3.x, P4.x}), std::max({P1.y, P2.y, P3.y, P4.y}), std::max({A.z, D.z}) + guideline_height}
 			};
 
-			bool collisionIsRestricted = (restrictionFlags & RESTRICT_COLLISIONS) ? check_road_road_collision(new_road_bounding_box, new_road_bounding_polygon) : false;
+			bool collisionIsRestricted = (restrictionFlags & (u8)RoadRestrictions::RESTRICT_COLLISIONS) ? check_road_road_collision(new_road_bounding_box, new_road_bounding_polygon) : false;
 
-			if (m_Scene->m_BuildingManager.restrictions[0] && (restrictionFlags & RESTRICT_COLLISIONS))
+			if (m_Scene->m_BuildingManager.restrictions[0] && (restrictionFlags & (u8)RoadRestrictions::RESTRICT_COLLISIONS))
 				highlight_road_building_collisions(new_road_bounding_box, new_road_bounding_polygon);
-			if (m_Scene->m_TreeManager.restrictions[0] && (restrictionFlags & RESTRICT_COLLISIONS))
+			if (m_Scene->m_TreeManager.restrictions[0] && (restrictionFlags & (u8)RoadRestrictions::RESTRICT_COLLISIONS))
 				highlight_road_tree_collisions(new_road_bounding_box, new_road_bounding_polygon);
 
 			b_ConstructionRestricted |= angleIsRestricted;
@@ -416,7 +416,7 @@ namespace Can
 			bool angleIsRestricted = RestrictSmallAngles(dir1, m_StartSnappedNode, m_StartSnappedSegment, m_StartSnappedT);
 			v2 dir2 = (v2)(m_ConstructionPositions[2] - m_ConstructionPositions[3]);
 			angleIsRestricted |= RestrictSmallAngles(dir2, m_EndSnappedNode, m_EndSnappedSegment, m_EndSnappedT);
-			if (restrictionFlags & RESTRICT_SMALL_ANGLES)
+			if (restrictionFlags & (u8)RoadRestrictions::RESTRICT_SMALL_ANGLES)
 			{
 				v3 dirToEnd = m_ConstructionPositions[2] - m_ConstructionPositions[3];
 				v3 dirToStart = m_ConstructionPositions[2] - m_ConstructionPositions[0];
@@ -440,12 +440,12 @@ namespace Can
 			std::array<v3, 2>  new_road_bounding_box = Math::get_bounding_box_from_cubic_bezier_curve(cps, type.road_width * 0.5f, type.road_height);
 			std::vector<std::array<v3, 3>> new_road_bounding_polygon = Math::get_bounding_polygon_from_bezier_curve(cps, type.road_width * 0.5f, type.road_length);
 
-			bool lengthIsRestricted = (restrictionFlags & RESTRICT_SHORT_LENGTH) && (glm::length(cps[0] - cps[3]) < (2.0f * type.road_length));
-			bool collisionIsRestricted = (restrictionFlags & RESTRICT_COLLISIONS) ? check_road_road_collision(new_road_bounding_box, new_road_bounding_polygon) : false;
+			bool lengthIsRestricted = (restrictionFlags & (u8)RoadRestrictions::RESTRICT_SHORT_LENGTH) && (glm::length(cps[0] - cps[3]) < (2.0f * type.road_length));
+			bool collisionIsRestricted = (restrictionFlags & (u8)RoadRestrictions::RESTRICT_COLLISIONS) ? check_road_road_collision(new_road_bounding_box, new_road_bounding_polygon) : false;
 
-			if (m_Scene->m_BuildingManager.restrictions[0] && (restrictionFlags & RESTRICT_COLLISIONS))
+			if (m_Scene->m_BuildingManager.restrictions[0] && (restrictionFlags & (u8)RoadRestrictions::RESTRICT_COLLISIONS))
 				highlight_road_building_collisions(new_road_bounding_box, new_road_bounding_polygon);
-			if (m_Scene->m_TreeManager.restrictions[0] && (restrictionFlags & RESTRICT_COLLISIONS))
+			if (m_Scene->m_TreeManager.restrictions[0] && (restrictionFlags & (u8)RoadRestrictions::RESTRICT_COLLISIONS))
 				highlight_road_tree_collisions(new_road_bounding_box, new_road_bounding_polygon);
 
 			b_ConstructionRestricted |= angleIsRestricted;
@@ -547,7 +547,7 @@ namespace Can
 
 			v3 AB = prevLocation - m_ConstructionPositions[0];
 
-			if ((snapFlags & SNAP_TO_LENGTH) && (cubicCurveOrder[1] == 1) && (glm::length(AB) > 0.5f))
+			if ((snapFlags & (u8)RoadSnapOptions::SNAP_TO_LENGTH) && (cubicCurveOrder[1] == 1) && (glm::length(AB) > 0.5f))
 			{
 				f32 length = glm::length(AB);
 				length = length - std::fmod(length, type.road_length);
@@ -589,12 +589,12 @@ namespace Can
 				v3{std::max({P1.x, P2.x, P3.x, P4.x}), std::max({P1.y, P2.y, P3.y, P4.y}), std::max({A.z, D.z}) + guideline_height}
 			};
 
-			bool lengthIsRestricted = (restrictionFlags & RESTRICT_SHORT_LENGTH) && glm::length(AB) < 2.0f * type.road_length;
-			bool collisionIsRestricted = (restrictionFlags & RESTRICT_COLLISIONS) ? check_road_road_collision(new_road_bounding_box, new_road_bounding_polygon) : false;
+			bool lengthIsRestricted = (restrictionFlags & (u8)RoadRestrictions::RESTRICT_SHORT_LENGTH) && glm::length(AB) < 2.0f * type.road_length;
+			bool collisionIsRestricted = (restrictionFlags & (u8)RoadRestrictions::RESTRICT_COLLISIONS) ? check_road_road_collision(new_road_bounding_box, new_road_bounding_polygon) : false;
 
-			if (m_Scene->m_BuildingManager.restrictions[0] && (restrictionFlags & RESTRICT_COLLISIONS))
+			if (m_Scene->m_BuildingManager.restrictions[0] && (restrictionFlags & (u8)RoadRestrictions::RESTRICT_COLLISIONS))
 				highlight_road_building_collisions(new_road_bounding_box, new_road_bounding_polygon);
-			if (m_Scene->m_TreeManager.restrictions[0] && (restrictionFlags & RESTRICT_COLLISIONS))
+			if (m_Scene->m_TreeManager.restrictions[0] && (restrictionFlags & (u8)RoadRestrictions::RESTRICT_COLLISIONS))
 				highlight_road_tree_collisions(new_road_bounding_box, new_road_bounding_polygon);
 
 			b_ConstructionRestricted |= angleIsRestricted;
@@ -630,7 +630,7 @@ namespace Can
 				v2 dir = (v2)(m_ConstructionPositions[1] - m_ConstructionPositions[0]);
 				bool angleIsRestricted = RestrictSmallAngles(dir, m_StartSnappedNode, m_StartSnappedSegment, m_StartSnappedT);
 			}
-			if (snapFlags & SNAP_TO_LENGTH)
+			if (snapFlags & (u8)RoadSnapOptions::SNAP_TO_LENGTH)
 			{
 				v3 AB1 = m_ConstructionPositions[1] - m_ConstructionPositions[0];
 				v3 AB2 = m_ConstructionPositions[2] - m_ConstructionPositions[3];
@@ -681,14 +681,14 @@ namespace Can
 			std::array<v3, 2> new_road_bounding_box = Math::get_bounding_box_from_cubic_bezier_curve(cps, guideline_width, guideline_height);
 			std::vector<std::array<v3, 3>> new_road_bounding_polygon = Math::get_bounding_polygon_from_bezier_curve(cps, guideline_width, guideline_length);
 
-			bool lengthIsRestricted = (restrictionFlags & RESTRICT_SHORT_LENGTH) &&
+			bool lengthIsRestricted = (restrictionFlags & (u8)RoadRestrictions::RESTRICT_SHORT_LENGTH) &&
 				(((cubicCurveOrder[3] == 1) && (glm::length(cps[2] - cps[3]) < 2.0f * type.road_length)) ||
 					((cubicCurveOrder[3] != 1) && (glm::length(cps[1] - cps[0]) < 2.0f * type.road_length)));
-			bool collisionIsRestricted = (restrictionFlags & RESTRICT_COLLISIONS) ? check_road_road_collision(new_road_bounding_box, new_road_bounding_polygon) : false;
+			bool collisionIsRestricted = (restrictionFlags & (u8)RoadRestrictions::RESTRICT_COLLISIONS) ? check_road_road_collision(new_road_bounding_box, new_road_bounding_polygon) : false;
 
-			if (m_Scene->m_BuildingManager.restrictions[0] && (restrictionFlags & RESTRICT_COLLISIONS))
+			if (m_Scene->m_BuildingManager.restrictions[0] && (restrictionFlags & (u8)RoadRestrictions::RESTRICT_COLLISIONS))
 				highlight_road_building_collisions(new_road_bounding_box, new_road_bounding_polygon);
-			if (m_Scene->m_TreeManager.restrictions[0] && (restrictionFlags & RESTRICT_COLLISIONS))
+			if (m_Scene->m_TreeManager.restrictions[0] && (restrictionFlags & (u8)RoadRestrictions::RESTRICT_COLLISIONS))
 				highlight_road_tree_collisions(new_road_bounding_box, new_road_bounding_polygon);
 
 			b_ConstructionRestricted |= angleIsRestricted;
@@ -717,7 +717,7 @@ namespace Can
 			v2 dir2 = (v2)(m_ConstructionPositions[2] - m_ConstructionPositions[3]);
 			angleIsRestricted |= RestrictSmallAngles(dir2, m_EndSnappedNode, m_EndSnappedSegment, m_EndSnappedT);
 
-			if (snapFlags & SNAP_TO_LENGTH)
+			if (snapFlags & (u8)RoadSnapOptions::SNAP_TO_LENGTH)
 			{
 				v3 AB1 = m_ConstructionPositions[1] - m_ConstructionPositions[0];
 				v3 AB2 = m_ConstructionPositions[2] - m_ConstructionPositions[3];
@@ -763,14 +763,14 @@ namespace Can
 			std::vector<std::array<v3, 3>> new_road_bounding_polygon = Math::get_bounding_polygon_from_bezier_curve(m_ConstructionPositions, guideline_width, guideline_length);
 
 			bool lengthIsRestricted =
-				(restrictionFlags & RESTRICT_SHORT_LENGTH) &&
+				(restrictionFlags & (u8)RoadRestrictions::RESTRICT_SHORT_LENGTH) &&
 				(glm::length(m_ConstructionPositions[0] - m_ConstructionPositions[1]) < 2.0f * type.road_length) &&
 				(glm::length(m_ConstructionPositions[3] - m_ConstructionPositions[2]) < 2.0f * type.road_length);
-			bool collisionIsRestricted = (restrictionFlags & RESTRICT_COLLISIONS) ? check_road_road_collision(new_road_bounding_box, new_road_bounding_polygon) : false;
+			bool collisionIsRestricted = (restrictionFlags & (u8)RoadRestrictions::RESTRICT_COLLISIONS) ? check_road_road_collision(new_road_bounding_box, new_road_bounding_polygon) : false;
 
-			if (m_Scene->m_BuildingManager.restrictions[0] && (restrictionFlags & RESTRICT_COLLISIONS))
+			if (m_Scene->m_BuildingManager.restrictions[0] && (restrictionFlags & (u8)RoadRestrictions::RESTRICT_COLLISIONS))
 				highlight_road_building_collisions(new_road_bounding_box, new_road_bounding_polygon);
-			if (m_Scene->m_TreeManager.restrictions[0] && (restrictionFlags & RESTRICT_COLLISIONS))
+			if (m_Scene->m_TreeManager.restrictions[0] && (restrictionFlags & (u8)RoadRestrictions::RESTRICT_COLLISIONS))
 				highlight_road_tree_collisions(new_road_bounding_box, new_road_bounding_polygon);
 
 
@@ -954,7 +954,7 @@ namespace Can
 			countT = count;
 		}
 
-		bool lengthIsRestricted = (restrictionFlags & RESTRICT_SHORT_LENGTH) && count < 1;
+		bool lengthIsRestricted = (restrictionFlags & (u8)RoadRestrictions::RESTRICT_SHORT_LENGTH) && count < 1;
 
 
 		m_GroundGuidelinesInUse[m_Type] += countG;
@@ -1662,7 +1662,7 @@ namespace Can
 		std::vector<std::array<v3, 3>> new_road_bounding_polygon = Math::get_bounding_polygon_from_bezier_curve(curvePoints, new_road_width * 0.5f, new_road_length);
 
 		auto& buildings = m_Scene->m_BuildingManager.GetBuildings();
-		if (m_Scene->m_BuildingManager.restrictions[0] && (restrictionFlags & RESTRICT_COLLISIONS))
+		if (m_Scene->m_BuildingManager.restrictions[0] && (restrictionFlags & (u8)RoadRestrictions::RESTRICT_COLLISIONS))
 		{
 			for (u64 i = 0; i < buildings.size(); i++)
 			{
@@ -1683,7 +1683,7 @@ namespace Can
 		}
 
 		auto& trees = m_Scene->m_TreeManager.GetTrees();
-		if (m_Scene->m_TreeManager.restrictions[0] && (restrictionFlags & RESTRICT_COLLISIONS))
+		if (m_Scene->m_TreeManager.restrictions[0] && (restrictionFlags & (u8)RoadRestrictions::RESTRICT_COLLISIONS))
 		{
 			for (u64 i = 0; i < trees.size(); i++)
 			{
@@ -2233,7 +2233,7 @@ namespace Can
 
 	void RoadManager::SnapToGrid(v3& prevLocation)
 	{
-		if (snapFlags & SNAP_TO_GRID)
+		if (snapFlags & (u8)RoadSnapOptions::SNAP_TO_GRID)
 		{
 			prevLocation.x = prevLocation.x - std::fmod(prevLocation.x, 0.5f) + 0.25f;
 			prevLocation.y = prevLocation.y - std::fmod(prevLocation.y, 0.5f) + 0.25f;
@@ -2241,7 +2241,7 @@ namespace Can
 	}
 	void RoadManager::SnapToRoad(v3& prevLocation, bool isStart)
 	{
-		if (snapFlags & SNAP_TO_ROAD)
+		if (snapFlags & (u8)RoadSnapOptions::SNAP_TO_ROAD)
 		{
 			SnapInformation snapInformation = CheckSnapping(prevLocation);
 			prevLocation = snapInformation.location;
@@ -2267,7 +2267,7 @@ namespace Can
 	}
 	void RoadManager::SnapToHeight(const std::vector<u8>& indices, u8 index, v3& AB)
 	{
-		if (snapFlags & SNAP_TO_HEIGHT)
+		if (snapFlags & (u8)RoadSnapOptions::SNAP_TO_HEIGHT)
 		{
 			for (u8 i = 0; i < indices.size(); i++)
 				m_ConstructionPositions[indices[i]].z = m_ConstructionPositions[index].z;
@@ -2276,7 +2276,7 @@ namespace Can
 	}
 	void RoadManager::SnapToAngle(v3& AB, s64 snappedNode, s64 snappedRoadSegment, f32 snappedT)
 	{
-		if (snapFlags & SNAP_TO_ANGLE)
+		if (snapFlags & (u8)RoadSnapOptions::SNAP_TO_ANGLE)
 		{
 			f32 rotation1 = glm::atan(-AB.y / AB.x) + (f32)(AB.x < 0.0f) * glm::radians(180.0f);
 			f32 length1 = glm::length(AB);
@@ -2363,7 +2363,7 @@ namespace Can
 	}
 	bool RoadManager::RestrictSmallAngles(v2 direction, s64 snappedNode, s64 snappedRoadSegment, f32 snappedT)
 	{
-		if (restrictionFlags & RESTRICT_SMALL_ANGLES)
+		if (restrictionFlags & (u8)RoadRestrictions::RESTRICT_SMALL_ANGLES)
 		{
 			direction = glm::normalize(direction);
 

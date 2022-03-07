@@ -110,18 +110,18 @@ namespace Can
 
 		if (gameScene->e_ConstructionMode == ConstructionMode::Road)
 		{
-			bool r = roadManager->snapFlags & SNAP_TO_ROAD;
-			bool l = roadManager->snapFlags & SNAP_TO_LENGTH;
-			bool h = roadManager->snapFlags & SNAP_TO_HEIGHT;
-			bool a = roadManager->snapFlags & SNAP_TO_ANGLE;
-			bool g = roadManager->snapFlags & SNAP_TO_GRID;
+			bool r = roadManager->snapFlags & (u8)RoadSnapOptions::SNAP_TO_ROAD;
+			bool l = roadManager->snapFlags & (u8)RoadSnapOptions::SNAP_TO_LENGTH;
+			bool h = roadManager->snapFlags & (u8)RoadSnapOptions::SNAP_TO_HEIGHT;
+			bool a = roadManager->snapFlags & (u8)RoadSnapOptions::SNAP_TO_ANGLE;
+			bool g = roadManager->snapFlags & (u8)RoadSnapOptions::SNAP_TO_GRID;
 			ImGui::Text("Road Construction Snap Options");
 			ImGui::BeginChild("Road Construction Snap Options", ImVec2(0, 135), true);
-			if (ImGui::Checkbox("Road", &r))   roadManager->snapFlags ^= SNAP_TO_ROAD;
-			if (ImGui::Checkbox("Length", &l)) roadManager->snapFlags ^= SNAP_TO_LENGTH;
-			if (ImGui::Checkbox("Height", &h)) roadManager->snapFlags ^= SNAP_TO_HEIGHT;
-			if (ImGui::Checkbox("Angle", &a))  roadManager->snapFlags ^= SNAP_TO_ANGLE;
-			if (ImGui::Checkbox("Grid", &g))   roadManager->snapFlags ^= SNAP_TO_GRID;
+			if (ImGui::Checkbox("Road", &r))   roadManager->snapFlags ^= (u8)RoadSnapOptions::SNAP_TO_ROAD;
+			if (ImGui::Checkbox("Length", &l)) roadManager->snapFlags ^= (u8)RoadSnapOptions::SNAP_TO_LENGTH;
+			if (ImGui::Checkbox("Height", &h)) roadManager->snapFlags ^= (u8)RoadSnapOptions::SNAP_TO_HEIGHT;
+			if (ImGui::Checkbox("Angle", &a))  roadManager->snapFlags ^= (u8)RoadSnapOptions::SNAP_TO_ANGLE;
+			if (ImGui::Checkbox("Grid", &g))   roadManager->snapFlags ^= (u8)RoadSnapOptions::SNAP_TO_GRID;
 			ImGui::EndChild();
 		}
 		else if (gameScene->e_ConstructionMode == ConstructionMode::Building)
@@ -135,14 +135,14 @@ namespace Can
 
 		if (gameScene->e_ConstructionMode == ConstructionMode::Road)
 		{
-			bool sm = roadManager->restrictionFlags & RESTRICT_SMALL_ANGLES;
-			bool sh = roadManager->restrictionFlags & RESTRICT_SHORT_LENGTH;
-			bool co = roadManager->restrictionFlags & RESTRICT_COLLISIONS;
+			bool sm = roadManager->restrictionFlags & (u8)RoadRestrictions::RESTRICT_SMALL_ANGLES;
+			bool sh = roadManager->restrictionFlags & (u8)RoadRestrictions::RESTRICT_SHORT_LENGTH;
+			bool co = roadManager->restrictionFlags & (u8)RoadRestrictions::RESTRICT_COLLISIONS;
 			ImGui::Text("Road Construction Restriction Options");
 			ImGui::BeginChild("Road Construction Restriction Options", ImVec2(0, 85), true);
-			if (ImGui::Checkbox("Small angles", &sm))  roadManager->restrictionFlags ^= RESTRICT_SMALL_ANGLES;
-			if (ImGui::Checkbox("Short lengths", &sh)) roadManager->restrictionFlags ^= RESTRICT_SHORT_LENGTH;
-			if (ImGui::Checkbox("Collisions", &co))    roadManager->restrictionFlags ^= RESTRICT_COLLISIONS;
+			if (ImGui::Checkbox("Small angles", &sm))  roadManager->restrictionFlags ^= (u8)RoadRestrictions::RESTRICT_SMALL_ANGLES;
+			if (ImGui::Checkbox("Short lengths", &sh)) roadManager->restrictionFlags ^= (u8)RoadRestrictions::RESTRICT_SHORT_LENGTH;
+			if (ImGui::Checkbox("Collisions", &co))    roadManager->restrictionFlags ^= (u8)RoadRestrictions::RESTRICT_COLLISIONS;
 			ImGui::EndChild();
 		}
 		else if (gameScene->e_ConstructionMode == ConstructionMode::Building)

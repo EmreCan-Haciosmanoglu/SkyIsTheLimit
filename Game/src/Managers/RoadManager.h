@@ -8,7 +8,7 @@ namespace Can
 	class RoadSegment;
 	class RoadNode;
 
-	enum class RoadConstructionMode:u8
+	enum class RoadConstructionMode :u8
 	{
 		None,
 		Straight,
@@ -16,6 +16,21 @@ namespace Can
 		CubicCurve,
 		Change,
 		Destruct
+	};
+
+	enum class RoadSnapOptions
+	{
+		SNAP_TO_ROAD = 0b00001,
+		SNAP_TO_LENGTH = 0b00010,
+		SNAP_TO_HEIGHT = 0b00100,
+		SNAP_TO_ANGLE = 0b01000,
+		SNAP_TO_GRID = 0b10000
+	};
+	enum class RoadRestrictions
+	{
+		RESTRICT_SMALL_ANGLES = 0x1,
+		RESTRICT_SHORT_LENGTH = 0x2,
+		RESTRICT_COLLISIONS = 0x4
 	};
 
 	struct SnapInformation
@@ -47,7 +62,7 @@ namespace Can
 		bool check_road_road_collision(const std::array<v3, 2>& bounding_box, const std::vector<std::array<v3, 3>>& bounding_polygon);
 		bool check_road_building_collision(class Building* building, const std::array<v3, 2>& bounding_box, const std::vector<std::array<v3, 3>>& bounding_polygon);
 		bool check_road_tree_collision(Object* tree, const std::array<v3, 2>& bounding_box, const std::vector<std::array<v3, 3>>& bounding_polygon);
-		
+
 		void highlight_road_building_collisions(const std::array<v3, 2>& bounding_box, const std::vector<std::array<v3, 3>>& bounding_polygon);
 		void highlight_road_tree_collisions(const std::array<v3, 2>& bounding_box, const std::vector<std::array<v3, 3>>& bounding_polygon);
 
@@ -85,17 +100,14 @@ namespace Can
 
 	public:
 
-		u8 snapFlags = 0b01001;
-#define SNAP_TO_ROAD   0b00001
-#define SNAP_TO_LENGTH 0b00010
-#define SNAP_TO_HEIGHT 0b00100
-#define SNAP_TO_ANGLE  0b01000
-#define SNAP_TO_GRID   0b10000
+		u8 snapFlags = 
+			(u8)RoadSnapOptions::SNAP_TO_ROAD & 
+			(u8)RoadSnapOptions::SNAP_TO_ANGLE;
 
-		u8 restrictionFlags = 0b111;
-#define RESTRICT_SMALL_ANGLES 0x1
-#define RESTRICT_SHORT_LENGTH 0x2
-#define RESTRICT_COLLISIONS   0x4
+		u8 restrictionFlags =
+			(u8)RoadRestrictions::RESTRICT_COLLISIONS &
+			(u8)RoadRestrictions::RESTRICT_SHORT_LENGTH &
+			(u8)RoadRestrictions::RESTRICT_SMALL_ANGLES;
 
 		std::array<u8, 4> cubicCurveOrder = { 0, 1, 2, 3 };
 
