@@ -447,22 +447,11 @@ namespace Can
 			check_box_rect.x = r.x + r.w - r.h / 2 - check_box_rect.w / 2;
 			check_box_rect.z += r.z + 1;
 
-			immediate_begin_sub_region(sub_region_rect, sub_region_theme, __LINE__);
-			{
-				immediate_quad(r, background_color, true);
-				r.z++;
-				immediate_text(ui.game_instances[0], r, graphics_options_label_theme);
-				r.z--;
 
-				bool is_this_selected = ui.selected_game_instance == 0;
-				flags = immediate_check_box(check_box_rect, is_this_selected, check_box_theme, __LINE__);
-				if (flags & CHECK_BOX_STATE_FLAGS_VALUE_CHANGED)
-				{
-					if (is_this_selected)
-						ui.selected_game_instance = 0;
-				}
-			}
-			for(u64 i = 1; i < ui.game_instances.size(); i++)
+			r.y += r.h + sub_region_button_margin;
+
+			immediate_begin_sub_region(sub_region_rect, sub_region_theme, __LINE__);
+			for(u64 i = 0; i < ui.game_instances.size(); i++)
 			{
 				r.y -= r.h + sub_region_button_margin;
 				check_box_rect.y = r.y + r.h / 2 - check_box_rect.h / 2;
