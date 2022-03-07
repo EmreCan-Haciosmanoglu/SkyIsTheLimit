@@ -237,7 +237,6 @@ namespace Can
 			u64 start_node, end_node;
 			std::array<v3, 4> curve_points;
 			s8 elevation_type;
-			// an array of indices to  building objects
 			// an array of indices to  Car objects
 			fread(&start_node, sizeof(u64), 1, read_file);
 			fread(&end_node, sizeof(u64), 1, read_file);
@@ -273,6 +272,37 @@ namespace Can
 
 			Object* tree = new Object(MainApplication->trees[type], pos, rot, scale);
 			trees.push_back(new Tree{ type, tree });
+		}
+		///////////////////////////////////////////////////
+
+		//BuildingManager
+		fread(m_BuildingManager.snapOptions.data(), sizeof(bool), 2, read_file);
+		fread(m_BuildingManager.restrictions.data(), sizeof(bool), 2, read_file);
+		auto& buildings = m_BuildingManager.m_Buildings;
+		u64 building_count;
+		fread(&building_count, sizeof(u64), 1, read_file);
+		buildings.reserve(building_count);
+		for (u64 i = 0; i < building_count; i++)
+		{
+			u64 type;
+			s64 connected_road_segment;
+			f32 snapped_t;
+			v3 position, rotation;
+			fread(&type, sizeof(u64), 1, read_file);
+			fread(&connected_road_segment, sizeof(s64), 1, read_file);
+			fread(&snapped_t, sizeof(f32), 1, read_file);
+			fread(&position, sizeof(f32), 3, read_file);
+			fread(&rotation, sizeof(f32), 3, read_file);
+			Building* building = new Building(
+				MainApplication->buildings[type],
+				connected_road_segment,
+				snapped_t,
+				position,
+				rotation
+			);
+			building->type = type;
+			buildings.push_back(building);
+			segments[connected_road_segment].Buildings.push_back(building);
 		}
 		///////////////////////////////////////////////////
 
@@ -335,7 +365,8 @@ namespace Can
 			fwrite(&buildings[i]->type, sizeof(u64), 1, save_file);
 			fwrite(&buildings[i]->connectedRoadSegment, sizeof(s64), 1, save_file);
 			fwrite(&buildings[i]->snappedT, sizeof(f32), 1, save_file);
-			fwrite(&buildings[i]->position, sizeof(f32), 3, save_file);
+			fwrite(&buildings[i]->object->position, sizeof(f32), 3, save_file);
+			fwrite(&buildings[i]->object->rotation, sizeof(f32), 3, save_file);
 		}
 		///////////////////////////////////////////////////
 
