@@ -267,6 +267,8 @@ namespace Can
 			v3 pos, rot, scale;
 			fread(&type, sizeof(u64), 1, read_file);
 			fread(&pos, sizeof(f32), 3, read_file);
+
+			// If we want it to be same all the time
 			fread(&rot, sizeof(f32), 3, read_file);
 			fread(&scale, sizeof(f32), 3, read_file);
 
@@ -287,7 +289,7 @@ namespace Can
 			u64 type;
 			s64 connected_road_segment;
 			f32 snapped_t;
-			v3 position, rotation;
+			v3 position, rotation;// calculate it from snapped_t?
 			fread(&type, sizeof(u64), 1, read_file);
 			fread(&connected_road_segment, sizeof(s64), 1, read_file);
 			fread(&snapped_t, sizeof(f32), 1, read_file);
@@ -303,6 +305,42 @@ namespace Can
 			building->type = type;
 			buildings.push_back(building);
 			segments[connected_road_segment].Buildings.push_back(building);
+		}
+		///////////////////////////////////////////////////
+
+		//CarManager
+		auto& cars = m_CarManager.m_Cars;
+		u64 car_count;
+		fread(&car_count, sizeof(u64), 1, read_file);
+		cars.reserve(car_count);
+		for (u64 i = 0; i < car_count; i++)
+		{
+			u64 type;
+			s64 road_segment;
+			u64 t_index;
+			f32 speed, t;
+			std::array<v3, 3> drift_points;
+			v3 position, target, rotation;
+			bool from_start, in_junction;
+			fread(&type, sizeof(u64), 1, read_file);
+			fread(&road_segment, sizeof(s64), 1, read_file);
+			fread(&t_index, sizeof(u64), 1, read_file);
+			fread(&speed, sizeof(f32), 1, read_file);
+			fread(&t, sizeof(f32), 1, read_file);
+			fread(&drift_points, sizeof(f32), 3 * 3, read_file);
+			fread(&position, sizeof(f32), 3, read_file);
+			fread(&target, sizeof(f32), 3, read_file);
+			fread(&rotation, sizeof(f32), 3, read_file);
+			fread(&from_start, sizeof(bool), 1, read_file);
+			fread(&in_junction, sizeof(bool), 1, read_file);
+			Car* car = new Car(MainApplication->cars[type], road_segment, t_index, speed, position, target, rotation);
+			car->type = type;
+			car->t = t;
+			car->driftpoints = drift_points;
+			car->fromStart = from_start;
+			car->inJunction = in_junction;
+			cars.push_back(car);
+			segments[road_segment].Cars.push_back(car);
 		}
 		///////////////////////////////////////////////////
 
@@ -375,12 +413,15 @@ namespace Can
 		fwrite(&car_count, sizeof(u64), 1, save_file);
 		for (u64 i = 0; i < car_count; i++)
 		{
+			fwrite(&cars[i]->type, sizeof(u64), 1, save_file);
 			fwrite(&cars[i]->roadSegment, sizeof(s64), 1, save_file);
 			fwrite(&cars[i]->t_index, sizeof(u64), 1, save_file);
 			fwrite(&cars[i]->speed, sizeof(f32), 1, save_file);
 			fwrite(&cars[i]->t, sizeof(f32), 1, save_file);
 			fwrite(cars[i]->driftpoints.data(), sizeof(f32), 3 * 3, save_file);
 			fwrite(&cars[i]->position, sizeof(f32), 3, save_file);
+			fwrite(&cars[i]->target, sizeof(f32), 3, save_file);
+			fwrite(&cars[i]->object->rotation, sizeof(f32), 3, save_file);
 			fwrite(&cars[i]->fromStart, sizeof(bool), 1, save_file);
 			fwrite(&cars[i]->inJunction, sizeof(bool), 1, save_file);
 		}

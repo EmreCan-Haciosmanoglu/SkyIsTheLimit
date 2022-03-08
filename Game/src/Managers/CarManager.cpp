@@ -156,6 +156,7 @@ namespace Can
 				targeT,
 				m_Guideline->rotation
 			);
+			car->type = m_Type;
 			m_Cars.push_back(car);
 			segments[m_SnappedRoadSegment].Cars.push_back(car);
 			ResetStates();
