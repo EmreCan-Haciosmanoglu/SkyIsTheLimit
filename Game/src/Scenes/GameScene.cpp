@@ -223,8 +223,8 @@ namespace Can
 		{
 			nodes.push_back(RoadNode({}, v3{ 0.0f, 0.0f, 0.0f }, 0));
 			fread(&nodes[i].position, sizeof(f32), 3, read_file);
-			fread(&nodes[i].index, sizeof(u64), 1, read_file);
 			fread(&nodes[i].elevation_type, sizeof(s8), 1, read_file);
+			nodes[i].index = i;
 		}
 		auto& segments = m_RoadManager.m_Segments;
 		u64 segment_count;
@@ -322,7 +322,6 @@ namespace Can
 		for (u64 i = 0; i < node_count; i++)
 		{
 			fwrite(&nodes[i].position, sizeof(f32), 3, save_file);
-			fwrite(&nodes[i].index, sizeof(u64), 1, save_file);
 			fwrite(&nodes[i].elevation_type, sizeof(s8), 1, save_file);
 		}
 		auto& segments = m_RoadManager.m_Segments;
