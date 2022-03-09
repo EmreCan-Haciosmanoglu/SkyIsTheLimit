@@ -344,6 +344,15 @@ namespace Can
 		}
 		///////////////////////////////////////////////////
 
+		//Camera
+		auto& camera = camera_controller.camera;
+		v3 position, rotation;
+		fread(&position, sizeof(f32), 3, read_file);
+		fread(&rotation, sizeof(f32), 3, read_file);
+		camera.set_position(position);
+		camera.set_rotation(rotation);
+		///////////////////////////////////////////////////
+
 
 		fclose(read_file);
 	}
@@ -425,6 +434,12 @@ namespace Can
 			fwrite(&cars[i]->fromStart, sizeof(bool), 1, save_file);
 			fwrite(&cars[i]->inJunction, sizeof(bool), 1, save_file);
 		}
+		///////////////////////////////////////////////////
+
+		//Camera
+		auto& camera = camera_controller.camera;
+		fwrite(&camera.position, sizeof(f32), 3, save_file);
+		fwrite(&camera.rotation, sizeof(f32), 3, save_file);
 		///////////////////////////////////////////////////
 
 		fclose(save_file);
