@@ -14,6 +14,7 @@ namespace Can
 	class RoadSegment
 	{
 	public:
+		RoadSegment() {}
 		RoadSegment(
 			u64 type,
 			const std::array<v3, 4>& curvePoints,
@@ -47,11 +48,9 @@ namespace Can
 		inline const v3& GetStartDirection() const { return Directions[0]; }
 		inline const v3& GetEndDirection() const { return Directions[1]; }
 
-	private:
 		void Construct();
 		void CalcRotsAndDirs();
 
-	public:
 
 		u64 type = 0;
 		std::vector<Building*> Buildings = {};
@@ -65,7 +64,7 @@ namespace Can
 
 		Object* object = nullptr;
 
-		std::array<v3, 4> CurvePoints;
+		std::array<v3, 4> CurvePoints{};
 		std::array<std::array<v2, 3>, 2> bounding_rect{};
 		std::vector<std::array<v3, 3>> bounding_polygon{};
 
@@ -77,7 +76,7 @@ namespace Can
 
 	private:
 
-		std::array<v3, 2> Directions;
+		std::array<v3, 2> Directions{};
 		std::array<v2, 2> Rotations{
 			v2(0.0f),
 			v2(0.0f)

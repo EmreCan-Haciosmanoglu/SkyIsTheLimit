@@ -221,7 +221,7 @@ namespace Can
 		nodes.reserve(node_count);
 		for (u64 i = 0; i < node_count; i++)
 		{
-			nodes.push_back(RoadNode({}, v3{ 0.0f, 0.0f, 0.0f }, 0));
+			nodes.push_back(RoadNode());
 			fread(&nodes[i].position, sizeof(f32), 3, read_file);
 			fread(&nodes[i].elevation_type, sizeof(s8), 1, read_file);
 			nodes[i].index = i;
@@ -232,27 +232,19 @@ namespace Can
 		segments.reserve(segment_count);
 		for (u64 i = 0; i < segment_count; i++)
 		{
-			u8 road_type;
-			fread(&road_type, sizeof(u8), 1, read_file);
-			u64 start_node, end_node;
-			std::array<v3, 4> curve_points;
-			s8 elevation_type;
-			// an array of indices to  Car objects
-			fread(&start_node, sizeof(u64), 1, read_file);
-			fread(&end_node, sizeof(u64), 1, read_file);
-			fread(&curve_points, sizeof(f32), 3 * 4, read_file);
-			fread(&elevation_type, sizeof(s8), 1, read_file);
-			segments.push_back(RoadSegment{
-				road_type,
-				curve_points,
-				elevation_type
-				});
-			segments[i].StartNode = start_node;
-			segments[i].EndNode = end_node;
-			nodes[start_node].AddRoadSegment({ i });
-			nodes[end_node].AddRoadSegment({ i });
-			segments[i].ReConstruct();
+			segments.push_back(RoadSegment());
+			auto& segment = segments[i];
+			fread(&segment.type, sizeof(u8), 1, read_file);
+			fread(&segment.StartNode, sizeof(u64), 1, read_file);
+			fread(&segment.EndNode, sizeof(u64), 1, read_file);
+			fread(&segment.CurvePoints, sizeof(f32), 3 * 4, read_file);
+			fread(&segment.elevation_type, sizeof(s8), 1, read_file);
+			segment.CalcRotsAndDirs();
+			nodes[segment.StartNode].roadSegments.push_back(i);
+			nodes[segment.EndNode].roadSegments.push_back(i);
 		}
+		for (u64 i = 0; i < node_count; i++)
+			nodes[i].Reconstruct();
 		///////////////////////////////////////////////////
 
 		//TreeManager
@@ -333,7 +325,14 @@ namespace Can
 			fread(&rotation, sizeof(f32), 3, read_file);
 			fread(&from_start, sizeof(bool), 1, read_file);
 			fread(&in_junction, sizeof(bool), 1, read_file);
-			Car* car = new Car(MainApplication->cars[type], road_segment, t_index, speed, position, target, rotation);
+			Car* car = new Car(
+				MainApplication->cars[type], 
+				road_segment, 
+				t_index, 
+				speed, 
+				position, 
+				target, 
+				rotation);
 			car->type = type;
 			car->t = t;
 			car->driftpoints = drift_points;
