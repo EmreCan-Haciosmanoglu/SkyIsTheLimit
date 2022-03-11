@@ -11,9 +11,21 @@ Can::Application* Can::CreateApplication(const Can::WindowProps& props)
 
 namespace Can
 {
+	GameApp* GameApp::instance = nullptr;
+
 	GameApp::GameApp(const Can::WindowProps& props)
-		:Application(props)
+		: Application(props)
+		, perspective_camera_controller(
+			45.0f,
+			16.0f / 9.0f,
+			0.1f,
+			1000.0f,
+			v3{ 2.0f, -3.0f, 5.0f },
+			v3{ 0.0f, -45.0f, 90.0f }
+		)
 	{
+		instance = this;
+
 		terrainPrefab = Helper::GetPrefabForTerrain("assets/objects/flat_land.png");
 		terrainTexture = Texture2D::Create("assets/objects/flat_land.png");
 		//terrainPrefab = Helper::GetPrefabForTerrain("assets/objects/flat_land_small.png");
@@ -22,6 +34,7 @@ namespace Can
 
 		treeMap = Texture2D::Create("assets/textures/treeMap.png");
 		addTexture = Texture2D::Create("assets/textures/Buttons/Add.png");
+		saveTexture = Texture2D::Create("assets/textures/Buttons/Save.png");
 		pauseTexture = Texture2D::Create("assets/textures/Buttons/Pause.png");
 		removeTexture = Texture2D::Create("assets/textures/Buttons/Remove.png");
 		cancelTexture = Texture2D::Create("assets/textures/Buttons/Cancel.png");
@@ -38,32 +51,47 @@ namespace Can
 		twoTimesSpeedTexture = Texture2D::Create("assets/textures/Buttons/TwoTimesSpeed.png");
 		fourTimesSpeedTexture = Texture2D::Create("assets/textures/Buttons/FourTimesSpeed.png");
 
-		LoadRoadTypes();
+		load_road_types();
 		LoadBuildings();
 		LoadTrees();
 		LoadCars();
 
-		gameScene = new GameScene(this);
-		PushLayer(gameScene);
 
+
+		init_main_menu(*this, main_menu);
+		load_main_menu(*this, main_menu);
+	}
+
+	void GameApp::start_the_game(std::string& save_name, bool is_old_game)
+	{
+		unload_main_menu(*this, main_menu);
+		deinit_main_menu(*this, main_menu);
+
+		gameScene = new GameScene(this, save_name);
+		PushLayer(gameScene);
+		if (is_old_game)
+			gameScene->load_the_game();
+		
 		uiScene = new UIScene(this);
 		PushOverlay(uiScene);
-
+		
 		debugScene = new Debug(this);
 		PushOverlay(debugScene);
 	}
 
 	GameApp::~GameApp()
 	{
-		PopLayer(gameScene);
-		delete gameScene;
-		PopOverlay(uiScene);
-		delete uiScene;
-		PopOverlay(debugScene);
-		delete debugScene;
+		//PopLayer(gameScene);
+		//delete gameScene;
+		//PopOverlay(uiScene);
+		//delete uiScene;
+		//PopOverlay(debugScene);
+		//delete debugScene;
+
+		//unload_main_menu(*this, main_menu);
 	}
 
-	void GameApp::LoadRoadTypes()
+	void GameApp::load_road_types()
 	{
 #define TEMP_SHADER_FILE_PATH "assets/shaders/3DTexturedObject.glsl"
 
@@ -242,58 +270,58 @@ namespace Can
 					else if (std::equal(line.begin(), seperator, zone_key))
 						zone = std::string(print_from);
 					else if (std::equal(line.begin(), seperator, road_object_key))
-						road_obj = road_obj.append(std::string(print_from));
+						road_obj.append(print_from);
 					else if (std::equal(line.begin(), seperator, road_texture_key))
-						road_png = road_png.append(std::string(print_from));
+						road_png.append(print_from);
 					else if (std::equal(line.begin(), seperator, road_junction_object_key))
-						road_junction_obj = road_junction_obj.append(std::string(print_from));
+						road_junction_obj.append(print_from);
 					else if (std::equal(line.begin(), seperator, road_junction_texture_key))
-						road_junction_png = road_junction_png.append(std::string(print_from));
+						road_junction_png.append(print_from);
 					else if (std::equal(line.begin(), seperator, road_junction_mirror_object_key))
-						road_junction_mirror_obj = road_junction_mirror_obj.append(std::string(print_from));
+						road_junction_mirror_obj.append(print_from);
 					else if (std::equal(line.begin(), seperator, road_junction_mirror_texture_key))
-						road_junction_mirror_png = road_junction_mirror_png.append(std::string(print_from));
+						road_junction_mirror_png.append(print_from);
 					else if (std::equal(line.begin(), seperator, road_end_object_key))
-						road_end_obj = road_end_obj.append(std::string(print_from));
+						road_end_obj.append(print_from);
 					else if (std::equal(line.begin(), seperator, road_end_texture_key))
-						road_end_png = road_end_png.append(std::string(print_from));
+						road_end_png.append(print_from);
 					else if (std::equal(line.begin(), seperator, road_end_mirror_object_key))
-						road_end_mirror_obj = road_end_mirror_obj.append(std::string(print_from));
+						road_end_mirror_obj.append(print_from);
 					else if (std::equal(line.begin(), seperator, road_end_mirror_texture_key))
-						road_end_mirror_png = road_end_mirror_png.append(std::string(print_from));
+						road_end_mirror_png.append(print_from);
 					else if (std::equal(line.begin(), seperator, tunnel_object_key))
 					{
-						tunnel_obj = tunnel_obj.append(std::string(print_from));
+						tunnel_obj.append(print_from);
 						tunnel_is_found = true;
 					}
 					else if (std::equal(line.begin(), seperator, tunnel_texture_key))
-						tunnel_png = tunnel_png.append(std::string(print_from));
+						tunnel_png.append(print_from);
 					else if (std::equal(line.begin(), seperator, tunnel_junction_object_key))
-						tunnel_junction_obj = tunnel_junction_obj.append(std::string(print_from));
+						tunnel_junction_obj.append(print_from);
 					else if (std::equal(line.begin(), seperator, tunnel_junction_texture_key))
-						tunnel_junction_png = tunnel_junction_png.append(std::string(print_from));
+						tunnel_junction_png.append(print_from);
 					else if (std::equal(line.begin(), seperator, tunnel_junction_mirror_object_key))
-						tunnel_junction_mirror_obj = tunnel_junction_mirror_obj.append(std::string(print_from));
+						tunnel_junction_mirror_obj.append(print_from);
 					else if (std::equal(line.begin(), seperator, tunnel_junction_mirror_texture_key))
-						tunnel_junction_mirror_png = tunnel_junction_mirror_png.append(std::string(print_from));
+						tunnel_junction_mirror_png.append(print_from);
 					else if (std::equal(line.begin(), seperator, tunnel_end_object_key))
-						tunnel_end_obj = tunnel_end_obj.append(std::string(print_from));
+						tunnel_end_obj.append(print_from);
 					else if (std::equal(line.begin(), seperator, tunnel_end_texture_key))
-						tunnel_end_png = tunnel_end_png.append(std::string(print_from));
+						tunnel_end_png.append(print_from);
 					else if (std::equal(line.begin(), seperator, tunnel_end_mirror_object_key))
-						tunnel_end_mirror_obj = tunnel_end_mirror_obj.append(std::string(print_from));
+						tunnel_end_mirror_obj.append(print_from);
 					else if (std::equal(line.begin(), seperator, tunnel_end_mirror_texture_key))
-						tunnel_end_mirror_png = tunnel_end_mirror_png.append(std::string(print_from));
+						tunnel_end_mirror_png.append(print_from);
 					else if (std::equal(line.begin(), seperator, tunnel_entrance_object_key))
-						tunnel_entrance_obj = tunnel_entrance_obj.append(std::string(print_from));
+						tunnel_entrance_obj.append(print_from);
 					else if (std::equal(line.begin(), seperator, tunnel_entrance_texture_key))
-						tunnel_entrance_png = tunnel_entrance_png.append(std::string(print_from));
+						tunnel_entrance_png.append(print_from);
 					else if (std::equal(line.begin(), seperator, tunnel_entrance_mirror_object_key))
-						tunnel_entrance_mirror_obj = tunnel_entrance_mirror_obj.append(std::string(print_from));
+						tunnel_entrance_mirror_obj.append(print_from);
 					else if (std::equal(line.begin(), seperator, tunnel_entrance_mirror_texture_key))
-						tunnel_entrance_mirror_png = tunnel_entrance_mirror_png.append(std::string(print_from));
+						tunnel_entrance_mirror_png.append(print_from);
 					else if (std::equal(line.begin(), seperator, thumbnail_key))
-						thumbnail_png = thumbnail_png.append(std::string(print_from));
+						thumbnail_png.append(print_from);
 				}
 			}
 			file.close();
@@ -304,12 +332,10 @@ namespace Can
 	{
 		buildings = LoadPrefabs("\\assets\\objects\\houses", "House_");
 	}
-
 	void GameApp::LoadTrees()
 	{
 		trees = LoadPrefabs("\\assets\\objects\\trees", "Tree_");
 	}
-
 	void GameApp::LoadCars()
 	{
 		cars = LoadPrefabs("\\assets\\objects\\cars", "Car_");

@@ -2,8 +2,8 @@
 #include "BuildingManager.h"
 
 #include "Types/RoadSegment.h"
+#include "Types/Tree.h"
 #include "Types/Person.h"
-
 #include "Building.h"
 
 #include "GameApp.h"
@@ -50,7 +50,7 @@ namespace Can
 		m_SnappedRoadSegment = (u64)-1;
 		m_Guideline->SetTransform(prevLocation);
 		m_GuidelinePosition = prevLocation;
-
+		GameApp* app = m_Scene->MainApplication;
 		Prefab* selectedBuilding = m_Guideline->prefab;
 		f32 buildingWidth = selectedBuilding->boundingBoxM.y - selectedBuilding->boundingBoxL.y;
 		f32 buildingDepthFromCenter = -selectedBuilding->boundingBoxL.x;
@@ -63,10 +63,11 @@ namespace Can
 			for (u64 rsIndex = 0; rsIndex < count; rsIndex++)
 			{
 				RoadSegment& rs = segments[rsIndex];
-				if (rs.type.zoneable == false)
+				RoadType& type = app->road_types[rs.type];
+				if (type.zoneable == false)
 					continue;
-				f32 roadWidth = rs.type.road_width;
-				f32 roadLength = rs.type.road_length;
+				f32 roadWidth = type.road_width;
+				f32 roadLength = type.road_length;
 				f32 snapDistance = buildingDepthFromCenter + (roadWidth * 0.5f);
 
 				const std::array<v3, 4>& vs = rs.GetCurvePoints();
@@ -160,7 +161,7 @@ namespace Can
 		}
 
 		bool collidedWithRoad = false;
-		if (restrictions[0] && (m_Scene->m_RoadManager.restrictionFlags & 0x4/*change with #define*/))
+		if (restrictions[0] && (m_Scene->m_RoadManager.restrictionFlags & (u8)RoadRestrictions::RESTRICT_COLLISIONS))
 		{
 			Prefab* prefab = m_Guideline->prefab;
 			f32 building_height = prefab->boundingBoxM.z - prefab->boundingBoxL.z;
@@ -192,10 +193,11 @@ namespace Can
 			for (u64 rsIndex = 0; rsIndex < count; rsIndex++)
 			{
 				RoadSegment& rs = segments[rsIndex];
+				RoadType& type = app->road_types[rs.type];
 				if (rsIndex == m_SnappedRoadSegment)
 					continue;
 
-				f32 road_height = rs.elevation_type == -1 ? rs.type.tunnel_height : rs.type.road_height;
+				f32 road_height = rs.elevation_type == -1 ? type.tunnel_height : type.road_height;
 				std::array<v3, 2> road_bounding_box{
 					rs.object->prefab->boundingBoxL + rs.CurvePoints[0],
 					rs.object->prefab->boundingBoxM + rs.CurvePoints[0]
@@ -217,24 +219,24 @@ namespace Can
 			v2 buildingL = (v2)selectedBuilding->boundingBoxL;
 			v2 buildingM = (v2)selectedBuilding->boundingBoxM;
 			v2 buildingP = (v2)m_GuidelinePosition;
-			for (Object* tree : m_Scene->m_TreeManager.GetTrees())
+			for (Tree* tree : m_Scene->m_TreeManager.GetTrees())
 			{
-				v2 treeL = (v2)tree->prefab->boundingBoxL;
-				v2 treeM = (v2)tree->prefab->boundingBoxM;
-				v2 treeP = (v2)tree->position;
+				v2 treeL = (v2)tree->object->prefab->boundingBoxL;
+				v2 treeM = (v2)tree->object->prefab->boundingBoxM;
+				v2 treeP = (v2)tree->object->position;
 				v2 mtv = Helper::CheckRotatedRectangleCollision(
 					treeL,
 					treeM,
-					tree->rotation.z,
+					tree->object->rotation.z,
 					treeP,
 					buildingL,
 					buildingM,
 					m_GuidelineRotation.z,
 					buildingP
 				);
-				tree->tintColor = v4(1.0f);
+				tree->object->tintColor = v4(1.0f);
 				if (glm::length(mtv) > 0.0f)
-					tree->tintColor = v4{ 1.0f, 0.3f, 0.2f, 1.0f };
+					tree->object->tintColor = v4{ 1.0f, 0.3f, 0.2f, 1.0f };
 			}
 		}
 
@@ -320,9 +322,15 @@ namespace Can
 	{
 		if (!b_ConstructionRestricted)
 		{
-			Building* newBuilding = new Building(m_Guideline->prefab, m_SnappedRoadSegment, m_SnappedT, m_GuidelinePosition, m_GuidelineRotation);
-			
 			auto& segments = m_Scene->m_RoadManager.m_Segments;
+			Building* newBuilding = new Building(
+				m_Guideline->prefab,
+				m_SnappedRoadSegment,
+				m_SnappedT,
+				m_GuidelinePosition,
+				m_GuidelineRotation
+			);
+			newBuilding->type = m_Type;
 			if (m_SnappedRoadSegment != (u64)-1)
 				segments[m_SnappedRoadSegment].Buildings.push_back(newBuilding);
 			m_Buildings.push_back(newBuilding);
@@ -377,7 +385,7 @@ namespace Can
 				auto& trees = m_Scene->m_TreeManager.GetTrees();
 				for (size_t i = 0; i < trees.size(); i++)
 				{
-					Object* tree = trees[i];
+					Object* tree = trees[i]->object;
 					v2 mtv = Helper::CheckRotatedRectangleCollision(
 						buildingL,
 						buildingM,

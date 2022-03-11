@@ -7,18 +7,21 @@
 
 #include "Types/RoadType.h"
 
+#include "Scenes/Main_Menu/Main_Menu.h"
+
 namespace Can
 {
 	class GameApp : public Can::Application
 	{
 	public:
 		GameApp(const Can::WindowProps& props);
+		void start_the_game(std::string& save_name, bool is_old_game = false);
 		~GameApp();
 
 	private:
 		std::vector<Prefab*> LoadPrefabs(const std::string& folder, const std::string& filter);
 
-		void LoadRoadTypes();
+		void load_road_types();
 		void LoadBuildings();
 		void LoadTrees();
 		void LoadCars();
@@ -28,8 +31,8 @@ namespace Can
 		Ref<Texture2D> terrainTexture;
 
 		Ref<Texture2D> treeMap;
-		
 		Ref<Texture2D> addTexture;				// Put better name
+		Ref<Texture2D> saveTexture;				// Put better name
 		Ref<Texture2D> pauseTexture;			// Put better name
 		Ref<Texture2D> removeTexture;			// Put better name
 		Ref<Texture2D> cancelTexture;			// Put better name
@@ -52,9 +55,15 @@ namespace Can
 		std::vector<Prefab*> buildings;
 		std::vector<Prefab*> trees;
 		std::vector<Prefab*> cars;
-		
+
+		Main_Menu main_menu{};
+
 		GameScene* gameScene = nullptr;
 		UIScene* uiScene = nullptr;
 		Debug* debugScene = nullptr;
+
+		Perspective_Camera_Controller perspective_camera_controller;
+
+		static GameApp* instance;
 	};
 }

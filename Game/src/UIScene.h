@@ -17,7 +17,7 @@ namespace Can
 		virtual void OnAttach() override;
 		virtual void OnDetach() override {}
 
-		virtual void OnUpdate(TimeStep ts) override;
+		virtual bool OnUpdate(TimeStep ts) override;
 		virtual void OnEvent(Event::Event& event) override;
 
 		bool OnMousePressed(Event::MouseButtonPressedEvent& event);
@@ -29,6 +29,7 @@ namespace Can
 		Button* m_ButtonNormal = nullptr;
 		Button* m_Button2Times = nullptr;
 		Button* m_Button4Times = nullptr;
+		Button* m_ButtonSave = nullptr;
 
 		Button* m_ButtonRoads     = nullptr;
 		Button* m_ButtonBuildings = nullptr;

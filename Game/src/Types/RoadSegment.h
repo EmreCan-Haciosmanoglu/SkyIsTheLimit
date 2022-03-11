@@ -15,8 +15,9 @@ namespace Can
 	class RoadSegment
 	{
 	public:
+		RoadSegment() {}
 		RoadSegment(
-			const RoadType& type,
+			u64 type,
 			const std::array<v3, 4>& curvePoints,
 			s8 elevation_type
 		);
@@ -27,7 +28,7 @@ namespace Can
 		friend bool operator==(const RoadSegment& left, const RoadSegment& right) { return &left == &right; }
 
 		void ReConstruct();
-		void SetType(const RoadType& type) { this->type = type; ReConstruct(); }
+		void SetType(u64 type) { this->type = type; ReConstruct(); }
 
 		inline const std::array<v3, 4>& GetCurvePoints() const { return CurvePoints; }
 		inline const v3& GetCurvePoint(size_t index) const { return CurvePoints[index]; }
@@ -48,12 +49,11 @@ namespace Can
 		inline const v3& GetStartDirection() const { return Directions[0]; }
 		inline const v3& GetEndDirection() const { return Directions[1]; }
 
-	private:
 		void Construct();
 		void CalcRotsAndDirs();
 
-	public:
-		RoadType type{};
+
+		u64 type = 0;
 		std::vector<Building*> Buildings = {};
 		std::vector<Car*> Cars = {};
 		std::vector<Person*> peoples = {};
@@ -66,7 +66,7 @@ namespace Can
 
 		Object* object = nullptr;
 
-		std::array<v3, 4> CurvePoints;
+		std::array<v3, 4> CurvePoints{};
 		std::array<std::array<v2, 3>, 2> bounding_rect{};
 		std::vector<std::array<v3, 3>> bounding_polygon{};
 
@@ -78,7 +78,7 @@ namespace Can
 
 	private:
 
-		std::array<v3, 2> Directions;
+		std::array<v3, 2> Directions{};
 		std::array<v2, 2> Rotations{
 			v2(0.0f),
 			v2(0.0f)

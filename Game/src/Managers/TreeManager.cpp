@@ -2,6 +2,7 @@
 #include "TreeManager.h"
 
 #include "Types/RoadSegment.h"
+#include "Types/Tree.h"
 #include "Building.h"
 
 #include "GameApp.h"
@@ -110,12 +111,13 @@ namespace Can
 	}
 	void TreeManager::OnUpdate_Adding(v3& prevLocation, const v3& cameraPosition, const v3& cameraDirection)
 	{
+		GameApp* app = m_Scene->MainApplication;
 		b_AddingRestricted = false;
 		m_Guideline->SetTransform(prevLocation);
 		m_GuidelinePosition = prevLocation;
 
 		bool collidedWithRoad = false;
-		if ((m_Scene->m_RoadManager.restrictionFlags & 0x4/*Change with #define*/) && restrictions[0])
+		if ((m_Scene->m_RoadManager.restrictionFlags & (u8)RoadRestrictions::RESTRICT_COLLISIONS) && restrictions[0])
 		{
 			Prefab* prefab = m_Guideline->prefab;
 			f32 tree_height = prefab->boundingBoxM.z - prefab->boundingBoxL.z;
@@ -144,10 +146,11 @@ namespace Can
 
 			for (RoadSegment& rs : m_Scene->m_RoadManager.m_Segments)
 			{
+				RoadType& type = app->road_types[rs.type];
 				if (rs.elevation_type == -1)
 					continue;
 
-				f32 road_height = rs.elevation_type == -1 ? rs.type.tunnel_height : rs.type.road_height;
+				f32 road_height = rs.elevation_type == -1 ? type.tunnel_height : type.road_height;
 				std::array<v3, 2> road_bounding_box{
 					rs.object->prefab->boundingBoxL + rs.CurvePoints[0],
 					rs.object->prefab->boundingBoxM + rs.CurvePoints[0]
@@ -205,7 +208,7 @@ namespace Can
 
 		for (auto& it = m_Trees.begin(); it != m_Trees.end(); ++it)
 		{
-			Object* tree = *it;
+			Object* tree = (*it)->object;
 			tree->tintColor = v4(1.0f);
 
 			if (Helper::CheckBoundingBoxHit(
@@ -252,7 +255,7 @@ namespace Can
 				randomRot,
 				randomScale + v3{ 1.0f, 1.0f, 1.0f }
 			);
-			m_Trees.push_back(tree);
+			m_Trees.push_back(new Tree{ m_Type, tree });
 			ResetStates();
 			m_Guideline->enabled = true;
 		}
@@ -262,7 +265,7 @@ namespace Can
 	{
 		if (m_SelectedTreeToRemove != m_Trees.end())
 		{
-			Object* tree = *m_SelectedTreeToRemove;
+			Object* tree = (* m_SelectedTreeToRemove)->object;
 			m_Trees.erase(m_SelectedTreeToRemove);
 
 			delete tree;
@@ -300,8 +303,8 @@ namespace Can
 		m_SelectedTreeToRemove = m_Trees.end();
 		m_GuidelinePosition = v3(-1.0f);
 
-		for (Object* tree : m_Trees)
-			tree->tintColor = v4(1.0f);
+		for (Tree* tree : m_Trees)
+			tree->object->tintColor = v4(1.0f);
 
 		m_Guideline->enabled = false;
 		m_Guideline->tintColor = v4(1.0f);

@@ -43,7 +43,7 @@ namespace Can
 
 		void ResetStates();
 
-	private:
+
 		GameScene* m_Scene = nullptr;
 
 		CarConstructionMode m_ConstructionMode = CarConstructionMode::None;

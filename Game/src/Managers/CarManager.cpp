@@ -40,13 +40,15 @@ namespace Can
 		m_SnappedRoadSegment = -1;
 		m_Guideline->SetTransform(prevLocation);
 		Prefab* selectedCar = m_Guideline->prefab;
+		GameApp* app = m_Scene->MainApplication;
 
 		u64 count = m_Scene->m_RoadManager.m_Segments.size();
 		for (u64 rsIndex = 0; rsIndex < count; rsIndex++)
 		{
 			RoadSegment& rs = m_Scene->m_RoadManager.m_Segments[rsIndex];
-			f32 roadWidth = rs.type.road_width;
-			f32 roadLength = rs.type.road_length;
+			RoadType& type = app->road_types[rs.type];
+			f32 roadWidth = type.road_width;
+			f32 roadLength = type.road_length;
 			f32 snapDistance = roadWidth * 0.5f;
 
 			const std::array<v3, 4>& vs = rs.GetCurvePoints();
@@ -154,6 +156,7 @@ namespace Can
 				targeT,
 				m_Guideline->rotation
 			);
+			car->type = m_Type;
 			m_Cars.push_back(car);
 			segments[m_SnappedRoadSegment].Cars.push_back(car);
 			ResetStates();

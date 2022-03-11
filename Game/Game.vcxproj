@@ -19,26 +19,26 @@
     <IgnoreWarnCompileDuplicatedFilename>true</IgnoreWarnCompileDuplicatedFilename>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>Game</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.19041.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <CharacterSet>Unicode</CharacterSet>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <CharacterSet>Unicode</CharacterSet>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Dist|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <CharacterSet>Unicode</CharacterSet>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -145,11 +145,14 @@
     <ClInclude Include="src\Managers\RoadManager.h" />
     <ClInclude Include="src\Managers\TreeManager.h" />
     <ClInclude Include="src\Scenes\GameScene.h" />
+    <ClInclude Include="src\Scenes\Main_Menu\Main_Menu.h" />
+    <ClInclude Include="src\Scenes\Main_Menu\Main_Menu_UI.h" />
     <ClInclude Include="src\Types\Car.h" />
     <ClInclude Include="src\Types\Person.h" />
     <ClInclude Include="src\Types\RoadNode.h" />
     <ClInclude Include="src\Types\RoadSegment.h" />
     <ClInclude Include="src\Types\RoadType.h" />
+    <ClInclude Include="src\Types\Tree.h" />
     <ClInclude Include="src\UIScene.h" />
   </ItemGroup>
   <ItemGroup>
@@ -163,6 +166,8 @@
     <ClCompile Include="src\Managers\RoadManager.cpp" />
     <ClCompile Include="src\Managers\TreeManager.cpp" />
     <ClCompile Include="src\Scenes\GameScene.cpp" />
+    <ClCompile Include="src\Scenes\Main_Menu\Main_Menu.cpp" />
+    <ClCompile Include="src\Scenes\Main_Menu\Main_Menu_UI.cpp" />
     <ClCompile Include="src\Types\Car.cpp" />
     <ClCompile Include="src\Types\Person.cpp" />
     <ClCompile Include="src\Types\RoadNode.cpp" />
@@ -175,6 +180,9 @@
     </ProjectReference>
     <ProjectReference Include="..\Engine\Can\Can\Can.vcxproj">
       <Project>{D7DC870B-43E6-877C-CC61-9E7C386A937C}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\Engine\Can\Can\vendor\freetype\FreeType.vcxproj">
+      <Project>{49610F50-352E-6A5B-5E47-58034A739FE9}</Project>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

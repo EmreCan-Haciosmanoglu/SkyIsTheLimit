@@ -15,6 +15,7 @@ namespace Can
 
 	public:
 
+		u64 type = 0;
 		s64 connectedRoadSegment;
 		f32 snappedT = 0.0f;
 		u8 capacity = 0;

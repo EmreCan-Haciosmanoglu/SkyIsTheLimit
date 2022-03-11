@@ -6,13 +6,17 @@
 #include "Can/Math.h"
 
 #include "Types/RoadNode.h"
+#include "Types/Car.h"
+#include "Types/Tree.h"
+#include "Building.h"
 
 namespace Can
 {
 	GameScene* GameScene::ActiveGameScene = nullptr;
 
-	GameScene::GameScene(GameApp* application)
+	GameScene::GameScene(GameApp* application, std::string& save_name)
 		: MainApplication(application)
+		, save_name(save_name)
 		, m_Terrain(new Object(MainApplication->terrainPrefab))
 		, m_RoadManager(this)
 		, m_TreeManager(this)
@@ -31,6 +35,7 @@ namespace Can
 		m_Terrain->owns_prefab = true;
 		m_LightDirection = glm::normalize(m_LightDirection);
 		m_ShadowMapMasterRenderer = new ShadowMapMasterRenderer(&camera_controller);
+
 	}
 	GameScene::~GameScene()
 	{
@@ -43,7 +48,7 @@ namespace Can
 	void GameScene::OnDetach()
 	{
 	}
-	void GameScene::OnUpdate(TimeStep ts)
+	bool GameScene::OnUpdate(TimeStep ts)
 	{
 		camera_controller.on_update(ts);
 
@@ -100,12 +105,14 @@ namespace Can
 
 		Renderer3D::EndScene();
 		//m_Framebuffer->Unbind();
+
+		return false;
 	}
 	void GameScene::OnEvent(Event::Event& event)
 	{
 		camera_controller.on_event(event);
-		Can::Event::EventDispatcher dispatcher(event);
-		dispatcher.Dispatch<Can::Event::MouseButtonPressedEvent>(CAN_BIND_EVENT_FN(GameScene::OnMousePressed));
+		Event::EventDispatcher dispatcher(event);
+		dispatcher.Dispatch<Event::MouseButtonPressedEvent>(CAN_BIND_EVENT_FN(GameScene::OnMousePressed));
 	}
 	bool GameScene::OnMousePressed(Event::MouseButtonPressedEvent& event)
 	{
@@ -199,6 +206,248 @@ namespace Can
 		// More Stuff???
 		e_SpeedMode = mode;
 	}
+	void GameScene::load_the_game()
+	{
+		namespace fs = std::filesystem;
+		std::string s = fs::current_path().string();
+		std::string path = s.append("\\");
+		path.append(save_name).append(".csf");
+		FILE* read_file = fopen(path.c_str(), "rb");
+		if (read_file == NULL) return;
+
+		auto& road_types = MainApplication->road_types;
+		//RoadManager
+		fread(&m_RoadManager.snapFlags, sizeof(u8), 1, read_file);
+		fread(&m_RoadManager.restrictionFlags, sizeof(u8), 1, read_file);
+		auto& nodes = m_RoadManager.m_Nodes;
+		u64 node_count;
+		fread(&node_count, sizeof(u64), 1, read_file);
+		nodes.reserve(node_count);
+		for (u64 i = 0; i < node_count; i++)
+		{
+			nodes.push_back(RoadNode());
+			fread(&nodes[i].position, sizeof(f32), 3, read_file);
+			fread(&nodes[i].elevation_type, sizeof(s8), 1, read_file);
+			nodes[i].index = i;
+		}
+		auto& segments = m_RoadManager.m_Segments;
+		u64 segment_count;
+		fread(&segment_count, sizeof(u64), 1, read_file);
+		segments.reserve(segment_count);
+		for (u64 i = 0; i < segment_count; i++)
+		{
+			segments.push_back(RoadSegment());
+			auto& segment = segments[i];
+			fread(&segment.type, sizeof(u8), 1, read_file);
+			fread(&segment.StartNode, sizeof(u64), 1, read_file);
+			fread(&segment.EndNode, sizeof(u64), 1, read_file);
+			fread(&segment.CurvePoints, sizeof(f32), 3 * 4, read_file);
+			fread(&segment.elevation_type, sizeof(s8), 1, read_file);
+			segment.CalcRotsAndDirs();
+			nodes[segment.StartNode].roadSegments.push_back(i);
+			nodes[segment.EndNode].roadSegments.push_back(i);
+		}
+		for (u64 i = 0; i < node_count; i++)
+			nodes[i].Reconstruct();
+		///////////////////////////////////////////////////
+
+		//TreeManager
+		fread(m_TreeManager.restrictions.data(), sizeof(bool), 1, read_file);
+		auto& trees = m_TreeManager.m_Trees;
+		u64 tree_count;
+		fread(&tree_count, sizeof(u64), 1, read_file);
+		m_TreeManager.m_Trees.reserve(tree_count);
+		for (u64 i = 0; i < tree_count; i++)
+		{
+			u64 type;
+			v3 pos, rot, scale;
+			fread(&type, sizeof(u64), 1, read_file);
+			fread(&pos, sizeof(f32), 3, read_file);
+
+			// If we want it to be same all the time
+			fread(&rot, sizeof(f32), 3, read_file);
+			fread(&scale, sizeof(f32), 3, read_file);
+
+			Object* tree = new Object(MainApplication->trees[type], pos, rot, scale);
+			trees.push_back(new Tree{ type, tree });
+		}
+		///////////////////////////////////////////////////
+
+		//BuildingManager
+		fread(m_BuildingManager.snapOptions.data(), sizeof(bool), 2, read_file);
+		fread(m_BuildingManager.restrictions.data(), sizeof(bool), 2, read_file);
+		auto& buildings = m_BuildingManager.m_Buildings;
+		u64 building_count;
+		fread(&building_count, sizeof(u64), 1, read_file);
+		buildings.reserve(building_count);
+		for (u64 i = 0; i < building_count; i++)
+		{
+			u64 type;
+			s64 connected_road_segment;
+			f32 snapped_t;
+			v3 position, rotation;// calculate it from snapped_t?
+			fread(&type, sizeof(u64), 1, read_file);
+			fread(&connected_road_segment, sizeof(s64), 1, read_file);
+			fread(&snapped_t, sizeof(f32), 1, read_file);
+			fread(&position, sizeof(f32), 3, read_file);
+			fread(&rotation, sizeof(f32), 3, read_file);
+			Building* building = new Building(
+				MainApplication->buildings[type],
+				connected_road_segment,
+				snapped_t,
+				position,
+				rotation
+			);
+			building->type = type;
+			buildings.push_back(building);
+			segments[connected_road_segment].Buildings.push_back(building);
+		}
+		///////////////////////////////////////////////////
+
+		//CarManager
+		auto& cars = m_CarManager.m_Cars;
+		u64 car_count;
+		fread(&car_count, sizeof(u64), 1, read_file);
+		cars.reserve(car_count);
+		for (u64 i = 0; i < car_count; i++)
+		{
+			u64 type;
+			s64 road_segment;
+			u64 t_index;
+			f32 speed, t;
+			std::array<v3, 3> drift_points;
+			v3 position, target, rotation;
+			bool from_start, in_junction;
+			fread(&type, sizeof(u64), 1, read_file);
+			fread(&road_segment, sizeof(s64), 1, read_file);
+			fread(&t_index, sizeof(u64), 1, read_file);
+			fread(&speed, sizeof(f32), 1, read_file);
+			fread(&t, sizeof(f32), 1, read_file);
+			fread(&drift_points, sizeof(f32), 3 * 3, read_file);
+			fread(&position, sizeof(f32), 3, read_file);
+			fread(&target, sizeof(f32), 3, read_file);
+			fread(&rotation, sizeof(f32), 3, read_file);
+			fread(&from_start, sizeof(bool), 1, read_file);
+			fread(&in_junction, sizeof(bool), 1, read_file);
+			Car* car = new Car(
+				MainApplication->cars[type], 
+				road_segment, 
+				t_index, 
+				speed, 
+				position, 
+				target, 
+				rotation);
+			car->type = type;
+			car->t = t;
+			car->driftpoints = drift_points;
+			car->fromStart = from_start;
+			car->inJunction = in_junction;
+			cars.push_back(car);
+			segments[road_segment].Cars.push_back(car);
+		}
+		///////////////////////////////////////////////////
+
+		//Camera
+		auto& camera = camera_controller.camera;
+		v3 position, rotation;
+		fread(&position, sizeof(f32), 3, read_file);
+		fread(&rotation, sizeof(f32), 3, read_file);
+		camera.set_position(position);
+		camera.set_rotation(rotation);
+		///////////////////////////////////////////////////
+
+
+		fclose(read_file);
+	}
+	void GameScene::save_the_game()
+	{
+		FILE* save_file = fopen(std::string(save_name).append(".csf").c_str(), "wb");
+
+		//RoadManager
+		fwrite(&m_RoadManager.snapFlags, sizeof(u8), 1, save_file);
+		fwrite(&m_RoadManager.restrictionFlags, sizeof(u8), 1, save_file);
+		auto& nodes = m_RoadManager.m_Nodes;
+		u64 node_count = nodes.size();
+		fwrite(&node_count, sizeof(u64), 1, save_file);
+		for (u64 i = 0; i < node_count; i++)
+		{
+			fwrite(&nodes[i].position, sizeof(f32), 3, save_file);
+			fwrite(&nodes[i].elevation_type, sizeof(s8), 1, save_file);
+		}
+		auto& segments = m_RoadManager.m_Segments;
+		u64 segment_count = segments.size();
+		fwrite(&segment_count, sizeof(u64), 1, save_file);
+		for (u64 i = 0; i < segment_count; i++)
+		{
+			fwrite(&segments[i].type, sizeof(u8), 1, save_file);
+			// an array of indices to  building objects
+			// an array of indices to  Car objects
+			fwrite(&segments[i].StartNode, sizeof(u64), 1, save_file);
+			fwrite(&segments[i].EndNode, sizeof(u64), 1, save_file);
+			fwrite(&segments[i].CurvePoints, sizeof(f32), 3 * 4, save_file);
+			fwrite(&segments[i].elevation_type, sizeof(s8), 1, save_file);
+		}
+		///////////////////////////////////////////////////
+
+		//TreeManager
+		fwrite(m_TreeManager.restrictions.data(), sizeof(bool), 1, save_file);
+		auto& trees = m_TreeManager.m_Trees;
+		u64 tree_count = trees.size();
+		fwrite(&tree_count, sizeof(u64), 1, save_file);
+		for (u64 i = 0; i < tree_count; i++)
+		{
+			fwrite(&trees[i]->type, sizeof(u64), 1, save_file);
+			fwrite(&trees[i]->object->position, sizeof(f32), 3, save_file);
+			fwrite(&trees[i]->object->rotation, sizeof(f32), 3, save_file);
+			fwrite(&trees[i]->object->scale, sizeof(f32), 3, save_file);
+		}
+		///////////////////////////////////////////////////
+
+		//BuildingManager
+		fwrite(m_BuildingManager.snapOptions.data(), sizeof(bool), 2, save_file);
+		fwrite(m_BuildingManager.restrictions.data(), sizeof(bool), 2, save_file);
+		auto& buildings = m_BuildingManager.m_Buildings;
+		u64 building_count = buildings.size();
+		fwrite(&building_count, sizeof(u64), 1, save_file);
+		for (u64 i = 0; i < building_count; i++)
+		{
+			fwrite(&buildings[i]->type, sizeof(u64), 1, save_file);
+			fwrite(&buildings[i]->connectedRoadSegment, sizeof(s64), 1, save_file);
+			fwrite(&buildings[i]->snappedT, sizeof(f32), 1, save_file);
+			fwrite(&buildings[i]->object->position, sizeof(f32), 3, save_file);
+			fwrite(&buildings[i]->object->rotation, sizeof(f32), 3, save_file);
+		}
+		///////////////////////////////////////////////////
+
+		//CarManager
+		auto& cars = m_CarManager.m_Cars;
+		u64 car_count = cars.size();
+		fwrite(&car_count, sizeof(u64), 1, save_file);
+		for (u64 i = 0; i < car_count; i++)
+		{
+			fwrite(&cars[i]->type, sizeof(u64), 1, save_file);
+			fwrite(&cars[i]->roadSegment, sizeof(s64), 1, save_file);
+			fwrite(&cars[i]->t_index, sizeof(u64), 1, save_file);
+			fwrite(&cars[i]->speed, sizeof(f32), 1, save_file);
+			fwrite(&cars[i]->t, sizeof(f32), 1, save_file);
+			fwrite(cars[i]->driftpoints.data(), sizeof(f32), 3 * 3, save_file);
+			fwrite(&cars[i]->position, sizeof(f32), 3, save_file);
+			fwrite(&cars[i]->target, sizeof(f32), 3, save_file);
+			fwrite(&cars[i]->object->rotation, sizeof(f32), 3, save_file);
+			fwrite(&cars[i]->fromStart, sizeof(bool), 1, save_file);
+			fwrite(&cars[i]->inJunction, sizeof(bool), 1, save_file);
+		}
+		///////////////////////////////////////////////////
+
+		//Camera
+		auto& camera = camera_controller.camera;
+		fwrite(&camera.position, sizeof(f32), 3, save_file);
+		fwrite(&camera.rotation, sizeof(f32), 3, save_file);
+		///////////////////////////////////////////////////
+
+		fclose(save_file);
+		printf("Game is saved.\n");
+	}
 	v3 GameScene::GetRayCastedFromScreen()
 	{
 		auto [mouseX, mouseY] = Can::Input::get_mouse_pos_float();
@@ -230,6 +479,7 @@ namespace Can
 	}
 	void GameScene::MoveMe2AnotherFile(float ts)
 	{
+		auto& road_types = MainApplication->road_types;
 		auto& cars = m_CarManager.GetCars();
 		for (Car* car : cars)
 		{
@@ -275,7 +525,8 @@ namespace Can
 					car->position = car->target;
 					car->object->SetTransform(car->position);
 					std::vector<float> ts{ 0 };
-					float lengthRoad = road.type.road_length;
+
+					float lengthRoad = road_types[road.type].road_length;
 					std::vector<v3> samples = Math::GetCubicCurveSamples(road.GetCurvePoints(), lengthRoad, ts);
 
 					if ((samples.size() - 2 == car->t_index && car->fromStart) || (1 == car->t_index && !car->fromStart))
@@ -302,7 +553,7 @@ namespace Can
 
 							m_RoadManager.m_Segments[car->roadSegment].Cars.push_back(car);
 							std::vector<float> ts2{ 0 };
-							float lengthRoad2 = m_RoadManager.m_Segments[car->roadSegment].type.road_length;
+							float lengthRoad2 = road_types[m_RoadManager.m_Segments[car->roadSegment].type].road_length;
 							std::vector<v3> samples2 = Math::GetCubicCurveSamples(m_RoadManager.m_Segments[car->roadSegment].GetCurvePoints(), lengthRoad2, ts2);
 
 							if (nodeIndex == m_RoadManager.m_Segments[car->roadSegment].StartNode)

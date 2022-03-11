@@ -33,14 +33,14 @@ namespace Can
 	class GameScene : public Layer::Layer
 	{
 	public:
-		GameScene(GameApp* application);
+		GameScene(GameApp* application, std::string& save_name);
 		virtual ~GameScene();
 
 		virtual void OnAttach() override;
 		virtual void OnDetach() override;
 		virtual void OnImGuiRender() override {}
 
-		virtual void OnUpdate(TimeStep ts) override;
+		virtual bool OnUpdate(TimeStep ts) override;
 		virtual void OnEvent(Event::Event& event) override;
 
 		bool OnMousePressed(Event::MouseButtonPressedEvent& event);
@@ -51,12 +51,16 @@ namespace Can
 		void SetSpeedMode(SpeedMode mode);
 		const SpeedMode& GetSpeedMode() const { return e_SpeedMode; }
 
+		void save_the_game();
+		void load_the_game();
+
 	private:
 		glm::vec3 GetRayCastedFromScreen();
 		void MoveMe2AnotherFile(float ts);
 
 	public:
 		GameApp* MainApplication = nullptr;
+		std::string save_name;
 		static GameScene* ActiveGameScene;
 		Object* m_Terrain = nullptr;
 

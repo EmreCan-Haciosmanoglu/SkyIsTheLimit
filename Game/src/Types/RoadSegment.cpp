@@ -8,10 +8,11 @@
 #include "Helper.h"
 
 #include "Scenes/GameScene.h"
+#include "GameApp.h"
 
 namespace Can
 {
-	RoadSegment::RoadSegment(const RoadType& type, const std::array<v3, 4>& curvePoints, s8 elevation_type)
+	RoadSegment::RoadSegment(u64 type, const std::array<v3, 4>& curvePoints, s8 elevation_type)
 		: CurvePoints(curvePoints)
 		, elevation_type(elevation_type)
 	{
@@ -81,8 +82,10 @@ namespace Can
 
 	void RoadSegment::Construct()
 	{
-		f32 w = elevation_type == -1 ? type.tunnel_width : (elevation_type == 0 ? type.road_width : 1.0f);
-		f32 l = elevation_type == -1 ? type.tunnel_length : (elevation_type == 0 ? type.road_length : 1.0f);
+		GameApp* app = GameScene::ActiveGameScene->MainApplication;
+		RoadType& rtype = app->road_types[type];
+		f32 w = elevation_type == -1 ? rtype.tunnel_width : (elevation_type == 0 ? rtype.road_width : 1.0f);
+		f32 l = elevation_type == -1 ? rtype.tunnel_length : (elevation_type == 0 ? rtype.road_length : 1.0f);
 
 		bounding_rect = Math::GetBoundingBoxOfBezierCurve(CurvePoints, w * 0.5f);
 		curve_t_samples.clear();
@@ -91,7 +94,7 @@ namespace Can
 		bounding_polygon.clear();
 		u64 count = curve_t_samples.size();
 
-		u64 prefabIndexCount = elevation_type == -1 ? type.tunnel->indexCount : elevation_type == 0 ? type.road->indexCount : 0;
+		u64 prefabIndexCount = elevation_type == -1 ? rtype.tunnel->indexCount : elevation_type == 0 ? rtype.road->indexCount : 0;
 		u64 indexCount = prefabIndexCount * (count - 1);
 		u64 vertexCount = indexCount * (3 + 2 + 3);
 		TexturedObjectVertex* TOVertices = new TexturedObjectVertex[indexCount];
@@ -108,8 +111,8 @@ namespace Can
 		f32 pitchTemp = glm::acos(dirrTemp.x) * ((float)(dirrTemp.y > 0.0f) * 2.0f - 1.0f);
 
 		TexturedObjectVertex* PrefabTOVertices =
-			elevation_type == -1 ? (TexturedObjectVertex*)(type.tunnel->vertices) :
-			elevation_type == 0 ? (TexturedObjectVertex*)(type.road->vertices) : nullptr;
+			elevation_type == -1 ? (TexturedObjectVertex*)(rtype.tunnel->vertices) :
+			elevation_type == 0 ? (TexturedObjectVertex*)(rtype.road->vertices) : nullptr;
 
 		for (int c = 1; c < count; c++)
 		{
@@ -195,9 +198,9 @@ namespace Can
 
 		Prefab* newPrefab = nullptr;
 		if (elevation_type == -1)
-			newPrefab = new Prefab(type.tunnel->objectPath, type.tunnel->shaderPath, type.tunnel->texturePath, (f32*)TOVertices, indexCount);
+			newPrefab = new Prefab(rtype.tunnel->objectPath, rtype.tunnel->shaderPath, rtype.tunnel->texturePath, (f32*)TOVertices, indexCount);
 		else if (elevation_type == 0)
-			newPrefab = new Prefab(type.road->objectPath, type.road->shaderPath, type.road->texturePath, (f32*)TOVertices, indexCount);
+			newPrefab = new Prefab(rtype.road->objectPath, rtype.road->shaderPath, rtype.road->texturePath, (f32*)TOVertices, indexCount);
 
 		for (int c = 0; c < count - 1; c++)
 		{
