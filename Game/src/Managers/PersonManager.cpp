@@ -6,6 +6,8 @@
 #include "Building.h"
 #include "Can/Math.h"
 
+#include "GameApp.h"
+
 namespace Can
 {
 	PersonManager::PersonManager(GameScene* scene)
@@ -19,6 +21,7 @@ namespace Can
 
 	void PersonManager::Update(TimeStep ts)
 	{
+		GameApp* app = m_Scene->MainApplication;
 		auto& segments = m_Scene->m_RoadManager.m_Segments;
 		auto& nodes = m_Scene->m_RoadManager.m_Nodes;
 		for (size_t i = 0; i < m_People.size(); i++)
@@ -105,8 +108,8 @@ namespace Can
 					{
 						p->position = p->target;
 						p->object->SetTransform(p->position);
-						
-						float lengthRoad = road.type.road_length;
+						RoadType& type = app->road_types[road.type];
+						float lengthRoad = type.road_length;
 						std::vector<v3>& samples = road.curve_samples;
 
 						if ((samples.size() - 2 == p->t_index && p->from_start) || (1 == p->t_index && !p->from_start))
