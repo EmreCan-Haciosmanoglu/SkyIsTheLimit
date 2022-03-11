@@ -3,6 +3,7 @@
 
 #include "Types/RoadSegment.h"
 #include "Types/Tree.h"
+#include "Types/Person.h"
 #include "Building.h"
 
 #include "GameApp.h"
@@ -333,6 +334,45 @@ namespace Can
 			if (m_SnappedRoadSegment != (u64)-1)
 				segments[m_SnappedRoadSegment].Buildings.push_back(newBuilding);
 			m_Buildings.push_back(newBuilding);
+			
+			bool ishome = Utility::Random::Float(1.0f)>0.5f;
+			if (ishome)
+			{
+				m_HomeBuildings.push_back(newBuilding);
+				u8 domicilled = Utility::Random::Integer(3, 15);
+				newBuilding->capacity = domicilled;
+				auto& manager = m_Scene->m_PersonManager;
+				for (u64 i = 0; i < domicilled; i++)
+				{
+					Prefab* treeman = (m_Scene->MainApplication->trees[0]);
+					Person* p = new Person(treeman, 1);
+					p->home = newBuilding;
+					p->status = PersonStatus::AtHome;
+					p->time_left = Utility::Random::Float(1.0f,5.0f);
+					newBuilding->residents.push_back(p);
+
+					manager.m_People.push_back(p);
+					Building* work = getAvailableWorkBuilding();
+					p->work = work;
+				}
+			}
+			else
+			{
+				m_WorkBuildings.push_back(newBuilding);
+				u8 worker = Utility::Random::Integer(3, 5);
+				newBuilding->capacity = worker;
+				auto& manager = m_Scene->m_PersonManager;
+				for (u64 i = 0; i < worker; i++)
+				{
+
+					Person* p = manager.get_worklessPerson();
+					if (p)
+					{
+						p->work = newBuilding;
+					}
+				}
+
+			}
 			ResetStates();
 			m_Guideline->enabled = true;
 
@@ -429,5 +469,16 @@ namespace Can
 
 		m_Guideline->enabled = false;
 		m_Guideline->tintColor = v4(1.0f);
+	}
+	Building* BuildingManager::getAvailableWorkBuilding()
+	{
+		for(Building* b : m_WorkBuildings)
+		{
+			if (b->capacity > b->residents.size())
+			{
+				return b;
+			}
+		}
+		return nullptr;
 	}
 }

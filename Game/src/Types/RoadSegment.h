@@ -9,6 +9,7 @@ namespace Can
 	class Car;
 	class Object;
 	class Building;
+	class Person;
 	class RoadNode;
 
 	class RoadSegment
@@ -55,6 +56,7 @@ namespace Can
 		u64 type = 0;
 		std::vector<Building*> Buildings = {};
 		std::vector<Car*> Cars = {};
+		std::vector<Person*> peoples = {};
 
 		u64 StartNode = (u64)-1;
 		u64 EndNode = (u64)-1;

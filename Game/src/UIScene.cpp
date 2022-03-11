@@ -12,6 +12,7 @@ namespace Can
 		, m_Scene(new Scene())
 	{
 		init_orthographic_camera_controller(m_CameraController, m_AspectRatio, m_ZoomLevel, false);
+
 		float width = m_AspectRatio * m_ZoomLevel * 2.0f;
 		float height = m_ZoomLevel * 2.0f;
 		Application& app = Application::Get();

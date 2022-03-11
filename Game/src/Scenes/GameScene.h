@@ -5,6 +5,7 @@
 
 #include "Managers/RoadManager.h"
 #include "Managers/TreeManager.h"
+#include "Managers/PersonManager.h"
 #include "Managers/BuildingManager.h"
 #include "Managers/CarManager.h"
 
@@ -67,6 +68,7 @@ namespace Can
 		TreeManager m_TreeManager;
 		BuildingManager m_BuildingManager;
 		CarManager m_CarManager;
+		PersonManager m_PersonManager;
 
 		ConstructionMode e_ConstructionMode = ConstructionMode::None;
 

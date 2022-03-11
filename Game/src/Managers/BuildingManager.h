@@ -42,6 +42,7 @@ namespace Can
 		inline std::vector<Building*>& GetBuildings() { return m_Buildings; }
 
 		void ResetStates();
+		Building* getAvailableWorkBuilding();
 	public:
 
 		std::array<bool, 2> snapOptions { true, true };
@@ -59,6 +60,8 @@ namespace Can
 		size_t m_Type = 0;
 
 		std::vector<Building*> m_Buildings;
+		std::vector<Building*> m_HomeBuildings;
+		std::vector<Building*> m_WorkBuildings;
 
 		v3 m_GuidelinePosition = v3(0.0f);
 		v3 m_GuidelineRotation = v3(0.0f);

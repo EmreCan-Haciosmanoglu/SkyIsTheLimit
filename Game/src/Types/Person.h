@@ -1,0 +1,46 @@
+#pragma once
+#include "Can.h"
+
+
+namespace Can
+{
+	enum class PersonStatus
+	{
+		AtHome,
+		AtWork,
+		WalkingDead,
+		Walking,
+		Driving
+	};
+	
+	class Building;
+	class Car;
+	class Person
+	{
+	public:
+		Person(Prefab* type, f32 speed);
+		~Person() { delete object; }
+
+		// Simulation
+		s64 road_segment = -1;
+		u64 t_index = 0;
+		f32 speed = 10.0f;
+		f32 t = 0;
+		std::array<v3, 3> drift_points;
+		v3 position;
+		v3 target;
+		bool from_start = false;
+		bool in_junction = false;
+		PersonStatus status = PersonStatus::AtHome;
+		f32 time_left = 0.0f;
+		// 
+		Object* object;
+		std::string firstName = "Adam";
+		std::string midName = "Madam";
+		std::string surName = "Tadaam";
+		Building* home = nullptr;
+		Building* work = nullptr;
+		Car* iCar = nullptr;
+
+	};
+}

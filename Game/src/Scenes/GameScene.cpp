@@ -21,6 +21,7 @@ namespace Can
 		, m_RoadManager(this)
 		, m_TreeManager(this)
 		, m_BuildingManager(this)
+		, m_PersonManager(this)
 		, m_CarManager(this)
 		, camera_controller(
 			45.0f,
@@ -85,9 +86,12 @@ namespace Can
 			}
 		}
 
+		
 		for (uint8_t i = 0; i < (uint8_t)e_SpeedMode; i++)
+		{
 			MoveMe2AnotherFile(ts);
-
+			m_PersonManager.Update(ts);
+		}
 
 		Renderer3D::BeginScene(camera_controller.camera);
 		m_ShadowMapMasterRenderer->Render(m_LightDirection);
