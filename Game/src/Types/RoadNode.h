@@ -7,6 +7,7 @@ namespace Can
 	class RoadNode
 	{
 	public:
+		RoadNode(){}
 		RoadNode(const std::vector<u64>& roadSegments, const v3& position, u8 elevation_type);
 		RoadNode(RoadNode&& other);
 		~RoadNode();

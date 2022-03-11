@@ -21,9 +21,9 @@ namespace Can
 		ButtonConstructorParameters buttonPauseParams = ButtonConstructorParameters{
 			m_Scene->m_Registry,
 			m_Scene->entityID,
-			glm::vec3{width - 4.0f, 0.5f, 0.2f},
-			glm::vec2(0.8f),
-			glm::vec4(1.0f),
+			v3{width - 4.0f, 0.5f, 0.2f},
+			v2(0.8f),
+			v4(1.0f),
 			m_Parent->pauseTexture,
 			[this]() {
 				entt::registry& mainRegistry = m_Scene->m_Registry;
@@ -37,15 +37,15 @@ namespace Can
 			},
 			0.1f,
 			false,
-			glm::vec4{ 255.0f / 255.0f, 166.0f / 255.0f, 158.0f / 255.0f, 1.0f },
+			v4{ 255.0f / 255.0f, 166.0f / 255.0f, 158.0f / 255.0f, 1.0f },
 		};
 		m_ButtonPause = new Button(buttonPauseParams);
 		ButtonConstructorParameters buttonNormalParams = ButtonConstructorParameters{
 			m_Scene->m_Registry,
 			m_Scene->entityID,
-			glm::vec3{width - 3.0f, 0.5f, 0.2f},
-			glm::vec2(0.8f),
-			glm::vec4(1.0f),
+			v3{width - 3.0f, 0.5f, 0.2f},
+			v2(0.8f),
+			v4(1.0f),
 			m_Parent->normalSpeedTexture,
 			[this]() {
 				entt::registry& mainRegistry = m_Scene->m_Registry;
@@ -59,15 +59,15 @@ namespace Can
 			},
 			0.1f,
 			true,
-			glm::vec4{ 255.0f / 255.0f, 166.0f / 255.0f, 158.0f / 255.0f, 1.0f },
+			v4{ 255.0f / 255.0f, 166.0f / 255.0f, 158.0f / 255.0f, 1.0f },
 		};
 		m_ButtonNormal = new Button(buttonNormalParams);
 		ButtonConstructorParameters button2TimesParams = ButtonConstructorParameters{
 			m_Scene->m_Registry,
 			m_Scene->entityID,
-			glm::vec3{width - 2.0f, 0.5f, 0.2f},
-			glm::vec2(0.8f),
-			glm::vec4(1.0f),
+			v3{width - 2.0f, 0.5f, 0.2f},
+			v2(0.8f),
+			v4(1.0f),
 			m_Parent->twoTimesSpeedTexture,
 			[this]() {
 				entt::registry& mainRegistry = m_Scene->m_Registry;
@@ -81,15 +81,15 @@ namespace Can
 			},
 			0.1f,
 			false,
-			glm::vec4{ 255.0f / 255.0f, 166.0f / 255.0f, 158.0f / 255.0f, 1.0f },
+			v4{ 255.0f / 255.0f, 166.0f / 255.0f, 158.0f / 255.0f, 1.0f },
 		};
 		m_Button2Times = new Button(button2TimesParams);
 		ButtonConstructorParameters button4TimesParams = ButtonConstructorParameters{
 			m_Scene->m_Registry,
 			m_Scene->entityID,
-			glm::vec3{width - 1.0f, 0.5f, 0.2f},
-			glm::vec2(0.8f),
-			glm::vec4(1.0f),
+			v3{width - 1.0f, 0.5f, 0.2f},
+			v2(0.8f),
+			v4(1.0f),
 			m_Parent->fourTimesSpeedTexture,
 			[this]() {
 				entt::registry& mainRegistry = m_Scene->m_Registry;
@@ -103,16 +103,33 @@ namespace Can
 			},
 			0.1f,
 			false,
-			glm::vec4{ 255.0f / 255.0f, 166.0f / 255.0f, 158.0f / 255.0f, 1.0f },
+			v4{ 255.0f / 255.0f, 166.0f / 255.0f, 158.0f / 255.0f, 1.0f },
 		};
 		m_Button4Times = new Button(button4TimesParams);
+		ButtonConstructorParameters buttonSaveParams = ButtonConstructorParameters{
+			m_Scene->m_Registry,
+			m_Scene->entityID,
+			v3{width - 5.0f, 0.5f,0.2f },
+			v2(0.8f),
+			v4(1.0f),
+			m_Parent->saveTexture,
+			[this]() {
+				GameScene* gameScene = m_Parent->gameScene;
+
+				gameScene->save_the_game();
+			},
+			0.1f,
+			false,
+			v4{ 255.0f / 255.0f, 166.0f / 255.0f, 158.0f / 255.0f, 1.0f },
+		};
+		m_ButtonSave = new Button(buttonSaveParams);
 
 		ButtonConstructorParameters buttonRoadsParams = ButtonConstructorParameters{
 			m_Scene->m_Registry,
 			m_Scene->entityID,
-			glm::vec3{ 1.0f, height - 6.5f, 0.0011f },
-			glm::vec2{ 3.0f, 1.0f},
-			glm::vec4{ 221.0f / 255.0f, 255.0f / 255.0f, 247.0f / 255.0f, 1.0f },
+			v3{ 1.0f, height - 6.5f, 0.0011f },
+			v2{ 3.0f, 1.0f},
+			v4{ 221.0f / 255.0f, 255.0f / 255.0f, 247.0f / 255.0f, 1.0f },
 			nullptr,
 			[this, height]() {
 				if (!Input::IsMouseButtonPressed(MouseCode::Button0))
@@ -139,7 +156,7 @@ namespace Can
 					TransformComponent& transformT = mainRegistry.get<TransformComponent>(buttonTreesID);
 					TransformComponent& transformC = mainRegistry.get<TransformComponent>(buttonCarsID);
 
-					glm::vec3 movement = { 0.0f, 5.2f, 0.0f };
+					v3 movement = { 0.0f, 5.2f, 0.0f };
 
 					if (mainRegistry.has<HiddenComponent>(panelRoadsID))
 					{
@@ -173,9 +190,9 @@ namespace Can
 		ButtonConstructorParameters buttonBuildingsParams = ButtonConstructorParameters{
 			m_Scene->m_Registry,
 			m_Scene->entityID,
-			glm::vec3{ 5.0f, height - 6.5f, 0.0011f },
-			glm::vec2{ 3.0f, 1.0f },
-			glm::vec4{ 255.0f / 255.0f, 166.0f / 255.0f, 158.0f / 255.0f, 1.0f },
+			v3{ 5.0f, height - 6.5f, 0.0011f },
+			v2{ 3.0f, 1.0f },
+			v4{ 255.0f / 255.0f, 166.0f / 255.0f, 158.0f / 255.0f, 1.0f },
 			nullptr,
 			[this, height]() {
 				if (!Input::IsMouseButtonPressed(MouseCode::Button0))
@@ -204,7 +221,7 @@ namespace Can
 					TransformComponent& transformT = mainRegistry.get<TransformComponent>(buttonTreesID);
 					TransformComponent& transformC = mainRegistry.get<TransformComponent>(buttonCarsID);
 
-					glm::vec3 movement = { 0.0f, 5.2f, 0.0f };
+					v3 movement = { 0.0f, 5.2f, 0.0f };
 
 					if (mainRegistry.has<HiddenComponent>(panelBuildingsID))
 					{
@@ -237,9 +254,9 @@ namespace Can
 		ButtonConstructorParameters buttonTreesParams = ButtonConstructorParameters{
 			m_Scene->m_Registry,
 			m_Scene->entityID,
-			glm::vec3{ 9.0f, height - 6.5f, 0.0011f },
-			glm::vec2{ 3.0f, 1.0f },
-			glm::vec4{ 69.0f / 255.0f, 123.0f / 255.0f, 157.0f / 255.0f, 1.0f },
+			v3{ 9.0f, height - 6.5f, 0.0011f },
+			v2{ 3.0f, 1.0f },
+			v4{ 69.0f / 255.0f, 123.0f / 255.0f, 157.0f / 255.0f, 1.0f },
 			nullptr,
 			[this, height]() {
 				if (!Input::IsMouseButtonPressed(MouseCode::Button0))
@@ -266,7 +283,7 @@ namespace Can
 					TransformComponent& transformT = mainRegistry.get<TransformComponent>(buttonTreesID);
 					TransformComponent& transformC = mainRegistry.get<TransformComponent>(buttonCarsID);
 
-					glm::vec3 movement = { 0.0f, 5.2f, 0.0f };
+					v3 movement = { 0.0f, 5.2f, 0.0f };
 
 					if (mainRegistry.has<HiddenComponent>(panelTreesID))
 					{
@@ -299,9 +316,9 @@ namespace Can
 		ButtonConstructorParameters buttonCarsParams = ButtonConstructorParameters{
 			m_Scene->m_Registry,
 			m_Scene->entityID,
-			glm::vec3{ 13.0f, height - 6.5f, 0.0011f },
-			glm::vec2{ 3.0f, 1.0f },
-			glm::vec4{ 15.0f / 255.0f, 231.0f / 255.0f, 177.0f / 255.0f, 1.0f },
+			v3{ 13.0f, height - 6.5f, 0.0011f },
+			v2{ 3.0f, 1.0f },
+			v4{ 15.0f / 255.0f, 231.0f / 255.0f, 177.0f / 255.0f, 1.0f },
 			nullptr,
 			[this, height]() {
 				if (!Input::IsMouseButtonPressed(MouseCode::Button0))
@@ -329,7 +346,7 @@ namespace Can
 					TransformComponent& transformT = mainRegistry.get<TransformComponent>(buttonTreesID);
 					TransformComponent& transformC = mainRegistry.get<TransformComponent>(buttonCarsID);
 
-					glm::vec3 movement = { 0.0f, 5.2f, 0.0f };
+					v3 movement = { 0.0f, 5.2f, 0.0f };
 
 					if (mainRegistry.has<HiddenComponent>(panelCarsID))
 					{
@@ -363,9 +380,9 @@ namespace Can
 		ButtonConstructorParameters buttonNeedsParams = ButtonConstructorParameters{
 			m_Scene->m_Registry,
 			m_Scene->entityID,
-			glm::vec3{ 0.75f, 0.5f, 0.0011f },
-			glm::vec2{ 1.0f, 1.0f },
-			glm::vec4{ 170.0f / 255.0f, 68.0f / 255.0f, 101.0f / 255.0f, 1.0f },
+			v3{ 0.75f, 0.5f, 0.0011f },
+			v2{ 1.0f, 1.0f },
+			v4{ 170.0f / 255.0f, 68.0f / 255.0f, 101.0f / 255.0f, 1.0f },
 			nullptr,
 			[this]() {
 				if (!Input::IsMouseButtonPressed(MouseCode::Button0))
@@ -391,9 +408,9 @@ namespace Can
 		ButtonConstructorParameters buttonToolsParams = ButtonConstructorParameters{
 			m_Scene->m_Registry,
 			m_Scene->entityID,
-			glm::vec3{ 2.0f, 0.5f, 0.0011f },
-			glm::vec2{ 1.0f, 1.0f },
-			glm::vec4{ 147.0f / 255.0f, 225.0f / 255.0f, 216.0f / 255.0f, 1.0f },
+			v3{ 2.0f, 0.5f, 0.0011f },
+			v2{ 1.0f, 1.0f },
+			v4{ 147.0f / 255.0f, 225.0f / 255.0f, 216.0f / 255.0f, 1.0f },
 			nullptr,
 			[this]() {
 				if (!Input::IsMouseButtonPressed(MouseCode::Button0))
@@ -422,6 +439,7 @@ namespace Can
 			m_ButtonNormal->entityID,
 			m_Button2Times->entityID,
 			m_Button4Times->entityID,
+			m_ButtonSave->entityID,
 			m_ButtonRoads->entityID,
 			m_ButtonBuildings->entityID,
 			m_ButtonTrees->entityID,
@@ -434,9 +452,9 @@ namespace Can
 		PanelConstructorParameters panelRoadsParams = PanelConstructorParameters{
 			m_Scene->m_Registry,
 			m_ButtonRoads->entityID,
-			glm::vec3{ 0.5f, height - 5.4f, 0.001f },
-			glm::vec2{ width - 1.0f, 5.2f },
-			glm::vec4{ 221.0f / 255.0f, 255.0f / 255.0f, 247.0f / 255.0f, 1.0f },
+			v3{ 0.5f, height - 5.4f, 0.001f },
+			v2{ width - 1.0f, 5.2f },
+			v4{ 221.0f / 255.0f, 255.0f / 255.0f, 247.0f / 255.0f, 1.0f },
 			nullptr,
 			[]() {std::cout << "You clicked the panel that is for Roads!" << std::endl; },
 			0.1f
@@ -447,9 +465,9 @@ namespace Can
 		PanelConstructorParameters panelBuildingsParams = PanelConstructorParameters{
 					m_Scene->m_Registry,
 					m_ButtonBuildings->entityID,
-					glm::vec3{ 0.5f, height - 5.4f, 0.001f },
-					glm::vec2{ width - 1.0f, 5.2f },
-					glm::vec4{ 255.0f / 255.0f, 166.0f / 255.0f, 158.0f / 255.0f, 1.0f },
+					v3{ 0.5f, height - 5.4f, 0.001f },
+					v2{ width - 1.0f, 5.2f },
+					v4{ 255.0f / 255.0f, 166.0f / 255.0f, 158.0f / 255.0f, 1.0f },
 					nullptr,
 					[]() {std::cout << "You clicked the panel that is for Buildings!" << std::endl; },
 					0.1f
@@ -460,9 +478,9 @@ namespace Can
 		PanelConstructorParameters panelTreesParams = PanelConstructorParameters{
 					m_Scene->m_Registry,
 					m_ButtonTrees->entityID,
-					glm::vec3{ 0.5f, height - 5.4f, 0.001f },
-					glm::vec2{ width - 1.0f, 5.2f },
-					glm::vec4{ 69.0f / 255.0f, 123.0f / 255.0f, 157.0f / 255.0f, 1.0f },
+					v3{ 0.5f, height - 5.4f, 0.001f },
+					v2{ width - 1.0f, 5.2f },
+					v4{ 69.0f / 255.0f, 123.0f / 255.0f, 157.0f / 255.0f, 1.0f },
 					nullptr,
 					[]() {std::cout << "You clicked the panel that is for Trees!" << std::endl; },
 					0.1f
@@ -473,9 +491,9 @@ namespace Can
 		PanelConstructorParameters panelCarsParams = PanelConstructorParameters{
 					m_Scene->m_Registry,
 					m_ButtonCars->entityID,
-					glm::vec3{ 0.5f, height - 5.4f, 0.001f },
-					glm::vec2{ width - 1.0f, 5.2f },
-					glm::vec4{ 15.0f / 255.0f, 231.0f / 255.0f, 177.0f / 255.0f, 1.0f },
+					v3{ 0.5f, height - 5.4f, 0.001f },
+					v2{ width - 1.0f, 5.2f },
+					v4{ 15.0f / 255.0f, 231.0f / 255.0f, 177.0f / 255.0f, 1.0f },
 					nullptr,
 					[]() {std::cout << "You clicked the panel that is for Cars!" << std::endl; },
 					0.1f
@@ -486,9 +504,9 @@ namespace Can
 		PanelConstructorParameters panelNeedsParams = PanelConstructorParameters{
 					m_Scene->m_Registry,
 					m_ButtonTools->entityID,
-					glm::vec3{ 0.5f, 1.75f, 0.001f },
-					glm::vec2{ 2.75f, 9.0f },
-					glm::vec4{ 170.0f / 255.0f, 68.0f / 255.0f, 101.0f / 255.0f, 1.0f },
+					v3{ 0.5f, 1.75f, 0.001f },
+					v2{ 2.75f, 9.0f },
+					v4{ 170.0f / 255.0f, 68.0f / 255.0f, 101.0f / 255.0f, 1.0f },
 					nullptr,
 					[]() {std::cout << "You clicked the panel that is for Needs!" << std::endl; },
 					0.1f
@@ -499,9 +517,9 @@ namespace Can
 		PanelConstructorParameters panelToolsParams = PanelConstructorParameters{
 					m_Scene->m_Registry,
 					m_ButtonTools->entityID,
-					glm::vec3{ 0.5f, 1.75f, 0.001f },
-					glm::vec2{ 2.75f, 9.0f },
-					glm::vec4{ 147.0f / 255.0f, 225.0f / 255.0f, 216.0f / 255.0f, 1.0f },
+					v3{ 0.5f, 1.75f, 0.001f },
+					v2{ 2.75f, 9.0f },
+					v4{ 147.0f / 255.0f, 225.0f / 255.0f, 216.0f / 255.0f, 1.0f },
 					nullptr,
 					[]() {std::cout << "You clicked the panel that is for Tools!" << std::endl; },
 					0.1f
@@ -513,19 +531,19 @@ namespace Can
 		ScrollViewConstructorParameters scrollViewRoadsParams = ScrollViewConstructorParameters{
 				m_Scene->m_Registry,
 				m_PanelRoads->entityID,
-				glm::vec3{ width * 0.25f - 0.6f, height - 5.3f, 0.01f },
-				glm::vec2{ width * 0.75f, 5.0f},
-				glm::vec4{ 201.0f / 255.0f, 235.0f / 255.0f, 227.0f / 255.0f, 1.0f },
+				v3{ width * 0.25f - 0.6f, height - 5.3f, 0.01f },
+				v2{ width * 0.75f, 5.0f},
+				v4{ 201.0f / 255.0f, 235.0f / 255.0f, 227.0f / 255.0f, 1.0f },
 				2,
 				[]() {std::cout << "You clicked to the ScrollView For roads!" << std::endl; }
 		};
 		ScrollBarConstructorParameters scrollBarRoadsParams = ScrollBarConstructorParameters{
 				m_Scene->m_Registry,
 				entt::null,
-				glm::vec3(0.0f),
-				glm::vec2{ width * 0.75f - 0.5f, 0.5f},
-				glm::vec4{ 221.0f / 255.0f, 155.0f / 255.0f, 247.0f / 255.0f, 1.0f },
-				glm::vec4{ 255.0f / 255.0f, 166.0f / 255.0f, 158.0f / 255.0f, 1.0f },
+				v3(0.0f),
+				v2{ width * 0.75f - 0.5f, 0.5f},
+				v4{ 221.0f / 255.0f, 155.0f / 255.0f, 247.0f / 255.0f, 1.0f },
+				v4{ 255.0f / 255.0f, 166.0f / 255.0f, 158.0f / 255.0f, 1.0f },
 				false,
 				false,
 				0.0f,
@@ -538,7 +556,7 @@ namespace Can
 					entt::entity scrollbarID = this->m_ScrollViewRoads->scrollbar->entityID;
 
 					auto [mouseX, mouseY] = Input::get_mouse_pos_float();
-					bool changed = this->m_ScrollViewRoads->scrollbar->Update(glm::vec2{
+					bool changed = this->m_ScrollViewRoads->scrollbar->Update(v2{
 							(mouseX * width) / w,
 							(mouseY * height) / h
 						});
@@ -551,7 +569,7 @@ namespace Can
 					entt::entity scrollbarID = this->m_ScrollViewRoads->scrollbar->entityID;
 
 					auto [mouseX, mouseY] = Input::get_mouse_pos_float();
-					bool changed = this->m_ScrollViewRoads->scrollbar->Update(glm::vec2{
+					bool changed = this->m_ScrollViewRoads->scrollbar->Update(v2{
 							(mouseX * width) / w,
 							(mouseY * height) / h
 						});
@@ -566,19 +584,19 @@ namespace Can
 		ScrollViewConstructorParameters scrollViewBuildingsParams = ScrollViewConstructorParameters{
 				m_Scene->m_Registry,
 				m_PanelBuildings->entityID,
-				glm::vec3{ width * 0.25f - 0.6f, height - 5.3f, 0.01f },
-				glm::vec2{ width * 0.75f, 5.0f},
-				glm::vec4{ 201.0f / 255.0f, 235.0f / 255.0f, 227.0f / 255.0f, 1.0f },
+				v3{ width * 0.25f - 0.6f, height - 5.3f, 0.01f },
+				v2{ width * 0.75f, 5.0f},
+				v4{ 201.0f / 255.0f, 235.0f / 255.0f, 227.0f / 255.0f, 1.0f },
 				2,
 				[]() {std::cout << "You clicked to the ScrollView for buildings!" << std::endl; }
 		};
 		ScrollBarConstructorParameters scrollBarBuildingsParams = ScrollBarConstructorParameters{
 				m_Scene->m_Registry,
 				entt::null,
-				glm::vec3(0.0f),
-				glm::vec2{ width * 0.75f - 0.5f, 0.5f},
-				glm::vec4{ 221.0f / 255.0f, 155.0f / 255.0f, 247.0f / 255.0f, 1.0f },
-				glm::vec4{ 255.0f / 255.0f, 166.0f / 255.0f, 158.0f / 255.0f, 1.0f },
+				v3(0.0f),
+				v2{ width * 0.75f - 0.5f, 0.5f},
+				v4{ 221.0f / 255.0f, 155.0f / 255.0f, 247.0f / 255.0f, 1.0f },
+				v4{ 255.0f / 255.0f, 166.0f / 255.0f, 158.0f / 255.0f, 1.0f },
 				false,
 				false,
 				0.0f,
@@ -591,7 +609,7 @@ namespace Can
 					entt::entity scrollbarID = this->m_ScrollViewBuildings->scrollbar->entityID;
 
 					auto [mouseX, mouseY] = Input::get_mouse_pos_float();
-					bool changed = this->m_ScrollViewBuildings->scrollbar->Update(glm::vec2{
+					bool changed = this->m_ScrollViewBuildings->scrollbar->Update(v2{
 							(mouseX * width) / w,
 							(mouseY * height) / h
 						});
@@ -604,7 +622,7 @@ namespace Can
 					entt::entity scrollbarID = this->m_ScrollViewBuildings->scrollbar->entityID;
 
 					auto [mouseX, mouseY] = Input::get_mouse_pos_float();
-					bool changed = this->m_ScrollViewBuildings->scrollbar->Update(glm::vec2{
+					bool changed = this->m_ScrollViewBuildings->scrollbar->Update(v2{
 							(mouseX * width) / w,
 							(mouseY * height) / h
 						});
@@ -619,19 +637,19 @@ namespace Can
 		ScrollViewConstructorParameters scrollViewTreesParams = ScrollViewConstructorParameters{
 				m_Scene->m_Registry,
 				m_PanelTrees->entityID,
-				glm::vec3{ width * 0.25f - 0.6f, height - 5.3f, 0.01f },
-				glm::vec2{ width * 0.75f, 5.0f},
-				glm::vec4{ 201.0f / 255.0f, 235.0f / 255.0f, 227.0f / 255.0f, 1.0f },
+				v3{ width * 0.25f - 0.6f, height - 5.3f, 0.01f },
+				v2{ width * 0.75f, 5.0f},
+				v4{ 201.0f / 255.0f, 235.0f / 255.0f, 227.0f / 255.0f, 1.0f },
 				2,
 				[]() {std::cout << "You clicked to the ScrollView for trees!" << std::endl; }
 		};
 		ScrollBarConstructorParameters scrollBarTreesParams = ScrollBarConstructorParameters{
 				m_Scene->m_Registry,
 				entt::null,
-				glm::vec3(0.0f),
-				glm::vec2{ width * 0.75f - 0.5f, 0.5f},
-				glm::vec4{ 221.0f / 255.0f, 155.0f / 255.0f, 247.0f / 255.0f, 1.0f },
-				glm::vec4{ 255.0f / 255.0f, 166.0f / 255.0f, 158.0f / 255.0f, 1.0f },
+				v3(0.0f),
+				v2{ width * 0.75f - 0.5f, 0.5f},
+				v4{ 221.0f / 255.0f, 155.0f / 255.0f, 247.0f / 255.0f, 1.0f },
+				v4{ 255.0f / 255.0f, 166.0f / 255.0f, 158.0f / 255.0f, 1.0f },
 				false,
 				false,
 				0.0f,
@@ -644,7 +662,7 @@ namespace Can
 					entt::entity scrollbarID = this->m_ScrollViewTrees->scrollbar->entityID;
 
 					auto [mouseX, mouseY] = Input::get_mouse_pos_float();
-					bool changed = this->m_ScrollViewTrees->scrollbar->Update(glm::vec2{
+					bool changed = this->m_ScrollViewTrees->scrollbar->Update(v2{
 							(mouseX * width) / w,
 							(mouseY * height) / h
 						});
@@ -657,7 +675,7 @@ namespace Can
 					entt::entity scrollbarID = this->m_ScrollViewTrees->scrollbar->entityID;
 
 					auto [mouseX, mouseY] = Input::get_mouse_pos_float();
-					bool changed = this->m_ScrollViewTrees->scrollbar->Update(glm::vec2{
+					bool changed = this->m_ScrollViewTrees->scrollbar->Update(v2{
 							(mouseX * width) / w,
 							(mouseY * height) / h
 						});
@@ -672,19 +690,19 @@ namespace Can
 		ScrollViewConstructorParameters scrollViewCarsParams = ScrollViewConstructorParameters{
 				m_Scene->m_Registry,
 				m_PanelCars->entityID,
-				glm::vec3{ width * 0.25f - 0.6f, height - 5.3f, 0.01f },
-				glm::vec2{ width * 0.75f, 5.0f},
-				glm::vec4{ 201.0f / 255.0f, 235.0f / 255.0f, 227.0f / 255.0f, 1.0f },
+				v3{ width * 0.25f - 0.6f, height - 5.3f, 0.01f },
+				v2{ width * 0.75f, 5.0f},
+				v4{ 201.0f / 255.0f, 235.0f / 255.0f, 227.0f / 255.0f, 1.0f },
 				2,
 				[]() {std::cout << "You clicked to the ScrollView for cars!" << std::endl; }
 		};
 		ScrollBarConstructorParameters scrollBarCarsParams = ScrollBarConstructorParameters{
 				m_Scene->m_Registry,
 				entt::null,
-				glm::vec3(0.0f),
-				glm::vec2{ width * 0.75f - 0.5f, 0.5f},
-				glm::vec4{ 221.0f / 255.0f, 155.0f / 255.0f, 247.0f / 255.0f, 1.0f },
-				glm::vec4{ 255.0f / 255.0f, 166.0f / 255.0f, 158.0f / 255.0f, 1.0f },
+				v3(0.0f),
+				v2{ width * 0.75f - 0.5f, 0.5f},
+				v4{ 221.0f / 255.0f, 155.0f / 255.0f, 247.0f / 255.0f, 1.0f },
+				v4{ 255.0f / 255.0f, 166.0f / 255.0f, 158.0f / 255.0f, 1.0f },
 				false,
 				false,
 				0.0f,
@@ -697,7 +715,7 @@ namespace Can
 					entt::entity scrollbarID = this->m_ScrollViewCars->scrollbar->entityID;
 
 					auto [mouseX, mouseY] = Input::get_mouse_pos_float();
-					bool changed = this->m_ScrollViewCars->scrollbar->Update(glm::vec2{
+					bool changed = this->m_ScrollViewCars->scrollbar->Update(v2{
 							(mouseX * width) / w,
 							(mouseY * height) / h
 						});
@@ -710,7 +728,7 @@ namespace Can
 					entt::entity scrollbarID = this->m_ScrollViewCars->scrollbar->entityID;
 
 					auto [mouseX, mouseY] = Input::get_mouse_pos_float();
-					bool changed = this->m_ScrollViewCars->scrollbar->Update(glm::vec2{
+					bool changed = this->m_ScrollViewCars->scrollbar->Update(v2{
 							(mouseX * width) / w,
 							(mouseY * height) / h
 						});
@@ -728,9 +746,9 @@ namespace Can
 		ButtonConstructorParameters straightRoadButtonParams = ButtonConstructorParameters{
 					m_Scene->m_Registry,
 					m_PanelRoads->entityID,
-					glm::vec3{1.0f, height - 5.0f, 0.01f},
+					v3{1.0f, height - 5.0f, 0.01f},
 					roadConstructionModeButtonsSize,
-					glm::vec4(1.0f),
+					v4(1.0f),
 					m_Parent->straightTexture,
 					[this]() {
 						entt::registry& mainRegistry = m_Scene->m_Registry;
@@ -751,15 +769,15 @@ namespace Can
 					},
 					0.1f,
 					false,
-					glm::vec4{ 255.0f / 255.0f, 166.0f / 255.0f, 158.0f / 255.0f, 1.0f },
+					v4{ 255.0f / 255.0f, 166.0f / 255.0f, 158.0f / 255.0f, 1.0f },
 		};
 		m_StraightRoadButton = new Button(straightRoadButtonParams);
 		ButtonConstructorParameters quadraticRoadButtonParams = ButtonConstructorParameters{
 					m_Scene->m_Registry,
 					m_PanelRoads->entityID,
-					glm::vec3{1.0f + (roadConstructionModeButtonsSize.x + padding) * 1.0f, height - 5.0f, 0.01f},
+					v3{1.0f + (roadConstructionModeButtonsSize.x + padding) * 1.0f, height - 5.0f, 0.01f},
 					roadConstructionModeButtonsSize,
-					glm::vec4(1.0f),
+					v4(1.0f),
 					m_Parent->quadraticTexture,
 					[this]() {
 						entt::registry& mainRegistry = m_Scene->m_Registry;
@@ -780,15 +798,15 @@ namespace Can
 					},
 					0.1f,
 					false,
-					glm::vec4{ 255.0f / 255.0f, 166.0f / 255.0f, 158.0f / 255.0f, 1.0f },
+					v4{ 255.0f / 255.0f, 166.0f / 255.0f, 158.0f / 255.0f, 1.0f },
 		};
 		m_QuadraticRoadButton = new Button(quadraticRoadButtonParams);
 		ButtonConstructorParameters cubic1234RoadButtonParams = ButtonConstructorParameters{
 					m_Scene->m_Registry,
 					m_PanelRoads->entityID,
-					glm::vec3{1.0f + (roadConstructionModeButtonsSize.x + padding) * 2.0f, (height - 5.0f), 0.01f},
+					v3{1.0f + (roadConstructionModeButtonsSize.x + padding) * 2.0f, (height - 5.0f), 0.01f},
 					roadConstructionModeButtonsSize,
-					glm::vec4(1.0f),
+					v4(1.0f),
 					m_Parent->cubic1234Texture,
 					[this]() {
 						entt::registry& mainRegistry = m_Scene->m_Registry;
@@ -810,15 +828,15 @@ namespace Can
 					},
 					0.1f,
 					false,
-					glm::vec4{ 255.0f / 255.0f, 166.0f / 255.0f, 158.0f / 255.0f, 1.0f },
+					v4{ 255.0f / 255.0f, 166.0f / 255.0f, 158.0f / 255.0f, 1.0f },
 		};
 		m_Cubic1234RoadButton = new Button(cubic1234RoadButtonParams);
 		ButtonConstructorParameters cubic1243RoadButtonParams = ButtonConstructorParameters{
 					m_Scene->m_Registry,
 					m_PanelRoads->entityID,
-					glm::vec3{1.0f + (roadConstructionModeButtonsSize.x + padding) * 2.0f, (height - 5.0f) + (roadConstructionModeButtonsSize.y + padding) * 1.0f, 0.01f},
+					v3{1.0f + (roadConstructionModeButtonsSize.x + padding) * 2.0f, (height - 5.0f) + (roadConstructionModeButtonsSize.y + padding) * 1.0f, 0.01f},
 					roadConstructionModeButtonsSize,
-					glm::vec4(1.0f),
+					v4(1.0f),
 					m_Parent->cubic1243Texture,
 					[this]() {
 						entt::registry& mainRegistry = m_Scene->m_Registry;
@@ -840,15 +858,15 @@ namespace Can
 					},
 					0.1f,
 					false,
-					glm::vec4{ 255.0f / 255.0f, 166.0f / 255.0f, 158.0f / 255.0f, 1.0f },
+					v4{ 255.0f / 255.0f, 166.0f / 255.0f, 158.0f / 255.0f, 1.0f },
 		};
 		m_Cubic1243RoadButton = new Button(cubic1243RoadButtonParams);
 		ButtonConstructorParameters cubic1342RoadButtonParams = ButtonConstructorParameters{
 					m_Scene->m_Registry,
 					m_PanelRoads->entityID,
-					glm::vec3{1.0f + (roadConstructionModeButtonsSize.x + padding) * 2.0f, (height - 5.0f) + (roadConstructionModeButtonsSize.y + padding) * 2.0f, 0.01f},
+					v3{1.0f + (roadConstructionModeButtonsSize.x + padding) * 2.0f, (height - 5.0f) + (roadConstructionModeButtonsSize.y + padding) * 2.0f, 0.01f},
 					roadConstructionModeButtonsSize,
-					glm::vec4(1.0f),
+					v4(1.0f),
 					m_Parent->cubic1342Texture,
 					[this]() {
 						entt::registry& mainRegistry = m_Scene->m_Registry;
@@ -870,15 +888,15 @@ namespace Can
 					},
 					0.1f,
 					false,
-					glm::vec4{ 255.0f / 255.0f, 166.0f / 255.0f, 158.0f / 255.0f, 1.0f },
+					v4{ 255.0f / 255.0f, 166.0f / 255.0f, 158.0f / 255.0f, 1.0f },
 		};
 		m_Cubic1342RoadButton = new Button(cubic1342RoadButtonParams);
 		ButtonConstructorParameters cubic1432RoadButtonParams = ButtonConstructorParameters{
 					m_Scene->m_Registry,
 					m_PanelRoads->entityID,
-					glm::vec3{1.0f + (roadConstructionModeButtonsSize.x + padding) * 2.0f, (height - 5.0f) + (roadConstructionModeButtonsSize.y + padding) * 3.0f, 0.01f},
+					v3{1.0f + (roadConstructionModeButtonsSize.x + padding) * 2.0f, (height - 5.0f) + (roadConstructionModeButtonsSize.y + padding) * 3.0f, 0.01f},
 					roadConstructionModeButtonsSize,
-					glm::vec4(1.0f),
+					v4(1.0f),
 					m_Parent->cubic1432Texture,
 					[this]() {
 						entt::registry& mainRegistry = m_Scene->m_Registry;
@@ -900,15 +918,15 @@ namespace Can
 					},
 					0.1f,
 					false,
-					glm::vec4{ 255.0f / 255.0f, 166.0f / 255.0f, 158.0f / 255.0f, 1.0f },
+					v4{ 255.0f / 255.0f, 166.0f / 255.0f, 158.0f / 255.0f, 1.0f },
 		};
 		m_Cubic1432RoadButton = new Button(cubic1432RoadButtonParams);
 		ButtonConstructorParameters destructRoadButtonParams = ButtonConstructorParameters{
 					m_Scene->m_Registry,
 					m_PanelRoads->entityID,
-					glm::vec3{1.0f + (roadConstructionModeButtonsSize.x + padding) * 3.0f, height - 5.0f, 0.01f},
+					v3{1.0f + (roadConstructionModeButtonsSize.x + padding) * 3.0f, height - 5.0f, 0.01f},
 					roadConstructionModeButtonsSize,
-					glm::vec4(1.0f),
+					v4(1.0f),
 					m_Parent->removeTexture,
 					[this]() {
 						entt::registry& mainRegistry = m_Scene->m_Registry;
@@ -929,15 +947,15 @@ namespace Can
 					},
 					0.1f,
 					false,
-					glm::vec4{ 255.0f / 255.0f, 166.0f / 255.0f, 158.0f / 255.0f, 1.0f },
+					v4{ 255.0f / 255.0f, 166.0f / 255.0f, 158.0f / 255.0f, 1.0f },
 		};
 		m_DestructRoadButton = new Button(destructRoadButtonParams);
 		ButtonConstructorParameters changeRoadButtonParams = ButtonConstructorParameters{
 					m_Scene->m_Registry,
 					m_PanelRoads->entityID,
-					glm::vec3{1.0f + (roadConstructionModeButtonsSize.x + padding) * 4.0f, height - 5.0f, 0.01f},
+					v3{1.0f + (roadConstructionModeButtonsSize.x + padding) * 4.0f, height - 5.0f, 0.01f},
 					roadConstructionModeButtonsSize,
-					glm::vec4(1.0f),
+					v4(1.0f),
 					m_Parent->changeTexture,
 					[this]() {
 						entt::registry& mainRegistry = m_Scene->m_Registry;
@@ -958,15 +976,15 @@ namespace Can
 					},
 					0.1f,
 					false,
-					glm::vec4{ 255.0f / 255.0f, 166.0f / 255.0f, 158.0f / 255.0f, 1.0f },
+					v4{ 255.0f / 255.0f, 166.0f / 255.0f, 158.0f / 255.0f, 1.0f },
 		};
 		m_ChangeRoadButton = new Button(changeRoadButtonParams);
 		ButtonConstructorParameters cancelRoadButtonParams = ButtonConstructorParameters{
 					m_Scene->m_Registry,
 					m_PanelRoads->entityID,
-					glm::vec3{1.0f + (roadConstructionModeButtonsSize.x + padding) * 5.0f, height - 5.0f, 0.01f},
+					v3{1.0f + (roadConstructionModeButtonsSize.x + padding) * 5.0f, height - 5.0f, 0.01f},
 					roadConstructionModeButtonsSize,
-					glm::vec4(1.0f),
+					v4(1.0f),
 					m_Parent->cancelTexture,
 					[this]() {
 						entt::registry& mainRegistry = m_Scene->m_Registry;
@@ -987,7 +1005,7 @@ namespace Can
 					},
 					0.1f,
 					true,
-					glm::vec4{ 255.0f / 255.0f, 166.0f / 255.0f, 158.0f / 255.0f, 1.0f },
+					v4{ 255.0f / 255.0f, 166.0f / 255.0f, 158.0f / 255.0f, 1.0f },
 		};
 		m_CancelRoadButton = new Button(cancelRoadButtonParams);
 		m_Scene->m_Registry.emplace<ChildrenComponent>(m_PanelRoads->entityID, std::vector<entt::entity>{
@@ -1006,9 +1024,9 @@ namespace Can
 		ButtonConstructorParameters constructBuildingButtonParams = ButtonConstructorParameters{
 			m_Scene->m_Registry,
 			m_PanelBuildings->entityID,
-			glm::vec3{2.0f, height - 5.0f, 0.01f},
-			glm::vec2(0.8f),
-			glm::vec4(1.0f),
+			v3{2.0f, height - 5.0f, 0.01f},
+			v2(0.8f),
+			v4(1.0f),
 			m_Parent->addTexture,
 			[this]() {
 				entt::registry& mainRegistry = m_Scene->m_Registry;
@@ -1024,15 +1042,15 @@ namespace Can
 			},
 			0.1f,
 			false,
-			glm::vec4{ 69.0f / 255.0f, 123.0f / 255.0f, 157.0f / 255.0f, 1.0f },
+			v4{ 69.0f / 255.0f, 123.0f / 255.0f, 157.0f / 255.0f, 1.0f },
 		};
 		m_ConstructBuildingButton = new Button(constructBuildingButtonParams);
 		ButtonConstructorParameters destructBuildingButtonParams = ButtonConstructorParameters{
 			m_Scene->m_Registry,
 			m_PanelBuildings->entityID,
-			glm::vec3{3.0f, height - 5.0f, 0.01f},
-			glm::vec2(0.8f),
-			glm::vec4(1.0f),
+			v3{3.0f, height - 5.0f, 0.01f},
+			v2(0.8f),
+			v4(1.0f),
 			m_Parent->removeTexture,
 			[this]() {
 				entt::registry& mainRegistry = m_Scene->m_Registry;
@@ -1048,15 +1066,15 @@ namespace Can
 			},
 			0.1f,
 			false,
-			glm::vec4{ 69.0f / 255.0f, 123.0f / 255.0f, 157.0f / 255.0f, 1.0f },
+			v4{ 69.0f / 255.0f, 123.0f / 255.0f, 157.0f / 255.0f, 1.0f },
 		};
 		m_DestructBuildingButton = new Button(destructBuildingButtonParams);
 		ButtonConstructorParameters upgradeBuildingButtonParams = ButtonConstructorParameters{
 			m_Scene->m_Registry,
 			m_PanelBuildings->entityID,
-			glm::vec3{4.0f, height - 5.0f, 0.01f},
-			glm::vec2(0.8f),
-			glm::vec4(1.0f),
+			v3{4.0f, height - 5.0f, 0.01f},
+			v2(0.8f),
+			v4(1.0f),
 			m_Parent->upgradeTexture,
 			[this]() {
 				entt::registry& mainRegistry = m_Scene->m_Registry;
@@ -1072,15 +1090,15 @@ namespace Can
 			},
 			0.1f,
 			false,
-			glm::vec4{ 69.0f / 255.0f, 123.0f / 255.0f, 157.0f / 255.0f, 1.0f },
+			v4{ 69.0f / 255.0f, 123.0f / 255.0f, 157.0f / 255.0f, 1.0f },
 		};
 		m_UpgradeBuildingButton = new Button(upgradeBuildingButtonParams);
 		ButtonConstructorParameters cancelBuildingButtonParams = ButtonConstructorParameters{
 			m_Scene->m_Registry,
 			m_PanelBuildings->entityID,
-			glm::vec3{5.0f, height - 5.0f, 0.01f},
-			glm::vec2(0.8f),
-			glm::vec4(1.0f),
+			v3{5.0f, height - 5.0f, 0.01f},
+			v2(0.8f),
+			v4(1.0f),
 			m_Parent->cancelTexture,
 			[this]() {
 				entt::registry& mainRegistry = m_Scene->m_Registry;
@@ -1096,7 +1114,7 @@ namespace Can
 			},
 			0.1f,
 			true,
-			glm::vec4{ 69.0f / 255.0f, 123.0f / 255.0f, 157.0f / 255.0f, 1.0f },
+			v4{ 69.0f / 255.0f, 123.0f / 255.0f, 157.0f / 255.0f, 1.0f },
 		};
 		m_CancelBuildingButton = new Button(cancelBuildingButtonParams);
 		m_Scene->m_Registry.emplace<ChildrenComponent>(m_PanelBuildings->entityID, std::vector<entt::entity>{
@@ -1110,9 +1128,9 @@ namespace Can
 		ButtonConstructorParameters addTreeButtonParams = ButtonConstructorParameters{
 			m_Scene->m_Registry,
 			m_PanelTrees->entityID,
-			glm::vec3{2.0f, height - 5.0f, 0.01f},
-			glm::vec2(0.8f),
-			glm::vec4(1.0f),
+			v3{2.0f, height - 5.0f, 0.01f},
+			v2(0.8f),
+			v4(1.0f),
 			m_Parent->addTexture,
 			[this]() {
 				entt::registry& mainRegistry = m_Scene->m_Registry;
@@ -1127,15 +1145,15 @@ namespace Can
 			},
 			0.1f,
 			false,
-			glm::vec4{ 221.0f / 255.0f, 255.0f / 255.0f, 247.0f / 255.0f, 1.0f },
+			v4{ 221.0f / 255.0f, 255.0f / 255.0f, 247.0f / 255.0f, 1.0f },
 		};
 		m_AddTreeButton = new Button(addTreeButtonParams);
 		ButtonConstructorParameters removeTreeButtonParams = ButtonConstructorParameters{
 			m_Scene->m_Registry,
 			m_PanelTrees->entityID,
-			glm::vec3{3.0f, height - 5.0f, 0.01f},
-			glm::vec2(0.8f),
-			glm::vec4(1.0f),
+			v3{3.0f, height - 5.0f, 0.01f},
+			v2(0.8f),
+			v4(1.0f),
 			m_Parent->removeTexture,
 			[this]() {
 				entt::registry& mainRegistry = m_Scene->m_Registry;
@@ -1150,15 +1168,15 @@ namespace Can
 			},
 			0.1f,
 			false,
-			glm::vec4{ 221.0f / 255.0f, 255.0f / 255.0f, 247.0f / 255.0f, 1.0f },
+			v4{ 221.0f / 255.0f, 255.0f / 255.0f, 247.0f / 255.0f, 1.0f },
 		};
 		m_RemoveTreeButton = new Button(removeTreeButtonParams);
 		ButtonConstructorParameters cancelTreeButtonParams = ButtonConstructorParameters{
 			m_Scene->m_Registry,
 			m_PanelTrees->entityID,
-			glm::vec3{4.0f, height - 5.0f, 0.01f},
-			glm::vec2(0.8f),
-			glm::vec4(1.0f),
+			v3{4.0f, height - 5.0f, 0.01f},
+			v2(0.8f),
+			v4(1.0f),
 			m_Parent->cancelTexture,
 			[this]() {
 				entt::registry& mainRegistry = m_Scene->m_Registry;
@@ -1173,7 +1191,7 @@ namespace Can
 			},
 			0.1f,
 			true,
-			glm::vec4{ 221.0f / 255.0f, 255.0f / 255.0f, 247.0f / 255.0f, 1.0f },
+			v4{ 221.0f / 255.0f, 255.0f / 255.0f, 247.0f / 255.0f, 1.0f },
 		};
 		m_CancelTreeButton = new Button(cancelTreeButtonParams);
 		m_Scene->m_Registry.emplace<ChildrenComponent>(m_PanelTrees->entityID, std::vector<entt::entity>{
@@ -1188,12 +1206,12 @@ namespace Can
 			});
 
 		/*Buttons in the tools panel*/ {
-			glm::vec2 buttonSize{ 1.0f, 1.0f };
-			glm::vec4 buttonColor{ 1.0f, 1.0f, 1.0f, 1.0f };
+			v2 buttonSize{ 1.0f, 1.0f };
+			v4 buttonColor{ 1.0f, 1.0f, 1.0f, 1.0f };
 			ButtonConstructorParameters buttonTools_01Params = ButtonConstructorParameters{
 				m_Scene->m_Registry,
 				m_PanelTools->entityID,
-				glm::vec3{ 0.75f, 2.0f, 0.0011f },
+				v3{ 0.75f, 2.0f, 0.0011f },
 				buttonSize,
 				buttonColor,
 				nullptr,
@@ -1204,7 +1222,7 @@ namespace Can
 			ButtonConstructorParameters buttonTools_02Params = ButtonConstructorParameters{
 				m_Scene->m_Registry,
 				m_PanelTools->entityID,
-				glm::vec3{ 2.0f, 2.0f, 0.0011f },
+				v3{ 2.0f, 2.0f, 0.0011f },
 				buttonSize,
 				buttonColor,
 				nullptr,
@@ -1215,7 +1233,7 @@ namespace Can
 			ButtonConstructorParameters buttonTools_03Params = ButtonConstructorParameters{
 				m_Scene->m_Registry,
 				m_PanelTools->entityID,
-				glm::vec3{ 0.75f, 3.25f, 0.0011f },
+				v3{ 0.75f, 3.25f, 0.0011f },
 				buttonSize,
 				buttonColor,
 				nullptr,
@@ -1226,7 +1244,7 @@ namespace Can
 			ButtonConstructorParameters buttonTools_04Params = ButtonConstructorParameters{
 				m_Scene->m_Registry,
 				m_PanelTools->entityID,
-				glm::vec3{ 2.0f, 3.25f, 0.0011f },
+				v3{ 2.0f, 3.25f, 0.0011f },
 				buttonSize,
 				buttonColor,
 				nullptr,
@@ -1237,7 +1255,7 @@ namespace Can
 			ButtonConstructorParameters buttonTools_05Params = ButtonConstructorParameters{
 				m_Scene->m_Registry,
 				m_PanelTools->entityID,
-				glm::vec3{ 0.75f, 4.5f, 0.0011f },
+				v3{ 0.75f, 4.5f, 0.0011f },
 				buttonSize,
 				buttonColor,
 				nullptr,
@@ -1248,7 +1266,7 @@ namespace Can
 			ButtonConstructorParameters buttonTools_06Params = ButtonConstructorParameters{
 				m_Scene->m_Registry,
 				m_PanelTools->entityID,
-				glm::vec3{ 2.0f, 4.5, 0.0011f },
+				v3{ 2.0f, 4.5, 0.0011f },
 				buttonSize,
 				buttonColor,
 				nullptr,
@@ -1259,7 +1277,7 @@ namespace Can
 			ButtonConstructorParameters buttonTools_07Params = ButtonConstructorParameters{
 				m_Scene->m_Registry,
 				m_PanelTools->entityID,
-				glm::vec3{ 0.75f, 5.75, 0.0011f },
+				v3{ 0.75f, 5.75, 0.0011f },
 				buttonSize,
 				buttonColor,
 				nullptr,
@@ -1270,7 +1288,7 @@ namespace Can
 			ButtonConstructorParameters buttonTools_08Params = ButtonConstructorParameters{
 				m_Scene->m_Registry,
 				m_PanelTools->entityID,
-				glm::vec3{ 2.0f, 5.75, 0.0011f },
+				v3{ 2.0f, 5.75, 0.0011f },
 				buttonSize,
 				buttonColor,
 				nullptr,
@@ -1281,7 +1299,7 @@ namespace Can
 			ButtonConstructorParameters buttonTools_09Params = ButtonConstructorParameters{
 				m_Scene->m_Registry,
 				m_PanelTools->entityID,
-				glm::vec3{ 0.75f, 7.0f, 0.0011f },
+				v3{ 0.75f, 7.0f, 0.0011f },
 				buttonSize,
 				buttonColor,
 				nullptr,
@@ -1292,7 +1310,7 @@ namespace Can
 			ButtonConstructorParameters buttonTools_10Params = ButtonConstructorParameters{
 				m_Scene->m_Registry,
 				m_PanelTools->entityID,
-				glm::vec3{ 2.0f, 7.0f, 0.0011f },
+				v3{ 2.0f, 7.0f, 0.0011f },
 				buttonSize,
 				buttonColor,
 				nullptr,
@@ -1303,7 +1321,7 @@ namespace Can
 			ButtonConstructorParameters buttonTools_11Params = ButtonConstructorParameters{
 				m_Scene->m_Registry,
 				m_PanelTools->entityID,
-				glm::vec3{ 0.75f, 8.25, 0.0011f },
+				v3{ 0.75f, 8.25, 0.0011f },
 				buttonSize,
 				buttonColor,
 				nullptr,
@@ -1314,7 +1332,7 @@ namespace Can
 			ButtonConstructorParameters buttonTools_12Params = ButtonConstructorParameters{
 				m_Scene->m_Registry,
 				m_PanelTools->entityID,
-				glm::vec3{ 2.0f, 8.25, 0.0011f },
+				v3{ 2.0f, 8.25, 0.0011f },
 				buttonSize,
 				buttonColor,
 				nullptr,
@@ -1325,7 +1343,7 @@ namespace Can
 			ButtonConstructorParameters buttonTools_13Params = ButtonConstructorParameters{
 				m_Scene->m_Registry,
 				m_PanelTools->entityID,
-				glm::vec3{ 0.75f, 9.5, 0.0011f },
+				v3{ 0.75f, 9.5, 0.0011f },
 				buttonSize,
 				buttonColor,
 				nullptr,
@@ -1336,7 +1354,7 @@ namespace Can
 			ButtonConstructorParameters buttonTools_14Params = ButtonConstructorParameters{
 				m_Scene->m_Registry,
 				m_PanelTools->entityID,
-				glm::vec3{ 2.0f, 9.5, 0.0011f },
+				v3{ 2.0f, 9.5, 0.0011f },
 				buttonSize,
 				buttonColor,
 				nullptr,
@@ -1363,12 +1381,12 @@ namespace Can
 			m_Scene->m_Registry.emplace<ChildrenComponent>(m_PanelTools->entityID, toolsButtonList);
 		}
 		/*Buttons in the needs panel*/{
-			glm::vec2 buttonSize{ 1.0f, 1.0f };
-			glm::vec4 buttonColor{ 1.0f, 1.0f, 1.0f, 1.0f };
+			v2 buttonSize{ 1.0f, 1.0f };
+			v4 buttonColor{ 1.0f, 1.0f, 1.0f, 1.0f };
 			ButtonConstructorParameters buttonNeeds_01Params = ButtonConstructorParameters{
 				m_Scene->m_Registry,
 				m_PanelNeeds->entityID,
-				glm::vec3{ 0.75f, 2.0f, 0.0011f },
+				v3{ 0.75f, 2.0f, 0.0011f },
 				buttonSize,
 				buttonColor,
 				nullptr,
@@ -1379,7 +1397,7 @@ namespace Can
 			ButtonConstructorParameters buttonNeeds_02Params = ButtonConstructorParameters{
 				m_Scene->m_Registry,
 				m_PanelNeeds->entityID,
-				glm::vec3{ 2.0f, 2.0f, 0.0011f },
+				v3{ 2.0f, 2.0f, 0.0011f },
 				buttonSize,
 				buttonColor,
 				nullptr,
@@ -1390,7 +1408,7 @@ namespace Can
 			ButtonConstructorParameters buttonNeeds_03Params = ButtonConstructorParameters{
 				m_Scene->m_Registry,
 				m_PanelNeeds->entityID,
-				glm::vec3{ 0.75f, 3.25f, 0.0011f },
+				v3{ 0.75f, 3.25f, 0.0011f },
 				buttonSize,
 				buttonColor,
 				nullptr,
@@ -1401,7 +1419,7 @@ namespace Can
 			ButtonConstructorParameters buttonNeeds_04Params = ButtonConstructorParameters{
 				m_Scene->m_Registry,
 				m_PanelNeeds->entityID,
-				glm::vec3{ 2.0f, 3.25f, 0.0011f },
+				v3{ 2.0f, 3.25f, 0.0011f },
 				buttonSize,
 				buttonColor,
 				nullptr,
@@ -1412,7 +1430,7 @@ namespace Can
 			ButtonConstructorParameters buttonNeeds_05Params = ButtonConstructorParameters{
 				m_Scene->m_Registry,
 				m_PanelNeeds->entityID,
-				glm::vec3{ 0.75f, 4.5f, 0.0011f },
+				v3{ 0.75f, 4.5f, 0.0011f },
 				buttonSize,
 				buttonColor,
 				nullptr,
@@ -1423,7 +1441,7 @@ namespace Can
 			ButtonConstructorParameters buttonNeeds_06Params = ButtonConstructorParameters{
 				m_Scene->m_Registry,
 				m_PanelNeeds->entityID,
-				glm::vec3{ 2.0f, 4.5, 0.0011f },
+				v3{ 2.0f, 4.5, 0.0011f },
 				buttonSize,
 				buttonColor,
 				nullptr,
@@ -1434,7 +1452,7 @@ namespace Can
 			ButtonConstructorParameters buttonNeeds_07Params = ButtonConstructorParameters{
 				m_Scene->m_Registry,
 				m_PanelNeeds->entityID,
-				glm::vec3{ 0.75f, 5.75, 0.0011f },
+				v3{ 0.75f, 5.75, 0.0011f },
 				buttonSize,
 				buttonColor,
 				nullptr,
@@ -1445,7 +1463,7 @@ namespace Can
 			ButtonConstructorParameters buttonNeeds_08Params = ButtonConstructorParameters{
 				m_Scene->m_Registry,
 				m_PanelNeeds->entityID,
-				glm::vec3{ 2.0f, 5.75, 0.0011f },
+				v3{ 2.0f, 5.75, 0.0011f },
 				buttonSize,
 				buttonColor,
 				nullptr,
@@ -1456,7 +1474,7 @@ namespace Can
 			ButtonConstructorParameters buttonNeeds_09Params = ButtonConstructorParameters{
 				m_Scene->m_Registry,
 				m_PanelNeeds->entityID,
-				glm::vec3{ 0.75f, 7.0f, 0.0011f },
+				v3{ 0.75f, 7.0f, 0.0011f },
 				buttonSize,
 				buttonColor,
 				nullptr,
@@ -1467,7 +1485,7 @@ namespace Can
 			ButtonConstructorParameters buttonNeeds_10Params = ButtonConstructorParameters{
 				m_Scene->m_Registry,
 				m_PanelNeeds->entityID,
-				glm::vec3{ 2.0f, 7.0f, 0.0011f },
+				v3{ 2.0f, 7.0f, 0.0011f },
 				buttonSize,
 				buttonColor,
 				nullptr,
@@ -1478,7 +1496,7 @@ namespace Can
 			ButtonConstructorParameters buttonNeeds_11Params = ButtonConstructorParameters{
 				m_Scene->m_Registry,
 				m_PanelNeeds->entityID,
-				glm::vec3{ 0.75f, 8.25, 0.0011f },
+				v3{ 0.75f, 8.25, 0.0011f },
 				buttonSize,
 				buttonColor,
 				nullptr,
@@ -1489,7 +1507,7 @@ namespace Can
 			ButtonConstructorParameters buttonNeeds_12Params = ButtonConstructorParameters{
 				m_Scene->m_Registry,
 				m_PanelNeeds->entityID,
-				glm::vec3{ 2.0f, 8.25, 0.0011f },
+				v3{ 2.0f, 8.25, 0.0011f },
 				buttonSize,
 				buttonColor,
 				nullptr,
@@ -1500,7 +1518,7 @@ namespace Can
 			ButtonConstructorParameters buttonNeeds_13Params = ButtonConstructorParameters{
 				m_Scene->m_Registry,
 				m_PanelNeeds->entityID,
-				glm::vec3{ 0.75f, 9.5, 0.0011f },
+				v3{ 0.75f, 9.5, 0.0011f },
 				buttonSize,
 				buttonColor,
 				nullptr,
@@ -1511,7 +1529,7 @@ namespace Can
 			ButtonConstructorParameters buttonNeeds_14Params = ButtonConstructorParameters{
 				m_Scene->m_Registry,
 				m_PanelNeeds->entityID,
-				glm::vec3{ 2.0f, 9.5, 0.0011f },
+				v3{ 2.0f, 9.5, 0.0011f },
 				buttonSize,
 				buttonColor,
 				nullptr,
@@ -1563,9 +1581,9 @@ namespace Can
 				ButtonConstructorParameters roadPanelButtonParams = ButtonConstructorParameters{
 					m_Scene->m_Registry,
 					m_ScrollViewRoads->entityID,
-					glm::vec3(0.0f),
-					glm::vec2(3.5f),
-					glm::vec4{ 1.0f, 1.0f, 1.0f, 1.0f },
+					v3(0.0f),
+					v2(3.5f),
+					v4{ 1.0f, 1.0f, 1.0f, 1.0f },
 					m_Parent->road_types[i].thumbnail,
 					[i, this]() {
 						if (!Input::IsMouseButtonPressed(MouseCode::Button0))
@@ -1593,9 +1611,9 @@ namespace Can
 				ButtonConstructorParameters buildingPanelButtonParams = ButtonConstructorParameters{
 					m_Scene->m_Registry,
 					m_ScrollViewBuildings->entityID,
-					glm::vec3(0.0f),
-					glm::vec2(3.5f),
-					glm::vec4{ 1.0f, 1.0f, 1.0f, 1.0f },
+					v3(0.0f),
+					v2(3.5f),
+					v4{ 1.0f, 1.0f, 1.0f, 1.0f },
 					Texture2D::Create(buildingtumbnailimagefiles[i]),
 					[i, this]() {
 						if (!Input::IsMouseButtonPressed(MouseCode::Button0))
@@ -1623,9 +1641,9 @@ namespace Can
 				ButtonConstructorParameters treePanelButtonParams = ButtonConstructorParameters{
 					m_Scene->m_Registry,
 					m_ScrollViewTrees->entityID,
-					glm::vec3(0.0f),
-					glm::vec2(3.5f),
-					glm::vec4{ 1.0f, 1.0f, 1.0f, 1.0f },
+					v3(0.0f),
+					v2(3.5f),
+					v4{ 1.0f, 1.0f, 1.0f, 1.0f },
 					Texture2D::Create(treetumbnailimagefiles[i]),
 					[i, this]() {
 						if (!Input::IsMouseButtonPressed(MouseCode::Button0))
@@ -1653,9 +1671,9 @@ namespace Can
 				ButtonConstructorParameters carPanelButtonParams = ButtonConstructorParameters{
 					m_Scene->m_Registry,
 					m_ScrollViewCars->entityID,
-					glm::vec3(0.0f),
-					glm::vec2(3.5f),
-					glm::vec4{ 1.0f, 1.0f, 1.0f, 1.0f },
+					v3(0.0f),
+					v2(3.5f),
+					v4{ 1.0f, 1.0f, 1.0f, 1.0f },
 					Texture2D::Create(cartumbnailimagefiles[i]),
 					[i, this]() {
 						if (!Input::IsMouseButtonPressed(MouseCode::Button0))
@@ -1802,7 +1820,7 @@ namespace Can
 		//RenderCommand::Clear();
 
 		Renderer2D::BeginScene(m_CameraController.m_Camera);
-		glm::vec2 offset = { -widthHalf, heightHalf };
+		v2 offset = { -widthHalf, heightHalf };
 		ChildrenComponent& children = m_Scene->m_Registry.get_or_emplace<ChildrenComponent>(m_Scene->entityID, std::vector<entt::entity>{});
 		for (auto entity : children)
 			Draw(entity, &(m_Scene->m_Registry), offset);
@@ -1815,8 +1833,8 @@ namespace Can
 		sprintf(fpsText, "FPS:%3.2f", (1.0f / ts));
 		Renderer2D::DrawText(
 			fpsText,
-			glm::vec3{ -1330.0f , -420.0f, 2.0f },
-			glm::vec4(glm::vec3(0.0f), 1.0f),
+			v3{ -1330.0f , -420.0f, 2.0f },
+			v4(v3(0.0f), 1.0f),
 			m_ZoomLevel
 		);
 		Renderer2D::EndScene();
@@ -1839,7 +1857,7 @@ namespace Can
 		unsigned int w = app.GetWindow().GetWidth();
 		unsigned int h = app.GetWindow().GetHeight();
 
-		glm::vec2 clickPos = { cameraWidth * (mouseX / w), cameraHeight * (mouseY / h) };
+		v2 clickPos = { cameraWidth * (mouseX / w), cameraHeight * (mouseY / h) };
 
 		ChildrenComponent& children = m_Scene->m_Registry.get<ChildrenComponent>(m_Scene->entityID);
 
@@ -1852,7 +1870,7 @@ namespace Can
 		return false;
 	}
 
-	bool CheckCollision(entt::entity id, entt::registry* registry, const glm::vec2& clickPosition)
+	bool CheckCollision(entt::entity id, entt::registry* registry, const v2& clickPosition)
 	{
 		if (registry->has<HiddenComponent>(id))
 			return false;
@@ -1875,13 +1893,13 @@ namespace Can
 
 		auto& [transform, spriteRenderer] = registry->get< TransformComponent, SpriteRendererComponent>(id);
 
-		glm::vec2 size = spriteRenderer.size * transform.Scale;
-		glm::vec2 leftTop = {
+		v2 size = spriteRenderer.size * transform.Scale;
+		v2 leftTop = {
 			transform.Position.x,
 			transform.Position.y
 		};
-		glm::vec2 rightBottom = leftTop + size * glm::vec2{ spriteRenderer.trim[1], spriteRenderer.trim[2] };
-		leftTop += size * glm::vec2{ spriteRenderer.trim[3], spriteRenderer.trim[0] };
+		v2 rightBottom = leftTop + size * v2{ spriteRenderer.trim[1], spriteRenderer.trim[2] };
+		leftTop += size * v2{ spriteRenderer.trim[3], spriteRenderer.trim[0] };
 		if (
 			clickPosition.x < leftTop.x ||
 			clickPosition.y < leftTop.y ||
@@ -1896,7 +1914,7 @@ namespace Can
 		return true;
 	}
 
-	void Draw(entt::entity id, entt::registry* registry, const glm::vec2& offset)
+	void Draw(entt::entity id, entt::registry* registry, const v2& offset)
 	{
 		if (registry->has<HiddenComponent>(id))
 			return;
@@ -1905,20 +1923,20 @@ namespace Can
 
 
 		auto& [transform, spriteRenderer] = registry->get< TransformComponent, SpriteRendererComponent>(id);
-		glm::vec3 pos = transform.Position;
+		v3 pos = transform.Position;
 
 		pos.x = pos.x + offset.x + spriteRenderer.size.x / 2.0f;
 		pos.y = -1 * (pos.y - offset.y + spriteRenderer.size.y / 2.0f);
 
-		glm::mat4 newTransform = glm::translate(glm::mat4(1.0f), pos) * glm::scale(glm::mat4(1), glm::vec3(spriteRenderer.size, 1.0f));
+		glm::mat4 newTransform = glm::translate(glm::mat4(1.0f), pos) * glm::scale(glm::mat4(1), v3(spriteRenderer.size, 1.0f));
 		if (spriteRenderer.borderRadius >= 0.0f)
 		{
-			if (spriteRenderer.border) Renderer2D::DrawRoundedQuad(DrawQuadParameters{ pos - glm::vec3{ 0.0f, 0.0f, 0.0001f }, glm::vec3(spriteRenderer.size, 1.0f) + glm::vec3{ 0.075f, 0.075f, 0.0f }, 0.0f, spriteRenderer.bordercolor, nullptr, spriteRenderer.trim, spriteRenderer.borderRadius, 3 });
+			if (spriteRenderer.border) Renderer2D::DrawRoundedQuad(DrawQuadParameters{ pos - v3{ 0.0f, 0.0f, 0.0001f }, v3(spriteRenderer.size, 1.0f) + v3{ 0.075f, 0.075f, 0.0f }, 0.0f, spriteRenderer.bordercolor, nullptr, spriteRenderer.trim, spriteRenderer.borderRadius, 3 });
 			Renderer2D::DrawRoundedQuad(newTransform, DrawQuadParameters{ transform.Position, spriteRenderer.size, 0.0f, spriteRenderer.color, spriteRenderer.texture, spriteRenderer.trim, spriteRenderer.borderRadius, 3 });
 		}
 		else
 		{
-			if (spriteRenderer.border) Renderer2D::DrawQuad(DrawQuadParameters{ pos - glm::vec3{ 0.0f, 0.0f, 0.0001f }, glm::vec3(spriteRenderer.size, 1.0f) + glm::vec3{ 0.075f, 0.075f, 0.0f }, 0.0f, spriteRenderer.bordercolor, nullptr, spriteRenderer.trim });
+			if (spriteRenderer.border) Renderer2D::DrawQuad(DrawQuadParameters{ pos - v3{ 0.0f, 0.0f, 0.0001f }, v3(spriteRenderer.size, 1.0f) + v3{ 0.075f, 0.075f, 0.0f }, 0.0f, spriteRenderer.bordercolor, nullptr, spriteRenderer.trim });
 			Renderer2D::DrawQuad(newTransform, DrawQuadParameters{ transform.Position, spriteRenderer.size, 0.0f, spriteRenderer.color, spriteRenderer.texture, spriteRenderer.trim });
 		}
 

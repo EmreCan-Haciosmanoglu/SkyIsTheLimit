@@ -19,6 +19,7 @@ namespace Can
 		~Car() { delete object; }
 
 	public:
+		u64 type;
 		s64 roadSegment;
 		u64 t_index = 0;
 		f32 speed = 100.0f;

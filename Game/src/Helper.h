@@ -43,6 +43,8 @@ namespace Can::Helper
 	void name_me_cutting(u64 w, u64 h, v3 AB, v3 current_point, f32* vertices);
 	std::array<u64, 4> name_me_digging(u64 w, u64 h, const std::vector<std::array<v3, 3>>& polygon, f32* vertices, bool reset);
 
+	std::string trim_path_and_extension(std::string& path);
+
 	struct sort_by_angle
 	{
 		inline bool operator() (u64 roadSegment1, u64 roadSegment2)

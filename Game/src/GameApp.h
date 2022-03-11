@@ -15,7 +15,7 @@ namespace Can
 	{
 	public:
 		GameApp(const Can::WindowProps& props);
-		void start_the_game();
+		void start_the_game(std::string& save_name, bool is_old_game = false);
 		~GameApp();
 
 	private:
@@ -31,8 +31,8 @@ namespace Can
 		Ref<Texture2D> terrainTexture;
 
 		Ref<Texture2D> treeMap;
-		
 		Ref<Texture2D> addTexture;				// Put better name
+		Ref<Texture2D> saveTexture;				// Put better name
 		Ref<Texture2D> pauseTexture;			// Put better name
 		Ref<Texture2D> removeTexture;			// Put better name
 		Ref<Texture2D> cancelTexture;			// Put better name
@@ -57,7 +57,7 @@ namespace Can
 		std::vector<Prefab*> cars;
 
 		Main_Menu main_menu{};
-		
+
 		GameScene* gameScene = nullptr;
 		UIScene* uiScene = nullptr;
 		Debug* debugScene = nullptr;
