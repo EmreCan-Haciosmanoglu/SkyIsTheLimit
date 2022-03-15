@@ -5,6 +5,7 @@
 #include "Can/Math.h"
 #include "GameApp.h"
 #include "Types/RoadNode.h"
+#include "Building.h"
 
 namespace  Can::Helper
 {
@@ -537,6 +538,99 @@ namespace  Can::Helper
 		found = file.find_last_of(".");
 		return file.substr(0, found);
 	}
+
+	u64 find_special(const std::vector<std::pair<u64, std::vector<u64>>>& paths, u64 node) {
+		u64 size = paths.size();
+		for (u64 i = 0; i < size; i++)
+			if (paths[i].second[paths[i].second.size() - 1] == node) return i;
+		return (u64)(-1);
+	}
+	std::vector<u64> get_path(u64 start, u8 dist)
+	{
+		auto& segments = GameScene::ActiveGameScene->m_RoadManager.m_Segments;
+		auto& nodes = GameScene::ActiveGameScene->m_RoadManager.m_Nodes;
+		std::vector<u64> path{};
+		path.push_back(start);
+		int left_or_right = Utility::Random::Integer(2);
+		u64 next_node = left_or_right == 0 ? segments[start].StartNode : segments[start].EndNode;
+		path.push_back(next_node);
+		for (u64 i = 0; i < dist; i++)
+		{
+			RoadNode& node = nodes[next_node];
+			std::vector<u64>& roads = node.roadSegments;
+			int size = (int)roads.size();
+			if (size == 1)
+			{
+				u64 next_segment = path[path.size() - 2];
+				if (path.size() == 2)
+					next_node = left_or_right == 0 ? segments[start].EndNode : segments[start].StartNode;
+				else
+					next_node = path[path.size() - 3];
+				path.push_back(next_segment);
+				path.push_back(next_node);
+				continue;
+			}
+			int new_road_index = Utility::Random::Integer(size);
+			while (path[path.size() - 2] == roads[new_road_index])
+				new_road_index = Utility::Random::Integer(size);
+			path.push_back(roads[new_road_index]);
+			RoadSegment& rs = segments[roads[new_road_index]];
+			next_node = next_node == rs.StartNode ? rs.EndNode : rs.StartNode;
+			path.push_back(next_node);
+		}
+		for (u64 i = path.size() - 1; i > 0; i--)
+		{
+			path.push_back(path[i - 1]);
+		}
+		return path;
+	}
+	//TODO memory leak possible
+	std::vector<u64> get_path(u64 start, u64 end)
+	{
+		auto& segments = GameScene::ActiveGameScene->m_RoadManager.m_Segments;
+		auto& nodes = GameScene::ActiveGameScene->m_RoadManager.m_Nodes;
+		if (start == end) return { start };
+		RoadSegment& startRoad = segments[start];
+		RoadSegment& endRoad = segments[end];
+		std::vector<u64> visited_junctions{};
+		std::vector<std::pair<u64, std::vector<u64>>> paths{}; // instead of this use links(watch the video again) 
+		paths.push_back(std::pair<u64, std::vector<u64>>{ 1, std::vector<u64>{ startRoad.StartNode } });
+		paths.push_back(std::pair<u64, std::vector<u64>>{ 1, std::vector<u64>{ startRoad.EndNode } });
+		while (paths.empty() == false)
+		{
+			std::sort(paths.begin(), paths.end(), Helper::sort_by_distance());
+			auto path = paths[paths.size() - 1];
+			paths.pop_back();
+			RoadNode& node = nodes[path.second[path.second.size() - 1]];
+			for (u64 i = 0; i < node.roadSegments.size(); i++)
+			{
+				u64 rs = node.roadSegments[i];
+				if (path.second.size() > 1 && path.second[path.second.size() - 2] == rs) continue;
+				auto new_path = path.second;
+				new_path.push_back(rs);
+				if (end == rs) return new_path;
+				RoadSegment& segment = segments[rs];
+				u64 other_end = segment.EndNode == new_path[new_path.size() - 2] ? segment.StartNode : segment.EndNode;
+				new_path.push_back(other_end);
+				u64 new_cost = path.first + 1/*length of the road*/;
+				u64 index = find_special(paths, other_end);
+				if (index != (u64)(-1))
+				{
+					if (paths[index].first > new_cost)
+					{
+						paths.erase(std::next(paths.begin(), index));
+						visited_junctions.erase(std::find(visited_junctions.begin(), visited_junctions.end(), other_end));
+					}
+				}
+				if (std::find(visited_junctions.begin(), visited_junctions.end(), other_end) != visited_junctions.end()) continue;
+				visited_junctions.push_back(other_end);
+				new_path.push_back(other_end);
+				paths.push_back({ new_cost , new_path });
+			}
+		}
+		return{ start };
+	}
+
 
 	void UpdateTheTerrain(const std::vector<std::array<v3, 3>>& polygon, bool reset)
 	{

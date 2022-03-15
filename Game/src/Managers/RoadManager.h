@@ -101,12 +101,12 @@ namespace Can
 	public:
 
 		u8 snapFlags = 
-			(u8)RoadSnapOptions::SNAP_TO_ROAD & 
+			(u8)RoadSnapOptions::SNAP_TO_ROAD | 
 			(u8)RoadSnapOptions::SNAP_TO_ANGLE;
 
 		u8 restrictionFlags =
-			(u8)RoadRestrictions::RESTRICT_COLLISIONS &
-			(u8)RoadRestrictions::RESTRICT_SHORT_LENGTH &
+			(u8)RoadRestrictions::RESTRICT_COLLISIONS |
+			(u8)RoadRestrictions::RESTRICT_SHORT_LENGTH |
 			(u8)RoadRestrictions::RESTRICT_SMALL_ANGLES;
 
 		std::array<u8, 4> cubicCurveOrder = { 0, 1, 2, 3 };

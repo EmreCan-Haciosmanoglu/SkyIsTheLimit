@@ -25,12 +25,16 @@ namespace Can
 		s64 road_segment = -1;
 		u64 t_index = 0;
 		f32 speed = 10.0f;
-		f32 t = 0;
+		f32 t = 0.0f;
+		f32 junction_t = 0.0f;
 		std::array<v3, 3> drift_points;
 		v3 position;
 		v3 target;
+		std::vector<u64> path{};
+		Building* target_building = nullptr;
 		bool from_start = false;
 		bool in_junction = false;
+		bool heading_to_a_building = false;
 		PersonStatus status = PersonStatus::AtHome;
 		f32 time_left = 0.0f;
 		// 
@@ -41,6 +45,7 @@ namespace Can
 		Building* home = nullptr;
 		Building* work = nullptr;
 		Car* iCar = nullptr;
+
 
 	};
 }
