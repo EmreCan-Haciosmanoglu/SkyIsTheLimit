@@ -62,7 +62,10 @@ namespace Can
 						{
 							p->t_index = i - 1;
 							p->target = rs.curve_samples[i];
-							p->from_start = rs.EndNode == p->path[1];
+							if (p->path.size() == 1)
+								p->from_start = p->work->snappedT > p->home->snappedT;
+							else
+								p->from_start = rs.EndNode == p->path[1];
 							break;
 						}
 					}
@@ -102,7 +105,10 @@ namespace Can
 						{
 							p->t_index = i - 1;
 							p->target = rs.curve_samples[i];
-							p->from_start = rs.EndNode == p->path[1];
+							if (p->path.size() == 1)
+								p->from_start = p->home->snappedT > p->work->snappedT;
+							else
+								p->from_start = rs.EndNode == p->path[1];
 							break;
 						}
 					}
@@ -150,6 +156,10 @@ namespace Can
 						p->time_left = Utility::Random::Float(1.0f, 5.0f);
 						p->object->enabled = false;
 						p->heading_to_a_building = false;
+						RoadSegment& segment = segments[p->road_segment];
+						p->road_segment = -1;
+						segment.peoples.erase(std::find(segment.peoples.begin(), segment.peoples.end(), p));
+
 					}
 				}
 				else

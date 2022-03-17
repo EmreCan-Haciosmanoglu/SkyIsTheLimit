@@ -339,7 +339,7 @@ namespace Can
 			if (ishome)
 			{
 				m_HomeBuildings.push_back(newBuilding);
-				u8 domicilled = Utility::Random::Integer(3, 15);
+				u8 domicilled = Utility::Random::Integer(4, 9);
 				newBuilding->capacity = domicilled;
 				auto& manager = m_Scene->m_PersonManager;
 				for (u64 i = 0; i < domicilled; i++)
@@ -359,7 +359,7 @@ namespace Can
 			else
 			{
 				m_WorkBuildings.push_back(newBuilding);
-				u8 worker = Utility::Random::Integer(3, 5);
+				u8 worker = Utility::Random::Integer(3, 6);
 				newBuilding->capacity = worker;
 				auto& manager = m_Scene->m_PersonManager;
 				for (u64 i = 0; i < worker; i++)

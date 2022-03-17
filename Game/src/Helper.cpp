@@ -589,17 +589,22 @@ namespace  Can::Helper
 	{
 		auto& segments = GameScene::ActiveGameScene->m_RoadManager.m_Segments;
 		auto& nodes = GameScene::ActiveGameScene->m_RoadManager.m_Nodes;
-		if (start == end) return { start };
+		if (start == end)
+		{
+			return { start };
+		}
 		RoadSegment& startRoad = segments[start];
 		RoadSegment& endRoad = segments[end];
 		std::vector<u64> visited_junctions{};
 		std::vector<std::pair<u64, std::vector<u64>>> paths{}; // instead of this use links(watch the video again) 
-		paths.push_back(std::pair<u64, std::vector<u64>>{ 1, std::vector<u64>{ startRoad.StartNode } });
-		paths.push_back(std::pair<u64, std::vector<u64>>{ 1, std::vector<u64>{ startRoad.EndNode } });
+		std::vector<std::pair<u64, std::vector<u64>>> no_exit_paths{}; // delete me
+		paths.push_back(std::pair<u64, std::vector<u64>>{ 1, std::vector<u64>{ start, startRoad.StartNode } });
+		paths.push_back(std::pair<u64, std::vector<u64>>{ 1, std::vector<u64>{ start, startRoad.EndNode } });
 		while (paths.empty() == false)
 		{
 			std::sort(paths.begin(), paths.end(), Helper::sort_by_distance());
 			auto path = paths[paths.size() - 1];
+			no_exit_paths.push_back(path);
 			paths.pop_back();
 			RoadNode& node = nodes[path.second[path.second.size() - 1]];
 			for (u64 i = 0; i < node.roadSegments.size(); i++)
@@ -608,7 +613,10 @@ namespace  Can::Helper
 				if (path.second.size() > 1 && path.second[path.second.size() - 2] == rs) continue;
 				auto new_path = path.second;
 				new_path.push_back(rs);
-				if (end == rs) return new_path;
+				if (end == rs)
+				{
+					return new_path;
+				}
 				RoadSegment& segment = segments[rs];
 				u64 other_end = segment.EndNode == new_path[new_path.size() - 2] ? segment.StartNode : segment.EndNode;
 				new_path.push_back(other_end);
@@ -624,7 +632,6 @@ namespace  Can::Helper
 				}
 				if (std::find(visited_junctions.begin(), visited_junctions.end(), other_end) != visited_junctions.end()) continue;
 				visited_junctions.push_back(other_end);
-				new_path.push_back(other_end);
 				paths.push_back({ new_cost , new_path });
 			}
 		}

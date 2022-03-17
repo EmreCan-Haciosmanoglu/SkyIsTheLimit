@@ -90,7 +90,7 @@ namespace Can::Helper
 	{
 		inline bool operator() (std::pair<u64, std::vector<u64>> path1, std::pair<u64, std::vector<u64>> path2)
 		{
-			return path1 < path2;
+			return path1 > path2;
 		}
 	};
 }
