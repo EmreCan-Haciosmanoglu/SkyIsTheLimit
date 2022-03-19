@@ -339,13 +339,15 @@ namespace Can
 			if (ishome)
 			{
 				m_HomeBuildings.push_back(newBuilding);
-				u8 domicilled = Utility::Random::Integer(4, 9);
+				u8 domicilled = Utility::Random::Integer(2, 5);
 				newBuilding->capacity = domicilled;
 				auto& manager = m_Scene->m_PersonManager;
 				for (u64 i = 0; i < domicilled; i++)
 				{
-					Prefab* treeman = (m_Scene->MainApplication->trees[0]);
+					u64 type = 0;
+					Prefab* treeman = (m_Scene->MainApplication->trees[type]);
 					Person* p = new Person(treeman, 1);
+					p->type = type;
 					p->home = newBuilding;
 					p->status = PersonStatus::AtHome;
 					p->time_left = Utility::Random::Float(1.0f,5.0f);
@@ -359,7 +361,7 @@ namespace Can
 			else
 			{
 				m_WorkBuildings.push_back(newBuilding);
-				u8 worker = Utility::Random::Integer(3, 6);
+				u8 worker = Utility::Random::Integer(2, 5);
 				newBuilding->capacity = worker;
 				auto& manager = m_Scene->m_PersonManager;
 				for (u64 i = 0; i < worker; i++)

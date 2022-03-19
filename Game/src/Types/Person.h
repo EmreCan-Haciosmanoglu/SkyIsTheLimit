@@ -39,13 +39,12 @@ namespace Can
 		f32 time_left = 0.0f;
 		// 
 		Object* object;
+		u64 type = 0;
 		std::string firstName = "Adam";
 		std::string midName = "Madam";
 		std::string surName = "Tadaam";
 		Building* home = nullptr;
 		Building* work = nullptr;
 		Car* iCar = nullptr;
-
-
 	};
 }

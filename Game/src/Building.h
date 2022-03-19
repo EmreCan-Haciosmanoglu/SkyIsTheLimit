@@ -19,7 +19,7 @@ namespace Can
 		s64 connectedRoadSegment;
 		f32 snappedT = 0.0f;
 		u8 capacity = 0;
-		std::vector<Person*> residents;
+		std::vector<Person*> residents{};
 		Object* object;
 		v3 position;
 	};
