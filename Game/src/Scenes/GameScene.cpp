@@ -393,6 +393,7 @@ namespace Can
 			}
 			person->work = work_index != -1 ? buildings[work_index] : nullptr;
 			person->iCar = car_index != -1 ? cars[car_index] : nullptr;
+			person->time_left = Utility::Random::Float(1.0f, 5.0f);
 		}
 		///////////////////////////////////////////////////
 

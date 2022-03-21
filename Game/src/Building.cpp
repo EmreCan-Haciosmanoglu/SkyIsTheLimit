@@ -21,8 +21,4 @@ namespace Can
 		, position(position)
 	{
 	}
-	Building::~Building()
-	{
-		delete object;
-	}
 }

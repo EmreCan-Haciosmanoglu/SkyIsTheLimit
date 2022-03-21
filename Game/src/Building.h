@@ -11,7 +11,7 @@ namespace Can
 	public:
 		Building(Prefab* prefab, s64 connectedRoadSegment, f32 snappedT, const glm::vec3& position, const glm::vec3& rotation);
 		Building(Object* object, s64 connectedRoadSegment, f32 snappedT, const glm::vec3& position, const glm::vec3& rotation);
-		~Building();
+		~Building() { delete object; }
 
 	public:
 

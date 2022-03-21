@@ -216,4 +216,9 @@ namespace Can
 		m_Guideline->tintColor = v4(1.0f);
 		m_SnappedRoadSegment = -1;
 	}
+
+	void remove_car(Car* c)
+	{
+
+	}
 }

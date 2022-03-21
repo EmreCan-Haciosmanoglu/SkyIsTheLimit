@@ -413,18 +413,7 @@ namespace Can
 	bool BuildingManager::OnMousePressed_Destruction()
 	{
 		if (m_SelectedBuildingToDestruct != m_Buildings.end())
-		{
-			Building* building = *m_SelectedBuildingToDestruct;
-			if (building->connectedRoadSegment)
-			{
-				auto& segments = m_Scene->m_RoadManager.m_Segments;
-				std::vector<Building*>& connectedBuildings = segments[building->connectedRoadSegment].Buildings;
-				auto it = std::find(connectedBuildings.begin(), connectedBuildings.end(), building);
-				connectedBuildings.erase(it);
-			}
-			m_Buildings.erase(m_SelectedBuildingToDestruct);
-			delete building;
-		}
+			remove_building(*m_SelectedBuildingToDestruct);
 		ResetStates();
 		return false;
 	}
@@ -482,5 +471,33 @@ namespace Can
 			}
 		}
 		return nullptr;
+	}
+	
+	void remove_building(Building* b)
+	{
+		GameScene* game = GameScene::ActiveGameScene;
+		auto& buildings = game->m_BuildingManager.m_Buildings;
+		auto& segments = game->m_RoadManager.m_Segments;
+
+		while (b->residents.size() > 0)
+			remove_person(b->residents[0]);
+
+		if (b->connectedRoadSegment != -1)
+		{
+			auto& connected_buildings = segments[b->connectedRoadSegment].Buildings;
+			auto it = std::find(connected_buildings.begin(), connected_buildings.end(), b);
+			if (it != connected_buildings.end())
+				connected_buildings.erase(it);
+			else
+				assert(false);
+		}
+
+		auto it = std::find(buildings.begin(), buildings.end(), b);
+		if (it != buildings.end())
+			buildings.erase(it);
+		else
+			assert(false);
+
+		delete b;
 	}
 }

@@ -34,6 +34,7 @@ namespace Can
 				if (p->time_left <= 0.0f)
 				{
 					// go to work work work work
+					walking_people.push_back(p);
 					p->road_segment = p->home->connectedRoadSegment;
 					p->t = p->home->snappedT;
 					p->drift_points = {};
@@ -77,6 +78,7 @@ namespace Can
 				p->time_left -= ts;
 				if (p->time_left <= 0.0f)
 				{
+					walking_people.push_back(p);
 					p->road_segment = p->work->connectedRoadSegment;
 					p->t = p->work->snappedT;
 					p->drift_points = {};
@@ -160,6 +162,11 @@ namespace Can
 						p->road_segment = -1;
 						segment.peoples.erase(std::find(segment.peoples.begin(), segment.peoples.end(), p));
 
+						auto it = std::find(walking_people.begin(), walking_people.end(), p);
+						if (it != walking_people.end())
+							walking_people.erase(it);
+						else
+							assert(false);
 					}
 				}
 				else
@@ -297,5 +304,38 @@ namespace Can
 			}
 		}
 		return nullptr;
+	}
+
+	void remove_person(Person* p)
+	{
+		GameScene* game = GameScene::ActiveGameScene;
+		auto& people = game->m_PersonManager.m_People;
+		auto& segments = game->m_RoadManager.m_Segments;
+
+		if (p->road_segment != -1)
+		{
+			auto& walking_people = segments[p->road_segment].peoples;
+			auto it = std::find(walking_people.begin(), walking_people.end(), p);
+			if (it != walking_people.end())
+				walking_people.erase(it);
+			else
+				assert(false);
+		}
+		if (p->home)
+		{
+			auto& resident = p->home->residents;
+			auto it = std::find(resident.begin(), resident.end(), p);
+			if (it != resident.end())
+				resident.erase(it);
+			else
+				assert(false);
+		}
+		auto it = std::find(people.begin(), people.end(), p);
+		if (it != people.end())
+			people.erase(it);
+		else
+			assert(false);
+
+		delete p;
 	}
 }
