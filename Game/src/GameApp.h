@@ -25,6 +25,7 @@ namespace Can
 		void LoadBuildings();
 		void LoadTrees();
 		void LoadCars();
+		void LoadPeople();
 
 	public:
 		Prefab* terrainPrefab;
@@ -55,6 +56,7 @@ namespace Can
 		std::vector<Prefab*> buildings;
 		std::vector<Prefab*> trees;
 		std::vector<Prefab*> cars;
+		std::vector<Prefab*> people;
 
 		Main_Menu main_menu{};
 

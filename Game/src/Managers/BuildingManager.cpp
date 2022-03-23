@@ -345,8 +345,8 @@ namespace Can
 				for (u64 i = 0; i < domicilled; i++)
 				{
 					u64 type = 0;
-					Prefab* treeman = (m_Scene->MainApplication->trees[type]);
-					Person* p = new Person(treeman, 1);
+					Prefab* man = (m_Scene->MainApplication->people[type]);
+					Person* p = new Person(man, 1);
 					p->type = type;
 					p->home = newBuilding;
 					p->status = PersonStatus::AtHome;
@@ -371,6 +371,7 @@ namespace Can
 					if (p)
 					{
 						p->work = newBuilding;
+						newBuilding->workers.push_back(p);
 					}
 				}
 
@@ -465,7 +466,7 @@ namespace Can
 	{
 		for(Building* b : m_WorkBuildings)
 		{
-			if (b->capacity > b->residents.size())
+			if (b->capacity > b->workers.size())
 			{
 				return b;
 			}

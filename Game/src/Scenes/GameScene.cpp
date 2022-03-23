@@ -391,7 +391,11 @@ namespace Can
 				person->home = buildings[home_index];
 				buildings[home_index]->residents.push_back(person);
 			}
-			person->work = work_index != -1 ? buildings[work_index] : nullptr;
+			if(work_index != -1)
+			{
+				person->work = buildings[work_index];
+				buildings[work_index]->workers.push_back(person);
+			}
 			person->iCar = car_index != -1 ? cars[car_index] : nullptr;
 			person->time_left = Utility::Random::Float(1.0f, 5.0f);
 		}

@@ -330,6 +330,15 @@ namespace Can
 			else
 				assert(false);
 		}
+		if (p->work)
+		{
+			auto& workers = p->work->workers;
+			auto it = std::find(workers.begin(), workers.end(), p);
+			if (it != workers.end())
+				workers.erase(it);
+			else
+				assert(false);
+		}
 		auto it = std::find(people.begin(), people.end(), p);
 		if (it != people.end())
 			people.erase(it);

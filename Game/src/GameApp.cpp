@@ -55,6 +55,7 @@ namespace Can
 		LoadBuildings();
 		LoadTrees();
 		LoadCars();
+		LoadPeople();
 
 
 
@@ -339,6 +340,10 @@ namespace Can
 	void GameApp::LoadCars()
 	{
 		cars = LoadPrefabs("\\assets\\objects\\cars", "Car_");
+	}
+	void GameApp::LoadPeople()
+	{
+		people = LoadPrefabs("\\assets\\objects\\People", "Person_");
 	}
 
 	std::vector<Prefab*> GameApp::LoadPrefabs(const std::string& folder, const std::string& filter)
