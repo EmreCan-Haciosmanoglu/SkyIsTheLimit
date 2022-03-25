@@ -3,6 +3,7 @@
 
 #include "Types/RoadSegment.h"
 #include "Types/RoadNode.h"
+#include "Types/Person.h"
 #include "Types/Tree.h"
 #include "Building.h"
 
@@ -1596,7 +1597,7 @@ namespace Can
 				u8 amount_update = RemoveRoadSegment(node->roadSegments[i - 1], m_DestructionNode);
 				if (amount_update > 0) {
 					m_DestructionNode -= amount_update;
-					if (m_DestructionNode != -1)
+					if (m_DestructionNode >= 0)
 						node = &m_Nodes[m_DestructionNode];
 				}
 			}
@@ -2029,18 +2030,39 @@ namespace Can
 		u8 amount_decrease = 0;
 		RoadSegment& rs = m_Segments[roadSegment];
 
+		auto& buildings = m_Scene->m_BuildingManager.m_Buildings;
+		auto& cars = m_Scene->m_CarManager.m_Cars;
+		auto& people = m_Scene->m_PersonManager.m_People;
+		auto& walking_people = m_Scene->m_PersonManager.walking_people;
+
 		if (rs.elevation_type == 0)
 			Helper::UpdateTheTerrain(&m_Segments[roadSegment], true);
 
-		for (Building* building : rs.Buildings)
+		while (rs.Buildings.size() > 0)
+			remove_building(rs.Buildings[0]);
+
+		while (rs.Cars.size() > 0)
+			remove_car(rs.Cars[0]);
+
+		while (rs.peoples.size() > 0)
+			remove_person(rs.peoples[0]);
+
+		for (u64 i = walking_people.size(); i > 0; i--)
 		{
-			m_Scene->m_BuildingManager.GetBuildings().erase(std::find(m_Scene->m_BuildingManager.GetBuildings().begin(), m_Scene->m_BuildingManager.GetBuildings().end(), building));
-			delete building;
-		}
-		for (Car* car : rs.Cars)
-		{
-			m_Scene->m_CarManager.GetCars().erase(std::find(m_Scene->m_CarManager.GetCars().begin(), m_Scene->m_CarManager.GetCars().end(), car));
-			delete car;
+			auto& path = walking_people[i - 1]->path;
+			auto it = std::find(path.begin(), path.end(), roadSegment);
+			if (it != path.end())
+			{
+				Person* wp = walking_people[i - 1];
+				wp->road_segment = -1;
+				wp->path = {};
+				wp->target_building = nullptr;
+				wp->status = PersonStatus::AtHome;
+				wp->time_left = Utility::Random::Float(1.0f, 5.0f);
+				wp->object->enabled = false;
+				wp->heading_to_a_building = false;
+				walking_people.erase(std::next(walking_people.begin(), i - 1));
+			}
 		}
 
 		RoadNode& startNode = m_Nodes[rs.StartNode];
@@ -2048,6 +2070,10 @@ namespace Can
 		if (startNode.roadSegments.size() == 0)
 		{
 			if (rs.StartNode < roadNode) amount_decrease++;
+			for (Person* p : walking_people)
+				for (u64 i = 1; i < p->path.size(); i += 2)
+					if (p->path[i] > rs.StartNode)
+						p->path[i]--;
 			Helper::UpdateTheTerrain(startNode.bounding_polygon, true);
 			u64 count = m_Segments.size();
 			for (u64 rsIndex = 0; rsIndex < count; rsIndex++)
@@ -2064,10 +2090,15 @@ namespace Can
 		}
 		RoadNode& endNode = m_Nodes[rs.EndNode];
 		endNode.RemoveRoadSegment(roadSegment);
+
 		if (endNode.roadSegments.size() == 0)
 		{
-			if (rs.StartNode < roadNode) amount_decrease++;
+			if (rs.EndNode < roadNode) amount_decrease++;
 			Helper::UpdateTheTerrain(endNode.bounding_polygon, true);
+			for (Person* p : walking_people)
+				for (u64 i = 1; i < p->path.size(); i += 2)
+					if (p->path[i] > rs.EndNode)
+						p->path[i]--;
 			u64 count = m_Segments.size();
 			for (u64 rsIndex = 0; rsIndex < count; rsIndex++)
 			{
@@ -2091,7 +2122,6 @@ namespace Can
 				if (node.roadSegments[i] > roadSegment)
 					node.roadSegments[i]--;
 		}
-		auto& cars = m_Scene->m_CarManager.GetCars();
 		count = cars.size();
 		for (u64 cIndex = 0; cIndex < count; cIndex++)
 		{
@@ -2099,7 +2129,6 @@ namespace Can
 			if ((u64)car->roadSegment > roadSegment)
 				car->roadSegment--;
 		}
-		auto& buildings = m_Scene->m_BuildingManager.GetBuildings();
 		count = buildings.size();
 		for (u64 bIndex = 0; bIndex < count; bIndex++)
 		{
@@ -2107,6 +2136,11 @@ namespace Can
 			if ((u64)building->connectedRoadSegment > roadSegment)
 				building->connectedRoadSegment--;
 		}
+		for (Person* p : walking_people)
+			for (u64 i = 0; i < p->path.size(); i += 2)
+				if (p->path[i] > roadSegment)
+					p->path[i]--;
+
 		m_Segments.erase(std::find(m_Segments.begin(), m_Segments.end(), rs));
 		return amount_decrease;
 	}

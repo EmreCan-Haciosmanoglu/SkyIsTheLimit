@@ -52,8 +52,10 @@
     <ClInclude Include="src\Types\RoadType.h">
       <Filter>Types</Filter>
     </ClInclude>
+    <ClInclude Include="src\Types\Tree.h">
+      <Filter>Types</Filter>
+    </ClInclude>
     <ClInclude Include="src\UIScene.h" />
-    <ClInclude Include="src\Types\Tree.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Building.cpp" />

@@ -8,6 +8,7 @@
 #include "Types/RoadNode.h"
 #include "Types/Car.h"
 #include "Types/Tree.h"
+#include "Types/Person.h"
 #include "Building.h"
 
 namespace Can
@@ -86,7 +87,7 @@ namespace Can
 			}
 		}
 
-		
+
 		for (uint8_t i = 0; i < (uint8_t)e_SpeedMode; i++)
 		{
 			MoveMe2AnotherFile(ts);
@@ -330,12 +331,12 @@ namespace Can
 			fread(&from_start, sizeof(bool), 1, read_file);
 			fread(&in_junction, sizeof(bool), 1, read_file);
 			Car* car = new Car(
-				MainApplication->cars[type], 
-				road_segment, 
-				t_index, 
-				speed, 
-				position, 
-				target, 
+				MainApplication->cars[type],
+				road_segment,
+				t_index,
+				speed,
+				position,
+				target,
 				rotation);
 			car->type = type;
 			car->t = t;
@@ -344,6 +345,59 @@ namespace Can
 			car->inJunction = in_junction;
 			cars.push_back(car);
 			segments[road_segment].Cars.push_back(car);
+		}
+		///////////////////////////////////////////////////
+
+		//PersonManager
+		auto people = m_PersonManager.m_People;
+		u64 people_count;
+		fread(&people_count, sizeof(u64), 1, read_file);
+		people.reserve(people_count);
+		for (u64 i = 0; i < people_count; i++)
+		{
+			f32 speed;
+			u64 type;
+			u64 first_name_char_count;
+			u64 middle_name_char_count;
+			u64 last_name_char_count;
+			u64 home_index, work_index, car_index;
+			fread(&speed, sizeof(f32), 1, read_file);
+			//fread(&people[i]->time_left, sizeof(f32), 1, save_file); What to do???
+			fread(&type, sizeof(u64), 1, read_file);
+			fread(&first_name_char_count, sizeof(u64), 1, read_file);
+			char* first_name = (char*)malloc(first_name_char_count + 1);
+			fread(first_name, sizeof(char), first_name_char_count, read_file);
+			fread(&middle_name_char_count, sizeof(u64), 1, read_file);
+			char* middle_name = (char*)malloc(middle_name_char_count + 1);
+			fread(middle_name, sizeof(char), middle_name_char_count, read_file);
+			fread(&last_name_char_count, sizeof(u64), 1, read_file);
+			char* last_name = (char*)malloc(last_name_char_count + 1);
+			fread(last_name, sizeof(char), last_name_char_count, read_file);
+			fread(&home_index, sizeof(s64), 1, read_file);
+			fread(&work_index, sizeof(s64), 1, read_file);
+			fread(&car_index, sizeof(s64), 1, read_file);
+			first_name[first_name_char_count] = '\0';
+			middle_name[middle_name_char_count] = '\0';
+			last_name[last_name_char_count] = '\0';
+			Person* person = new Person(
+				MainApplication->trees[type],
+				speed
+			);
+			person->firstName = std::string(first_name);
+			person->midName = std::string(middle_name);
+			person->surName = std::string(last_name);
+			if (home_index != -1)
+			{
+				person->home = buildings[home_index];
+				buildings[home_index]->residents.push_back(person);
+			}
+			if(work_index != -1)
+			{
+				person->work = buildings[work_index];
+				buildings[work_index]->workers.push_back(person);
+			}
+			person->iCar = car_index != -1 ? cars[car_index] : nullptr;
+			person->time_left = Utility::Random::Float(1.0f, 5.0f);
 		}
 		///////////////////////////////////////////////////
 
@@ -362,80 +416,110 @@ namespace Can
 	void GameScene::save_the_game()
 	{
 		FILE* save_file = fopen(std::string(save_name).append(".csf").c_str(), "wb");
-
-		//RoadManager
-		fwrite(&m_RoadManager.snapFlags, sizeof(u8), 1, save_file);
-		fwrite(&m_RoadManager.restrictionFlags, sizeof(u8), 1, save_file);
 		auto& nodes = m_RoadManager.m_Nodes;
-		u64 node_count = nodes.size();
-		fwrite(&node_count, sizeof(u64), 1, save_file);
-		for (u64 i = 0; i < node_count; i++)
-		{
-			fwrite(&nodes[i].position, sizeof(f32), 3, save_file);
-			fwrite(&nodes[i].elevation_type, sizeof(s8), 1, save_file);
-		}
 		auto& segments = m_RoadManager.m_Segments;
-		u64 segment_count = segments.size();
-		fwrite(&segment_count, sizeof(u64), 1, save_file);
-		for (u64 i = 0; i < segment_count; i++)
-		{
-			fwrite(&segments[i].type, sizeof(u8), 1, save_file);
-			// an array of indices to  building objects
-			// an array of indices to  Car objects
-			fwrite(&segments[i].StartNode, sizeof(u64), 1, save_file);
-			fwrite(&segments[i].EndNode, sizeof(u64), 1, save_file);
-			fwrite(&segments[i].CurvePoints, sizeof(f32), 3 * 4, save_file);
-			fwrite(&segments[i].elevation_type, sizeof(s8), 1, save_file);
-		}
-		///////////////////////////////////////////////////
-
-		//TreeManager
-		fwrite(m_TreeManager.restrictions.data(), sizeof(bool), 1, save_file);
 		auto& trees = m_TreeManager.m_Trees;
-		u64 tree_count = trees.size();
-		fwrite(&tree_count, sizeof(u64), 1, save_file);
-		for (u64 i = 0; i < tree_count; i++)
-		{
-			fwrite(&trees[i]->type, sizeof(u64), 1, save_file);
-			fwrite(&trees[i]->object->position, sizeof(f32), 3, save_file);
-			fwrite(&trees[i]->object->rotation, sizeof(f32), 3, save_file);
-			fwrite(&trees[i]->object->scale, sizeof(f32), 3, save_file);
-		}
-		///////////////////////////////////////////////////
-
-		//BuildingManager
-		fwrite(m_BuildingManager.snapOptions.data(), sizeof(bool), 2, save_file);
-		fwrite(m_BuildingManager.restrictions.data(), sizeof(bool), 2, save_file);
 		auto& buildings = m_BuildingManager.m_Buildings;
-		u64 building_count = buildings.size();
-		fwrite(&building_count, sizeof(u64), 1, save_file);
-		for (u64 i = 0; i < building_count; i++)
-		{
-			fwrite(&buildings[i]->type, sizeof(u64), 1, save_file);
-			fwrite(&buildings[i]->connectedRoadSegment, sizeof(s64), 1, save_file);
-			fwrite(&buildings[i]->snappedT, sizeof(f32), 1, save_file);
-			fwrite(&buildings[i]->object->position, sizeof(f32), 3, save_file);
-			fwrite(&buildings[i]->object->rotation, sizeof(f32), 3, save_file);
-		}
-		///////////////////////////////////////////////////
-
-		//CarManager
 		auto& cars = m_CarManager.m_Cars;
-		u64 car_count = cars.size();
-		fwrite(&car_count, sizeof(u64), 1, save_file);
-		for (u64 i = 0; i < car_count; i++)
+
+		/*Road Manager*/ {
+			fwrite(&m_RoadManager.snapFlags, sizeof(u8), 1, save_file);
+			fwrite(&m_RoadManager.restrictionFlags, sizeof(u8), 1, save_file);
+			u64 node_count = nodes.size();
+			fwrite(&node_count, sizeof(u64), 1, save_file);
+			for (u64 i = 0; i < node_count; i++)
+			{
+				fwrite(&nodes[i].position, sizeof(f32), 3, save_file);
+				fwrite(&nodes[i].elevation_type, sizeof(s8), 1, save_file);
+			}
+			u64 segment_count = segments.size();
+			fwrite(&segment_count, sizeof(u64), 1, save_file);
+			for (u64 i = 0; i < segment_count; i++)
+			{
+				fwrite(&segments[i].type, sizeof(u8), 1, save_file);
+				// an array of indices to  building objects
+				// an array of indices to  Car objects
+				fwrite(&segments[i].StartNode, sizeof(u64), 1, save_file);
+				fwrite(&segments[i].EndNode, sizeof(u64), 1, save_file);
+				fwrite(&segments[i].CurvePoints, sizeof(f32), 3 * 4, save_file);
+				fwrite(&segments[i].elevation_type, sizeof(s8), 1, save_file);
+			}
+		}
+		/*Tree Manager*/ {
+			fwrite(m_TreeManager.restrictions.data(), sizeof(bool), 1, save_file);
+			u64 tree_count = trees.size();
+			fwrite(&tree_count, sizeof(u64), 1, save_file);
+			for (u64 i = 0; i < tree_count; i++)
+			{
+				fwrite(&trees[i]->type, sizeof(u64), 1, save_file);
+				fwrite(&trees[i]->object->position, sizeof(f32), 3, save_file);
+				fwrite(&trees[i]->object->rotation, sizeof(f32), 3, save_file);
+				fwrite(&trees[i]->object->scale, sizeof(f32), 3, save_file);
+			}
+		}
+		/*Building Manager*/ {
+			fwrite(m_BuildingManager.snapOptions.data(), sizeof(bool), 2, save_file);
+			fwrite(m_BuildingManager.restrictions.data(), sizeof(bool), 2, save_file);
+			u64 building_count = buildings.size();
+			fwrite(&building_count, sizeof(u64), 1, save_file);
+			for (u64 i = 0; i < building_count; i++)
+			{
+				fwrite(&buildings[i]->type, sizeof(u64), 1, save_file);
+				fwrite(&buildings[i]->connectedRoadSegment, sizeof(s64), 1, save_file);
+				fwrite(&buildings[i]->snappedT, sizeof(f32), 1, save_file);
+				fwrite(&buildings[i]->object->position, sizeof(f32), 3, save_file);
+				fwrite(&buildings[i]->object->rotation, sizeof(f32), 3, save_file);
+			}
+		}
+		/*Car Manager*/ {
+			u64 car_count = cars.size();
+			fwrite(&car_count, sizeof(u64), 1, save_file);
+			for (u64 i = 0; i < car_count; i++)
+			{
+				fwrite(&cars[i]->type, sizeof(u64), 1, save_file);
+				fwrite(&cars[i]->roadSegment, sizeof(s64), 1, save_file);
+				fwrite(&cars[i]->t_index, sizeof(u64), 1, save_file);
+				fwrite(&cars[i]->speed, sizeof(f32), 1, save_file);
+				fwrite(&cars[i]->t, sizeof(f32), 1, save_file);
+				fwrite(cars[i]->driftpoints.data(), sizeof(f32), 3 * 3, save_file);
+				fwrite(&cars[i]->position, sizeof(f32), 3, save_file);
+				fwrite(&cars[i]->target, sizeof(f32), 3, save_file);
+				fwrite(&cars[i]->object->rotation, sizeof(f32), 3, save_file);
+				fwrite(&cars[i]->fromStart, sizeof(bool), 1, save_file);
+				fwrite(&cars[i]->inJunction, sizeof(bool), 1, save_file);
+			}
+		}
+
+		//PersonManager
+		auto people = m_PersonManager.m_People;
+		u64 people_count = people.size();
+		fwrite(&people_count, sizeof(u64), 1, save_file);
+		for (u64 i = 0; i < people_count; i++)
 		{
-			fwrite(&cars[i]->type, sizeof(u64), 1, save_file);
-			fwrite(&cars[i]->roadSegment, sizeof(s64), 1, save_file);
-			fwrite(&cars[i]->t_index, sizeof(u64), 1, save_file);
-			fwrite(&cars[i]->speed, sizeof(f32), 1, save_file);
-			fwrite(&cars[i]->t, sizeof(f32), 1, save_file);
-			fwrite(cars[i]->driftpoints.data(), sizeof(f32), 3 * 3, save_file);
-			fwrite(&cars[i]->position, sizeof(f32), 3, save_file);
-			fwrite(&cars[i]->target, sizeof(f32), 3, save_file);
-			fwrite(&cars[i]->object->rotation, sizeof(f32), 3, save_file);
-			fwrite(&cars[i]->fromStart, sizeof(bool), 1, save_file);
-			fwrite(&cars[i]->inJunction, sizeof(bool), 1, save_file);
+			auto home_it = std::find(buildings.begin(), buildings.end(), people[i]->home);
+			s64 home_index = std::distance(buildings.begin(), home_it);
+			s64 work_index = -1;
+			s64 car_index = -1;
+			u64 first_name_char_count = people[i]->firstName.size();
+			u64 middle_name_char_count = people[i]->midName.size();
+			u64 last_name_char_count = people[i]->surName.size();
+			if (people[i]->home)
+			{
+				auto work_it = std::find(buildings.begin(), buildings.end(), people[i]->home);
+				work_index = std::distance(buildings.begin(), home_it);
+			}
+			fwrite(&people[i]->speed, sizeof(f32), 1, save_file);
+			//fwrite(&people[i]->time_left, sizeof(f32), 1, save_file); What to do???
+			fwrite(&people[i]->type, sizeof(u64), 1, save_file);
+			fwrite(&first_name_char_count, sizeof(u64), 1, save_file);
+			fwrite(people[i]->firstName.data(), sizeof(char), first_name_char_count, save_file);
+			fwrite(&middle_name_char_count, sizeof(u64), 1, save_file);
+			fwrite(people[i]->midName.data(), sizeof(char), middle_name_char_count, save_file);
+			fwrite(&last_name_char_count, sizeof(u64), 1, save_file);
+			fwrite(people[i]->surName.data(), sizeof(char), last_name_char_count, save_file);
+			fwrite(&home_index, sizeof(s64), 1, save_file);
+			fwrite(&work_index, sizeof(s64), 1, save_file);
+			fwrite(&car_index, sizeof(s64), 1, save_file);
 		}
 		///////////////////////////////////////////////////
 

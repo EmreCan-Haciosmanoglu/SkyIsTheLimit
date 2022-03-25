@@ -59,4 +59,5 @@ namespace Can
 
 		Object* m_Guideline = nullptr;
 	};
+	void remove_car(Car* c);
 }

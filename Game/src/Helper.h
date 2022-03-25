@@ -45,6 +45,9 @@ namespace Can::Helper
 
 	std::string trim_path_and_extension(std::string& path);
 
+	std::vector<u64> get_path(u64 start, u8 dist);
+	std::vector<u64> get_path(u64 start, u64 end);
+
 	struct sort_by_angle
 	{
 		inline bool operator() (u64 roadSegment1, u64 roadSegment2)
@@ -81,6 +84,13 @@ namespace Can::Helper
 			roadSegmentR1 = std::fmod(roadSegmentR1 + glm::radians(360.0f), glm::radians(360.0f));
 			roadSegmentR2 = std::fmod(roadSegmentR2 + glm::radians(360.0f), glm::radians(360.0f));
 			return (roadSegmentR1 < roadSegmentR2);
+		}
+	};
+	struct sort_by_distance
+	{
+		inline bool operator() (std::pair<u64, std::vector<u64>> path1, std::pair<u64, std::vector<u64>> path2)
+		{
+			return path1 > path2;
 		}
 	};
 }

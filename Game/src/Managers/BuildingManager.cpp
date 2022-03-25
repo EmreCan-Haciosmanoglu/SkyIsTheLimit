@@ -339,13 +339,15 @@ namespace Can
 			if (ishome)
 			{
 				m_HomeBuildings.push_back(newBuilding);
-				u8 domicilled = Utility::Random::Integer(3, 15);
+				u8 domicilled = Utility::Random::Integer(2, 5);
 				newBuilding->capacity = domicilled;
 				auto& manager = m_Scene->m_PersonManager;
 				for (u64 i = 0; i < domicilled; i++)
 				{
-					Prefab* treeman = (m_Scene->MainApplication->trees[0]);
-					Person* p = new Person(treeman, 1);
+					u64 type = 0;
+					Prefab* man = (m_Scene->MainApplication->people[type]);
+					Person* p = new Person(man, 1);
+					p->type = type;
 					p->home = newBuilding;
 					p->status = PersonStatus::AtHome;
 					p->time_left = Utility::Random::Float(1.0f,5.0f);
@@ -359,7 +361,7 @@ namespace Can
 			else
 			{
 				m_WorkBuildings.push_back(newBuilding);
-				u8 worker = Utility::Random::Integer(3, 5);
+				u8 worker = Utility::Random::Integer(2, 5);
 				newBuilding->capacity = worker;
 				auto& manager = m_Scene->m_PersonManager;
 				for (u64 i = 0; i < worker; i++)
@@ -369,6 +371,7 @@ namespace Can
 					if (p)
 					{
 						p->work = newBuilding;
+						newBuilding->workers.push_back(p);
 					}
 				}
 
@@ -411,18 +414,7 @@ namespace Can
 	bool BuildingManager::OnMousePressed_Destruction()
 	{
 		if (m_SelectedBuildingToDestruct != m_Buildings.end())
-		{
-			Building* building = *m_SelectedBuildingToDestruct;
-			if (building->connectedRoadSegment)
-			{
-				auto& segments = m_Scene->m_RoadManager.m_Segments;
-				std::vector<Building*>& connectedBuildings = segments[building->connectedRoadSegment].Buildings;
-				auto it = std::find(connectedBuildings.begin(), connectedBuildings.end(), building);
-				connectedBuildings.erase(it);
-			}
-			m_Buildings.erase(m_SelectedBuildingToDestruct);
-			delete building;
-		}
+			remove_building(*m_SelectedBuildingToDestruct);
 		ResetStates();
 		return false;
 	}
@@ -474,11 +466,39 @@ namespace Can
 	{
 		for(Building* b : m_WorkBuildings)
 		{
-			if (b->capacity > b->residents.size())
+			if (b->capacity > b->workers.size())
 			{
 				return b;
 			}
 		}
 		return nullptr;
+	}
+	
+	void remove_building(Building* b)
+	{
+		GameScene* game = GameScene::ActiveGameScene;
+		auto& buildings = game->m_BuildingManager.m_Buildings;
+		auto& segments = game->m_RoadManager.m_Segments;
+
+		while (b->residents.size() > 0)
+			remove_person(b->residents[0]);
+
+		if (b->connectedRoadSegment != -1)
+		{
+			auto& connected_buildings = segments[b->connectedRoadSegment].Buildings;
+			auto it = std::find(connected_buildings.begin(), connected_buildings.end(), b);
+			if (it != connected_buildings.end())
+				connected_buildings.erase(it);
+			else
+				assert(false);
+		}
+
+		auto it = std::find(buildings.begin(), buildings.end(), b);
+		if (it != buildings.end())
+			buildings.erase(it);
+		else
+			assert(false);
+
+		delete b;
 	}
 }

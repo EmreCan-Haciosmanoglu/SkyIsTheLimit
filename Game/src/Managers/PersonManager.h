@@ -19,5 +19,8 @@ namespace Can
 
 		GameScene* m_Scene = nullptr;
 		std::vector<Person*> m_People = {};
+		std::vector<Person*> walking_people = {};
 	};
+
+	void remove_person(Person* p);
 }

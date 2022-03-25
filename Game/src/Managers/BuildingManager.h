@@ -75,4 +75,6 @@ namespace Can
 
 		bool b_ConstructionRestricted = false;
 	};
+
+	void remove_building(Building* b);
 }
