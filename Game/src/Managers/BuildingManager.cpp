@@ -113,7 +113,8 @@ namespace Can
 								};
 								m_Guideline->SetTransform(m_GuidelinePosition, m_GuidelineRotation);
 								snappedToRoad = true;
-								m_SnappedT = ts[i];
+								snapped_t_index = ts[i];
+								snapped_t = (c + 0.5f) * 0.5f;
 								goto snapped;
 							}
 						}
@@ -326,7 +327,8 @@ namespace Can
 			Building* newBuilding = new Building(
 				m_Guideline->prefab,
 				m_SnappedRoadSegment,
-				m_SnappedT,
+				snapped_t_index,
+				snapped_t,
 				m_GuidelinePosition,
 				m_GuidelineRotation
 			);
@@ -452,7 +454,8 @@ namespace Can
 		m_GuidelineRotation = v3(0.0f);
 
 		m_SnappedRoadSegment = (u64)-1;
-		m_SnappedT = -1.0f;
+		snapped_t_index = 0;
+		snapped_t = -1.0f;
 
 		m_SelectedBuildingToDestruct = m_Buildings.end();
 

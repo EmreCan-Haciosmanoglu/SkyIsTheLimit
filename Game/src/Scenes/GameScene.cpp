@@ -285,16 +285,19 @@ namespace Can
 		{
 			u64 type;
 			s64 connected_road_segment;
+			u64 snapped_t_index;
 			f32 snapped_t;
 			v3 position, rotation;// calculate it from snapped_t?
 			fread(&type, sizeof(u64), 1, read_file);
 			fread(&connected_road_segment, sizeof(s64), 1, read_file);
+			fread(&snapped_t_index, sizeof(u64), 1, read_file);
 			fread(&snapped_t, sizeof(f32), 1, read_file);
 			fread(&position, sizeof(f32), 3, read_file);
 			fread(&rotation, sizeof(f32), 3, read_file);
 			Building* building = new Building(
 				MainApplication->buildings[type],
 				connected_road_segment,
+				snapped_t_index,
 				snapped_t,
 				position,
 				rotation
@@ -466,7 +469,8 @@ namespace Can
 			{
 				fwrite(&buildings[i]->type, sizeof(u64), 1, save_file);
 				fwrite(&buildings[i]->connectedRoadSegment, sizeof(s64), 1, save_file);
-				fwrite(&buildings[i]->snappedT, sizeof(f32), 1, save_file);
+				fwrite(&buildings[i]->snapped_t_index, sizeof(u64), 1, save_file);
+				fwrite(&buildings[i]->snapped_t, sizeof(f32), 1, save_file);
 				fwrite(&buildings[i]->object->position, sizeof(f32), 3, save_file);
 				fwrite(&buildings[i]->object->rotation, sizeof(f32), 3, save_file);
 			}
