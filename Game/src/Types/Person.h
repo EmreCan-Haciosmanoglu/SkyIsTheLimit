@@ -1,6 +1,7 @@
 #pragma once
 #include "Can.h"
 
+#include "Types/Transition.h"
 
 namespace Can
 {
@@ -30,9 +31,10 @@ namespace Can
 		std::array<v3, 3> drift_points;
 		v3 position;
 		v3 target;
-		std::vector<u64> path{};
+		std::vector<Transiton*> path{};
 		Building* target_building = nullptr;
 		bool from_start = false;
+		bool from_right = true;
 		bool in_junction = false;
 		bool heading_to_a_building = false;
 		PersonStatus status = PersonStatus::AtHome;

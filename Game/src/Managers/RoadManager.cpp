@@ -1567,7 +1567,10 @@ namespace Can
 			rs.SetCurvePoints({ cps[3], cps[2], cps[1], cps[0] });
 
 			for (Building* building : rs.Buildings)
-				building->snappedT = 1 - building->snappedT;
+			{
+				building->snapped_t = 1.0f - building->snapped_t;
+				building->snapped_t_index = (rs.curve_samples.size() - 1) - building->snapped_t_index;
+			}
 
 			for (Car* car : rs.Cars)
 			{
@@ -1770,14 +1773,18 @@ namespace Can
 			for (u64 bIndex = 0; bIndex < segment.Buildings.size(); bIndex++)
 			{
 				Building* building = segment.Buildings[bIndex];
-				f32 t = building->snappedT;
+				f32 t = building->snapped_t;
+				u64 t_index = building->snapped_t_index;
+				u64 count = segment.curve_samples.size() - 1;
 				if (t < m_StartSnappedT)
 				{
-					building->snappedT = t / m_StartSnappedT;
+					building->snapped_t = t / m_StartSnappedT;
+					building->snapped_t_index = t_index / m_StartSnappedT;
 				}
 				else
 				{
-					building->snappedT = (1.0f - t) / (1.0f - m_StartSnappedT);
+					building->snapped_t = (1.0f - t) / (1.0f - m_StartSnappedT);
+					building->snapped_t_index = (count - t_index) / (count - m_StartSnappedT);
 					auto bIt = std::find(segment.Buildings.begin(), segment.Buildings.end(), building);
 					segment.Buildings.erase(bIt);
 					bIndex--;
@@ -1931,14 +1938,18 @@ namespace Can
 			for (u64 bIndex = 0; bIndex < segment.Buildings.size(); bIndex++)
 			{
 				Building* building = segment.Buildings[bIndex];
-				f32 t = building->snappedT;
+				f32 t = building->snapped_t;
+				u64 t_index = building->snapped_t_index;
+				u64 count = segment.curve_samples.size() - 1;
 				if (t < m_EndSnappedT)
 				{
-					building->snappedT = t / m_EndSnappedT;
+					building->snapped_t = t / m_StartSnappedT;
+					building->snapped_t_index = t_index / m_StartSnappedT;
 				}
 				else
 				{
-					building->snappedT = (1.0f - t) / (1.0f - m_EndSnappedT);
+					building->snapped_t = (1.0f - t) / (1.0f - m_StartSnappedT);
+					building->snapped_t_index = (count - t_index) / (count - m_StartSnappedT);
 					auto bIt = std::find(segment.Buildings.begin(), segment.Buildings.end(), building);
 					segment.Buildings.erase(bIt);
 					bIndex--;

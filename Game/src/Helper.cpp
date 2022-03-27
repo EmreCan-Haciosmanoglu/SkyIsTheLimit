@@ -5,6 +5,7 @@
 #include "Can/Math.h"
 #include "GameApp.h"
 #include "Types/RoadNode.h"
+#include "Types/Transition.h"
 #include "Building.h"
 
 namespace  Can::Helper
@@ -545,47 +546,95 @@ namespace  Can::Helper
 			if (paths[i].second[paths[i].second.size() - 1] == node) return i;
 		return (u64)(-1);
 	}
-	std::vector<u64> get_path(u64 start, u8 dist)
+	std::vector<Transition*> get_path(Building* start, u8 dist)
 	{
 		auto& segments = GameScene::ActiveGameScene->m_RoadManager.m_Segments;
 		auto& nodes = GameScene::ActiveGameScene->m_RoadManager.m_Nodes;
-		std::vector<u64> path{};
-		path.push_back(start);
+		u64 prev_road_segment = start->connectedRoadSegment;
+		RoadSegment& start_segment = segments[prev_road_segment];
+		std::vector<Transition*> path{};
+		RS_Transition* rs_transition = new RS_Transition();
+		path.push_back(rs_transition);
+		rs_transition->from_index = start->snapped_t_index;
+		rs_transition->from_t = start->snapped_t;
+		rs_transition->from_right = start->snapped_to_right;
 		int left_or_right = Utility::Random::Integer(2);
-		u64 next_node = left_or_right == 0 ? segments[start].StartNode : segments[start].EndNode;
-		path.push_back(next_node);
+		u64 next_node = 0;
+		if (left_or_right)
+		{
+			next_node = start_segment.StartNode;
+			rs_transition->to_index = 0;
+			rs_transition->to_t = 0.0f;
+		}
+		else
+		{
+			next_node = start_segment.EndNode;
+			rs_transition->to_index = start_segment.curve_samples.size() - 1;
+			rs_transition->to_t = 1.0f;
+		}
+		rs_transition->distance_from_middle = 0.5f;
+
+		//path.push_back(next_node);
+		RN_Transition* rn_transition = new RN_Transition();
+		path.push_back(rn_transition);
+
 		for (u64 i = 0; i < dist; i++)
 		{
 			RoadNode& node = nodes[next_node];
+			rs_transition = new RS_Transition();
+			//rs_transition->from_right = random
+			rs_transition->distance_from_middle = 0.5f;
 			std::vector<u64>& roads = node.roadSegments;
 			int size = (int)roads.size();
-			if (size == 1)
+			int new_road_index = 0;
+			if (size > 1)
+				while (prev_road_segment == roads[new_road_index])
+					new_road_index = Utility::Random::Integer(size);
+
+			RoadSegment& next_segment = segments[roads[new_road_index]];
+			if (next_segment.StartNode == next_node)
 			{
-				u64 next_segment = path[path.size() - 2];
-				if (path.size() == 2)
-					next_node = left_or_right == 0 ? segments[start].EndNode : segments[start].StartNode;
-				else
-					next_node = path[path.size() - 3];
-				path.push_back(next_segment);
-				path.push_back(next_node);
-				continue;
+				rs_transition->from_index = 0;
+				rs_transition->to_index = next_segment.curve_samples.size() - 1;
+				rs_transition->from_t = 0.0f;
+				rs_transition->to_t = 1.0f;
+				next_node = next_segment.EndNode;
 			}
-			int new_road_index = Utility::Random::Integer(size);
-			while (path[path.size() - 2] == roads[new_road_index])
-				new_road_index = Utility::Random::Integer(size);
-			path.push_back(roads[new_road_index]);
-			RoadSegment& rs = segments[roads[new_road_index]];
-			next_node = next_node == rs.StartNode ? rs.EndNode : rs.StartNode;
-			path.push_back(next_node);
+			else
+			{
+				rs_transition->from_index = next_segment.curve_samples.size() - 1;
+				rs_transition->to_index = 0;
+				rs_transition->from_t = 1.0f;
+				rs_transition->to_t = 0.0f;
+				next_node = next_segment.StartNode;
+			}
+			path.push_back(rs_transition);
+
+			rn_transition = new RN_Transition();
+			path.push_back(rn_transition);
 		}
 		for (u64 i = path.size() - 1; i > 0; i--)
 		{
-			path.push_back(path[i - 1]);
+			RS_Transition* mirror_rs_transition = (RS_Transition*)path[i - 1];
+			RS_Transition* rs_transition = new RS_Transition();
+			rs_transition->from_index = mirror_rs_transition->to_index;
+			rs_transition->to_index = mirror_rs_transition->from_index;
+			rs_transition->from_t = mirror_rs_transition->to_t;
+			rs_transition->to_t = mirror_rs_transition->from_t;
+			rs_transition->distance_from_middle = mirror_rs_transition->distance_from_middle;
+			rs_transition->from_right = mirror_rs_transition->from_right;
+			path.push_back(rs_transition);
+			i--;
+			if (i == 0)
+				break;
+			RN_Transition* mirror_rn_transition = (RN_Transition*)path[i - 1];
+			RN_Transition* rn_transition = new RN_Transition();
+			path.push_back(rn_transition);
 		}
 		return path;
 	}
 	//TODO memory leak possible
-	std::vector<u64> get_path(u64 start, u64 end)
+	std::vector<Transition*> get_path(Building* start, Building* end)
 	{
 		auto& segments = GameScene::ActiveGameScene->m_RoadManager.m_Segments;
 		auto& nodes = GameScene::ActiveGameScene->m_RoadManager.m_Nodes;

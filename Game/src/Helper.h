@@ -45,8 +45,8 @@ namespace Can::Helper
 
 	std::string trim_path_and_extension(std::string& path);
 
-	std::vector<u64> get_path(u64 start, u8 dist);
-	std::vector<u64> get_path(u64 start, u64 end);
+	std::vector<Transition*> get_path(Building* start, u8 dist);
+	std::vector<Transition*> get_path(Building* start, Building* end);
 
 	struct sort_by_angle
 	{

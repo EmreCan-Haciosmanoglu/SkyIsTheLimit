@@ -3,6 +3,7 @@
 #include "Scenes/GameScene.h"
 #include "Types/RoadSegment.h"
 #include "Types/RoadNode.h"
+#include "Types/Transition.h"
 #include "Building.h"
 #include "Can/Math.h"
 
@@ -36,7 +37,7 @@ namespace Can
 					// go to work work work work
 					walking_people.push_back(p);
 					p->road_segment = p->home->connectedRoadSegment;
-					p->t = p->home->snappedT;
+					p->t = 0.0f;
 					p->drift_points = {};
 					p->position = p->home->position;
 					p->status = PersonStatus::Walking;
@@ -64,7 +65,7 @@ namespace Can
 							p->t_index = i - 1;
 							p->target = rs.curve_samples[i];
 							if (p->path.size() == 1)
-								p->from_start = p->work->snappedT > p->home->snappedT;
+								p->from_start = p->work->snapped_t_index > p->home->snapped_t_index;
 							else
 								p->from_start = rs.EndNode == p->path[1];
 							break;
@@ -80,7 +81,7 @@ namespace Can
 				{
 					walking_people.push_back(p);
 					p->road_segment = p->work->connectedRoadSegment;
-					p->t = p->work->snappedT;
+					p->t = 0.0f;
 					p->drift_points = {};
 					p->position = p->work->position;
 					p->status = PersonStatus::Walking;
@@ -108,7 +109,7 @@ namespace Can
 							p->t_index = i - 1;
 							p->target = rs.curve_samples[i];
 							if (p->path.size() == 1)
-								p->from_start = p->home->snappedT > p->work->snappedT;
+								p->from_start = p->home->snapped_t_index > p->work->snapped_t_index;
 							else
 								p->from_start = rs.EndNode == p->path[1];
 							break;
@@ -190,8 +191,10 @@ namespace Can
 						std::vector<f32>& curve_t_samples = current_road.curve_t_samples;
 						if (p->path.size() == 1)
 						{
-							if ((p->from_start && p->t >= p->target_building->snappedT) ||
-								(!p->from_start && p->t <= p->target_building->snappedT))
+							u64 target_t_index = p->target_building->snapped_t_index;
+							f32 target_t = p->target_building->snapped_t;
+							if ((p->from_start && p->t_index >= target_t_index && p->t >= target_t) ||
+								(!p->from_start && p->t_index <= target_t_index && p->t <= target_t))
 							{
 								p->target = p->target_building->position;
 								p->heading_to_a_building = true;
@@ -199,7 +202,7 @@ namespace Can
 							else
 							{
 								p->t_index += (p->from_start ? +1 : -1);
-								p->t = curve_t_samples[p->t_index];
+								p->t = 0.0f;
 								p->target = curve_samples[p->t_index];
 
 								v3 direction = glm::normalize(p->target - p->position);
