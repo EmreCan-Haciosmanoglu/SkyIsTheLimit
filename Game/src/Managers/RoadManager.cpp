@@ -1,6 +1,7 @@
 #include "canpch.h"
 #include "RoadManager.h"
 
+#include "Types/Transition.h"
 #include "Types/RoadSegment.h"
 #include "Types/RoadNode.h"
 #include "Types/Person.h"
@@ -2061,7 +2062,9 @@ namespace Can
 		for (u64 i = walking_people.size(); i > 0; i--)
 		{
 			auto& path = walking_people[i - 1]->path;
-			auto it = std::find(path.begin(), path.end(), roadSegment);
+			auto it = std::find_if(path.begin(), path.end(), [roadSegment](Transition* transition) {
+				return ((RS_Transition*)transition)->road_segment == roadSegment;
+				});
 			if (it != path.end())
 			{
 				Person* wp = walking_people[i - 1];
@@ -2083,8 +2086,8 @@ namespace Can
 			if (rs.StartNode < roadNode) amount_decrease++;
 			for (Person* p : walking_people)
 				for (u64 i = 1; i < p->path.size(); i += 2)
-					if (p->path[i] > rs.StartNode)
-						p->path[i]--;
+					if (((RN_Transition*)p->path[i])->road_node > rs.StartNode)
+						((RN_Transition*)p->path[i])->road_node--;
 			Helper::UpdateTheTerrain(startNode.bounding_polygon, true);
 			u64 count = m_Segments.size();
 			for (u64 rsIndex = 0; rsIndex < count; rsIndex++)
@@ -2108,8 +2111,8 @@ namespace Can
 			Helper::UpdateTheTerrain(endNode.bounding_polygon, true);
 			for (Person* p : walking_people)
 				for (u64 i = 1; i < p->path.size(); i += 2)
-					if (p->path[i] > rs.EndNode)
-						p->path[i]--;
+					if (((RN_Transition*)p->path[i])->road_node > rs.EndNode)
+						((RN_Transition*)p->path[i])->road_node--;
 			u64 count = m_Segments.size();
 			for (u64 rsIndex = 0; rsIndex < count; rsIndex++)
 			{
@@ -2149,8 +2152,8 @@ namespace Can
 		}
 		for (Person* p : walking_people)
 			for (u64 i = 0; i < p->path.size(); i += 2)
-				if (p->path[i] > roadSegment)
-					p->path[i]--;
+				if (((RN_Transition*)p->path[i])->road_node > roadSegment)
+					((RN_Transition*)p->path[i])->road_node--;
 
 		m_Segments.erase(std::find(m_Segments.begin(), m_Segments.end(), rs));
 		return amount_decrease;

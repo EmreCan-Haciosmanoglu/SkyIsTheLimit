@@ -555,8 +555,8 @@ namespace  Can::Helper
 		std::vector<Transition*> path{};
 		RS_Transition* rs_transition = new RS_Transition();
 		path.push_back(rs_transition);
+		rs_transition->road_segment = start->connectedRoadSegment;
 		rs_transition->from_index = start->snapped_t_index;
-		rs_transition->from_t = start->snapped_t;
 		rs_transition->from_right = start->snapped_to_right;
 		int left_or_right = Utility::Random::Integer(2);
 		u64 next_node = 0;
@@ -564,23 +564,26 @@ namespace  Can::Helper
 		{
 			next_node = start_segment.StartNode;
 			rs_transition->to_index = 0;
-			rs_transition->to_t = 0.0f;
 		}
 		else
 		{
 			next_node = start_segment.EndNode;
 			rs_transition->to_index = start_segment.curve_samples.size() - 1;
-			rs_transition->to_t = 1.0f;
 		}
 		rs_transition->distance_from_middle = 0.5f;
 
 		//path.push_back(next_node);
 		RN_Transition* rn_transition = new RN_Transition();
 		path.push_back(rn_transition);
+		rn_transition->road_node = next_node;
 
 		for (u64 i = 0; i < dist; i++)
 		{
 			RoadNode& node = nodes[next_node];
+			auto it = std::find(node.roadSegments.begin(), node.roadSegments.end(), prev_road_segment);
+			if (it == node.roadSegments.end()) assert(false);
+			u64 index = std::distance(node.roadSegments.begin(), it);
+			rn_transition->from_index = index;
 			rs_transition = new RS_Transition();
 			//rs_transition->from_right = random
 			rs_transition->distance_from_middle = 0.5f;
@@ -590,45 +593,56 @@ namespace  Can::Helper
 			if (size > 1)
 				while (prev_road_segment == roads[new_road_index])
 					new_road_index = Utility::Random::Integer(size);
+			u64 next_road_segment = roads[new_road_index];
+			rn_transition->to_index = next_road_segment;
+			rs_transition->road_segment = next_road_segment;
+			if (new_road_index > index)
+				rn_transition->accending = (new_road_index - index) < (size / 2.0f);
+			else
+				rn_transition->accending = (index - new_road_index) > (size / 2.0f);
 
-			RoadSegment& next_segment = segments[roads[new_road_index]];
+			RoadSegment& next_segment = segments[next_road_segment];
 			if (next_segment.StartNode == next_node)
 			{
 				rs_transition->from_index = 0;
 				rs_transition->to_index = next_segment.curve_samples.size() - 1;
-				rs_transition->from_t = 0.0f;
-				rs_transition->to_t = 1.0f;
 				next_node = next_segment.EndNode;
 			}
 			else
 			{
 				rs_transition->from_index = next_segment.curve_samples.size() - 1;
 				rs_transition->to_index = 0;
-				rs_transition->from_t = 1.0f;
-				rs_transition->to_t = 0.0f;
 				next_node = next_segment.StartNode;
 			}
 			path.push_back(rs_transition);
 
 			rn_transition = new RN_Transition();
 			path.push_back(rn_transition);
+			prev_road_segment = next_road_segment;
+			rn_transition->road_node = next_node;
 		}
+		rn_transition->from_index = prev_road_segment;
+		rn_transition->to_index = prev_road_segment;
+
 		for (u64 i = path.size() - 1; i > 0; i--)
 		{
 			RS_Transition* mirror_rs_transition = (RS_Transition*)path[i - 1];
 			RS_Transition* rs_transition = new RS_Transition();
 			rs_transition->from_index = mirror_rs_transition->to_index;
 			rs_transition->to_index = mirror_rs_transition->from_index;
-			rs_transition->from_t = mirror_rs_transition->to_t;
-			rs_transition->to_t = mirror_rs_transition->from_t;
 			rs_transition->distance_from_middle = mirror_rs_transition->distance_from_middle;
 			rs_transition->from_right = mirror_rs_transition->from_right;
+			rs_transition->road_segment = mirror_rs_transition->road_segment;
 			path.push_back(rs_transition);
 			i--;
 			if (i == 0)
 				break;
 			RN_Transition* mirror_rn_transition = (RN_Transition*)path[i - 1];
-			RN_Transition* rn_transition = new RN_Transition();
+			rn_transition = new RN_Transition();
+			rn_transition->from_index = mirror_rn_transition->to_index;
+			rn_transition->to_index = mirror_rn_transition->from_index;
+			rn_transition->accending = !mirror_rn_transition->accending;
+			rn_transition->road_node = mirror_rn_transition->road_node;
 			path.push_back(rn_transition);
 		}
 		return path;
@@ -638,17 +652,82 @@ namespace  Can::Helper
 	{
 		auto& segments = GameScene::ActiveGameScene->m_RoadManager.m_Segments;
 		auto& nodes = GameScene::ActiveGameScene->m_RoadManager.m_Nodes;
+		auto& types = GameScene::ActiveGameScene->MainApplication->road_types;
 		if (start == end)
 		{
-			return { start };
+			if (start->snapped_to_right == end->snapped_to_right)
+			{
+				RS_Transition* rs_transition = new RS_Transition();
+				rs_transition->from_index = start->snapped_t_index;
+				rs_transition->to_index = end->snapped_t_index;
+				rs_transition->distance_from_middle = 0.5f;
+				rs_transition->from_right = start->snapped_to_right;
+				rs_transition->road_segment = start->connectedRoadSegment;
+				return { rs_transition };
+			}
+			else
+			{
+				RoadSegment& segment = segments[start->connectedRoadSegment];
+				if (segment.curve_samples.size() > start->snapped_t_index + end->snapped_t_index)
+				{
+					RS_Transition* rs_transition_s = new RS_Transition();
+					rs_transition_s->from_index = start->snapped_t_index;
+					rs_transition_s->to_index = 0;
+					rs_transition_s->distance_from_middle = 0.5f;
+					rs_transition_s->from_right = start->snapped_to_right;
+					rs_transition_s->road_segment = start->connectedRoadSegment;
+
+					RoadNode& node = nodes[segment.StartNode];
+					auto it = std::find(node.roadSegments.begin(), node.roadSegments.end(), start->connectedRoadSegment);
+					u64 index = std::distance(node.roadSegments.begin(), it);
+					RN_Transition* rn_transition = new RN_Transition();
+					rn_transition->from_index = index;
+					rn_transition->to_index = index;
+					rn_transition->road_node = segment.StartNode;
+
+					RS_Transition* rs_transition_e = new RS_Transition();
+					rs_transition_e->from_index = 0;
+					rs_transition_e->to_index = end->snapped_t_index;
+					rs_transition_e->distance_from_middle = 0.5f;
+					rs_transition_e->from_right = end->snapped_to_right;
+					rs_transition_e->road_segment = end->connectedRoadSegment;
+					return { rs_transition_s, rn_transition, rs_transition_e };
+				}
+				else
+				{
+					RS_Transition* rs_transition_s = new RS_Transition();
+					rs_transition_s->from_index = start->snapped_t_index;
+					rs_transition_s->to_index = segment.curve_samples.size() - 1;
+					rs_transition_s->distance_from_middle = 0.5f;
+					rs_transition_s->from_right = start->snapped_to_right;
+					rs_transition_s->road_segment = start->connectedRoadSegment;
+
+					RoadNode& node = nodes[segment.EndNode];
+					auto it = std::find(node.roadSegments.begin(), node.roadSegments.end(), start->connectedRoadSegment);
+					u64 index = std::distance(node.roadSegments.begin(), it);
+					RN_Transition* rn_transition = new RN_Transition();
+					rn_transition->from_index = index;
+					rn_transition->to_index = index;
+					rn_transition->road_node = segment.EndNode;
+
+					RS_Transition* rs_transition_e = new RS_Transition();
+					rs_transition_e->from_index = segment.curve_samples.size() - 1;
+					rs_transition_e->to_index = end->snapped_t_index;
+					rs_transition_e->distance_from_middle = 0.5f;
+					rs_transition_e->from_right = end->snapped_to_right;
+					rs_transition_e->road_segment = end->connectedRoadSegment;
+					return { rs_transition_s, rn_transition, rs_transition_e };
+				}
+			}
 		}
-		RoadSegment& startRoad = segments[start];
-		RoadSegment& endRoad = segments[end];
+		RoadSegment& startRoad = segments[start->connectedRoadSegment];
+		RoadSegment& endRoad = segments[end->connectedRoadSegment];
 		std::vector<u64> visited_junctions{};
 		std::vector<std::pair<u64, std::vector<u64>>> paths{}; // instead of this use links(watch the video again) 
 		std::vector<std::pair<u64, std::vector<u64>>> no_exit_paths{}; // delete me
-		paths.push_back(std::pair<u64, std::vector<u64>>{ 1, std::vector<u64>{ start, startRoad.StartNode } });
-		paths.push_back(std::pair<u64, std::vector<u64>>{ 1, std::vector<u64>{ start, startRoad.EndNode } });
+		paths.push_back(std::pair<u64, std::vector<u64>>{ 1, std::vector<u64>{ (u64)start->connectedRoadSegment, startRoad.StartNode } });
+		paths.push_back(std::pair<u64, std::vector<u64>>{ 1, std::vector<u64>{ (u64)start->connectedRoadSegment, startRoad.EndNode } });
+
 		while (paths.empty() == false)
 		{
 			std::sort(paths.begin(), paths.end(), Helper::sort_by_distance());
@@ -659,14 +738,57 @@ namespace  Can::Helper
 			for (u64 i = 0; i < node.roadSegments.size(); i++)
 			{
 				u64 rs = node.roadSegments[i];
+				RoadSegment& segment = segments[rs];
+				if (!types[segment.type].zoneable) continue;
 				if (path.second.size() > 1 && path.second[path.second.size() - 2] == rs) continue;
 				auto new_path = path.second;
 				new_path.push_back(rs);
-				if (end == rs)
+				if (end->connectedRoadSegment == rs)
 				{
-					return new_path;
+					u64 count = new_path.size();
+					std::vector<Transition*> result{};
+					result.reserve(count);
+					RS_Transition* rs_transition = new RS_Transition();
+					result.push_back(rs_transition);
+					rs_transition->from_index = start->snapped_t_index;
+					rs_transition->distance_from_middle = 0.5f;
+					rs_transition->from_right = start->snapped_to_right;
+					rs_transition->road_segment = start->connectedRoadSegment;
+					for (u64 j = 1; j < count; j += 2)
+					{
+						RoadNode& road_node = nodes[new_path[j]];
+						u64 size = road_node.roadSegments.size();
+						RN_Transition* rn_transition = new RN_Transition();
+						rn_transition->road_node = new_path[j];
+
+						result.push_back(rn_transition);
+						auto it_start = std::find(node.roadSegments.begin(), node.roadSegments.end(), new_path[j - 1]);
+						auto it_end = std::find(node.roadSegments.begin(), node.roadSegments.end(), new_path[j + 1]);
+						rn_transition->from_index = std::distance(node.roadSegments.begin(), it_start);
+						rn_transition->to_index = std::distance(node.roadSegments.begin(), it_end);
+						if (rn_transition->to_index > rn_transition->from_index)
+							rn_transition->accending = (rn_transition->to_index - rn_transition->from_index) < (size / 2.0f);
+						else
+							rn_transition->accending = (rn_transition->from_index - rn_transition->to_index) > (size / 2.0f);
+						rs_transition = new RS_Transition();
+						result.push_back(rs_transition);
+						rs_transition->distance_from_middle = 0.5f;
+						rs_transition->from_right = true;
+						rs_transition->road_segment = new_path[j + 1];
+						RoadSegment& next_segment = segments[new_path[j + 1]];
+						if (next_segment.StartNode == new_path[j])
+						{
+							rs_transition->from_index = 0;
+							rs_transition->to_index = next_segment.curve_samples.size() - 1;
+						}
+						else
+						{
+							rs_transition->from_index = next_segment.curve_samples.size() - 1;
+							rs_transition->to_index = 0;
+						}
+					}
+					return result;
 				}
-				RoadSegment& segment = segments[rs];
 				u64 other_end = segment.EndNode == new_path[new_path.size() - 2] ? segment.StartNode : segment.EndNode;
 				new_path.push_back(other_end);
 				u64 new_cost = path.first + 1/*length of the road*/;
@@ -684,7 +806,7 @@ namespace  Can::Helper
 				paths.push_back({ new_cost , new_path });
 			}
 		}
-		return{ start };
+		return get_path(start, 4);
 	}
 
 

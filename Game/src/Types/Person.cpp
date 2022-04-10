@@ -1,9 +1,10 @@
 #include "canpch.h"
 #include "Person.h"
 
-#include "RoadSegment.h"
+#include "Types/Transition.h"
+#include "Types/RoadSegment.h"
 #include "Building.h"
-#include "Car.h"
+#include "Types/Car.h"
 
 namespace Can
 {

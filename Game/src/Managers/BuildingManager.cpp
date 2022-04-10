@@ -113,7 +113,7 @@ namespace Can
 								};
 								m_Guideline->SetTransform(m_GuidelinePosition, m_GuidelineRotation);
 								snappedToRoad = true;
-								snapped_t_index = ts[i];
+								snapped_t_index = i;
 								snapped_t = (c + 0.5f) * 0.5f;
 								goto snapped;
 							}

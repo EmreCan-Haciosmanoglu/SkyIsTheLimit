@@ -4,16 +4,17 @@
 
 namespace Can
 {
+	class Person;
 	class RoadNode
 	{
 	public:
-		RoadNode(){}
+		RoadNode() {}
 		RoadNode(const std::vector<u64>& roadSegments, const v3& position, u8 elevation_type);
 		RoadNode(RoadNode&& other);
 		~RoadNode();
 		RoadNode& operator=(RoadNode&& other);
 		friend bool operator==(const RoadNode& left, const RoadNode& right) { return &left == &right; }
-	
+
 		void Reconstruct();
 
 		void AddRoadSegment(std::vector<u64> arr);
@@ -21,7 +22,8 @@ namespace Can
 
 		Object* object = nullptr;
 		std::vector<u64> roadSegments;
-	
+		std::vector<Person*> people{};
+
 		v3 position = v3(0.0f);
 		u64 index = (u64)(-1);
 

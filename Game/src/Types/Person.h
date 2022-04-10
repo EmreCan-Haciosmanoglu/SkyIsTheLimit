@@ -1,7 +1,6 @@
 #pragma once
 #include "Can.h"
 
-#include "Types/Transition.h"
 
 namespace Can
 {
@@ -14,6 +13,7 @@ namespace Can
 		Driving
 	};
 	
+	struct Transition;
 	class Building;
 	class Car;
 	class Person
@@ -24,14 +24,13 @@ namespace Can
 
 		// Simulation
 		s64 road_segment = -1;
-		u64 t_index = 0;
+		s64 road_node = -1;
+		//u64 t_index = 0;
 		f32 speed = 10.0f;
-		f32 t = 0.0f;
-		f32 junction_t = 0.0f;
-		std::array<v3, 3> drift_points;
+		//f32 t = 0.0f;
 		v3 position;
 		v3 target;
-		std::vector<Transiton*> path{};
+		std::vector<Transition*> path{};
 		Building* target_building = nullptr;
 		bool from_start = false;
 		bool from_right = true;
