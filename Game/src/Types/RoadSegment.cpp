@@ -183,13 +183,13 @@ namespace Can
 			}
 			bounding_polygon.push_back(std::array<v3, 3>{
 				p1 + shift1,
-				p1 - shift1,
-				p2 + shift2
+					p1 - shift1,
+					p2 + shift2
 			});
 			bounding_polygon.push_back(std::array<v3, 3>{
 				p1 - shift1,
-				p2 - shift2,
-				p2 + shift2
+					p2 - shift2,
+					p2 + shift2
 			});
 
 			p1 = p2;
@@ -241,6 +241,38 @@ namespace Can
 		dirR = glm::rotateZ(Directions[1], -Rotations[1].y);
 		dir = glm::normalize(v2{ dirR.x, dirR.z });
 		Rotations[1].x = glm::acos(glm::abs(dir.x)) * ((f32)(dir.y < 0.0f) * 2.0f - 1.0f);
+	}
+
+	void RoadSegment::move(RoadSegment* dest, RoadSegment* src)
+	{
+		dest->type = src->type;
+		dest->Buildings = src->Buildings;
+		dest->peoples = src->peoples;
+		dest->Cars = src->Cars;
+		dest->StartNode = src->StartNode;
+		dest->EndNode = src->EndNode;
+		dest->curve_samples = src->curve_samples;
+		dest->curve_t_samples = src->curve_t_samples;
+		dest->object = src->object;
+		dest->CurvePoints = src->CurvePoints;
+		dest->bounding_rect = src->bounding_rect;
+		dest->bounding_polygon = src->bounding_polygon;
+		dest->elevation_type = src->elevation_type;
+		dest->Directions = src->Directions;
+		dest->Rotations = src->Rotations;
+
+		src->object = nullptr;
+		src->curve_samples.clear();
+		src->curve_t_samples.clear();
+		src->bounding_polygon.clear();
+		src->Buildings.clear();
+		src->Cars.clear();
+		src->peoples.clear();
+	}
+
+	void RoadSegment::remove(RoadSegment* obj)
+	{
+		delete obj->object;
 	}
 
 	void RoadSegment::ReConstruct()

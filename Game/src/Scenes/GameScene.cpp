@@ -231,13 +231,12 @@ namespace Can
 			fread(&nodes[i].elevation_type, sizeof(s8), 1, read_file);
 			nodes[i].index = i;
 		}
-		auto& segments = m_RoadManager.m_Segments;
-		u64 segment_count;
-		fread(&segment_count, sizeof(u64), 1, read_file);
-		segments.reserve(segment_count);
-		for (u64 i = 0; i < segment_count; i++)
+		auto& segments = m_RoadManager.road_segments;
+		u64 capacity;
+		fread(&capacity, sizeof(u64), 1, read_file);
+		array_resize(&segments, capacity);
+		for (u64 i = 0; i < capacity; i++)
 		{
-			segments.push_back(RoadSegment());
 			auto& segment = segments[i];
 			fread(&segment.type, sizeof(u8), 1, read_file);
 			fread(&segment.StartNode, sizeof(u64), 1, read_file);
@@ -420,7 +419,7 @@ namespace Can
 	{
 		FILE* save_file = fopen(std::string(save_name).append(".csf").c_str(), "wb");
 		auto& nodes = m_RoadManager.m_Nodes;
-		auto& segments = m_RoadManager.m_Segments;
+		auto& segments = m_RoadManager.road_segments;
 		auto& trees = m_TreeManager.m_Trees;
 		auto& buildings = m_BuildingManager.m_Buildings;
 		auto& cars = m_CarManager.m_Cars;
@@ -435,9 +434,9 @@ namespace Can
 				fwrite(&nodes[i].position, sizeof(f32), 3, save_file);
 				fwrite(&nodes[i].elevation_type, sizeof(s8), 1, save_file);
 			}
-			u64 segment_count = segments.size();
-			fwrite(&segment_count, sizeof(u64), 1, save_file);
-			for (u64 i = 0; i < segment_count; i++)
+			u64 capacity = segments.capacity;
+			fwrite(&capacity, sizeof(u64), 1, save_file);
+			for (u64 i = 0; i < capacity; i++)
 			{
 				fwrite(&segments[i].type, sizeof(u8), 1, save_file);
 				// an array of indices to  building objects
@@ -568,6 +567,7 @@ namespace Can
 	void GameScene::MoveMe2AnotherFile(float ts)
 	{
 		auto& road_types = MainApplication->road_types;
+		auto& segments = m_RoadManager.road_segments;
 		auto& cars = m_CarManager.GetCars();
 		for (Car* car : cars)
 		{
@@ -577,7 +577,7 @@ namespace Can
 			v3 unit = glm::normalize(ab);
 			float journeyLength = ts * car->speed;
 			float leftLenght = glm::length(ab);
-			RoadSegment& road = m_RoadManager.m_Segments[car->roadSegment];
+			RoadSegment& road = segments[car->roadSegment];
 
 			if (car->inJunction)
 			{
@@ -629,7 +629,7 @@ namespace Can
 
 							std::vector<u64>& roads = node.roadSegments;
 							int newRoadIndex = Utility::Random::Integer((int)roads.size());
-							RoadSegment& rs = m_RoadManager.m_Segments[car->roadSegment];
+							RoadSegment& rs = segments[car->roadSegment];
 
 							while (car->roadSegment == roads[newRoadIndex])
 							{
@@ -639,24 +639,24 @@ namespace Can
 							rs.Cars.erase(std::find(rs.Cars.begin(), rs.Cars.end(), car));
 							car->roadSegment = roads[newRoadIndex];
 
-							m_RoadManager.m_Segments[car->roadSegment].Cars.push_back(car);
+							segments[car->roadSegment].Cars.push_back(car);
 							std::vector<float> ts2{ 0 };
-							float lengthRoad2 = road_types[m_RoadManager.m_Segments[car->roadSegment].type].road_length;
-							std::vector<v3> samples2 = Math::GetCubicCurveSamples(m_RoadManager.m_Segments[car->roadSegment].GetCurvePoints(), lengthRoad2, ts2);
+							float lengthRoad2 = road_types[segments[car->roadSegment].type].road_length;
+							std::vector<v3> samples2 = Math::GetCubicCurveSamples(segments[car->roadSegment].GetCurvePoints(), lengthRoad2, ts2);
 
-							if (nodeIndex == m_RoadManager.m_Segments[car->roadSegment].StartNode)
+							if (nodeIndex == segments[car->roadSegment].StartNode)
 							{
 								car->t_index = 0;
 								car->target = samples2[1];
 								car->fromStart = true;
-								car->driftpoints[2] = m_RoadManager.m_Segments[car->roadSegment].GetStartPosition();
+								car->driftpoints[2] = segments[car->roadSegment].GetStartPosition();
 							}
 							else
 							{
 								car->t_index = samples2.size();
 								car->target = samples2[samples2.size() - 1];
 								car->fromStart = false;
-								car->driftpoints[2] = m_RoadManager.m_Segments[car->roadSegment].GetEndPosition();
+								car->driftpoints[2] = segments[car->roadSegment].GetEndPosition();
 							}
 							car->t = 0;
 							car->inJunction = true;

@@ -48,6 +48,8 @@ namespace Can
 			m_TunnelGuidelines[i].push_back(new Object(t.tunnel));
 			m_TunnelGuidelines[i][0]->enabled = false;
 		}
+
+		new_unordered_array<RoadSegment>(&road_segments, (u64)10);
 	}
 	RoadManager::~RoadManager()
 	{
@@ -787,14 +789,17 @@ namespace Can
 	{
 		GameApp* app = m_Scene->MainApplication;
 		if (selected_road_segment != -1)
-			m_Segments[selected_road_segment].object->SetTransform(m_Segments[selected_road_segment].GetStartPosition());
+			road_segments[selected_road_segment].object->SetTransform(road_segments[selected_road_segment].GetStartPosition());
 
 		v2 prevLoc2D = (v2)prevLocation;
 		Prefab* roadType = app->road_types[m_Type].road;
-		u64 size = m_Segments.size();
-		for (u64 rsIndex = 0; rsIndex < size; rsIndex++)
+		u64 capacity = road_segments.capacity;
+		for (u64 rsIndex = 0; rsIndex < capacity; rsIndex++)
 		{
-			RoadSegment& rs = m_Segments[rsIndex];
+			auto values = road_segments.values;
+			if (values[rsIndex].valid == false)
+				continue;
+			RoadSegment& rs = values[rsIndex].value;
 			RoadType& type = app->road_types[rs.type];
 
 			f32 rsl = type.road_length;
@@ -844,8 +849,12 @@ namespace Can
 		m_DestructionSegment = snapInformation.segment;
 		m_DestructionNode = snapInformation.node;
 
-		for (RoadSegment& rs : m_Segments)
-			rs.object->SetTransform(rs.GetStartPosition());
+		for (u64 i = 0; i < road_segments.capacity; i++)
+		{
+			auto& value = road_segments.values[i];
+			if(value.valid)
+				value.value.object->SetTransform(value.value.GetStartPosition());
+		}
 
 		for (RoadNode& node : m_Nodes)
 			node.object->SetTransform(node.position);
@@ -857,7 +866,7 @@ namespace Can
 			{
 				for (u64 rsIndex : m_Nodes[m_DestructionNode].roadSegments)
 				{
-					RoadSegment& rs = m_Segments[rsIndex];
+					RoadSegment& rs = road_segments[rsIndex];
 					RoadNode& startNode = m_Nodes[rs.StartNode];
 					RoadNode& endNode = m_Nodes[rs.EndNode];
 
@@ -877,7 +886,7 @@ namespace Can
 			}
 			else if (m_DestructionSegment != -1)
 			{
-				RoadSegment& rs = m_Segments[m_DestructionSegment];
+				RoadSegment& rs = road_segments[m_DestructionSegment];
 				RoadNode& startNode = m_Nodes[rs.StartNode];
 				RoadNode& endNode = m_Nodes[rs.EndNode];
 
@@ -942,7 +951,7 @@ namespace Can
 				scaleG = (entire_length * ratio) / (countG * type.road_length);
 				scaleT = (entire_length * (1.0f - ratio)) / (countT * type.tunnel_length);
 			}
-			count = countT + countG;
+			count = (int)countT + (int)countG;
 		}
 		else if (eA == 0)
 		{
@@ -1140,10 +1149,13 @@ namespace Can
 		RoadType& type = m_Scene->MainApplication->road_types[m_Type];
 		f32 guideline_height = m_Elevationtypes[0] == -1 ? type.tunnel_height : type.road_height;
 
-		u64 segmentCount = m_Segments.size();
-		for (u64 rsIndex = 0; rsIndex < segmentCount; rsIndex++)
+		u64 capacity = road_segments.capacity;
+		for (u64 rsIndex = 0; rsIndex < capacity; rsIndex++)
 		{
-			RoadSegment& rs = m_Segments[rsIndex];
+			auto values = road_segments.values;
+			if (values[rsIndex].valid == false)
+				continue;
+			RoadSegment& rs = values[rsIndex].value;
 			RoadType& type = app->road_types[rs.type];
 			if (rsIndex == m_StartSnappedSegment)
 				continue;
@@ -1550,7 +1562,7 @@ namespace Can
 		GameApp* app = m_Scene->MainApplication;
 		if (selected_road_segment == -1)
 			return false;
-		RoadSegment& rs = m_Segments[selected_road_segment];
+		RoadSegment& rs = road_segments[selected_road_segment];
 		if (rs.elevation_type == 0)
 			Helper::UpdateTheTerrain(&rs, true);
 
@@ -1660,8 +1672,9 @@ namespace Can
 		f32 new_road_height = elevation_type == -1 ? type.tunnel_height : type.road_height;
 		f32 new_road_length = elevation_type == -1 ? type.tunnel_length : type.road_length;
 
-		m_Segments.push_back(RoadSegment(m_Type, curvePoints, elevation_type));
-		u64 rsIndex = m_Segments.size() - 1;
+		RoadSegment* road_segment = new RoadSegment(m_Type, curvePoints, elevation_type);
+		u64 rsIndex = array_add(&road_segments, road_segment);
+		delete road_segment;
 
 		std::array<v3, 2> new_road_bounding_box = Math::get_bounding_box_from_cubic_bezier_curve(curvePoints, new_road_width * 0.5f, new_road_height);
 		std::vector<std::array<v3, 3>> new_road_bounding_polygon = Math::get_bounding_polygon_from_bezier_curve(curvePoints, new_road_width * 0.5f, new_road_length);
@@ -1676,7 +1689,7 @@ namespace Can
 				{
 					if (building->connectedRoadSegment)
 					{
-						RoadSegment& rs = m_Segments[building->connectedRoadSegment];
+						RoadSegment& rs = road_segment[building->connectedRoadSegment];
 						auto it = std::find(rs.Buildings.begin(), rs.Buildings.end(), building);
 						rs.Buildings.erase(it);
 					}
@@ -1706,21 +1719,22 @@ namespace Can
 		if (m_StartSnappedNode != -1)
 		{
 			RoadNode& node = m_Nodes[m_StartSnappedNode];
-			RoadSegment& rs = m_Segments[rsIndex];
+			RoadSegment& rs = road_segment[rsIndex];
 			rs.StartNode = m_StartSnappedNode;
 			node.AddRoadSegment({ rsIndex });
 		}
 		else if (m_StartSnappedSegment != -1)
 		{
-			m_Segments.push_back(RoadSegment(
+			RoadSegment* new_road_segment =  new RoadSegment(
 				m_Type,
 				curvePoints,
-				m_Segments[m_StartSnappedSegment].elevation_type
-			));
-			u64 newRSIndex = m_Segments.size() - 1;
-			RoadSegment& newRS = m_Segments[newRSIndex];
+				road_segment[m_StartSnappedSegment].elevation_type
+			);
+			u64 newRSIndex = array_add(&road_segments, new_road_segment);
+			delete new_road_segment;
+			RoadSegment& newRS = road_segments[newRSIndex];
 
-			RoadSegment& segment = m_Segments[m_StartSnappedSegment];
+			RoadSegment& segment = road_segments[m_StartSnappedSegment];
 			std::array<v3, 4> curve1{
 				segment.GetCurvePoint(0),
 				segment.GetCurvePoint(1),
@@ -1761,7 +1775,7 @@ namespace Can
 			u64 nodeIndex = m_Nodes.size() - 1;
 			RoadNode& node = m_Nodes[nodeIndex];
 			node.index = nodeIndex;
-			RoadSegment& rs = m_Segments[rsIndex];
+			RoadSegment& rs = road_segments[rsIndex];
 			segment.EndNode = nodeIndex;
 			segment.ReConstruct();
 			newRS.EndNode = nodeIndex;
@@ -1780,7 +1794,7 @@ namespace Can
 				if (t < m_StartSnappedT)
 				{
 					building->snapped_t = t / m_StartSnappedT;
-					building->snapped_t_index = t_index / m_StartSnappedT;
+					building->snapped_t_index = (u64)((f32)t_index / m_StartSnappedT);
 				}
 				else
 				{
@@ -1860,7 +1874,7 @@ namespace Can
 		}
 		else
 		{
-			RoadSegment& rs = m_Segments[rsIndex];
+			RoadSegment& rs = road_segments[rsIndex];
 			m_Nodes.push_back(RoadNode({}, curvePoints[0], rs.elevation_type));
 			u64 nodeIndex = m_Nodes.size() - 1;
 			RoadNode& node = m_Nodes[nodeIndex];
@@ -1871,22 +1885,23 @@ namespace Can
 
 		if (m_EndSnappedNode != -1)
 		{
-			RoadSegment& rs = m_Segments[rsIndex];
+			RoadSegment& rs = road_segments[rsIndex];
 			RoadNode& node = m_Nodes[m_EndSnappedNode];
 			rs.EndNode = m_EndSnappedNode;
 			node.AddRoadSegment({ rsIndex });
 		}
 		else if (m_EndSnappedSegment != -1)
 		{
-			m_Segments.push_back(RoadSegment(
+			RoadSegment* new_road_segment = new RoadSegment(
 				m_Type,
 				curvePoints,
-				m_Segments[m_EndSnappedSegment].elevation_type
-			));
-			u64 newRSIndex = m_Segments.size() - 1;
-			RoadSegment& newRS = m_Segments[newRSIndex];
+				road_segments[m_EndSnappedSegment].elevation_type
+			);
+			u64 newRSIndex = array_add(&road_segments, new_road_segment);
+			delete new_road_segment;
+			RoadSegment& newRS = road_segments[newRSIndex];
 
-			RoadSegment& segment = m_Segments[m_EndSnappedSegment];
+			RoadSegment& segment = road_segments[m_EndSnappedSegment];
 			std::array<v3, 4> curve1{
 				segment.GetCurvePoint(0),
 				segment.GetCurvePoint(1),
@@ -1927,7 +1942,7 @@ namespace Can
 			u64 nodeIndex = m_Nodes.size() - 1;
 			RoadNode& node = m_Nodes[nodeIndex];
 			node.index = nodeIndex;
-			RoadSegment& rs = m_Segments[rsIndex];
+			RoadSegment& rs = road_segments[rsIndex];
 			segment.EndNode = nodeIndex;
 			segment.ReConstruct();
 			newRS.EndNode = nodeIndex;
@@ -2026,7 +2041,7 @@ namespace Can
 		}
 		else
 		{
-			RoadSegment& rs = m_Segments[rsIndex];
+			RoadSegment& rs = road_segments[rsIndex];
 			m_Nodes.push_back(RoadNode({}, curvePoints[3], rs.elevation_type));
 			u64 nodeIndex = m_Nodes.size() - 1;
 			RoadNode& node = m_Nodes[nodeIndex];
@@ -2040,7 +2055,7 @@ namespace Can
 	u8 RoadManager::RemoveRoadSegment(u64 roadSegment, u64 roadNode)
 	{
 		u8 amount_decrease = 0;
-		RoadSegment& rs = m_Segments[roadSegment];
+		RoadSegment& rs = road_segments[roadSegment];
 
 		auto& buildings = m_Scene->m_BuildingManager.m_Buildings;
 		auto& cars = m_Scene->m_CarManager.m_Cars;
@@ -2048,7 +2063,7 @@ namespace Can
 		auto& walking_people = m_Scene->m_PersonManager.walking_people;
 
 		if (rs.elevation_type == 0)
-			Helper::UpdateTheTerrain(&m_Segments[roadSegment], true);
+			Helper::UpdateTheTerrain(&road_segments[roadSegment], true);
 
 		while (rs.Buildings.size() > 0)
 			remove_building(rs.Buildings[0]);
@@ -2089,10 +2104,13 @@ namespace Can
 					if (((RN_Transition*)p->path[i])->road_node > rs.StartNode)
 						((RN_Transition*)p->path[i])->road_node--;
 			Helper::UpdateTheTerrain(startNode.bounding_polygon, true);
-			u64 count = m_Segments.size();
-			for (u64 rsIndex = 0; rsIndex < count; rsIndex++)
+			u64 capacity = road_segments.capacity;
+			auto values = road_segments.values;
+			for (u64 rsIndex = 0; rsIndex < capacity; rsIndex++)
 			{
-				RoadSegment& segment = m_Segments[rsIndex];
+				if (values[rsIndex].valid == false)
+					continue;
+				RoadSegment& segment = values[rsIndex].value;
 				if (segment.StartNode > rs.StartNode)
 					segment.StartNode--;
 				if (segment.EndNode > rs.StartNode)
@@ -2113,10 +2131,13 @@ namespace Can
 				for (u64 i = 1; i < p->path.size(); i += 2)
 					if (((RN_Transition*)p->path[i])->road_node > rs.EndNode)
 						((RN_Transition*)p->path[i])->road_node--;
-			u64 count = m_Segments.size();
-			for (u64 rsIndex = 0; rsIndex < count; rsIndex++)
+			u64 capacity = road_segments.capacity;
+			auto values = road_segments.values;
+			for (u64 rsIndex = 0; rsIndex < capacity; rsIndex++)
 			{
-				RoadSegment& segment = m_Segments[rsIndex];
+				if (values[rsIndex].valid == false)
+					continue;
+				RoadSegment& segment = values[rsIndex].value;
 				if (segment.StartNode > rs.EndNode)
 					segment.StartNode--;
 				if (segment.EndNode > rs.EndNode)
@@ -2155,7 +2176,7 @@ namespace Can
 				if (((RN_Transition*)p->path[i])->road_node > roadSegment)
 					((RN_Transition*)p->path[i])->road_node--;
 
-		m_Segments.erase(std::find(m_Segments.begin(), m_Segments.end(), rs));
+		array_remove(&road_segments, roadSegment);
 		return amount_decrease;
 	}
 
@@ -2183,9 +2204,14 @@ namespace Can
 		}
 
 		v2 point = (v2)prevLocation;
-		for (u64 i = 0; i < m_Segments.size(); i++)
+		u64 capacity = road_segments.capacity;
+		auto values = road_segments.values;
+		for (u64 rsIndex = 0; rsIndex < capacity; rsIndex++)
 		{
-			RoadSegment& segment = m_Segments[i];
+			if (values[rsIndex].valid == false)
+				continue;
+			RoadSegment& segment = values[rsIndex].value;
+
 			if (Math::CheckPolygonPointCollision(segment.bounding_rect, point))
 			{
 				f32 width = segment.elevation_type == -1 ? app->road_types[segment.type].tunnel_width : app->road_types[segment.type].road_width;
@@ -2212,7 +2238,7 @@ namespace Can
 						{
 							f32 t = std::max(0.0f, std::min(1.0f, glm::cos(angle)));
 							results.location = point0 + v3(t * lenr * dirToP1, 0.0f);
-							results.segment = i;
+							results.segment = rsIndex;
 							results.snapped = true;
 							results.T = Math::Lerp(segment.curve_t_samples[j - 1], segment.curve_t_samples[j], t);
 							results.elevation_type = segment.elevation_type;
@@ -2254,10 +2280,15 @@ namespace Can
 		selected_road_segment = -1;
 		selected_road_node = -1;
 
-		for (RoadSegment& rs : m_Segments)
+		u64 capacity = road_segments.capacity;
+		auto values = road_segments.values;
+		for (u64 rsIndex = 0; rsIndex < capacity; rsIndex++)
 		{
-			rs.object->enabled = true;	// Is this needed anymore??
-			rs.object->SetTransform(rs.GetStartPosition());
+			if (values[rsIndex].valid == false)
+				continue;
+			RoadSegment& segment = values[rsIndex].value;
+			segment.object->enabled = true;	// Is this needed anymore??
+			segment.object->SetTransform(segment.GetStartPosition());
 		}
 
 		for (RoadNode& node : m_Nodes)
@@ -2340,7 +2371,7 @@ namespace Can
 					f32 minAngle = 180.0f;
 					for (u64 rsIndex : node.roadSegments)
 					{
-						RoadSegment& rs = m_Segments[rsIndex];
+						RoadSegment& rs = road_segments[rsIndex];
 						v3 dir = rs.StartNode == snappedNode ? rs.GetStartDirection() : rs.GetEndDirection();
 
 						f32 dotResult = glm::dot(dir, AB);
@@ -2367,7 +2398,7 @@ namespace Can
 				}
 				else if (snappedRoadSegment != -1)
 				{
-					RoadSegment& segment = m_Segments[snappedRoadSegment];
+					RoadSegment& segment = road_segments[snappedRoadSegment];
 					v3 tangent = Math::CubicCurveTangent(segment.GetCurvePoints(), snappedT);
 					crossProduct = glm::cross(tangent, AB);
 
@@ -2420,7 +2451,7 @@ namespace Can
 				RoadNode& node = m_Nodes[snappedNode];
 				for (u64 rsIndex : node.roadSegments)
 				{
-					RoadSegment& rs = m_Segments[rsIndex];
+					RoadSegment& rs = road_segments[rsIndex];
 
 					v2 dirToOldRS = (v2)(rs.StartNode == snappedNode ? rs.GetStartDirection() : rs.GetEndDirection());
 					dirToOldRS = glm::normalize(dirToOldRS);
@@ -2437,7 +2468,7 @@ namespace Can
 			}
 			else if (snappedRoadSegment != -1)
 			{
-				RoadSegment& rs = m_Segments[snappedRoadSegment];
+				RoadSegment& rs = road_segments[snappedRoadSegment];
 				v2 tangent = (v2)(v3)(Math::CubicCurveTangent(rs.GetCurvePoints(), snappedT));
 				tangent = glm::normalize(tangent);
 

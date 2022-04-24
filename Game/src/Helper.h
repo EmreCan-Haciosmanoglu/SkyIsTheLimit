@@ -52,7 +52,7 @@ namespace Can::Helper
 	{
 		inline bool operator() (u64 roadSegment1, u64 roadSegment2)
 		{
-			auto& segments = GameScene::ActiveGameScene->m_RoadManager.m_Segments;
+			auto& segments = GameScene::ActiveGameScene->m_RoadManager.road_segments;
 			RoadSegment& rs1 = segments[roadSegment1];
 			RoadSegment& rs2 = segments[roadSegment2];
 			f32 roadSegmentR1 = 0.002f;

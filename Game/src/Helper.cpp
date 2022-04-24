@@ -332,8 +332,8 @@ namespace  Can::Helper
 		u64 count = (u64)(len * 3.0f);
 		for (u64 indexd = 0; indexd < count; indexd++)
 		{
-			u64 x = current_point.x;
-			u64 y = current_point.y;
+			u64 x = (u64)current_point.x;
+			u64 y = (u64)current_point.y;
 			u64 dist_00 = ((x + 0) + (w - 1) * (y + 0)) * 60;
 
 			vertices[dist_00 + 2U] = 0.0f;
@@ -502,8 +502,8 @@ namespace  Can::Helper
 				f32 y2 = minvx->y + dy2 * perc2;
 				f32 y3 = medvx->y + dy3 * perc3;
 
-				u64 ly = std::min(x < medvx->x ? y1 : y3, y2);
-				u64 my = std::max(x < medvx->x ? y1 : y3, y2);
+				u64 ly = (u64)std::min(x < medvx->x ? y1 : y3, y2);
+				u64 my = (u64)std::max(x < medvx->x ? y1 : y3, y2);
 				//u64 ly = std::min(y1, y2);
 				//u64 my = std::max(y1, y2);
 
@@ -548,14 +548,14 @@ namespace  Can::Helper
 	}
 	std::vector<Transition*> get_path(Building* start, u8 dist)
 	{
-		auto& segments = GameScene::ActiveGameScene->m_RoadManager.m_Segments;
+		auto& segments = GameScene::ActiveGameScene->m_RoadManager.road_segments;
 		auto& nodes = GameScene::ActiveGameScene->m_RoadManager.m_Nodes;
 		u64 prev_road_segment = start->connectedRoadSegment;
 		RoadSegment& start_segment = segments[prev_road_segment];
 		std::vector<Transition*> path{};
 		RS_Transition* rs_transition = new RS_Transition();
 		path.push_back(rs_transition);
-		rs_transition->road_segment = start->connectedRoadSegment;
+		rs_transition->road_segment = prev_road_segment;
 		rs_transition->from_index = start->snapped_t_index;
 		rs_transition->from_right = start->snapped_to_right;
 		int left_or_right = Utility::Random::Integer(2);
@@ -594,14 +594,14 @@ namespace  Can::Helper
 				while (prev_road_segment == roads[new_road_index])
 					new_road_index = Utility::Random::Integer(size);
 			u64 next_road_segment = roads[new_road_index];
-			rn_transition->to_index = next_road_segment;
+			RoadSegment& next_segment = segments[next_road_segment];
+			rn_transition->to_index = new_road_index;
 			rs_transition->road_segment = next_road_segment;
 			if (new_road_index > index)
 				rn_transition->accending = (new_road_index - index) < (size / 2.0f);
 			else
 				rn_transition->accending = (index - new_road_index) > (size / 2.0f);
 
-			RoadSegment& next_segment = segments[next_road_segment];
 			if (next_segment.StartNode == next_node)
 			{
 				rs_transition->from_index = 0;
@@ -650,10 +650,10 @@ namespace  Can::Helper
 	//TODO memory leak possible
 	std::vector<Transition*> get_path(Building* start, Building* end)
 	{
-		auto& segments = GameScene::ActiveGameScene->m_RoadManager.m_Segments;
+		auto& segments = GameScene::ActiveGameScene->m_RoadManager.road_segments;
 		auto& nodes = GameScene::ActiveGameScene->m_RoadManager.m_Nodes;
 		auto& types = GameScene::ActiveGameScene->MainApplication->road_types;
-		if (start == end)
+		if (start->connectedRoadSegment == end->connectedRoadSegment)
 		{
 			if (start->snapped_to_right == end->snapped_to_right)
 			{
@@ -833,7 +833,7 @@ namespace  Can::Helper
 
 		u64 vertexCount = app->terrainPrefab->indexCount * (3 + 4 + 3);
 		app->terrainPrefab->vertexBuffer->Bind();
-		app->terrainPrefab->vertexBuffer->ReDo(app->terrainPrefab->vertices, sizeof(f32) * vertexCount);
+		app->terrainPrefab->vertexBuffer->ReDo(app->terrainPrefab->vertices, (u32)(sizeof(f32) * vertexCount));
 		app->terrainPrefab->vertexBuffer->Unbind();
 	}
 

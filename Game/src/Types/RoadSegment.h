@@ -3,6 +3,7 @@
 #include <vector>
 
 #include "RoadType.h"
+#include "Can/Unordered_Array.h"
 
 namespace Can
 {
@@ -52,6 +53,8 @@ namespace Can
 		void Construct();
 		void CalcRotsAndDirs();
 
+		static void move(RoadSegment* dest, RoadSegment* src);
+		static void remove(RoadSegment* obj);
 
 		u64 type = 0;
 		std::vector<Building*> Buildings = {};

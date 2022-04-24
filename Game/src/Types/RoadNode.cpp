@@ -75,7 +75,7 @@ namespace Can
 			return;
 
 		if (object) delete object;
-		auto& segments = GameScene::ActiveGameScene->m_RoadManager.m_Segments;
+		auto& segments = GameScene::ActiveGameScene->m_RoadManager.road_segments;
 		auto& nodes = GameScene::ActiveGameScene->m_RoadManager.m_Nodes;
 
 		Helper::UpdateTheTerrain(bounding_polygon, true);

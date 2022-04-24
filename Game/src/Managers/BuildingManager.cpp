@@ -58,11 +58,14 @@ namespace Can
 		bool snappedToRoad = false;
 		if (snapOptions[0])
 		{
-			auto& segments = m_Scene->m_RoadManager.m_Segments;
-			u64 count = segments.size();
-			for (u64 rsIndex = 0; rsIndex < count; rsIndex++)
+			auto& segments = m_Scene->m_RoadManager.road_segments;
+			u64 capacity = segments.capacity;
+			for (u64 rsIndex = 0; rsIndex < capacity; rsIndex++)
 			{
-				RoadSegment& rs = segments[rsIndex];
+				auto values = segments.values;
+				if (values[rsIndex].valid == false)
+					continue;
+				RoadSegment& rs = values[rsIndex].value;
 				RoadType& type = app->road_types[rs.type];
 				if (type.zoneable == false)
 					continue;
@@ -115,6 +118,7 @@ namespace Can
 								snappedToRoad = true;
 								snapped_t_index = i;
 								snapped_t = (c + 0.5f) * 0.5f;
+								snapped_from_right = r;
 								goto snapped;
 							}
 						}
@@ -132,7 +136,7 @@ namespace Can
 				v2 boundingL = (v2)m_Guideline->prefab->boundingBoxL;
 				v2 boundingM = (v2)m_Guideline->prefab->boundingBoxM;
 				v2 boundingP = (v2)prevLocation;
-				auto& segments = m_Scene->m_RoadManager.m_Segments;
+				auto& segments = m_Scene->m_RoadManager.road_segments;
 
 				for (Building* building : segments[m_SnappedRoadSegment].Buildings)
 				{
@@ -189,11 +193,14 @@ namespace Can
 				v3{std::max({A.x, B.x, C.x, D.x}), std::max({A.y, B.y, C.y, D.y}), A.z + building_height}
 			};
 
-			auto& segments = m_Scene->m_RoadManager.m_Segments;
-			u64 count = segments.size();
-			for (u64 rsIndex = 0; rsIndex < count; rsIndex++)
+			auto& segments = m_Scene->m_RoadManager.road_segments;
+			u64 capacity = segments.capacity;
+			for (u64 rsIndex = 0; rsIndex < capacity; rsIndex++)
 			{
-				RoadSegment& rs = segments[rsIndex];
+				auto values = segments.values;
+				if (values[rsIndex].valid == false)
+					continue;
+				RoadSegment& rs = values[rsIndex].value;
 				RoadType& type = app->road_types[rs.type];
 				if (rsIndex == m_SnappedRoadSegment)
 					continue;
@@ -323,7 +330,7 @@ namespace Can
 	{
 		if (!b_ConstructionRestricted)
 		{
-			auto& segments = m_Scene->m_RoadManager.m_Segments;
+			auto& segments = m_Scene->m_RoadManager.road_segments;
 			Building* newBuilding = new Building(
 				m_Guideline->prefab,
 				m_SnappedRoadSegment,
@@ -333,11 +340,13 @@ namespace Can
 				m_GuidelineRotation
 			);
 			newBuilding->type = m_Type;
+			newBuilding->snapped_to_right = snapped_from_right;
 			if (m_SnappedRoadSegment != (u64)-1)
 				segments[m_SnappedRoadSegment].Buildings.push_back(newBuilding);
 			m_Buildings.push_back(newBuilding);
 			
 			bool ishome = Utility::Random::Float(1.0f)>0.5f;
+			ishome = true; // delete me
 			if (ishome)
 			{
 				m_HomeBuildings.push_back(newBuilding);
@@ -481,7 +490,7 @@ namespace Can
 	{
 		GameScene* game = GameScene::ActiveGameScene;
 		auto& buildings = game->m_BuildingManager.m_Buildings;
-		auto& segments = game->m_RoadManager.m_Segments;
+		auto& segments = game->m_RoadManager.road_segments;
 
 		while (b->residents.size() > 0)
 			remove_person(b->residents[0]);

@@ -41,11 +41,15 @@ namespace Can
 		m_Guideline->SetTransform(prevLocation);
 		Prefab* selectedCar = m_Guideline->prefab;
 		GameApp* app = m_Scene->MainApplication;
+		auto segments = m_Scene->m_RoadManager.road_segments;
 
-		u64 count = m_Scene->m_RoadManager.m_Segments.size();
-		for (u64 rsIndex = 0; rsIndex < count; rsIndex++)
+		u64 capacity = segments.capacity;
+		for (u64 rsIndex = 0; rsIndex < capacity; rsIndex++)
 		{
-			RoadSegment& rs = m_Scene->m_RoadManager.m_Segments[rsIndex];
+			auto values = segments.values;
+			if (values[rsIndex].valid == false)
+				continue;
+			RoadSegment& rs = values[rsIndex].value;
 			RoadType& type = app->road_types[rs.type];
 			f32 roadWidth = type.road_width;
 			f32 roadLength = type.road_length;
@@ -142,7 +146,7 @@ namespace Can
 	{
 		if (m_SnappedRoadSegment != -1)
 		{
-			auto& segments = m_Scene->m_RoadManager.m_Segments;
+			auto& segments = m_Scene->m_RoadManager.road_segments;
 			std::vector<f32> ts{ 0 };
 			f32 lengthRoad = m_Scene->MainApplication->cars[m_Type]->boundingBoxM.x - m_Scene->MainApplication->cars[m_Type]->boundingBoxL.x;
 			std::vector<v3> samples = Math::GetCubicCurveSamples(segments[m_SnappedRoadSegment].GetCurvePoints(), lengthRoad, ts);
@@ -169,7 +173,7 @@ namespace Can
 		if (m_SelectedCarToRemove != m_Cars.end())
 		{
 			Car* r_car = (*m_SelectedCarToRemove);
-			RoadSegment& rs = m_Scene->m_RoadManager.m_Segments[r_car->roadSegment];
+			RoadSegment& rs = m_Scene->m_RoadManager.road_segments[r_car->roadSegment];
 			rs.Cars.erase(std::find(rs.Cars.begin(), rs.Cars.end(), r_car));
 			Object* car = r_car->object;
 			m_Cars.erase(m_SelectedCarToRemove);

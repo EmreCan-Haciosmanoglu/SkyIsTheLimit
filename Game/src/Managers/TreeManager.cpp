@@ -144,8 +144,14 @@ namespace Can
 				v3{std::max({A.x, B.x, C.x, D.x}), std::max({A.y, B.y, C.y, D.y}), A.z + tree_height}
 			};
 
-			for (RoadSegment& rs : m_Scene->m_RoadManager.m_Segments)
+			auto& segments = m_Scene->m_RoadManager.road_segments;
+			u64 capacity = segments.capacity;
+			for(u64 i = 0; i<capacity;i++)
 			{
+				auto& value = segments.values[i];
+				if (value.valid == false)
+					continue;
+				RoadSegment& rs = value.value;
 				RoadType& type = app->road_types[rs.type];
 				if (rs.elevation_type == -1)
 					continue;

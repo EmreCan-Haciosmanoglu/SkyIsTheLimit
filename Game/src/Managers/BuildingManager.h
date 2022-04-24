@@ -69,6 +69,7 @@ namespace Can
 		u64 m_SnappedRoadSegment = (u64)-1;
 		u64 snapped_t_index = 0;
 		f32 snapped_t = -1.0f;
+		bool snapped_from_right = false;
 
 		std::vector<Building*>::iterator& m_SelectedBuildingToDestruct = m_Buildings.end();
 

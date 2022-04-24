@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Can/Renderer/Object.h"
+#include "Can/Unordered_Array.h"
 
 namespace Can
 {
@@ -114,8 +115,8 @@ namespace Can
 		GameScene* m_Scene = nullptr;
 		RoadConstructionMode m_ConstructionMode = RoadConstructionMode::None;
 
-		std::vector<RoadSegment> m_Segments{};
 		std::vector<RoadNode> m_Nodes{};
+		Unordered_Array<RoadSegment> road_segments{};
 
 		int m_ConstructionPhase = 0;
 
