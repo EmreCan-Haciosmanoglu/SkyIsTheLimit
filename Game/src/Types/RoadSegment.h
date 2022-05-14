@@ -53,7 +53,14 @@ namespace Can
 		void Construct();
 		void CalcRotsAndDirs();
 
+		static void construct(
+			RoadSegment& dest,
+			u64 type,
+			const std::array<v3, 4>& curvePoints,
+			s8 elevation_type
+		);
 		static void move(RoadSegment* dest, RoadSegment* src);
+		static void reset_to_default (RoadSegment* dest);
 		static void remove(RoadSegment* obj);
 
 		u64 type = 0;

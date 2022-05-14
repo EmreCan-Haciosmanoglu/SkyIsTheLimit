@@ -12,13 +12,6 @@
 
 namespace Can
 {
-	RoadSegment::RoadSegment(u64 type, const std::array<v3, 4>& curvePoints, s8 elevation_type)
-		: CurvePoints(curvePoints)
-		, elevation_type(elevation_type)
-	{
-		CalcRotsAndDirs();
-		SetType(type);
-	}
 	RoadSegment::RoadSegment(RoadSegment&& other)
 		: type(other.type)
 		, Buildings(other.Buildings)
@@ -243,6 +236,14 @@ namespace Can
 		Rotations[1].x = glm::acos(glm::abs(dir.x)) * ((f32)(dir.y < 0.0f) * 2.0f - 1.0f);
 	}
 
+	void RoadSegment::construct(RoadSegment& dest, u64 type, const std::array<v3, 4>& curvePoints, s8 elevation_type)
+	{
+		dest.CurvePoints = curvePoints;
+		dest.elevation_type = elevation_type;
+		dest.CalcRotsAndDirs();
+		dest.SetType(type);
+	}
+
 	void RoadSegment::move(RoadSegment* dest, RoadSegment* src)
 	{
 		dest->type = src->type;
@@ -261,18 +262,32 @@ namespace Can
 		dest->Directions = src->Directions;
 		dest->Rotations = src->Rotations;
 
-		src->object = nullptr;
-		src->curve_samples.clear();
-		src->curve_t_samples.clear();
-		src->bounding_polygon.clear();
-		src->Buildings.clear();
-		src->Cars.clear();
-		src->peoples.clear();
+		RoadSegment::reset_to_default(src);
+	}
+
+	void RoadSegment::reset_to_default(RoadSegment* dest)
+	{
+		dest->type = 0;
+		dest->Buildings.clear();
+		dest->peoples.clear();
+		dest->Cars.clear();
+		dest->StartNode = (u64)-1;
+		dest->EndNode = (u64)-1;
+		dest->curve_samples.clear();
+		dest->curve_t_samples.clear();
+		dest->object = nullptr;
+		dest->CurvePoints={};
+		dest->bounding_rect = {};
+		dest->bounding_polygon.clear();
+		dest->elevation_type = 0;
+		dest->Directions = {};
+		dest->Rotations = {};
 	}
 
 	void RoadSegment::remove(RoadSegment* obj)
 	{
 		delete obj->object;
+		RoadSegment::reset_to_default(obj);
 	}
 
 	void RoadSegment::ReConstruct()

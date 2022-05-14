@@ -237,6 +237,9 @@ namespace Can
 		array_resize(&segments, capacity);
 		for (u64 i = 0; i < capacity; i++)
 		{
+			bool valid = false;
+			fread(&segments.values[i].valid, sizeof(bool), 1, read_file);
+			if (!segments.values[i].valid) continue;
 			auto& segment = segments[i];
 			fread(&segment.type, sizeof(u8), 1, read_file);
 			fread(&segment.StartNode, sizeof(u64), 1, read_file);
@@ -438,6 +441,7 @@ namespace Can
 			fwrite(&capacity, sizeof(u64), 1, save_file);
 			for (u64 i = 0; i < capacity; i++)
 			{
+				fwrite(&segments.values[i].valid, sizeof(bool), 1, save_file);
 				fwrite(&segments[i].type, sizeof(u8), 1, save_file);
 				// an array of indices to  building objects
 				// an array of indices to  Car objects
