@@ -15,7 +15,7 @@ namespace Can
 	RoadSegment::RoadSegment(RoadSegment&& other)
 		: type(other.type)
 		, Buildings(other.Buildings)
-		, peoples(other.peoples)
+		, people(other.people)
 		, Cars(other.Cars)
 		, StartNode(other.StartNode)
 		, EndNode(other.EndNode)
@@ -35,7 +35,7 @@ namespace Can
 		other.bounding_polygon.clear();
 		other.Buildings.clear();
 		other.Cars.clear();
-		other.peoples.clear();
+		other.people.clear();
 	}
 	RoadSegment::~RoadSegment()
 	{
@@ -50,7 +50,7 @@ namespace Can
 		type = other.type;
 		Buildings = other.Buildings;
 		Cars = other.Cars;
-		peoples = other.peoples;
+		people = other.people;
 		StartNode = other.StartNode;
 		EndNode = other.EndNode;
 		curve_samples = other.curve_samples;
@@ -68,7 +68,7 @@ namespace Can
 		other.bounding_polygon.clear();
 		other.Buildings.clear();
 		other.Cars.clear();
-		other.peoples.clear();
+		other.people.clear();
 
 		return *this;
 	}
@@ -236,19 +236,19 @@ namespace Can
 		Rotations[1].x = glm::acos(glm::abs(dir.x)) * ((f32)(dir.y < 0.0f) * 2.0f - 1.0f);
 	}
 
-	void RoadSegment::construct(RoadSegment& dest, u64 type, const std::array<v3, 4>& curvePoints, s8 elevation_type)
+	void RoadSegment::construct(RoadSegment* dest, u64 type, const std::array<v3, 4>& curvePoints, s8 elevation_type)
 	{
-		dest.CurvePoints = curvePoints;
-		dest.elevation_type = elevation_type;
-		dest.CalcRotsAndDirs();
-		dest.SetType(type);
+		dest->CurvePoints = curvePoints;
+		dest->elevation_type = elevation_type;
+		dest->CalcRotsAndDirs();
+		dest->SetType(type);
 	}
 
 	void RoadSegment::move(RoadSegment* dest, RoadSegment* src)
 	{
 		dest->type = src->type;
 		dest->Buildings = src->Buildings;
-		dest->peoples = src->peoples;
+		dest->people = src->people;
 		dest->Cars = src->Cars;
 		dest->StartNode = src->StartNode;
 		dest->EndNode = src->EndNode;
@@ -268,9 +268,14 @@ namespace Can
 	void RoadSegment::reset_to_default(RoadSegment* dest)
 	{
 		dest->type = 0;
-		dest->Buildings.clear();
-		dest->peoples.clear();
-		dest->Cars.clear();
+
+		while (dest->Buildings.size() > 0)
+			remove_building(dest->Buildings[dest->Buildings.size() - 1]);
+		while (dest->Cars.size() > 0)
+			remove_car(dest->Cars[dest->Cars.size() - 1]);
+		while (dest->people.size() > 0)
+			reset_person(dest->people[dest->people.size() - 1]);
+
 		dest->StartNode = (u64)-1;
 		dest->EndNode = (u64)-1;
 		dest->curve_samples.clear();
@@ -338,5 +343,15 @@ namespace Can
 		std::array<v3, 4> cps = CurvePoints;
 		cps[index] = curvePoint;
 		SetCurvePoints(cps);
+	}
+	bool remove_person_from(RoadSegment& segment, Person* person)
+	{
+		auto it = std::find(segment.people.begin(), segment.people.end(), person);
+		if (it != segment.people.end())
+		{
+			segment.people.erase(it);
+			return true;
+		}
+		return false;
 	}
 }

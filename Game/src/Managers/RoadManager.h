@@ -86,7 +86,7 @@ namespace Can
 		//inline std::vector<RoadSegment*>& GetRoadSegments() { return m_RoadSegments; }
 
 		u64 AddRoadSegment(const std::array<v3, 4>& curvePoints, s8 elevation_type);
-		u8 RemoveRoadSegment(u64 roadSIndex, u64 roadNode);
+		void RemoveRoadSegment(u64 road_segment_index);
 
 		SnapInformation CheckSnapping(const v3& prevLocation);
 
@@ -115,7 +115,7 @@ namespace Can
 		GameScene* m_Scene = nullptr;
 		RoadConstructionMode m_ConstructionMode = RoadConstructionMode::None;
 
-		std::vector<RoadNode> m_Nodes{};
+		Unordered_Array<RoadNode> road_nodes{};
 		Unordered_Array<RoadSegment> road_segments{};
 
 		int m_ConstructionPhase = 0;
@@ -168,4 +168,5 @@ namespace Can
 
 		u64 m_Type = 0;
 	};
+
 }

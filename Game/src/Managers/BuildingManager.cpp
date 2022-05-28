@@ -357,7 +357,7 @@ namespace Can
 				{
 					u64 type = 0;
 					Prefab* man = (m_Scene->MainApplication->people[type]);
-					Person* p = new Person(man, 1);
+					Person* p = new Person(man, 1.0f);
 					p->type = type;
 					p->home = newBuilding;
 					p->status = PersonStatus::AtHome;

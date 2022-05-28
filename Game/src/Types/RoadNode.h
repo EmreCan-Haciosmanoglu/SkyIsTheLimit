@@ -9,7 +9,6 @@ namespace Can
 	{
 	public:
 		RoadNode() {}
-		RoadNode(const std::vector<u64>& roadSegments, const v3& position, u8 elevation_type);
 		RoadNode(RoadNode&& other);
 		~RoadNode();
 		RoadNode& operator=(RoadNode&& other);
@@ -19,6 +18,18 @@ namespace Can
 
 		void AddRoadSegment(std::vector<u64> arr);
 		void RemoveRoadSegment(u64 roadSegment);
+
+		static void construct(
+			RoadNode* dest,
+			const std::vector<u64>& roadSegments, 
+			const v3& position, 
+			u8 elevation_type,
+			u64 index
+		);
+		static void move(RoadNode* dest, RoadNode* src);
+		static void reset_to_default(RoadNode* dest);
+		static void remove(RoadNode* obj);
+
 
 		Object* object = nullptr;
 		std::vector<u64> roadSegments;
@@ -35,4 +46,6 @@ namespace Can
 
 		std::vector<std::array<v3, 3>> bounding_polygon{};
 	};
+
+	bool remove_person_from(RoadNode& node, Person* person);
 }

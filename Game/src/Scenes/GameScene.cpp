@@ -220,38 +220,44 @@ namespace Can
 		//RoadManager
 		fread(&m_RoadManager.snapFlags, sizeof(u8), 1, read_file);
 		fread(&m_RoadManager.restrictionFlags, sizeof(u8), 1, read_file);
-		auto& nodes = m_RoadManager.m_Nodes;
-		u64 node_count;
-		fread(&node_count, sizeof(u64), 1, read_file);
-		nodes.reserve(node_count);
-		for (u64 i = 0; i < node_count; i++)
-		{
-			nodes.push_back(RoadNode());
-			fread(&nodes[i].position, sizeof(f32), 3, read_file);
-			fread(&nodes[i].elevation_type, sizeof(s8), 1, read_file);
-			nodes[i].index = i;
-		}
-		auto& segments = m_RoadManager.road_segments;
+		auto& road_nodes = m_RoadManager.road_nodes;
 		u64 capacity;
 		fread(&capacity, sizeof(u64), 1, read_file);
-		array_resize(&segments, capacity);
+		array_resize(&road_nodes, capacity);
 		for (u64 i = 0; i < capacity; i++)
 		{
-			bool valid = false;
-			fread(&segments.values[i].valid, sizeof(bool), 1, read_file);
-			if (!segments.values[i].valid) continue;
-			auto& segment = segments[i];
+			fread(&road_nodes.values[i].valid, sizeof(bool), 1, read_file);
+			if (road_nodes.values[i].valid == false) continue;
+			auto& road_node = road_nodes[i];
+			fread(&road_node.position, sizeof(f32), 3, read_file);
+			road_node.index = i;
+			fread(&road_node.elevation_type, sizeof(s8), 1, read_file);
+			road_nodes.size++;
+		}
+		auto& road_segments = m_RoadManager.road_segments;
+		fread(&capacity, sizeof(u64), 1, read_file);
+		array_resize(&road_segments, capacity);
+		for (u64 i = 0; i < capacity; i++)
+		{
+			fread(&road_segments.values[i].valid, sizeof(bool), 1, read_file);
+			if (road_segments.values[i].valid == false) continue;
+			auto& segment = road_segments[i];
 			fread(&segment.type, sizeof(u8), 1, read_file);
 			fread(&segment.StartNode, sizeof(u64), 1, read_file);
 			fread(&segment.EndNode, sizeof(u64), 1, read_file);
 			fread(&segment.CurvePoints, sizeof(f32), 3 * 4, read_file);
 			fread(&segment.elevation_type, sizeof(s8), 1, read_file);
 			segment.CalcRotsAndDirs();
-			nodes[segment.StartNode].roadSegments.push_back(i);
-			nodes[segment.EndNode].roadSegments.push_back(i);
+			road_segments.size++;
+
+			road_nodes[segment.StartNode].roadSegments.push_back(i);
+			road_nodes[segment.EndNode].roadSegments.push_back(i);
 		}
-		for (u64 i = 0; i < node_count; i++)
-			nodes[i].Reconstruct();
+		for (u64 i = 0; i < road_nodes.capacity; i++)
+		{
+			if (road_nodes.values[i].valid == false) continue;
+			road_nodes[i].Reconstruct();
+		}
 		///////////////////////////////////////////////////
 
 		//TreeManager
@@ -306,7 +312,7 @@ namespace Can
 			);
 			building->type = type;
 			buildings.push_back(building);
-			segments[connected_road_segment].Buildings.push_back(building);
+			road_segments[connected_road_segment].Buildings.push_back(building);
 		}
 		///////////////////////////////////////////////////
 
@@ -349,7 +355,7 @@ namespace Can
 			car->fromStart = from_start;
 			car->inJunction = in_junction;
 			cars.push_back(car);
-			segments[road_segment].Cars.push_back(car);
+			road_segments[road_segment].Cars.push_back(car);
 		}
 		///////////////////////////////////////////////////
 
@@ -421,8 +427,8 @@ namespace Can
 	void GameScene::save_the_game()
 	{
 		FILE* save_file = fopen(std::string(save_name).append(".csf").c_str(), "wb");
-		auto& nodes = m_RoadManager.m_Nodes;
-		auto& segments = m_RoadManager.road_segments;
+		auto& road_nodes = m_RoadManager.road_nodes;
+		auto& road_segments = m_RoadManager.road_segments;
 		auto& trees = m_TreeManager.m_Trees;
 		auto& buildings = m_BuildingManager.m_Buildings;
 		auto& cars = m_CarManager.m_Cars;
@@ -430,25 +436,28 @@ namespace Can
 		/*Road Manager*/ {
 			fwrite(&m_RoadManager.snapFlags, sizeof(u8), 1, save_file);
 			fwrite(&m_RoadManager.restrictionFlags, sizeof(u8), 1, save_file);
-			u64 node_count = nodes.size();
-			fwrite(&node_count, sizeof(u64), 1, save_file);
-			for (u64 i = 0; i < node_count; i++)
-			{
-				fwrite(&nodes[i].position, sizeof(f32), 3, save_file);
-				fwrite(&nodes[i].elevation_type, sizeof(s8), 1, save_file);
-			}
-			u64 capacity = segments.capacity;
+			u64 capacity = road_nodes.capacity;
 			fwrite(&capacity, sizeof(u64), 1, save_file);
 			for (u64 i = 0; i < capacity; i++)
 			{
-				fwrite(&segments.values[i].valid, sizeof(bool), 1, save_file);
-				fwrite(&segments[i].type, sizeof(u8), 1, save_file);
+				fwrite(&road_nodes.values[i].valid, sizeof(bool), 1, save_file);
+				if (road_nodes.values[i].valid == false) continue;
+				fwrite(&road_nodes[i].position, sizeof(f32), 3, save_file);
+				fwrite(&road_nodes[i].elevation_type, sizeof(s8), 1, save_file);
+			}
+			capacity = road_segments.capacity;
+			fwrite(&capacity, sizeof(u64), 1, save_file);
+			for (u64 i = 0; i < capacity; i++)
+			{
+				fwrite(&road_segments.values[i].valid, sizeof(bool), 1, save_file);
+				if (road_segments.values[i].valid == false) continue;
+				fwrite(&road_segments[i].type, sizeof(u8), 1, save_file);
 				// an array of indices to  building objects
 				// an array of indices to  Car objects
-				fwrite(&segments[i].StartNode, sizeof(u64), 1, save_file);
-				fwrite(&segments[i].EndNode, sizeof(u64), 1, save_file);
-				fwrite(&segments[i].CurvePoints, sizeof(f32), 3 * 4, save_file);
-				fwrite(&segments[i].elevation_type, sizeof(s8), 1, save_file);
+				fwrite(&road_segments[i].StartNode, sizeof(u64), 1, save_file);
+				fwrite(&road_segments[i].EndNode, sizeof(u64), 1, save_file);
+				fwrite(&road_segments[i].CurvePoints, sizeof(f32), 3 * 4, save_file);
+				fwrite(&road_segments[i].elevation_type, sizeof(s8), 1, save_file);
 			}
 		}
 		/*Tree Manager*/ {
@@ -568,6 +577,7 @@ namespace Can
 		forward = glm::rotate(forward, glm::radians(offsetDegrees.y), right);
 		return forward;
 	}
+
 	void GameScene::MoveMe2AnotherFile(float ts)
 	{
 		auto& road_types = MainApplication->road_types;
@@ -625,7 +635,7 @@ namespace Can
 					{
 						//////new road
 						u64 nodeIndex = car->fromStart ? road.EndNode : road.StartNode;
-						RoadNode& node = m_RoadManager.m_Nodes[nodeIndex];
+						RoadNode& node = m_RoadManager.road_nodes[nodeIndex];
 						if (node.roadSegments.size() > 1)
 						{
 							car->driftpoints[0] = car->position;

@@ -17,11 +17,6 @@ namespace Can
 	{
 	public:
 		RoadSegment() {}
-		RoadSegment(
-			u64 type,
-			const std::array<v3, 4>& curvePoints,
-			s8 elevation_type
-		);
 		RoadSegment(RoadSegment&& other);
 		~RoadSegment();
 
@@ -54,7 +49,7 @@ namespace Can
 		void CalcRotsAndDirs();
 
 		static void construct(
-			RoadSegment& dest,
+			RoadSegment* dest,
 			u64 type,
 			const std::array<v3, 4>& curvePoints,
 			s8 elevation_type
@@ -66,7 +61,7 @@ namespace Can
 		u64 type = 0;
 		std::vector<Building*> Buildings = {};
 		std::vector<Car*> Cars = {};
-		std::vector<Person*> peoples = {};
+		std::vector<Person*> people = {};
 
 		u64 StartNode = (u64)-1;
 		u64 EndNode = (u64)-1;
@@ -94,4 +89,6 @@ namespace Can
 			v2(0.0f)
 		};
 	};
+
+	bool remove_person_from(RoadSegment& segment, Person* person);
 }
