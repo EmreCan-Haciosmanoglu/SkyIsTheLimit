@@ -18,6 +18,9 @@
 
 namespace Can
 {
+	void resnapp_buildings(u64 old_rs_index, u64 new_rs_index, u64 snapped_index);
+	void reassign_cars(u64 old_rs_index, u64 new_rs_index, u64 snapped_index);
+
 	RoadManager::RoadManager(GameScene* scene)
 		: m_Scene(scene)
 	{
@@ -185,8 +188,8 @@ namespace Can
 
 			// TODO: After angle snapping 
 			v2 dir = (v2)(prevLocation - m_ConstructionPositions[0]);
-			bool angleIsRestricted = RestrictSmallAngles(dir, m_StartSnappedNode, m_StartSnappedSegment, m_StartSnappedT);
-			angleIsRestricted |= RestrictSmallAngles(-dir, m_EndSnappedNode, m_EndSnappedSegment, m_EndSnappedT);
+			bool angleIsRestricted = RestrictSmallAngles(dir, m_StartSnappedNode, m_StartSnappedSegment, start_snapped_index);
+			angleIsRestricted |= RestrictSmallAngles(-dir, m_EndSnappedNode, m_EndSnappedSegment, end_snapped_index);
 
 			v3 AB = m_ConstructionPositions[3] - m_ConstructionPositions[0];
 
@@ -201,7 +204,7 @@ namespace Can
 					m_ConstructionPositions[3] = m_ConstructionPositions[0] + AB;
 				}
 				SnapToHeight({ 3 }, 0, AB);
-				SnapToAngle(AB, m_StartSnappedNode, m_StartSnappedSegment, m_StartSnappedT);
+				SnapToAngle(AB, m_StartSnappedNode, m_StartSnappedSegment, start_snapped_index);
 				m_ConstructionPositions[3] = m_ConstructionPositions[0] + AB;
 			}
 
@@ -339,12 +342,12 @@ namespace Can
 
 			// TODO: After angle snapping
 			v2 dir = (v2)(prevLocation - m_ConstructionPositions[0]);
-			bool angleIsRestricted = RestrictSmallAngles(dir, m_StartSnappedNode, m_StartSnappedSegment, m_StartSnappedT);
+			bool angleIsRestricted = RestrictSmallAngles(dir, m_StartSnappedNode, m_StartSnappedSegment, start_snapped_index);
 
 			v3 AB = m_ConstructionPositions[3] - m_ConstructionPositions[0];
 
 			SnapToHeight({ 1, 2, 3 }, 0, AB);
-			SnapToAngle(AB, m_StartSnappedNode, m_StartSnappedSegment, m_StartSnappedT);
+			SnapToAngle(AB, m_StartSnappedNode, m_StartSnappedSegment, start_snapped_index);
 			m_ConstructionPositions[1] = m_ConstructionPositions[0] + AB;
 			m_ConstructionPositions[2] = m_ConstructionPositions[0] + AB;
 			m_ConstructionPositions[3] = m_ConstructionPositions[0] + AB;
@@ -418,9 +421,9 @@ namespace Can
 			}
 			// TODO: After angle snapping
 			v2 dir1 = (v2)(m_ConstructionPositions[1] - m_ConstructionPositions[0]);
-			bool angleIsRestricted = RestrictSmallAngles(dir1, m_StartSnappedNode, m_StartSnappedSegment, m_StartSnappedT);
+			bool angleIsRestricted = RestrictSmallAngles(dir1, m_StartSnappedNode, m_StartSnappedSegment, start_snapped_index);
 			v2 dir2 = (v2)(m_ConstructionPositions[2] - m_ConstructionPositions[3]);
-			angleIsRestricted |= RestrictSmallAngles(dir2, m_EndSnappedNode, m_EndSnappedSegment, m_EndSnappedT);
+			angleIsRestricted |= RestrictSmallAngles(dir2, m_EndSnappedNode, m_EndSnappedSegment, end_snapped_index);
 			if (restrictionFlags & (u8)RoadRestrictions::RESTRICT_SMALL_ANGLES)
 			{
 				v3 dirToEnd = m_ConstructionPositions[2] - m_ConstructionPositions[3];
@@ -547,7 +550,7 @@ namespace Can
 			if (cubicCurveOrder[1] == 1)
 			{
 				v2 dir = (v2)(m_ConstructionPositions[1] - m_ConstructionPositions[0]);
-				angleIsRestricted = RestrictSmallAngles(dir, m_StartSnappedNode, m_StartSnappedSegment, m_StartSnappedT);
+				angleIsRestricted = RestrictSmallAngles(dir, m_StartSnappedNode, m_StartSnappedSegment, start_snapped_index);
 			}
 
 			v3 AB = prevLocation - m_ConstructionPositions[0];
@@ -564,7 +567,7 @@ namespace Can
 				SnapToHeight({ cubicCurveOrder[1] }, 0, AB);
 			if (cubicCurveOrder[1] == 1)
 			{
-				SnapToAngle(AB, m_StartSnappedNode, m_StartSnappedSegment, m_StartSnappedT);
+				SnapToAngle(AB, m_StartSnappedNode, m_StartSnappedSegment, start_snapped_index);
 				m_ConstructionPositions[1] = m_ConstructionPositions[0] + AB;
 			}
 
@@ -628,12 +631,12 @@ namespace Can
 			if (cubicCurveOrder[3] == 1)
 			{
 				v2 dir = (v2)(m_ConstructionPositions[2] - m_ConstructionPositions[3]);
-				bool angleIsRestricted = RestrictSmallAngles(dir, m_EndSnappedNode, m_EndSnappedSegment, m_EndSnappedT);
+				bool angleIsRestricted = RestrictSmallAngles(dir, m_EndSnappedNode, m_EndSnappedSegment, end_snapped_index);
 			}
 			else
 			{
 				v2 dir = (v2)(m_ConstructionPositions[1] - m_ConstructionPositions[0]);
-				bool angleIsRestricted = RestrictSmallAngles(dir, m_StartSnappedNode, m_StartSnappedSegment, m_StartSnappedT);
+				bool angleIsRestricted = RestrictSmallAngles(dir, m_StartSnappedNode, m_StartSnappedSegment, start_snapped_index);
 			}
 			if (snapFlags & (u8)RoadSnapOptions::SNAP_TO_LENGTH)
 			{
@@ -663,13 +666,13 @@ namespace Can
 			if (cubicCurveOrder[2] == 1)
 			{
 				v3 AB = m_ConstructionPositions[1] - m_ConstructionPositions[0];
-				SnapToAngle(AB, m_StartSnappedNode, m_StartSnappedSegment, m_StartSnappedT);
+				SnapToAngle(AB, m_StartSnappedNode, m_StartSnappedSegment, start_snapped_index);
 				m_ConstructionPositions[1] = m_ConstructionPositions[0] + AB;
 			}
 			else if (cubicCurveOrder[3] == 1 && cubicCurveOrder[2] == 2)
 			{
 				v3 AB = m_ConstructionPositions[2] - m_ConstructionPositions[3];
-				SnapToAngle(AB, m_EndSnappedNode, m_EndSnappedSegment, m_EndSnappedT);
+				SnapToAngle(AB, m_EndSnappedNode, m_EndSnappedSegment, end_snapped_index);
 				m_ConstructionPositions[2] = m_ConstructionPositions[3] + AB;
 			}
 
@@ -718,9 +721,9 @@ namespace Can
 
 			// TODO: After angle snapping
 			v2 dir1 = (v2)(m_ConstructionPositions[1] - m_ConstructionPositions[0]);
-			bool angleIsRestricted = RestrictSmallAngles(dir1, m_StartSnappedNode, m_StartSnappedSegment, m_StartSnappedT);
+			bool angleIsRestricted = RestrictSmallAngles(dir1, m_StartSnappedNode, m_StartSnappedSegment, start_snapped_index);
 			v2 dir2 = (v2)(m_ConstructionPositions[2] - m_ConstructionPositions[3]);
-			angleIsRestricted |= RestrictSmallAngles(dir2, m_EndSnappedNode, m_EndSnappedSegment, m_EndSnappedT);
+			angleIsRestricted |= RestrictSmallAngles(dir2, m_EndSnappedNode, m_EndSnappedSegment, end_snapped_index);
 
 			if (snapFlags & (u8)RoadSnapOptions::SNAP_TO_LENGTH)
 			{
@@ -751,13 +754,13 @@ namespace Can
 			if (cubicCurveOrder[3] == 1)
 			{
 				v3 AB = m_ConstructionPositions[1] - m_ConstructionPositions[0];
-				SnapToAngle(AB, m_StartSnappedNode, m_StartSnappedSegment, m_StartSnappedT);
+				SnapToAngle(AB, m_StartSnappedNode, m_StartSnappedSegment, start_snapped_index);
 				m_ConstructionPositions[1] = m_ConstructionPositions[0] + AB;
 			}
 			else if (cubicCurveOrder[3] == 2)
 			{
 				v3 AB = m_ConstructionPositions[2] - m_ConstructionPositions[3];
-				SnapToAngle(AB, m_EndSnappedNode, m_EndSnappedSegment, m_EndSnappedT);
+				SnapToAngle(AB, m_EndSnappedNode, m_EndSnappedSegment, end_snapped_index);
 				m_ConstructionPositions[2] = m_ConstructionPositions[3] + AB;
 			}
 
@@ -1768,12 +1771,14 @@ namespace Can
 				v3(0.0f),
 				curvePoints[0],
 			};
-			curve1[1] = curve1[0] + (curve1[1] - curve1[0]) * m_StartSnappedT;
+
+			f32 start_snapped_t = start_snapped_road_segment.curve_t_samples[start_snapped_index];
+			curve1[1] = curve1[0] + (curve1[1] - curve1[0]) * start_snapped_t;
 			curve1[2] = Math::QuadraticCurve(std::array<v3, 3>{
 				start_snapped_road_segment.GetCurvePoint(0),
 					start_snapped_road_segment.GetCurvePoint(1),
 					start_snapped_road_segment.GetCurvePoint(2)
-			}, m_StartSnappedT);
+			}, start_snapped_t);
 
 			std::array<v3, 4> curve2 = {
 				start_snapped_road_segment.GetCurvePoint(3),
@@ -1781,21 +1786,28 @@ namespace Can
 				v3(0.0f),
 				curvePoints[0],
 			};
-			curve2[1] = curve2[1] + (curve2[0] - curve2[1]) * m_StartSnappedT;
+			curve2[1] = curve2[1] + (curve2[0] - curve2[1]) * start_snapped_t;
 			curve2[2] = Math::QuadraticCurve(std::array<v3, 3>{
 				start_snapped_road_segment.GetCurvePoint(1),
 					start_snapped_road_segment.GetCurvePoint(2),
 					start_snapped_road_segment.GetCurvePoint(3)
-			}, m_StartSnappedT);
+			}, start_snapped_t);
 			new_road_segment->SetType(start_snapped_road_segment.type);
 			new_road_segment->SetCurvePoints(curve2);
 
 			start_snapped_road_segment.SetCurvePoints(curve1);
 
 			auto [new_road_node, new_road_node_index] = array_add_empty(&road_nodes);
+			RoadNode& endNode = road_nodes[start_snapped_road_segment.EndNode];
+			RoadNode& startNode = road_nodes[start_snapped_road_segment.StartNode];
 
-			start_snapped_road_segment.EndNode = new_road_node_index;
 			new_road_segment->EndNode = new_road_node_index;
+			new_road_segment->StartNode = start_snapped_road_segment.EndNode;
+
+			endNode.RemoveRoadSegment(m_StartSnappedSegment);
+			start_snapped_road_segment.EndNode = new_road_node_index;
+			endNode.AddRoadSegment({ new_road_segment_index });
+
 			road_segment->StartNode = new_road_node_index;
 			RoadNode::construct(
 				new_road_node,
@@ -1804,109 +1816,9 @@ namespace Can
 				start_snapped_road_segment.elevation_type,
 				new_road_node_index
 			);
-			/*
-			start_snapped_road_segment.ReConstruct();
-			new_road_segment->ReConstruct();
-			road_segment->ReConstruct();
-			*/
 
-			RoadNode& endNode = road_nodes[start_snapped_road_segment.EndNode];
-			RoadNode& startNode = road_nodes[start_snapped_road_segment.StartNode];
-			endNode.RemoveRoadSegment(m_StartSnappedSegment);
-			new_road_segment->StartNode = start_snapped_road_segment.EndNode;
-			endNode.AddRoadSegment({ new_road_segment_index });
-
-
-			for (u64 bIndex = 0; bIndex < start_snapped_road_segment.Buildings.size(); bIndex++)
-			{
-				Building* building = start_snapped_road_segment.Buildings[bIndex];
-				f32 t = building->snapped_t;
-				u64 t_index = building->snapped_t_index;
-				u64 count = start_snapped_road_segment.curve_samples.size() - 1;
-				if (t < m_StartSnappedT)
-				{
-					building->snapped_t = t / m_StartSnappedT;
-					building->snapped_t_index = (u64)((f32)t_index / m_StartSnappedT);
-				}
-				else
-				{
-					building->snapped_t = (1.0f - t) / (1.0f - m_StartSnappedT);
-					building->snapped_t_index = (count - t_index) / (count - m_StartSnappedT);
-					auto bIt = std::find(start_snapped_road_segment.Buildings.begin(), start_snapped_road_segment.Buildings.end(), building);
-					start_snapped_road_segment.Buildings.erase(bIt);
-					bIndex--;
-					new_road_segment->Buildings.push_back(building);
-				}
-			}
-			for (u64 cIndex = 0; cIndex < start_snapped_road_segment.Cars.size(); cIndex++)
-			{
-				Car* car = start_snapped_road_segment.Cars[cIndex];
-				u64 t_index = car->t_index;
-				std::vector<f32> ts{ 0.0f };
-				f32 lengthRoad = app->road_types[start_snapped_road_segment.type].road_length;
-				std::vector<v3> samples = Math::GetCubicCurveSamples(start_snapped_road_segment.GetCurvePoints(), lengthRoad, ts);
-				if (t_index >= ts.size())
-				{
-					t_index = ts.size() - 1;
-				}
-				f32 t = ts[t_index];
-				if (t < m_StartSnappedT)
-				{
-					std::vector<f32> ts2{ 0.0f };
-					std::vector<v3> samples2 = Math::GetCubicCurveSamples(start_snapped_road_segment.GetCurvePoints(), lengthRoad, ts2);
-					f32 teanew = t / m_StartSnappedT;
-					for (int i = 0; i < ts2.size(); i++)
-					{
-						if (ts2[i] < teanew)
-							continue;
-						if (car->fromStart)
-						{
-							car->t_index = i - 1;
-							car->target = samples2[i];
-
-						}
-						else
-						{
-							car->t_index = i;
-							car->target = samples2[i - 1];
-						}
-						break;
-					}
-				}
-				else
-				{
-
-					std::vector<f32> ts2{ 0 };
-					std::vector<v3> samples2 = Math::GetCubicCurveSamples(start_snapped_road_segment.GetCurvePoints(), lengthRoad, ts2);
-					f32 teanew = (1.0f - t) / (1.0f - m_StartSnappedT);
-					for (int i = 0; i < ts2.size(); i++)
-					{
-						if (ts2[i] < teanew)
-							continue;
-						if (car->fromStart)
-						{
-							car->t_index = i;
-							car->target = samples2[i - 1];
-							car->fromStart = false;
-						}
-						else
-						{
-							car->t_index = i - 1;
-							car->target = samples2[i];
-							car->fromStart = true;
-						}
-						break;
-					}
-					new_road_segment->Cars.push_back(car);
-					car->roadSegment = new_road_segment_index;
-					auto cIt = std::find(
-						start_snapped_road_segment.Cars.begin(),
-						start_snapped_road_segment.Cars.end(),
-						car
-					);
-					start_snapped_road_segment.Cars.erase(cIt);
-				}
-			}
+			resnapp_buildings(m_StartSnappedSegment, new_road_segment_index, start_snapped_index);
+			reassign_cars(m_StartSnappedSegment, new_road_segment_index, start_snapped_index);
 			auto& walking_people = m_Scene->m_PersonManager.walking_people;
 			for (u64 person_index = 0; person_index < walking_people.size(); person_index++)
 			{
@@ -2062,18 +1974,19 @@ namespace Can
 			);
 
 			RoadSegment& end_snapped_road_segment = road_segments[m_EndSnappedSegment];
+			f32 end_snapped_t = end_snapped_road_segment.curve_t_samples[end_snapped_index];
 			std::array<v3, 4> curve1{
 				end_snapped_road_segment.GetCurvePoint(0),
 				end_snapped_road_segment.GetCurvePoint(1),
 				v3(0.0f),
 				curvePoints[3],
 			};
-			curve1[1] = curve1[0] + (curve1[1] - curve1[0]) * m_EndSnappedT;
+			curve1[1] = curve1[0] + (curve1[1] - curve1[0]) * end_snapped_t;
 			curve1[2] = Math::QuadraticCurve(std::array<v3, 3>{
 				end_snapped_road_segment.GetCurvePoint(0),
 					end_snapped_road_segment.GetCurvePoint(1),
 					end_snapped_road_segment.GetCurvePoint(2)
-			}, m_EndSnappedT);
+			}, end_snapped_t);
 
 			std::array<v3, 4> curve2 = {
 				end_snapped_road_segment.GetCurvePoint(3),
@@ -2081,22 +1994,29 @@ namespace Can
 				v3(0.0f),
 				curvePoints[3],
 			};
-			curve2[1] = curve2[1] + (curve2[0] - curve2[1]) * m_EndSnappedT;
+			curve2[1] = curve2[1] + (curve2[0] - curve2[1]) * end_snapped_t;
 			curve2[2] = Math::QuadraticCurve(std::array<v3, 3>{
 				end_snapped_road_segment.GetCurvePoint(1),
 					end_snapped_road_segment.GetCurvePoint(2),
 					end_snapped_road_segment.GetCurvePoint(3)
-			}, m_EndSnappedT);
+			}, end_snapped_t);
 			new_road_segment->SetType(end_snapped_road_segment.type);
 			new_road_segment->SetCurvePoints(curve2);
 
 			end_snapped_road_segment.SetCurvePoints(curve1);
 
 			auto [new_road_node, new_road_node_index] = array_add_empty(&road_nodes);
+			RoadNode& endNode = road_nodes[end_snapped_road_segment.EndNode];
+			RoadNode& startNode = road_nodes[end_snapped_road_segment.StartNode];
 
-			end_snapped_road_segment.EndNode = new_road_node_index;
 			new_road_segment->EndNode = new_road_node_index;
-			road_segment->StartNode = new_road_node_index;
+			new_road_segment->StartNode = end_snapped_road_segment.EndNode;
+
+			endNode.RemoveRoadSegment(m_EndSnappedSegment);
+			end_snapped_road_segment.EndNode = new_road_node_index;
+			endNode.AddRoadSegment({ new_road_segment_index });
+
+			road_segment->EndNode = new_road_node_index;
 			RoadNode::construct(
 				new_road_node,
 				{ (u64)m_EndSnappedSegment, new_road_segment_index, road_segment_index },
@@ -2105,98 +2025,8 @@ namespace Can
 				new_road_node_index
 			);
 
-			RoadNode& endNode = road_nodes[end_snapped_road_segment.EndNode];
-			RoadNode& startNode = road_nodes[end_snapped_road_segment.StartNode];
-			endNode.RemoveRoadSegment(m_EndSnappedSegment);
-			new_road_segment->StartNode = end_snapped_road_segment.EndNode;
-			endNode.AddRoadSegment({ new_road_segment_index });
-
-			for (u64 bIndex = 0; bIndex < end_snapped_road_segment.Buildings.size(); bIndex++)
-			{
-				Building* building = end_snapped_road_segment.Buildings[bIndex];
-				f32 t = building->snapped_t;
-				u64 t_index = building->snapped_t_index;
-				u64 count = end_snapped_road_segment.curve_samples.size() - 1;
-				if (t < m_EndSnappedT)
-				{
-					building->snapped_t = t / m_StartSnappedT;
-					building->snapped_t_index = t_index / m_StartSnappedT;
-				}
-				else
-				{
-					building->snapped_t = (1.0f - t) / (1.0f - m_StartSnappedT);
-					building->snapped_t_index = (count - t_index) / (count - m_StartSnappedT);
-					auto bIt = std::find(end_snapped_road_segment.Buildings.begin(), end_snapped_road_segment.Buildings.end(), building);
-					end_snapped_road_segment.Buildings.erase(bIt);
-					bIndex--;
-					new_road_segment->Buildings.push_back(building);
-				}
-			}
-			for (u64 cIndex = 0; cIndex < end_snapped_road_segment.Cars.size(); cIndex++)
-			{
-				Car* car = end_snapped_road_segment.Cars[cIndex];
-				u64 t_index = car->t_index;
-				std::vector<f32> ts{ 0 };
-				f32 lengthRoad = app->road_types[end_snapped_road_segment.type].road_length;
-				std::vector<v3> samples = Math::GetCubicCurveSamples(end_snapped_road_segment.GetCurvePoints(), lengthRoad, ts);
-				if (t_index >= ts.size())
-				{
-					t_index = ts.size() - 1;
-				}
-				f32 t = ts[t_index];
-				if (t < m_EndSnappedT)
-				{
-					std::vector<f32> ts2{ 0 };
-					std::vector<v3> samples2 = Math::GetCubicCurveSamples(end_snapped_road_segment.GetCurvePoints(), lengthRoad, ts2);
-					f32 teanew = t / m_EndSnappedT;
-					for (int i = 0; i < ts2.size(); i++)
-					{
-						if (ts2[i] < teanew)
-							continue;
-						if (car->fromStart)
-						{
-							car->t_index = i - 1;
-							car->target = samples2[i];
-
-						}
-						else
-						{
-							car->t_index = i;
-							car->target = samples2[i - 1];
-						}
-						break;
-					}
-				}
-				else
-				{
-
-					std::vector<f32> ts2{ 0 };
-					std::vector<v3> samples2 = Math::GetCubicCurveSamples(end_snapped_road_segment.GetCurvePoints(), lengthRoad, ts2);
-					f32 teanew = (1.0f - t) / (1.0f - m_EndSnappedT);
-					for (int i = 0; i < ts2.size(); i++)
-					{
-						if (ts2[i] < teanew)
-							continue;
-						if (car->fromStart)
-						{
-							car->t_index = i;
-							car->target = samples2[i - 1];
-							car->fromStart = false;
-						}
-						else
-						{
-							car->t_index = i - 1;
-							car->target = samples2[i];
-							car->fromStart = true;
-						}
-						break;
-					}
-					new_road_segment->Cars.push_back(car);
-					car->roadSegment = new_road_segment_index;
-					auto cIt = std::find(end_snapped_road_segment.Cars.begin(), end_snapped_road_segment.Cars.end(), car);
-					end_snapped_road_segment.Cars.erase(cIt);
-				}
-			}
+			resnapp_buildings(m_EndSnappedSegment, new_road_segment_index, end_snapped_index);
+			reassign_cars(m_EndSnappedSegment, new_road_segment_index, end_snapped_index);
 			auto& walking_people = m_Scene->m_PersonManager.walking_people;
 			for (u64 person_index = 0; person_index < walking_people.size(); person_index++)
 			{
@@ -2451,34 +2281,35 @@ namespace Can
 				f32 snapDist = (min_distance_to_snap + width) * 0.5f;
 				std::vector<v3> samples = segment.curve_samples;
 				u64 curve_samples_size = samples.size();
-				v3 point0 = samples[0];
+				v3 point_0 = samples[0];
 				for (u64 j = 1; j < curve_samples_size; j++)
 				{
-					v3 point1 = samples[j];
-					v2 dirToP1 = (v2)(point1 - point0);
-					f32 lenr = glm::length(dirToP1);
 
-					v2 dirToPrev = (v2)(prevLocation - point0);
-					f32 len = glm::length(dirToPrev);
+					v3 point_1 = samples[j];
 
-					f32 angle = glm::acos(glm::dot(dirToP1, dirToPrev) / (lenr * len));
-					f32 dist = len * glm::sin(angle);
-
-					if (dist < snapDist)
-					{
-						f32 c = len * glm::cos(angle);
-						if (c >= -0.5f * width && c <= lenr + 0.5f * width)
-						{
-							f32 t = std::max(0.0f, std::min(1.0f, glm::cos(angle)));
-							results.location = point0 + v3(t * lenr * dirToP1, 0.0f);
-							results.segment = rsIndex;
-							results.snapped = true;
-							results.T = Math::Lerp(segment.curve_t_samples[j - 1], segment.curve_t_samples[j], t);
-							results.elevation_type = segment.elevation_type;
-							return results;
-						}
+					v3 dir_to_p_1 = point_1 - point_0;
+					v3 dir_to_prev = prevLocation - point_0;
+					f32 scaler = glm::dot(dir_to_p_1, dir_to_prev) / glm::length2(dir_to_p_1);
+					if (scaler > 1.0f) {
+						point_0 = point_1;
+						continue;
 					}
-					point0 = point1;
+					if (scaler < 0.0f) scaler = 0.0f;
+					f32 len = glm::length(dir_to_prev);
+					f32 lenr = glm::length(dir_to_p_1);
+					f32 angle = glm::acos(glm::dot(dir_to_p_1, dir_to_prev) / (lenr * len));
+					angle = std::min(1.0f, std::max(-1.0f, angle));
+					f32 dist = len * glm::sin(angle);
+					if (dist > snapDist)
+						break;
+
+					results.location = point_0 + dir_to_p_1 * (scaler * lenr);
+					results.segment = rsIndex;
+					results.snapped = true;
+					results.t = scaler;
+					results.t_index = j - 1;
+					results.elevation_type = segment.elevation_type;
+					return results;
 				}
 			}
 		}
@@ -2501,11 +2332,11 @@ namespace Can
 
 		m_StartSnappedNode = -1;
 		m_StartSnappedSegment = -1;
-		m_StartSnappedT = 0.0f;
+		start_snapped_index = (u64)-1;
 
 		m_EndSnappedNode = -1;
 		m_EndSnappedSegment = -1;
-		m_EndSnappedT = 0.0f;
+		end_snapped_index = (u64)-1;
 
 		m_DestructionNode = -1;
 		m_DestructionSegment = -1;
@@ -2564,7 +2395,7 @@ namespace Can
 				b_ConstructionStartSnapped = snapInformation.snapped;
 				m_StartSnappedSegment = snapInformation.segment;
 				m_StartSnappedNode = snapInformation.node;
-				m_StartSnappedT = snapInformation.T;
+				start_snapped_index = snapInformation.t_index;
 				if (b_ConstructionStartSnapped)
 					m_Elevationtypes[0] = snapInformation.elevation_type;
 			}
@@ -2573,7 +2404,7 @@ namespace Can
 				b_ConstructionEndSnapped = snapInformation.snapped;
 				m_EndSnappedSegment = snapInformation.segment;
 				m_EndSnappedNode = snapInformation.node;
-				m_EndSnappedT = snapInformation.T;
+				end_snapped_index = snapInformation.t_index;
 				if (b_ConstructionEndSnapped)
 					m_Elevationtypes[3] = snapInformation.elevation_type;
 			}
@@ -2588,7 +2419,7 @@ namespace Can
 			AB.z = 0.0f;
 		}
 	}
-	void RoadManager::SnapToAngle(v3& AB, s64 snappedNode, s64 snappedRoadSegment, f32 snappedT)
+	void RoadManager::SnapToAngle(v3& AB, s64 snappedNode, s64 snappedRoadSegment, u64 snapped_index)
 	{
 		if (snapFlags & (u8)RoadSnapOptions::SNAP_TO_ANGLE)
 		{
@@ -2633,8 +2464,8 @@ namespace Can
 				}
 				else if (snappedRoadSegment != -1)
 				{
-					RoadSegment& segment = road_segments[snappedRoadSegment];
-					v3 tangent = Math::CubicCurveTangent(segment.GetCurvePoints(), snappedT);
+					RoadSegment& road_segment = road_segments[snappedRoadSegment];
+					v3 tangent = Math::CubicCurveTangent(road_segment.GetCurvePoints(), road_segment.curve_t_samples[snapped_index]);
 					crossProduct = glm::cross(tangent, AB);
 
 					f32 dotResult = glm::dot(tangent, AB);
@@ -2675,7 +2506,7 @@ namespace Can
 		for (u64& inUse : m_TunnelGuidelinesInUse)
 			inUse = 0;
 	}
-	bool RoadManager::RestrictSmallAngles(v2 direction, s64 snappedNode, s64 snappedRoadSegment, f32 snappedT)
+	bool RoadManager::RestrictSmallAngles(v2 direction, s64 snappedNode, s64 snappedRoadSegment, u64 snapped_index)
 	{
 		if (restrictionFlags & (u8)RoadRestrictions::RESTRICT_SMALL_ANGLES)
 		{
@@ -2703,8 +2534,8 @@ namespace Can
 			}
 			else if (snappedRoadSegment != -1)
 			{
-				RoadSegment& rs = road_segments[snappedRoadSegment];
-				v2 tangent = (v2)(v3)(Math::CubicCurveTangent(rs.GetCurvePoints(), snappedT));
+				RoadSegment& road_segment = road_segments[snappedRoadSegment];
+				v2 tangent = (v2)(v3)(Math::CubicCurveTangent(road_segment.GetCurvePoints(), road_segment.curve_t_samples[snapped_index]));
 				tangent = glm::normalize(tangent);
 
 				f32 dotResult = glm::dot(direction, tangent);
@@ -2716,5 +2547,119 @@ namespace Can
 			}
 		}
 		return false;
+	}
+
+	void resnapp_buildings(u64 old_rs_index, u64 new_rs_index, u64 snapped_index)
+	{
+		auto& road_segments = GameScene::ActiveGameScene->m_RoadManager.road_segments;
+		auto& buildings = GameScene::ActiveGameScene->MainApplication->buildings;
+		auto& road_types = GameScene::ActiveGameScene->MainApplication->road_types;
+		auto& snapped_buildings = road_segments[old_rs_index].Buildings;
+		for (u64 bIndex = 0; bIndex < snapped_buildings.size(); bIndex++)
+		{
+			Building* building = snapped_buildings[bIndex];
+			f32 offset_from_side_road = -buildings[building->type]->boundingBoxL.x;
+			u64 t_index = building->snapped_t_index;
+			u64 new_snapped_road_segment_index = t_index < snapped_index ? old_rs_index : new_rs_index;
+			RoadSegment& new_snapepd_road_segment = road_segments[new_snapped_road_segment_index];
+
+			u64 curve_sample_count = new_snapepd_road_segment.curve_samples.size() - 1;
+			v3 p_0 = new_snapepd_road_segment.curve_samples[0];
+			f32 road_half_width = road_types[new_snapepd_road_segment.type].road_width * 0.5f;
+			for (u64 i = 1; i < curve_sample_count; i++)
+			{
+				v3 p_1 = new_snapepd_road_segment.curve_samples[i];
+
+				v3 dir_to_p_1 = p_1 - p_0;
+				v3 dir_to_bulding_from_road_center = building->position - p_0;
+				v3 dir_to_p_2 = (i < curve_sample_count - 1) ?
+					new_snapepd_road_segment.curve_samples[i + 1] - p_1 :
+					new_snapepd_road_segment.GetEndDirection() * -1.0f;
+
+				dir_to_p_1.z = 0.0f;
+				dir_to_bulding_from_road_center.z = 0.0f;
+				dir_to_p_2.z = 0.0f;
+
+				dir_to_p_1 = glm::normalize(dir_to_p_1);
+				dir_to_bulding_from_road_center = glm::normalize(dir_to_bulding_from_road_center);
+				dir_to_p_2 = glm::normalize(dir_to_p_2);
+
+				v3 rotated_1 = glm::normalize(v3{ dir_to_p_1.y, -dir_to_p_1.x, 0.0f }) * road_half_width;
+				v3 rotated_2 = glm::normalize(v3{ dir_to_p_2.y, -dir_to_p_2.x, 0.0f }) * road_half_width;
+
+				bool snapped_to_right_side = glm::cross(dir_to_p_1, dir_to_bulding_from_road_center).z < 0.0f;
+				if (snapped_to_right_side == false)
+				{
+					rotated_1 *= -1.0f;
+					rotated_2 *= -1.0f;
+				}
+
+				v3 road_side_end_point_one = p_0 + rotated_1;
+				v3 road_side_end_point_two = p_1 + rotated_2;
+
+				v3 dir_side_road = road_side_end_point_two - road_side_end_point_one;
+				v3 dir_to_building_from_side_road = building->position - road_side_end_point_one;
+				f32 scaler = glm::dot(dir_side_road, dir_to_building_from_side_road) / glm::length2(dir_side_road);
+				if (scaler > 1.0f) {
+					p_0 = p_1;
+					if (i < curve_sample_count - 1)
+						continue;
+					scaler = 1.0f;
+				}
+				if (scaler < 0.0f) scaler = 0.0f;
+
+				v3 rotated_3 = glm::normalize(v3{ dir_side_road.y, -dir_side_road.x, 0.0f }) * offset_from_side_road;
+				if (snapped_to_right_side == false)
+					rotated_3 *= -1.0f;
+				v3 new_position = road_side_end_point_one + dir_side_road * scaler + rotated_3;
+				f32 rotation_offset = (f32)(dir_side_road.x < 0.0f) * glm::radians(180.0f);
+				f32 rotation = glm::atan(dir_side_road.y / dir_side_road.x) + rotation_offset;
+				if (t_index >= snapped_index)
+				{
+					auto it = std::find(snapped_buildings.begin(), snapped_buildings.end(), building);
+					assert(it != snapped_buildings.end());
+					snapped_buildings.erase(it);
+					bIndex--;
+					new_snapepd_road_segment.Buildings.push_back(building);
+				}
+				building->connectedRoadSegment = new_snapped_road_segment_index;
+				building->snapped_t = scaler;
+				building->snapped_t_index = i;
+				building->position = new_position;
+				building->object->SetTransform(
+					new_position,
+					v3{
+						0.0f,
+						0.0f,
+						(f32)snapped_to_right_side * glm::radians(180.0f) + glm::radians(-90.0f) + rotation
+					});
+				break;
+			}
+		}
+	}
+	void reassign_cars(u64 old_rs_index, u64 new_rs_index, u64 snapped_index)
+	{
+		auto& road_segments = GameScene::ActiveGameScene->m_RoadManager.road_segments;
+		//auto& road_types = GameScene::ActiveGameScene->MainApplication->road_types;
+		RoadSegment& old_road_segment = road_segments[old_rs_index];
+		RoadSegment& new_road_segment = road_segments[new_rs_index];
+		for (u64 car_index = 0; car_index < old_road_segment.Cars.size(); car_index++)
+		{
+			Car* car = old_road_segment.Cars[car_index];
+			u64 index_diff = car->t_index - (old_road_segment.curve_samples.size() - 1);
+			if (index_diff >= 0)
+			{
+				car->roadSegment = new_rs_index;
+				car->t_index = std::max((u64)0, std::min(index_diff, new_road_segment.curve_samples.size() - 2));
+
+				auto it = std::find(old_road_segment.Cars.begin(), old_road_segment.Cars.end(), car);
+				assert(it != old_road_segment.Cars.end());
+				old_road_segment.Cars.erase(it);
+
+				new_road_segment.Cars.push_back(car);
+				car_index--;
+			}
+		}
+
 	}
 }

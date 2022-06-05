@@ -40,7 +40,8 @@ namespace Can
 		v3 location{ 0.0f, 0.0f, 0.0f };
 		s64 segment = -1;
 		s64 node = -1;
-		f32 T = 0.0f;
+		f32 t = 0.0f;
+		u64 t_index = 0;
 		s8 elevation_type = 0;
 	};
 
@@ -95,9 +96,9 @@ namespace Can
 		void SnapToGrid(v3& prevLocation);
 		void SnapToRoad(v3& prevLocation, bool isStart);
 		void SnapToHeight(const std::vector<u8>& indices, u8 index, v3& AB);
-		void SnapToAngle(v3& AB, s64 snappedNode, s64 snappedRoadSegment, f32 snappedT);
+		void SnapToAngle(v3& AB, s64 snappedNode, s64 snappedRoadSegment, u64 snapped_index);
+		bool RestrictSmallAngles(v2 direction, s64 snappedNode, s64 snappedRoadSegment, u64 snapped_index);
 		void ResetGuideLines();
-		bool RestrictSmallAngles(v2 direction, s64 snappedNode, s64 snappedRoadSegment, f32 snappedT);
 
 	public:
 
@@ -137,13 +138,13 @@ namespace Can
 		bool b_ConstructionStartSnapped = false;
 		s64 m_StartSnappedSegment = -1;
 		s64 m_StartSnappedNode = -1;
-		f32 m_StartSnappedT = 0.0f;
+		u64 start_snapped_index = (u64)-1;
 
 		// End Snap
 		bool b_ConstructionEndSnapped = false;
 		s64 m_EndSnappedSegment = -1;
 		s64 m_EndSnappedNode = -1;
-		f32 m_EndSnappedT = 0.0f;
+		u64 end_snapped_index = (u64)-1;
 
 		// Destruction Snap
 		s64 m_DestructionSegment = -1;

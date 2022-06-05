@@ -78,9 +78,8 @@ namespace Can::Helper
 				roadSegmentR2 = rs2.GetStartRotation().y;
 			}
 			else
-			{
-				std::cout << "Why are you here" << std::endl;
-			}
+				assert(false); // Why are you here
+			
 			roadSegmentR1 = std::fmod(roadSegmentR1 + glm::radians(360.0f), glm::radians(360.0f));
 			roadSegmentR2 = std::fmod(roadSegmentR2 + glm::radians(360.0f), glm::radians(360.0f));
 			return (roadSegmentR1 < roadSegmentR2);
@@ -90,7 +89,11 @@ namespace Can::Helper
 	{
 		inline bool operator() (std::pair<u64, std::vector<u64>> path1, std::pair<u64, std::vector<u64>> path2)
 		{
-			return path1 > path2;
+			return path1.first > path2.first;
+		}
+		inline bool operator() (std::tuple<s64, s64, s64, s64> path1, std::tuple<s64, s64, s64, s64> path2)
+		{
+			return std::get<0>(path1) > std::get<0>(path2);
 		}
 	};
 }

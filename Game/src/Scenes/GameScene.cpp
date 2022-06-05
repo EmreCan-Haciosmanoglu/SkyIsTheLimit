@@ -360,7 +360,7 @@ namespace Can
 		///////////////////////////////////////////////////
 
 		//PersonManager
-		auto people = m_PersonManager.m_People;
+		auto& people = m_PersonManager.m_People;
 		u64 people_count;
 		fread(&people_count, sizeof(u64), 1, read_file);
 		people.reserve(people_count);
@@ -391,7 +391,7 @@ namespace Can
 			middle_name[middle_name_char_count] = '\0';
 			last_name[last_name_char_count] = '\0';
 			Person* person = new Person(
-				MainApplication->trees[type],
+				MainApplication->people[type],
 				speed
 			);
 			person->firstName = std::string(first_name);
@@ -409,6 +409,7 @@ namespace Can
 			}
 			person->iCar = car_index != -1 ? cars[car_index] : nullptr;
 			person->time_left = Utility::Random::Float(1.0f, 5.0f);
+			people.push_back(person);
 		}
 		///////////////////////////////////////////////////
 
@@ -507,7 +508,7 @@ namespace Can
 		}
 
 		//PersonManager
-		auto people = m_PersonManager.m_People;
+		auto& people = m_PersonManager.m_People;
 		u64 people_count = people.size();
 		fwrite(&people_count, sizeof(u64), 1, save_file);
 		for (u64 i = 0; i < people_count; i++)
@@ -519,9 +520,9 @@ namespace Can
 			u64 first_name_char_count = people[i]->firstName.size();
 			u64 middle_name_char_count = people[i]->midName.size();
 			u64 last_name_char_count = people[i]->surName.size();
-			if (people[i]->home)
+			if (people[i]->work)
 			{
-				auto work_it = std::find(buildings.begin(), buildings.end(), people[i]->home);
+				auto work_it = std::find(buildings.begin(), buildings.end(), people[i]->work);
 				work_index = std::distance(buildings.begin(), home_it);
 			}
 			fwrite(&people[i]->speed, sizeof(f32), 1, save_file);
