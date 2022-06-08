@@ -1756,8 +1756,9 @@ namespace Can
 		}
 		else if (m_StartSnappedSegment != -1)
 		{
-			RoadSegment& start_snapped_road_segment = road_segments[m_StartSnappedSegment];
 			auto [new_road_segment, new_road_segment_index] = array_add_empty(&road_segments);
+			auto [new_road_node, new_road_node_index] = array_add_empty(&road_nodes);
+			RoadSegment& start_snapped_road_segment = road_segments[m_StartSnappedSegment];
 			RoadSegment::construct(
 				new_road_segment,
 				m_Type,
@@ -1797,7 +1798,6 @@ namespace Can
 
 			start_snapped_road_segment.SetCurvePoints(curve1);
 
-			auto [new_road_node, new_road_node_index] = array_add_empty(&road_nodes);
 			RoadNode& endNode = road_nodes[start_snapped_road_segment.EndNode];
 			RoadNode& startNode = road_nodes[start_snapped_road_segment.StartNode];
 
@@ -1822,7 +1822,6 @@ namespace Can
 			auto& walking_people = m_Scene->m_PersonManager.walking_people;
 			for (u64 person_index = 0; person_index < walking_people.size(); person_index++)
 			{
-				assert(false); // if unordered_array fills up, all previous references(&) are invalid
 				Person* person = walking_people[person_index];
 				auto& path = person->path;
 				u64 transition_index = 1;
@@ -1966,14 +1965,15 @@ namespace Can
 		else if (m_EndSnappedSegment != -1)
 		{
 			auto [new_road_segment, new_road_segment_index] = array_add_empty(&road_segments);
+			auto [new_road_node, new_road_node_index] = array_add_empty(&road_nodes);
+			RoadSegment& end_snapped_road_segment = road_segments[m_EndSnappedSegment];
 			RoadSegment::construct(
 				new_road_segment,
 				m_Type,
 				curvePoints,
-				road_segments[m_EndSnappedSegment].elevation_type
+				end_snapped_road_segment.elevation_type
 			);
 
-			RoadSegment& end_snapped_road_segment = road_segments[m_EndSnappedSegment];
 			f32 end_snapped_t = end_snapped_road_segment.curve_t_samples[end_snapped_index];
 			std::array<v3, 4> curve1{
 				end_snapped_road_segment.GetCurvePoint(0),
@@ -2005,7 +2005,6 @@ namespace Can
 
 			end_snapped_road_segment.SetCurvePoints(curve1);
 
-			auto [new_road_node, new_road_node_index] = array_add_empty(&road_nodes);
 			RoadNode& endNode = road_nodes[end_snapped_road_segment.EndNode];
 			RoadNode& startNode = road_nodes[end_snapped_road_segment.StartNode];
 
@@ -2030,7 +2029,6 @@ namespace Can
 			auto& walking_people = m_Scene->m_PersonManager.walking_people;
 			for (u64 person_index = 0; person_index < walking_people.size(); person_index++)
 			{
-				assert(false); // if unordered_array fills up, all previous references(&) are invalid
 				Person* person = walking_people[person_index];
 				auto& path = person->path;
 				u64 transition_index = 1;
@@ -2606,7 +2604,7 @@ namespace Can
 						continue;
 					scaler = 1.0f;
 				}
-				if (scaler < 0.0f) scaler = 0.0f;
+				else if (scaler < 0.0f) scaler = 0.0f;
 
 				v3 rotated_3 = glm::normalize(v3{ dir_side_road.y, -dir_side_road.x, 0.0f }) * offset_from_side_road;
 				if (snapped_to_right_side == false)
