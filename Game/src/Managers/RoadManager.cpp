@@ -1688,7 +1688,7 @@ namespace Can
 				Building* building = buildings[i];
 				if (check_road_building_collision(building, new_road_bounding_box, new_road_bounding_polygon))
 				{
-					if (building->connectedRoadSegment)
+					if (building->connectedRoadSegment != -1)
 					{
 						RoadSegment& rs = road_segments[building->connectedRoadSegment];
 						auto it = std::find(rs.Buildings.begin(), rs.Buildings.end(), building);
