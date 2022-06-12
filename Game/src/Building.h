@@ -34,7 +34,7 @@ namespace Can
 		s64 connectedRoadSegment = -1;
 		u64 snapped_t_index = 0;
 		f32 snapped_t = 0.0f;
-		u8 capacity = 0;
+		u16 capacity = 0;
 		bool snapped_to_right = true;
 		std::vector<Person*> residents{};
 		std::vector<Person*> workers{};

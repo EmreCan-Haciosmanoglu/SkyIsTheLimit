@@ -20,7 +20,7 @@ namespace Can
 	{
 	public:
 		BuildingManager(GameScene* scene);
-		~BuildingManager();
+		~BuildingManager() {}
 
 		void OnUpdate(v3& prevLocation, const v3& cameraPosition, const v3& cameraDirection);
 		void OnUpdate_Construction(v3& prevLocation, const v3& cameraPosition, const v3& cameraDirection);

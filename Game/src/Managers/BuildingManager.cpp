@@ -98,8 +98,9 @@ namespace Can
 							f32 c = l1 * glm::cos(angle);
 							if (c >= -0.5f * roadLength && c <= 1.5f * roadLength) // needs lil' bit more length to each directions
 							{
-								bool r = glm::cross(dirToP1, dirToPrev).z > 0.0f;
-								v3 shiftDir{ -dirToP1.y, dirToP1.x, 0.0f };
+								v3 crossed = glm::cross(dirToP1, dirToPrev);
+								bool r = crossed.z < 0.0f;
+								v3 shiftDir{ dirToP1.y, -dirToP1.x, 0.0f };
 								v3 shiftAmount = ((f32)r * 2.0f - 1.0f) * shiftDir * snapDistance;
 								prevLocation = p0 + (dirToP1 * c) + shiftAmount;
 								m_SnappedRoadSegment = rsIndex;
@@ -109,7 +110,7 @@ namespace Can
 								m_GuidelineRotation = v3{
 									0.0f,
 									0.0f,
-									(f32)r * glm::radians(180.0f) + glm::radians(-90.0f) + rotation
+									((f32)r-1.0f) * glm::radians(180.0f) + glm::radians(-90.0f) + rotation
 								};
 								m_Guideline->SetTransform(m_GuidelinePosition, m_GuidelineRotation);
 								snappedToRoad = true;
