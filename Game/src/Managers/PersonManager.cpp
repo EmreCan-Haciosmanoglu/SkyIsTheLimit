@@ -84,6 +84,8 @@ namespace Can
 					v3 offsetted = target_position + dir * building_from->snapped_t;
 
 					v3 sidewalf_position_offset = glm::normalize(v3{ dir.y, -dir.x, 0.0f }) * rs_transition->distance_from_middle;
+					if (building_from->snapped_to_right == false)
+						sidewalf_position_offset *= -1.0f;
 					p->target = offsetted + sidewalf_position_offset;
 
 					walking_people.push_back(p);
@@ -154,7 +156,7 @@ namespace Can
 							else if (rn_transition->sub_index == 1)
 								p->target = ps[1];
 							else
-								assert((rn_transition->sub_index == 1) && (rn_transition->sub_index == 2));
+								assert(false);
 						}
 						else
 						{

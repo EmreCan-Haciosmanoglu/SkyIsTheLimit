@@ -560,17 +560,16 @@ namespace  Can::Helper
 		path.push_back(rs_transition);
 		rs_transition->road_segment_index = current_road_segment_index;
 		rs_transition->from_path_array_index = start->snapped_t_index;
-		int left_or_right = Utility::Random::Integer(2);
+		bool go_right_from_house = Utility::Random::Integer(2) == 1;
 		u64 next_node = 0;
-		if ((left_or_right == 1) == start->snapped_to_right)
+		rs_transition->from_right = go_right_from_house;
+		if (go_right_from_house == start->snapped_to_right)
 		{
-			rs_transition->from_right = true;
 			next_node = current_road_segment.EndNode;
 			rs_transition->to_path_array_index = current_road_segment.curve_samples.size() - 1;
 		}
 		else
 		{
-			rs_transition->from_right = false;
 			next_node = current_road_segment.StartNode;
 			rs_transition->to_path_array_index = 0;
 		}
@@ -642,13 +641,14 @@ namespace  Can::Helper
 
 		auto& node_road_segments = road_nodes[rn_transition->road_node_index].roadSegments;
 		auto it = std::find(node_road_segments.begin(), node_road_segments.end(), current_road_segment_index);
-		if (it == node_road_segments.end()) assert(false);
+		assert(it != node_road_segments.end());
 		rn_transition->from_road_segments_array_index = std::distance(node_road_segments.begin(), it);
 		rn_transition->to_road_segments_array_index = rn_transition->from_road_segments_array_index;
 		if (rs_transition->from_right)
 			rn_transition->sub_index = 1;
 		else
 			rn_transition->sub_index = 2;
+		rn_transition->accending = rs_transition->from_right;
 
 
 		for (u64 i = path.size() - 1; i > 0; i--)
@@ -693,6 +693,7 @@ namespace  Can::Helper
 		}
 		return path;
 	}
+	
 	//TODO memory leak possible
 	std::vector<Transition*> get_path(Building* start, Building* end)
 	{

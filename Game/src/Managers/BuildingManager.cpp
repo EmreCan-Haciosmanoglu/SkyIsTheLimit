@@ -22,10 +22,7 @@ namespace Can
 		m_Guideline = new Object(m_Scene->MainApplication->buildings[m_Type]);
 		m_Guideline->enabled = false;
 	}
-	BuildingManager::~BuildingManager()
-	{
-	}
-
+	
 	void BuildingManager::OnUpdate(v3& prevLocation, const v3& cameraPosition, const v3& cameraDirection)
 	{
 		switch (m_ConstructionMode)
@@ -344,8 +341,8 @@ namespace Can
 			if (m_SnappedRoadSegment != (u64)-1)
 				segments[m_SnappedRoadSegment].Buildings.push_back(newBuilding);
 			m_Buildings.push_back(newBuilding);
-			
-			bool ishome = Utility::Random::Float(1.0f)>0.5f;
+
+			bool ishome = Utility::Random::Float(1.0f) > 0.5f;
 			ishome = true; // delete me
 			if (ishome)
 			{
@@ -361,7 +358,7 @@ namespace Can
 					p->type = type;
 					p->home = newBuilding;
 					p->status = PersonStatus::AtHome;
-					p->time_left = Utility::Random::Float(1.0f,5.0f);
+					p->time_left = Utility::Random::Float(1.0f, 5.0f);
 					newBuilding->residents.push_back(p);
 
 					manager.m_People.push_back(p);
@@ -476,7 +473,7 @@ namespace Can
 	}
 	Building* BuildingManager::getAvailableWorkBuilding()
 	{
-		for(Building* b : m_WorkBuildings)
+		for (Building* b : m_WorkBuildings)
 		{
 			if (b->capacity > b->workers.size())
 			{
@@ -485,11 +482,13 @@ namespace Can
 		}
 		return nullptr;
 	}
-	
+
 	void remove_building(Building* b)
 	{
 		GameScene* game = GameScene::ActiveGameScene;
 		auto& buildings = game->m_BuildingManager.m_Buildings;
+		auto& home_buildings = game->m_BuildingManager.m_HomeBuildings;
+		auto& work_buildings = game->m_BuildingManager.m_WorkBuildings;
 		auto& segments = game->m_RoadManager.road_segments;
 
 		while (b->residents.size() > 0)
@@ -499,17 +498,21 @@ namespace Can
 		{
 			auto& connected_buildings = segments[b->connectedRoadSegment].Buildings;
 			auto it = std::find(connected_buildings.begin(), connected_buildings.end(), b);
-			if (it != connected_buildings.end())
-				connected_buildings.erase(it);
-			else
-				assert(false);
+			assert(it != connected_buildings.end());
+			connected_buildings.erase(it);
 		}
 
 		auto it = std::find(buildings.begin(), buildings.end(), b);
-		if (it != buildings.end())
-			buildings.erase(it);
-		else
-			assert(false);
+		assert(it != buildings.end());
+		buildings.erase(it);
+
+		auto home_it = std::find(home_buildings.begin(), home_buildings.end(), b);
+		if (home_it != home_buildings.end())
+			home_buildings.erase(home_it);
+
+		auto work_it = std::find(work_buildings.begin(), work_buildings.end(), b);
+		if (work_it != work_buildings.end())
+			work_buildings.erase(work_it);
 
 		delete b;
 	}

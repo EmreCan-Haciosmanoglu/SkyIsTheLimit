@@ -20,6 +20,7 @@ namespace Can
 {
 	void resnapp_buildings(u64 old_rs_index, u64 new_rs_index, u64 snapped_index);
 	void reassign_cars(u64 old_rs_index, u64 new_rs_index, u64 snapped_index);
+	void reassign_walking_people(u64 old_rs_index, u64 new_rs_index, u64 new_rn_index, u64 snapped_index);
 	void update_path_of_walking_people_if_a_node_is_changed(u64 road_node_index, u64 new_index);
 
 	RoadManager::RoadManager(GameScene* scene)
@@ -1684,20 +1685,13 @@ namespace Can
 		auto& buildings = m_Scene->m_BuildingManager.GetBuildings();
 		if (m_Scene->m_BuildingManager.restrictions[0] && (restrictionFlags & (u8)RoadRestrictions::RESTRICT_COLLISIONS))
 		{
-			for (u64 i = 0; i < buildings.size(); i++)
+			for (u64 building_index = 0; building_index < buildings.size(); building_index++)
 			{
-				Building* building = buildings[i];
+				Building* building = buildings[building_index];
 				if (check_road_building_collision(building, new_road_bounding_box, new_road_bounding_polygon))
 				{
-					if (building->connectedRoadSegment != -1)
-					{
-						RoadSegment& rs = road_segments[building->connectedRoadSegment];
-						auto it = std::find(rs.Buildings.begin(), rs.Buildings.end(), building);
-						rs.Buildings.erase(it);
-					}
-					buildings.erase(buildings.begin() + i);
-					delete building;
-					i--;
+					remove_building(building);
+					building_index--;
 				}
 			}
 		}
@@ -1799,103 +1793,7 @@ namespace Can
 
 			resnapp_buildings(m_StartSnappedSegment, new_road_segment_index, start_snapped_index);
 			reassign_cars(m_StartSnappedSegment, new_road_segment_index, start_snapped_index);
-			auto& walking_people = m_Scene->m_PersonManager.walking_people;
-			for (u64 person_index = 0; person_index < walking_people.size(); person_index++)
-			{
-				Person* person = walking_people[person_index];
-				auto& path = person->path;
-				u64 transition_index = 1;
-				if (path.size() % 2 == 1)
-				{
-					if (((RS_Transition*)path[0])->road_segment_index == m_StartSnappedSegment)
-					{
-						assert(false);// devide and conquer
-					}
-					else
-					{
-						transition_index = 2;
-					}
-				}
-				for (; transition_index < path.size(); transition_index += 2)
-				{
-					auto rs_transition = (RS_Transition*)path[transition_index];
-					if (rs_transition->road_segment_index == m_StartSnappedSegment)
-					{
-						auto rn_transition = (RN_Transition*)path[transition_index - 1];
-						if (start_snapped_road_segment.StartNode == rn_transition->road_node_index)
-						{
-							RN_Transition* new_rn_transition = new RN_Transition();
-							new_rn_transition->from_road_segments_array_index = std::distance(
-								new_road_node->roadSegments.begin(),
-								std::find(
-									new_road_node->roadSegments.begin(),
-									new_road_node->roadSegments.end(),
-									m_StartSnappedSegment
-								));
-							new_rn_transition->to_road_segments_array_index = std::distance(
-								new_road_node->roadSegments.begin(),
-								std::find(
-									new_road_node->roadSegments.begin(),
-									new_road_node->roadSegments.end(),
-									new_road_segment_index
-								));
-							new_rn_transition->sub_index = rn_transition->sub_index;
-							new_rn_transition->road_node_index = new_road_node_index;
-							f32 diff = new_rn_transition->to_road_segments_array_index - new_rn_transition->from_road_segments_array_index;
-							if (diff > 0.0f)
-								new_rn_transition->accending = diff < (3.0f / 2.0f);
-							else
-								new_rn_transition->accending = diff * -1.0f > (3.0f / 2.0f);
-
-							RS_Transition* new_rs_transition = new RS_Transition();
-							new_rs_transition->from_path_array_index = new_road_segment->curve_samples.size() - 1;
-							new_rs_transition->to_path_array_index = 0;
-							new_rs_transition->road_segment_index = new_road_segment_index;
-							new_rs_transition->distance_from_middle = 0.5f;
-							new_rs_transition->from_right = rs_transition->from_right;
-							path.insert(path.begin() + (transition_index + 1), (Transition*)new_rn_transition);
-							path.insert(path.begin() + (transition_index + 2), (Transition*)new_rs_transition);
-						}
-						else
-						{
-							RS_Transition* new_rs_transition = new RS_Transition();
-							new_rs_transition->from_path_array_index = 0;
-							new_rs_transition->to_path_array_index = new_road_segment->curve_samples.size() - 1;
-							new_rs_transition->road_segment_index = new_road_segment_index;
-							new_rs_transition->distance_from_middle = 0.5f;
-							new_rs_transition->from_right = rs_transition->from_right;
-
-							RN_Transition* new_rn_transition = new RN_Transition();
-							new_rn_transition->from_road_segments_array_index = std::distance(
-								new_road_node->roadSegments.begin(),
-								std::find(
-									new_road_node->roadSegments.begin(),
-									new_road_node->roadSegments.end(),
-									new_road_segment_index
-								));
-							new_rn_transition->to_road_segments_array_index = std::distance(
-								new_road_node->roadSegments.begin(),
-								std::find(
-									new_road_node->roadSegments.begin(),
-									new_road_node->roadSegments.end(),
-									m_StartSnappedSegment
-								));
-							new_rn_transition->sub_index = rs_transition->from_right ? 1 : 2;
-							new_rn_transition->road_node_index = new_road_node_index;
-							f32 diff = new_rn_transition->to_road_segments_array_index - new_rn_transition->from_road_segments_array_index;
-							if (diff > 0.0f)
-								new_rn_transition->accending = diff < (3.0f / 2.0f);
-							else
-								new_rn_transition->accending = diff * -1.0f > (3.0f / 2.0f);
-
-							path.insert(path.begin() + (transition_index + 0), (Transition*)new_rs_transition);
-							path.insert(path.begin() + (transition_index + 1), (Transition*)new_rn_transition);
-							assert(false); // is this correct
-						}
-						break;
-					}
-				}
-			}
+			reassign_walking_people(m_StartSnappedSegment, new_road_segment_index, new_road_node_index, start_snapped_index);
 		}
 		else
 		{
@@ -1985,103 +1883,7 @@ namespace Can
 
 			resnapp_buildings(m_EndSnappedSegment, new_road_segment_index, end_snapped_index);
 			reassign_cars(m_EndSnappedSegment, new_road_segment_index, end_snapped_index);
-			auto& walking_people = m_Scene->m_PersonManager.walking_people;
-			for (u64 person_index = 0; person_index < walking_people.size(); person_index++)
-			{
-				Person* person = walking_people[person_index];
-				auto& path = person->path;
-				u64 transition_index = 1;
-				if (path.size() % 2 == 1)
-				{
-					if (((RS_Transition*)path[0])->road_segment_index == m_StartSnappedSegment)
-					{
-						assert(false);// devide and conquer
-					}
-					else
-					{
-						u64 transition_index = 2;
-					}
-				}
-				for (; transition_index < path.size(); transition_index += 2)
-				{
-					auto rs_transition = (RS_Transition*)path[transition_index];
-					if (rs_transition->road_segment_index == m_StartSnappedSegment)
-					{
-						auto rn_transition = (RN_Transition*)path[transition_index - 1];
-						if (end_snapped_road_segment.StartNode == rn_transition->road_node_index)
-						{
-							RN_Transition* new_rn_transition = new RN_Transition();
-							new_rn_transition->from_road_segments_array_index = std::distance(
-								new_road_node->roadSegments.begin(),
-								std::find(
-									new_road_node->roadSegments.begin(),
-									new_road_node->roadSegments.end(),
-									m_StartSnappedSegment
-								));
-							new_rn_transition->to_road_segments_array_index = std::distance(
-								new_road_node->roadSegments.begin(),
-								std::find(
-									new_road_node->roadSegments.begin(),
-									new_road_node->roadSegments.end(),
-									new_road_segment_index
-								));
-							new_rn_transition->sub_index = rn_transition->sub_index;
-							new_rn_transition->road_node_index = new_road_node_index;
-							f32 diff = new_rn_transition->to_road_segments_array_index - new_rn_transition->from_road_segments_array_index;
-							if (diff > 0.0f)
-								new_rn_transition->accending = diff < (3.0f / 2.0f);
-							else
-								new_rn_transition->accending = diff * -1.0f > (3.0f / 2.0f);
-
-							RS_Transition* new_rs_transition = new RS_Transition();
-							new_rs_transition->from_path_array_index = new_road_segment->curve_samples.size() - 1;
-							new_rs_transition->to_path_array_index = 0;
-							new_rs_transition->road_segment_index = new_road_segment_index;
-							new_rs_transition->distance_from_middle = 0.5f;
-							new_rs_transition->from_right = rs_transition->from_right;
-							path.insert(path.begin() + (transition_index + 1), (Transition*)new_rn_transition);
-							path.insert(path.begin() + (transition_index + 2), (Transition*)new_rs_transition);
-						}
-						else
-						{
-							RS_Transition* new_rs_transition = new RS_Transition();
-							new_rs_transition->from_path_array_index = 0;
-							new_rs_transition->to_path_array_index = new_road_segment->curve_samples.size() - 1;
-							new_rs_transition->road_segment_index = new_road_segment_index;
-							new_rs_transition->distance_from_middle = 0.5f;
-							new_rs_transition->from_right = rs_transition->from_right;
-
-							RN_Transition* new_rn_transition = new RN_Transition();
-							new_rn_transition->from_road_segments_array_index = std::distance(
-								new_road_node->roadSegments.begin(),
-								std::find(
-									new_road_node->roadSegments.begin(),
-									new_road_node->roadSegments.end(),
-									new_road_segment_index
-								));
-							new_rn_transition->to_road_segments_array_index = std::distance(
-								new_road_node->roadSegments.begin(),
-								std::find(
-									new_road_node->roadSegments.begin(),
-									new_road_node->roadSegments.end(),
-									m_StartSnappedSegment
-								));
-							new_rn_transition->sub_index = rs_transition->from_right ? 1 : 2;
-							new_rn_transition->road_node_index = new_road_node_index;
-							f32 diff = new_rn_transition->to_road_segments_array_index - new_rn_transition->from_road_segments_array_index;
-							if (diff > 0.0f)
-								new_rn_transition->accending = diff < (3.0f / 2.0f);
-							else
-								new_rn_transition->accending = diff * -1.0f > (3.0f / 2.0f);
-
-							path.insert(path.begin() + (transition_index + 0), (Transition*)new_rs_transition);
-							path.insert(path.begin() + (transition_index + 1), (Transition*)new_rn_transition);
-							assert(false); // is this correct
-						}
-						break;
-					}
-				}
-			}
+			reassign_walking_people(m_EndSnappedSegment, new_road_segment_index, new_road_node_index, end_snapped_index);
 		}
 		else
 		{
@@ -2588,7 +2390,7 @@ namespace Can
 					v3{
 						0.0f,
 						0.0f,
-						(f32)snapped_to_right_side * glm::radians(180.0f) + glm::radians(-90.0f) + rotation
+						((f32)snapped_to_right_side-1.0f) * glm::radians(180.0f) + glm::radians(-90.0f) + rotation
 					});
 				break;
 			}
@@ -2597,7 +2399,6 @@ namespace Can
 	void reassign_cars(u64 old_rs_index, u64 new_rs_index, u64 snapped_index)
 	{
 		auto& road_segments = GameScene::ActiveGameScene->m_RoadManager.road_segments;
-		//auto& road_types = GameScene::ActiveGameScene->MainApplication->road_types;
 		RoadSegment& old_road_segment = road_segments[old_rs_index];
 		RoadSegment& new_road_segment = road_segments[new_rs_index];
 		for (u64 car_index = 0; car_index < old_road_segment.Cars.size(); car_index++)
@@ -2618,6 +2419,109 @@ namespace Can
 			}
 		}
 
+	}
+	void reassign_walking_people(u64 old_rs_index, u64 new_rs_index, u64 new_rn_index, u64 snapped_index)
+	{
+		auto& road_segments = GameScene::ActiveGameScene->m_RoadManager.road_segments;
+		auto& road_nodes = GameScene::ActiveGameScene->m_RoadManager.road_nodes;
+		RoadSegment& old_road_segment = road_segments[old_rs_index];
+		RoadSegment& new_road_segment = road_segments[new_rs_index];
+		RoadNode& new_road_node = road_nodes[new_rn_index];
+		for (u64 person_index = 0; person_index < old_road_segment.people.size(); person_index++)
+		{
+			Person* person = old_road_segment.people[person_index];
+			auto& path = person->path;
+			u64 transition_index = 1;
+			if (path.size() % 2 == 1)
+			{
+				auto rs_transition = (RS_Transition*)path[0];
+				if (rs_transition->road_segment_index == old_rs_index)
+				{
+					reset_person(person);
+					person_index--;
+					continue;
+				}
+				else
+				{
+					transition_index = 2;
+				}
+			}
+			for (; transition_index < path.size(); transition_index += 2)
+			{
+				auto rs_transition = (RS_Transition*)path[transition_index];
+				if (rs_transition->road_segment_index != old_rs_index) continue;
+				auto rn_transition = (RN_Transition*)path[transition_index - 1];
+
+				if (old_road_segment.StartNode == rn_transition->road_node_index)
+				{
+					RN_Transition* new_rn_transition = new RN_Transition();
+					new_rn_transition->from_road_segments_array_index = std::distance(
+						new_road_node.roadSegments.begin(),
+						std::find(
+							new_road_node.roadSegments.begin(),
+							new_road_node.roadSegments.end(),
+							old_rs_index
+						));
+					new_rn_transition->to_road_segments_array_index = std::distance(
+						new_road_node.roadSegments.begin(),
+						std::find(
+							new_road_node.roadSegments.begin(),
+							new_road_node.roadSegments.end(),
+							new_rs_index
+						));
+					new_rn_transition->sub_index = rn_transition->sub_index;
+					new_rn_transition->road_node_index = new_rn_index;
+					f32 diff = new_rn_transition->to_road_segments_array_index - new_rn_transition->from_road_segments_array_index;
+					if (diff > 0.0f)
+						new_rn_transition->accending = diff < (3.0f / 2.0f);
+					else
+						new_rn_transition->accending = diff * -1.0f > (3.0f / 2.0f);
+					RS_Transition* new_rs_transition = new RS_Transition();
+					new_rs_transition->from_path_array_index = new_road_segment.curve_samples.size() - 1;
+					new_rs_transition->to_path_array_index = 0;
+					new_rs_transition->road_segment_index = new_rs_index;
+					new_rs_transition->distance_from_middle = 0.5f;
+					new_rs_transition->from_right = rs_transition->from_right;
+					path.insert(path.begin() + (transition_index + 1), (Transition*)new_rn_transition);
+					path.insert(path.begin() + (transition_index + 2), (Transition*)new_rs_transition);
+				}
+				else
+				{
+					RS_Transition* new_rs_transition = new RS_Transition();
+					new_rs_transition->from_path_array_index = 0;
+					new_rs_transition->to_path_array_index = new_road_segment.curve_samples.size() - 1;
+					new_rs_transition->road_segment_index = new_rs_index;
+					new_rs_transition->distance_from_middle = 0.5f;
+					new_rs_transition->from_right = rs_transition->from_right;
+					RN_Transition* new_rn_transition = new RN_Transition();
+					new_rn_transition->from_road_segments_array_index = std::distance(
+						new_road_node.roadSegments.begin(),
+						std::find(
+							new_road_node.roadSegments.begin(),
+							new_road_node.roadSegments.end(),
+							new_rs_index
+						));
+					new_rn_transition->to_road_segments_array_index = std::distance(
+						new_road_node.roadSegments.begin(),
+						std::find(
+							new_road_node.roadSegments.begin(),
+							new_road_node.roadSegments.end(),
+							old_rs_index
+						));
+					new_rn_transition->sub_index = rs_transition->from_right ? 1 : 2;
+					new_rn_transition->road_node_index = new_rn_index;
+					f32 diff = new_rn_transition->to_road_segments_array_index - new_rn_transition->from_road_segments_array_index;
+					if (diff > 0.0f)
+						new_rn_transition->accending = diff < (3.0f / 2.0f);
+					else
+						new_rn_transition->accending = diff * -1.0f > (3.0f / 2.0f);
+					path.insert(path.begin() + (transition_index + 0), (Transition*)new_rs_transition);
+					path.insert(path.begin() + (transition_index + 1), (Transition*)new_rn_transition);
+					assert(false); // is this correct
+				}
+				transition_index += 2;
+			}
+		}
 	}
 	void update_path_of_walking_people_if_a_node_is_changed(u64 road_node_index, u64 new_index)
 	{

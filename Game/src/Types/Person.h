@@ -22,12 +22,9 @@ namespace Can
 		Person(Prefab* type, f32 speed);
 		~Person() { delete object; }
 
-		// Simulation
 		s64 road_segment = -1;
 		s64 road_node = -1;
-		//u64 t_index = 0;
 		f32 speed = 10.0f;
-		//f32 t = 0.0f;
 		v3 position;
 		v3 target;
 		std::vector<Transition*> path{};
