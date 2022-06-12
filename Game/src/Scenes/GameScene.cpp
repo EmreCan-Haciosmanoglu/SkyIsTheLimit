@@ -295,11 +295,15 @@ namespace Can
 			s64 connected_road_segment;
 			u64 snapped_t_index;
 			f32 snapped_t;
+			u16 capacity;
+			bool snapped_to_right;
 			v3 position, rotation;// calculate it from snapped_t?
 			fread(&type, sizeof(u64), 1, read_file);
 			fread(&connected_road_segment, sizeof(s64), 1, read_file);
 			fread(&snapped_t_index, sizeof(u64), 1, read_file);
 			fread(&snapped_t, sizeof(f32), 1, read_file);
+			fread(&capacity, sizeof(u16), 1, read_file);
+			fread(&snapped_to_right, sizeof(bool), 1, read_file);
 			fread(&position, sizeof(f32), 3, read_file);
 			fread(&rotation, sizeof(f32), 3, read_file);
 			Building* building = new Building(
@@ -311,6 +315,8 @@ namespace Can
 				rotation
 			);
 			building->type = type;
+			building->capacity = capacity;
+			building->snapped_to_right = snapped_to_right;
 			buildings.push_back(building);
 			road_segments[connected_road_segment].Buildings.push_back(building);
 		}
@@ -484,6 +490,8 @@ namespace Can
 				fwrite(&buildings[i]->connectedRoadSegment, sizeof(s64), 1, save_file);
 				fwrite(&buildings[i]->snapped_t_index, sizeof(u64), 1, save_file);
 				fwrite(&buildings[i]->snapped_t, sizeof(f32), 1, save_file);
+				fwrite(&buildings[i]->capacity, sizeof(u16), 1, save_file);
+				fwrite(&buildings[i]->snapped_to_right, sizeof(bool), 1, save_file);
 				fwrite(&buildings[i]->object->position, sizeof(f32), 3, save_file);
 				fwrite(&buildings[i]->object->rotation, sizeof(f32), 3, save_file);
 			}
