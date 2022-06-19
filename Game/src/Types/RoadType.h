@@ -52,6 +52,7 @@ namespace Can
 		bool asymmetric = false;
 		bool left_hand_drive = true; // for later
 		bool zoneable = true;
+		bool has_sidewalk = true; // change later
 
 		std::vector<Lane> left;
 		std::vector<Lane> rigth;

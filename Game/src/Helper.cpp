@@ -549,6 +549,7 @@ namespace  Can::Helper
 	std::vector<Transition*> get_path(Building* start, u8 dist)
 	{
 		auto& road_segments = GameScene::ActiveGameScene->m_RoadManager.road_segments;
+		auto& road_types = GameScene::ActiveGameScene->MainApplication->road_types;
 		auto& road_nodes = GameScene::ActiveGameScene->m_RoadManager.road_nodes;
 
 		u64 current_road_segment_index = start->connectedRoadSegment;
@@ -598,11 +599,19 @@ namespace  Can::Helper
 			rs_transition->from_right = true;
 			rs_transition->distance_from_middle = 0.5f;
 			std::vector<u64>& roads = road_node.roadSegments;
-			int size = (int)roads.size();
-			int new_road_index = 0;
-			if (size > 1)
-				while (current_road_segment_index == roads[new_road_index])
-					new_road_index = Utility::Random::Integer(size);
+			std::vector<u64> available_road_segment_indexes{};
+			for (u64 road_segment_index : roads)
+				if (
+					(road_segment_index != current_road_segment_index) &&
+					(road_types[road_segments[road_segment_index].type].has_sidewalk)
+					)
+					available_road_segment_indexes.push_back(road_segment_index);
+
+			int size = (int)available_road_segment_indexes.size();
+			u64 road_segment_i = (size == 0) ? current_road_segment_index : road_segment_i = available_road_segment_indexes[Utility::Random::Integer(size)];
+			it = std::find(road_node.roadSegments.begin(), road_node.roadSegments.end(), road_segment_i);
+			assert(it != road_node.roadSegments.end());
+			int new_road_index = std::distance(road_node.roadSegments.begin(), it);
 
 			u64 next_road_segment_index = roads[new_road_index];
 			RoadSegment& next_road_segment = road_segments[next_road_segment_index];
@@ -693,7 +702,7 @@ namespace  Can::Helper
 		}
 		return path;
 	}
-	
+
 	//TODO memory leak possible
 	std::vector<Transition*> get_path(Building* start, Building* end)
 	{
@@ -796,7 +805,7 @@ namespace  Can::Helper
 				}
 				RoadSegment& road_segment = road_segments[road_segment_index];
 				s64 new_distance = std::get<0>(closest) + 1;
-				if (types[road_segment.type].zoneable == false) continue;
+				if (types[road_segment.type].has_sidewalk == false) continue;
 
 				s64 next_road_node_index = road_segment.StartNode == road_node_index ? road_segment.EndNode : road_segment.StartNode;
 

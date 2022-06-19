@@ -2320,20 +2320,20 @@ namespace Can
 			f32 offset_from_side_road = -buildings[building->type]->boundingBoxL.x;
 			u64 t_index = building->snapped_t_index;
 			u64 new_snapped_road_segment_index = t_index < snapped_index ? old_rs_index : new_rs_index;
-			RoadSegment& new_snapepd_road_segment = road_segments[new_snapped_road_segment_index];
+			RoadSegment& new_snapped_road_segment = road_segments[new_snapped_road_segment_index];
 
-			u64 curve_sample_count = new_snapepd_road_segment.curve_samples.size() - 1;
-			v3 p_0 = new_snapepd_road_segment.curve_samples[0];
-			f32 road_half_width = road_types[new_snapepd_road_segment.type].road_width * 0.5f;
+			u64 curve_sample_count = new_snapped_road_segment.curve_samples.size() - 1;
+			v3 p_0 = new_snapped_road_segment.curve_samples[0];
+			f32 road_half_width = road_types[new_snapped_road_segment.type].road_width * 0.5f;
 			for (u64 i = 1; i < curve_sample_count; i++)
 			{
-				v3 p_1 = new_snapepd_road_segment.curve_samples[i];
+				v3 p_1 = new_snapped_road_segment.curve_samples[i];
 
 				v3 dir_to_p_1 = p_1 - p_0;
 				v3 dir_to_bulding_from_road_center = building->position - p_0;
 				v3 dir_to_p_2 = (i < curve_sample_count - 1) ?
-					new_snapepd_road_segment.curve_samples[i + 1] - p_1 :
-					new_snapepd_road_segment.GetEndDirection() * -1.0f;
+					new_snapped_road_segment.curve_samples[i + 1] - p_1 :
+					new_snapped_road_segment.GetEndDirection() * -1.0f;
 
 				dir_to_p_1.z = 0.0f;
 				dir_to_bulding_from_road_center.z = 0.0f;
@@ -2379,7 +2379,7 @@ namespace Can
 					assert(it != snapped_buildings.end());
 					snapped_buildings.erase(it);
 					bIndex--;
-					new_snapepd_road_segment.Buildings.push_back(building);
+					new_snapped_road_segment.Buildings.push_back(building);
 				}
 				building->connectedRoadSegment = new_snapped_road_segment_index;
 				building->snapped_t = scaler;
