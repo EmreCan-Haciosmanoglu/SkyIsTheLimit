@@ -567,14 +567,13 @@ namespace  Can::Helper
 		if (go_right_from_house == start->snapped_to_right)
 		{
 			next_node = current_road_segment.EndNode;
-			rs_transition->to_path_array_index = current_road_segment.curve_samples.size() - 1;
+			rs_transition->from_start = true;
 		}
 		else
 		{
 			next_node = current_road_segment.StartNode;
-			rs_transition->to_path_array_index = 0;
+			rs_transition->from_start = false;
 		}
-		rs_transition->distance_from_middle = 0.5f;
 
 		RN_Transition* rn_transition = new RN_Transition();
 		path.push_back(rn_transition);
@@ -597,7 +596,6 @@ namespace  Can::Helper
 			path.push_back(rs_transition);
 
 			rs_transition->from_right = true;
-			rs_transition->distance_from_middle = 0.5f;
 			std::vector<u64>& roads = road_node.roadSegments;
 			std::vector<u64> available_road_segment_indexes{};
 			for (u64 road_segment_index : roads)
@@ -628,13 +626,13 @@ namespace  Can::Helper
 			if (next_road_segment.StartNode == next_node)
 			{
 				rs_transition->from_path_array_index = 0;
-				rs_transition->to_path_array_index = next_road_segment.curve_samples.size() - 1;
+				rs_transition->from_start = true;
 				next_node = next_road_segment.EndNode;
 			}
 			else if (next_road_segment.EndNode == next_node)
 			{
 				rs_transition->from_path_array_index = next_road_segment.curve_samples.size() - 1;
-				rs_transition->to_path_array_index = 0;
+				rs_transition->from_start = false;
 				next_node = next_road_segment.StartNode;
 			}
 			else
@@ -664,10 +662,15 @@ namespace  Can::Helper
 		{
 			RS_Transition* mirror_rs_transition = (RS_Transition*)path[i - 1];
 			RS_Transition* rs_transition = new RS_Transition();
+			RoadSegment& road_segment = road_segments[rs_transition->road_segment_index];
 			path.push_back(rs_transition);
-			rs_transition->from_path_array_index = mirror_rs_transition->to_path_array_index;
-			rs_transition->to_path_array_index = mirror_rs_transition->from_path_array_index;
-			rs_transition->distance_from_middle = mirror_rs_transition->distance_from_middle;
+			auto m_from = mirror_rs_transition->from_path_array_index;
+			rs_transition->from_start = !mirror_rs_transition->from_start;
+			if (mirror_rs_transition->from_start)
+				rs_transition->from_path_array_index = road_segment.curve_samples.size() - 1;
+			else
+				rs_transition->from_path_array_index = 0;
+
 			rs_transition->from_right = mirror_rs_transition->from_right;
 			rs_transition->road_segment_index = mirror_rs_transition->road_segment_index;
 			i--;
@@ -715,15 +718,22 @@ namespace  Can::Helper
 			{
 				RS_Transition* rs_transition = new RS_Transition();
 				rs_transition->from_path_array_index = start->snapped_t_index;
-				rs_transition->to_path_array_index = end->snapped_t_index;
-				rs_transition->distance_from_middle = 0.5f;
 				u64 diff = end->snapped_t_index - start->snapped_t_index;
 				if (diff > 0)
+				{
+					rs_transition->from_start = true;
 					rs_transition->from_right = start->snapped_to_right;
+				}
 				else if (diff == 0)
+				{
+					rs_transition->from_start = end->snapped_t > start->snapped_t;
 					rs_transition->from_right = start->snapped_to_right == (end->snapped_t > start->snapped_t);
+				}
 				else
+				{
+					rs_transition->from_start = false;
 					rs_transition->from_right = !start->snapped_to_right;
+				}
 				rs_transition->road_segment_index = start->connectedRoadSegment;
 				return { rs_transition };
 			}
@@ -734,8 +744,7 @@ namespace  Can::Helper
 
 				RS_Transition* rs_transition_s = new RS_Transition();
 				rs_transition_s->from_path_array_index = start->snapped_t_index;
-				rs_transition_s->to_path_array_index = from_start ? 0 : road_segment.curve_samples.size() - 1;
-				rs_transition_s->distance_from_middle = 0.5f;
+				rs_transition_s->from_start = !from_start;
 				rs_transition_s->from_right = !start->snapped_to_right == from_start;
 				rs_transition_s->road_segment_index = start->connectedRoadSegment;
 
@@ -760,9 +769,9 @@ namespace  Can::Helper
 				}
 
 				RS_Transition* rs_transition_e = new RS_Transition();
-				rs_transition_e->from_path_array_index = rs_transition_e->to_path_array_index;
-				rs_transition_e->to_path_array_index = end->snapped_t_index;
-				rs_transition_e->distance_from_middle = 0.5f;
+
+				rs_transition_e->from_path_array_index = from_start ? 0 : road_segment.curve_samples.size();
+				rs_transition_e->from_start = !rs_transition_s->from_start;
 				rs_transition_s->from_right = rs_transition_s->from_right == from_start;
 				rs_transition_e->road_segment_index = end->connectedRoadSegment;
 				return { rs_transition_s, rn_transition, rs_transition_e };

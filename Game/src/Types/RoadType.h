@@ -19,7 +19,7 @@ namespace Can
 	{
 	public:
 		std::string name = "Unnamed Road";
-		
+
 		Prefab* road = nullptr;
 		Prefab* road_junction = nullptr;
 		Prefab* road_junction_mirror = nullptr;
@@ -54,7 +54,6 @@ namespace Can
 		bool zoneable = true;
 		bool has_sidewalk = true; // change later
 
-		std::vector<Lane> left;
-		std::vector<Lane> rigth;
+		std::vector<Lane> lanes_from_left{ Lane{0.5f, 10.0f, 0.05f} };
 	};
 }

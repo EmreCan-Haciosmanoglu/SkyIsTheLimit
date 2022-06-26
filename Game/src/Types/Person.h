@@ -29,7 +29,6 @@ namespace Can
 		v3 target;
 		std::vector<Transition*> path{};
 		Building* target_building = nullptr;
-		bool from_start = false;
 		bool from_right = true;
 		bool in_junction = false;
 		bool heading_to_a_building = false;

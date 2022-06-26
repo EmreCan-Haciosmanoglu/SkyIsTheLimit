@@ -1981,8 +1981,35 @@ namespace Can
 			start_road_node.Reconstruct();
 		}
 
-		RoadNode& end_road_node = road_nodes[road_segment.EndNode];
-		end_road_node.RemoveRoadSegment(road_segment_index);
+		RoadNode& end_road_node = road_nodes[road_segment.EndNode]; 
+		index = std::distance(end_road_node.roadSegments.begin(), std::find(
+			end_road_node.roadSegments.begin(),
+			end_road_node.roadSegments.end(),
+			road_segment_index
+		));
+		end_road_node.roadSegments.erase(end_road_node.roadSegments.begin() + index);
+		for (u64 i = walking_people.size(); i > 0; i--)
+		{
+			auto& path = walking_people[i - 1]->path;
+
+			u64 count = path.size();
+			assert(count > 0);
+			u64 j = 1;
+			if (count % 2 == 0)
+			{
+				if (((RN_Transition*)path[0])->to_road_segments_array_index > index)
+					((RN_Transition*)path[0])->to_road_segments_array_index--;
+				j = 2;
+			}
+			for (; j < count; j += 2)
+			{
+				RN_Transition* rn_transition = (RN_Transition*)path[j];
+				if (rn_transition->from_road_segments_array_index > index)
+					rn_transition->from_road_segments_array_index--;
+				if (rn_transition->to_road_segments_array_index > index)
+					rn_transition->to_road_segments_array_index--;
+			}
+		}
 		if (end_road_node.roadSegments.size() == 0)
 		{
 			Helper::UpdateTheTerrain(end_road_node.bounding_polygon, true);
@@ -2478,9 +2505,8 @@ namespace Can
 						new_rn_transition->accending = diff * -1.0f > (3.0f / 2.0f);
 					RS_Transition* new_rs_transition = new RS_Transition();
 					new_rs_transition->from_path_array_index = new_road_segment.curve_samples.size() - 1;
-					new_rs_transition->to_path_array_index = 0;
+					new_rs_transition->from_start = false;
 					new_rs_transition->road_segment_index = new_rs_index;
-					new_rs_transition->distance_from_middle = 0.5f;
 					new_rs_transition->from_right = rs_transition->from_right;
 					path.insert(path.begin() + (transition_index + 1), (Transition*)new_rn_transition);
 					path.insert(path.begin() + (transition_index + 2), (Transition*)new_rs_transition);
@@ -2489,9 +2515,8 @@ namespace Can
 				{
 					RS_Transition* new_rs_transition = new RS_Transition();
 					new_rs_transition->from_path_array_index = 0;
-					new_rs_transition->to_path_array_index = new_road_segment.curve_samples.size() - 1;
+					new_rs_transition->from_start = true;
 					new_rs_transition->road_segment_index = new_rs_index;
-					new_rs_transition->distance_from_middle = 0.5f;
 					new_rs_transition->from_right = rs_transition->from_right;
 					RN_Transition* new_rn_transition = new RN_Transition();
 					new_rn_transition->from_road_segments_array_index = std::distance(

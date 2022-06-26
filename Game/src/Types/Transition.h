@@ -8,9 +8,8 @@ namespace Can
 	struct RS_Transition : Transition
 	{
 		u64 from_path_array_index = 0;
-		u64 to_path_array_index = 0;
 		u64 road_segment_index = 0;
-		f32 distance_from_middle = 0.0f;
+		bool from_start = true;
 		bool from_right = true;
 	};
 

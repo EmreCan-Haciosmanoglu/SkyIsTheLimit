@@ -22,7 +22,7 @@ namespace Can
 		m_Guideline = new Object(m_Scene->MainApplication->buildings[m_Type]);
 		m_Guideline->enabled = false;
 	}
-	
+
 	void BuildingManager::OnUpdate(v3& prevLocation, const v3& cameraPosition, const v3& cameraDirection)
 	{
 		switch (m_ConstructionMode)
@@ -50,7 +50,7 @@ namespace Can
 		GameApp* app = m_Scene->MainApplication;
 		Prefab* selectedBuilding = m_Guideline->prefab;
 		f32 buildingWidth = selectedBuilding->boundingBoxM.y - selectedBuilding->boundingBoxL.y;
-		f32 buildingDepthFromCenter = -selectedBuilding->boundingBoxL.x;
+		f32 offset_from_side_road = -selectedBuilding->boundingBoxL.x;
 
 		bool snappedToRoad = false;
 		if (snapOptions[0])
@@ -68,59 +68,100 @@ namespace Can
 					continue;
 				f32 roadWidth = type.road_width;
 				f32 roadLength = type.road_length;
-				f32 snapDistance = buildingDepthFromCenter + (roadWidth * 0.5f);
+				f32 snapDistance = offset_from_side_road + (roadWidth * 0.5f);
 
 				const std::array<v3, 4>& vs = rs.GetCurvePoints();
 				std::array<std::array<v2, 3>, 2> roadPolygon = Math::GetBoundingBoxOfBezierCurve(vs, snapDistance);
 
 				if (Math::CheckPolygonPointCollision(roadPolygon, (v2)prevLocation))
 				{
-					std::vector<f32> ts{ 0.0f };
-					std::vector<v3> ps = Math::GetCubicCurveSamples(vs, roadLength, ts);
-					size_t size = ps.size();
-					v3 p0 = ps[0];
-					for (size_t i = 1; i < size; i++)
+					auto& ps = rs.curve_samples;
+					size_t curve_sample_count = ps.size();
+					v3 p_0;
+					v3 p_1 = ps[0];
+					for (size_t i = 1; i < curve_sample_count; i++)
 					{
-						v3 p1 = ps[i];
-						v3 dirToP1 = p1 - p0;
-						dirToP1.z = 0.0f;
-						dirToP1 = glm::normalize(dirToP1);
+						p_0 = p_1;
+						p_1 = ps[i];
+						v3 dir_to_p_1 = p_1 - p_0;
+						v3 dir_to_bulding_from_road_center = prevLocation - p_0;
+						v3 dir_to_p_2 = (i < curve_sample_count - 1) ? ps[i + 1] - p_1 : rs.GetEndDirection() * -1.0f;
 
-						v3 dirToPrev = prevLocation - p0;
-						dirToPrev.z = 0.0f;
-						f32 l1 = glm::length(dirToPrev);
+						dir_to_p_1.z = 0.0f;
+						dir_to_bulding_from_road_center.z = 0.0f;
+						dir_to_p_2.z = 0.0f;
 
-						f32 angle = glm::acos(glm::dot(dirToP1, dirToPrev) / l1);
-						f32 dist = l1 * glm::sin(angle);
 
-						if (dist < snapDistance)
+						f32 len_p_0_to_p_1 = glm::length(dir_to_p_1);
+						dir_to_p_1 = dir_to_p_1 / len_p_0_to_p_1;
+						dir_to_bulding_from_road_center = glm::normalize(dir_to_bulding_from_road_center);
+						dir_to_p_2 = glm::normalize(dir_to_p_2);
+
+						v3 rotated_1 = glm::normalize(v3{ dir_to_p_1.y, -dir_to_p_1.x, 0.0f }) * (roadWidth * 0.5f);
+						v3 rotated_2 = glm::normalize(v3{ dir_to_p_2.y, -dir_to_p_2.x, 0.0f }) * (roadWidth * 0.5f);
+
+						snapped_from_right = glm::cross(dir_to_p_1, dir_to_bulding_from_road_center).z < 0.0f;
+						if (snapped_from_right == false)
 						{
-							f32 c = l1 * glm::cos(angle);
-							if (c >= -0.5f * roadLength && c <= 1.5f * roadLength) // needs lil' bit more length to each directions
-							{
-								v3 crossed = glm::cross(dirToP1, dirToPrev);
-								bool r = crossed.z < 0.0f;
-								v3 shiftDir{ dirToP1.y, -dirToP1.x, 0.0f };
-								v3 shiftAmount = ((f32)r * 2.0f - 1.0f) * shiftDir * snapDistance;
-								prevLocation = p0 + (dirToP1 * c) + shiftAmount;
-								m_SnappedRoadSegment = rsIndex;
-								m_GuidelinePosition = prevLocation;
-								f32 rotationOffset = (f32)(dirToP1.x < 0.0f) * glm::radians(180.0f);
-								f32 rotation = glm::atan(dirToP1.y / dirToP1.x) + rotationOffset;
-								m_GuidelineRotation = v3{
-									0.0f,
-									0.0f,
-									((f32)r-1.0f) * glm::radians(180.0f) + glm::radians(-90.0f) + rotation
-								};
-								m_Guideline->SetTransform(m_GuidelinePosition, m_GuidelineRotation);
-								snappedToRoad = true;
-								snapped_t_index = i;
-								snapped_t = (c + 0.5f) * 0.5f;
-								snapped_from_right = r;
-								goto snapped;
-							}
+							rotated_1 *= -1.0f;
+							rotated_2 *= -1.0f;
 						}
-						p0 = p1;
+
+						v3 road_side_end_point_one = p_0 + rotated_1;
+						v3 road_side_end_point_two = p_1 + rotated_2;
+
+						v3 dir_side_road = road_side_end_point_two - road_side_end_point_one;
+						v3 dir_to_building_from_side_road = prevLocation - road_side_end_point_one;
+						f32 scaler = glm::dot(dir_side_road, dir_to_building_from_side_road) / glm::length2(dir_side_road);
+						f32 scaler_max = std::max(1.0f, len_p_0_to_p_1 / glm::length(dir_side_road));
+						if (scaler > scaler_max) {
+
+							if (i < curve_sample_count - 1)
+								continue;
+							scaler = 1.0f;
+						}
+						else if (scaler > 1.0f)
+						{
+							scaler = 1.0f;
+						}
+						else if (scaler < 0.0f)
+						{
+							if (i == 1)
+								break;
+							if (scaler < 0.5f)
+								break;
+							scaler = 0.0f;
+						}
+
+						f32 dotted = std::max(-1.0f, std::min(1.0f, glm::dot(dir_to_p_1, dir_to_bulding_from_road_center)));
+						f32 angle = glm::acos(dotted);
+						f32 lenn = glm::length(prevLocation - p_0);
+						f32 dist = lenn * glm::sin(angle);
+						if (dist > snapDistance || dist < -snapDistance) continue;
+
+						v3 rotated_3 = glm::normalize(v3{ dir_side_road.y, -dir_side_road.x, 0.0f }) * offset_from_side_road;
+						if (snapped_from_right == false)
+							rotated_3 *= -1.0f;
+
+						prevLocation = road_side_end_point_one + dir_side_road * scaler + rotated_3;
+						f32 rotation_offset = (f32)(dir_side_road.x < 0.0f) * glm::radians(180.0f);
+						f32 rotation = glm::atan(dir_side_road.y / dir_side_road.x) + rotation_offset;
+						m_SnappedRoadSegment = rsIndex;
+						m_GuidelinePosition = prevLocation;
+						m_GuidelineRotation = v3{ 0.0f, 0.0f,
+							((f32)snapped_from_right - 1.0f) * glm::radians(180.0f) + glm::radians(-90.0f) + rotation
+						};
+						m_Guideline->SetTransform(m_GuidelinePosition, m_GuidelineRotation);
+						snappedToRoad = true;
+						snapped_t_index = i;
+						snapped_t = scaler;
+
+#if 1
+						rsIndex = capacity;
+						break;
+#elif
+						goto snapped;
+#endif
 					}
 				}
 			}

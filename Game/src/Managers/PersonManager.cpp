@@ -57,19 +57,8 @@ namespace Can
 					RS_Transition* rs_transition = (RS_Transition*)p->path[0];
 					p->road_segment = rs_transition->road_segment_index;
 					RoadSegment& road_segment = road_segments[p->road_segment];
+					RoadType& road_segment_type = road_types[road_segment.type];
 					road_segment.people.push_back(p);
-					if (p->path.size() == 1)
-					{
-						if (p->work->snapped_t_index == building_from->snapped_t_index)
-							p->from_start = p->work->snapped_t > building_from->snapped_t;
-						else
-							p->from_start = p->work->snapped_t_index > building_from->snapped_t_index;
-					}
-					else
-					{
-						RN_Transition* rn_transition = (RN_Transition*)p->path[1];
-						p->from_start = rn_transition->road_node_index == road_segment.EndNode;
-					}
 					p->position = building_from->position;
 					p->object->SetTransform(p->position);
 					p->status = PersonStatus::Walking;
@@ -83,7 +72,7 @@ namespace Can
 					v3 dir = target_position_plus_one - target_position;
 					v3 offsetted = target_position + dir * building_from->snapped_t;
 
-					v3 sidewalf_position_offset = glm::normalize(v3{ dir.y, -dir.x, 0.0f }) * rs_transition->distance_from_middle;
+					v3 sidewalf_position_offset = glm::normalize(v3{ dir.y, -dir.x, 0.0f }) * road_segment_type.lanes_from_left[0].distance_from_center;
 					if (building_from->snapped_to_right == false)
 						sidewalf_position_offset *= -1.0f;
 					p->target = offsetted + sidewalf_position_offset;
@@ -141,7 +130,6 @@ namespace Can
 
 								p->road_segment = connected_road_segments[rn_transition->to_road_segments_array_index];
 								current_road_segment.people.push_back(p);
-								p->from_start = current_road_segment.StartNode == p->road_node;
 								p->road_node = -1;
 								continue;
 							}
@@ -185,18 +173,18 @@ namespace Can
 
 							v3 rotated_prev_direction = glm::normalize(v3{ prev_road_segment_direction.y, -prev_road_segment_direction.x, 0.0f });
 							v3 rotated_next_direction = glm::normalize(v3{ next_road_segment_direction.y, -next_road_segment_direction.x, 0.0f });
-							rotated_next_direction *= -1.0f;
+							rotated_prev_direction *= -1.0f;
 
-							ps[0] = Math::safe_ray_plane_intersection(
+							ps[3] = Math::safe_ray_plane_intersection(
 								prev_road_segment_position + rotated_prev_direction * offset_from_prev_road_segment_center,
 								prev_road_segment_direction,
-								ps[1],
+								ps[2],
 								rotated_current_road_segment_direction
 							);
-							ps[3] = Math::safe_ray_plane_intersection(
+							ps[0] = Math::safe_ray_plane_intersection(
 								next_road_segment_position + rotated_next_direction * offset_from_next_road_segment_center,
 								next_road_segment_direction,
-								ps[2],
+								ps[1],
 								rotated_current_road_segment_direction
 							);
 
@@ -238,8 +226,17 @@ namespace Can
 					{
 						RS_Transition* rs_transition = (RS_Transition*)p->path[0];
 						RoadSegment& road_segment = road_segments[p->road_segment];
+						RoadType& road_segment_type = road_types[road_segment.type];
 
-						if (rs_transition->from_path_array_index == rs_transition->to_path_array_index)
+						u64 target_path_array_index;
+						if (p->path.size() == 1)
+							target_path_array_index = p->target_building->snapped_t_index;
+						else if (rs_transition->from_start)
+							target_path_array_index = road_segment.curve_samples.size() - 1;
+						else
+							target_path_array_index = 0;
+
+						if (rs_transition->from_path_array_index == target_path_array_index)
 						{
 							if (p->path.size() == 1)
 							{
@@ -248,27 +245,24 @@ namespace Can
 							}
 							else
 							{
-								if (rs_transition->to_path_array_index == 0)
-									p->road_node = road_segment.StartNode;
-								else if (rs_transition->to_path_array_index == road_segment.curve_samples.size() - 1)
-									p->road_node = road_segment.EndNode;
-								else
-									assert(false);
+								p->road_node = rs_transition->from_start ? road_segment.EndNode : road_segment.StartNode;
 
 								RoadNode& road_node = road_nodes[p->road_node];
 								road_node.people.push_back(p);
 								assert(remove_person_from(road_segment, p));
-
-								p->path.erase(p->path.begin());
 								p->in_junction = true;
 								p->road_segment = -1;
+
+								auto path = p->path[0];
+								p->path.erase(p->path.begin());
+								delete path;
 							}
 							continue;
 						}
 
 						v3 p2{};
 						v3 dir2{};
-						if (p->from_start)
+						if (rs_transition->from_start)
 						{
 							p2 = road_segment.curve_samples[rs_transition->from_path_array_index + 1];
 							if (rs_transition->from_path_array_index + 2 < road_segment.curve_samples.size())
@@ -296,7 +290,8 @@ namespace Can
 							}
 							rs_transition->from_path_array_index--;
 						}
-						v3 offset = glm::normalize(v3{ dir2.y,-dir2.x, 0.0f }) * rs_transition->distance_from_middle;
+
+						v3 offset = glm::normalize(v3{ dir2.y,-dir2.x, 0.0f }) * road_segment_type.lanes_from_left[0].distance_from_center;
 						if (rs_transition->from_right)
 							p->target = p2 + offset;
 						else
@@ -354,7 +349,7 @@ namespace Can
 
 			people_on_the_road_node.erase(it);
 		}
-		
+
 		auto it = std::find(walking_people.begin(), walking_people.end(), p);
 		if (it == walking_people.end()) assert(false);
 		walking_people.erase(it);
@@ -383,19 +378,19 @@ namespace Can
 
 		if (p->road_segment != -1)
 		{
-			auto& walking_people = road_segments[p->road_segment].people;
-			auto it = std::find(walking_people.begin(), walking_people.end(), p);
-			if (it == walking_people.end()) assert(false);
+			auto& walking_people_road_segments = road_segments[p->road_segment].people;
+			auto it = std::find(walking_people_road_segments.begin(), walking_people_road_segments.end(), p);
+			assert(it != walking_people_road_segments.end());
 
-			walking_people.erase(it);
+			walking_people_road_segments.erase(it);
 		}
 		else if (p->road_node != -1)
 		{
-			auto& walking_people = road_nodes[p->road_segment].people;
-			auto it = std::find(walking_people.begin(), walking_people.end(), p);
-			if (it == walking_people.end()) assert(false);
+			auto& walking_people_road_node = road_nodes[p->road_node].people;
+			auto it = std::find(walking_people_road_node.begin(), walking_people_road_node.end(), p);
+			assert(it != walking_people_road_node.end());
 
-			walking_people.erase(it);
+			walking_people_road_node.erase(it);
 		}
 		if (p->iCar)
 		{
@@ -405,7 +400,7 @@ namespace Can
 		{
 			auto& resident = p->home->residents;
 			auto it = std::find(resident.begin(), resident.end(), p);
-			if (it == resident.end())assert(false);
+			assert(it != resident.end());
 
 			resident.erase(it);
 		}
@@ -413,22 +408,18 @@ namespace Can
 		{
 			auto& workers = p->work->workers;
 			auto it = std::find(workers.begin(), workers.end(), p);
-			if (it == workers.end()) assert(false);
+			assert(it != workers.end());
 
 			workers.erase(it);
 		}
 		if (p->status == PersonStatus::Walking)
 		{
 			auto it = std::find(walking_people.begin(), walking_people.end(), p);
-			if (it == walking_people.end()) assert(false);
-
+			assert(it != walking_people.end());
 			walking_people.erase(it);
 		}
 		auto it = std::find(people.begin(), people.end(), p);
-		if (it == people.end()) assert(false);
-
-		
-
+		assert(it != people.end());
 		people.erase(it);
 
 		delete p;
