@@ -401,7 +401,7 @@ namespace Can
 					p->home = newBuilding;
 					p->status = PersonStatus::AtHome;
 					p->time_left = Utility::Random::Float(1.0f, 5.0f);
-					newBuilding->residents.push_back(p);
+					newBuilding->people.push_back(p);
 
 					manager.m_People.push_back(p);
 					Building* work = getAvailableWorkBuilding();
@@ -421,7 +421,7 @@ namespace Can
 					if (p)
 					{
 						p->work = newBuilding;
-						newBuilding->workers.push_back(p);
+						newBuilding->people.push_back(p);
 					}
 				}
 
@@ -517,7 +517,7 @@ namespace Can
 	{
 		for (Building* b : m_WorkBuildings)
 		{
-			if (b->capacity > b->workers.size())
+			if (b->capacity > b->people.size())
 			{
 				return b;
 			}
@@ -533,8 +533,8 @@ namespace Can
 		auto& work_buildings = game->m_BuildingManager.m_WorkBuildings;
 		auto& segments = game->m_RoadManager.road_segments;
 
-		while (b->residents.size() > 0)
-			remove_person(b->residents[0]);
+		while (b->people.size() > 0)
+			remove_person(b->people[0]);
 
 		if (b->connectedRoadSegment != -1)
 		{

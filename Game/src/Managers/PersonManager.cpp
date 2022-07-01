@@ -398,7 +398,7 @@ namespace Can
 		}
 		if (p->home)
 		{
-			auto& resident = p->home->residents;
+			auto& resident = p->home->people;
 			auto it = std::find(resident.begin(), resident.end(), p);
 			assert(it != resident.end());
 
@@ -406,7 +406,7 @@ namespace Can
 		}
 		if (p->work)
 		{
-			auto& workers = p->work->workers;
+			auto& workers = p->work->people;
 			auto it = std::find(workers.begin(), workers.end(), p);
 			assert(it != workers.end());
 

@@ -286,6 +286,8 @@ namespace Can
 		fread(m_BuildingManager.snapOptions.data(), sizeof(bool), 2, read_file);
 		fread(m_BuildingManager.restrictions.data(), sizeof(bool), 2, read_file);
 		auto& buildings = m_BuildingManager.m_Buildings;
+		auto& home_buildings = m_BuildingManager.m_HomeBuildings;
+		auto& work_buildings = m_BuildingManager.m_WorkBuildings;
 		u64 building_count;
 		fread(&building_count, sizeof(u64), 1, read_file);
 		buildings.reserve(building_count);
@@ -296,6 +298,7 @@ namespace Can
 			u64 snapped_t_index;
 			f32 snapped_t;
 			u16 capacity;
+			bool is_home = false;
 			bool snapped_to_right;
 			v3 position, rotation;// calculate it from snapped_t?
 			fread(&type, sizeof(u64), 1, read_file);
@@ -303,6 +306,7 @@ namespace Can
 			fread(&snapped_t_index, sizeof(u64), 1, read_file);
 			fread(&snapped_t, sizeof(f32), 1, read_file);
 			fread(&capacity, sizeof(u16), 1, read_file);
+			fread(&is_home, sizeof(bool), 1, read_file);
 			fread(&snapped_to_right, sizeof(bool), 1, read_file);
 			fread(&position, sizeof(f32), 3, read_file);
 			fread(&rotation, sizeof(f32), 3, read_file);
@@ -316,8 +320,13 @@ namespace Can
 			);
 			building->type = type;
 			building->capacity = capacity;
+			building->is_home = is_home;
 			building->snapped_to_right = snapped_to_right;
 			buildings.push_back(building);
+			if (is_home)
+				home_buildings.push_back(building);
+			else
+				work_buildings.push_back(building);
 			road_segments[connected_road_segment].Buildings.push_back(building);
 		}
 		///////////////////////////////////////////////////
@@ -406,12 +415,12 @@ namespace Can
 			if (home_index != -1)
 			{
 				person->home = buildings[home_index];
-				buildings[home_index]->residents.push_back(person);
+				buildings[home_index]->people.push_back(person);
 			}
 			if(work_index != -1)
 			{
 				person->work = buildings[work_index];
-				buildings[work_index]->workers.push_back(person);
+				buildings[work_index]->people.push_back(person);
 			}
 			person->iCar = car_index != -1 ? cars[car_index] : nullptr;
 			person->time_left = Utility::Random::Float(1.0f, 5.0f);
@@ -491,6 +500,7 @@ namespace Can
 				fwrite(&buildings[i]->snapped_t_index, sizeof(u64), 1, save_file);
 				fwrite(&buildings[i]->snapped_t, sizeof(f32), 1, save_file);
 				fwrite(&buildings[i]->capacity, sizeof(u16), 1, save_file);
+				fwrite(&buildings[i]->is_home, sizeof(bool), 1, save_file);
 				fwrite(&buildings[i]->snapped_to_right, sizeof(bool), 1, save_file);
 				fwrite(&buildings[i]->object->position, sizeof(f32), 3, save_file);
 				fwrite(&buildings[i]->object->rotation, sizeof(f32), 3, save_file);

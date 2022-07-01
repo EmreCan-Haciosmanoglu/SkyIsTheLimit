@@ -36,8 +36,8 @@ namespace Can
 		f32 snapped_t = 0.0f;
 		u16 capacity = 0;
 		bool snapped_to_right = true;
-		std::vector<Person*> residents{};
-		std::vector<Person*> workers{};
+		bool is_home = true;
+		std::vector<Person*> people{};
 		Object* object = nullptr;
 		v3 position{};
 	};
