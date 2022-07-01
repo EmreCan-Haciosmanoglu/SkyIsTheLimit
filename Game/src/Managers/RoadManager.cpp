@@ -2402,6 +2402,10 @@ namespace Can
 				f32 rotation = glm::atan(dir_side_road.y / dir_side_road.x) + rotation_offset;
 				if (t_index >= snapped_index)
 				{
+					// TODO: instead reset people targeting this building
+					for (Person* p : building->people)
+						if (p->status == PersonStatus::Walking)
+							reset_person(p);
 					auto it = std::find(snapped_buildings.begin(), snapped_buildings.end(), building);
 					assert(it != snapped_buildings.end());
 					snapped_buildings.erase(it);

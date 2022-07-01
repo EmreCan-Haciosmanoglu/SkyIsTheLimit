@@ -384,9 +384,8 @@ namespace Can
 				segments[m_SnappedRoadSegment].Buildings.push_back(newBuilding);
 			m_Buildings.push_back(newBuilding);
 
-			bool ishome = Utility::Random::Float(1.0f) > 0.5f;
-			ishome = true; // delete me
-			if (ishome)
+			newBuilding->is_home = Utility::Random::Float(1.0f) > 0.5f;
+			if (newBuilding->is_home)
 			{
 				m_HomeBuildings.push_back(newBuilding);
 				u8 domicilled = Utility::Random::Integer(2, 5);

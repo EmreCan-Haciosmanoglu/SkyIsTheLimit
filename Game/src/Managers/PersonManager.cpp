@@ -66,8 +66,9 @@ namespace Can
 					p->in_junction = false;
 
 					assert(building_from->snapped_t_index < road_segment.curve_samples.size() - 1);
-					v3 target_position = road_segment.curve_samples[rs_transition->from_path_array_index];
-					v3 target_position_plus_one = road_segment.curve_samples[rs_transition->from_path_array_index + 1];
+					v3 target_position = road_segment.curve_samples[building_from->snapped_t_index];
+					assert(road_segment.curve_samples.size() - 1 >= building_from->snapped_t_index + 1);
+					v3 target_position_plus_one = road_segment.curve_samples[building_from->snapped_t_index + 1];
 
 					v3 dir = target_position_plus_one - target_position;
 					v3 offsetted = target_position + dir * building_from->snapped_t;
@@ -116,14 +117,15 @@ namespace Can
 						v3 current_road_segment_direction = p->road_node == current_road_segment.StartNode ? current_road_segment.GetStartDirection() : current_road_segment.GetEndDirection();
 						v3 rotated_current_road_segment_direction = glm::normalize(v3{ current_road_segment_direction.y, -current_road_segment_direction.x, 0.0f });
 						std::array<v3, 4> ps{};
-						ps[1] = current_road_segment_position - rotated_current_road_segment_direction * offset_from_current_road_segment_center;
-						ps[2] = current_road_segment_position + rotated_current_road_segment_direction * offset_from_current_road_segment_center;
+						ps[1] = current_road_segment_position + rotated_current_road_segment_direction * offset_from_current_road_segment_center;
+						ps[2] = current_road_segment_position - rotated_current_road_segment_direction * offset_from_current_road_segment_center;
 
 						if (rn_transition->from_road_segments_array_index == rn_transition->to_road_segments_array_index)
 						{
-							if (((rn_transition->sub_index == 2) && rs_transition->from_right) ||
-								((rn_transition->sub_index == 1) && !rs_transition->from_right))
+							if (((rn_transition->sub_index == 1) && rs_transition->from_right) ||
+								((rn_transition->sub_index == 2) && !rs_transition->from_right))
 							{
+								auto path = p->path[0];
 								p->path.erase(p->path.begin());
 								p->in_junction = false;
 								assert(remove_person_from(road_node, p));
@@ -131,6 +133,7 @@ namespace Can
 								p->road_segment = connected_road_segments[rn_transition->to_road_segments_array_index];
 								current_road_segment.people.push_back(p);
 								p->road_node = -1;
+								delete path;
 								continue;
 							}
 
@@ -175,16 +178,16 @@ namespace Can
 							v3 rotated_next_direction = glm::normalize(v3{ next_road_segment_direction.y, -next_road_segment_direction.x, 0.0f });
 							rotated_prev_direction *= -1.0f;
 
-							ps[3] = Math::safe_ray_plane_intersection(
+							ps[0] = Math::safe_ray_plane_intersection(
 								prev_road_segment_position + rotated_prev_direction * offset_from_prev_road_segment_center,
 								prev_road_segment_direction,
-								ps[2],
+								ps[1],
 								rotated_current_road_segment_direction
 							);
-							ps[0] = Math::safe_ray_plane_intersection(
+							ps[3] = Math::safe_ray_plane_intersection(
 								next_road_segment_position + rotated_next_direction * offset_from_next_road_segment_center,
 								next_road_segment_direction,
-								ps[1],
+								ps[2],
 								rotated_current_road_segment_direction
 							);
 

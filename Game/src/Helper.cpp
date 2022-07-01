@@ -583,14 +583,14 @@ namespace  Can::Helper
 		{
 			RoadNode& road_node = road_nodes[next_node];
 			auto it = std::find(road_node.roadSegments.begin(), road_node.roadSegments.end(), current_road_segment_index);
-			if (it == road_node.roadSegments.end()) assert(false);
-
+			assert(it != road_node.roadSegments.end());
 			u64 index = std::distance(road_node.roadSegments.begin(), it);
+
 			rn_transition->from_road_segments_array_index = index;
 			if (rs_transition->from_right)
-				rn_transition->sub_index = 1;
-			else
 				rn_transition->sub_index = 2;
+			else
+				rn_transition->sub_index = 1;
 
 			rs_transition = new RS_Transition();
 			path.push_back(rs_transition);
@@ -619,7 +619,7 @@ namespace  Can::Helper
 			if (new_road_index > index)
 				rn_transition->accending = (f32)(new_road_index - index) < (size / 2.0f);
 			else if (new_road_index == index)
-				rn_transition->accending = rs_transition->from_right;
+				rn_transition->accending = !rs_transition->from_right;
 			else
 				rn_transition->accending = (f32)(index - new_road_index) > (size / 2.0f);
 
@@ -652,10 +652,10 @@ namespace  Can::Helper
 		rn_transition->from_road_segments_array_index = std::distance(node_road_segments.begin(), it);
 		rn_transition->to_road_segments_array_index = rn_transition->from_road_segments_array_index;
 		if (rs_transition->from_right)
-			rn_transition->sub_index = 1;
-		else
 			rn_transition->sub_index = 2;
-		rn_transition->accending = rs_transition->from_right;
+		else
+			rn_transition->sub_index = 1;
+		rn_transition->accending = !rs_transition->from_right;
 
 
 		for (u64 i = path.size() - 1; i > 0; i--)
@@ -691,7 +691,7 @@ namespace  Can::Helper
 			if (diff > 0.0f)
 				rn_transition->accending = diff < (size / 2.0f);
 			else if (diff == 0.0f)
-				rn_transition->accending = rs_transition->from_right;
+				rn_transition->accending = !rs_transition->from_right;
 			else
 				rn_transition->accending = diff * -1.0f > (size / 2.0f);
 
@@ -711,7 +711,7 @@ namespace  Can::Helper
 	{
 		auto& road_segments = GameScene::ActiveGameScene->m_RoadManager.road_segments;
 		auto& road_nodes = GameScene::ActiveGameScene->m_RoadManager.road_nodes;
-		auto& types = GameScene::ActiveGameScene->MainApplication->road_types;
+		auto& road_types = GameScene::ActiveGameScene->MainApplication->road_types;
 		if (start->connectedRoadSegment == end->connectedRoadSegment)
 		{
 			if (start->snapped_to_right == end->snapped_to_right)
@@ -759,18 +759,18 @@ namespace  Can::Helper
 				rn_transition->road_node_index = road_node_index;
 				if (rs_transition_s->from_right)
 				{
-					rn_transition->accending = true;
-					rn_transition->sub_index = 1;
+					rn_transition->accending = false;
+					rn_transition->sub_index = 2;
 				}
 				else
 				{
-					rn_transition->accending = false;
-					rn_transition->sub_index = 2;
+					rn_transition->accending = true;
+					rn_transition->sub_index = 1;
 				}
 
 				RS_Transition* rs_transition_e = new RS_Transition();
 
-				rs_transition_e->from_path_array_index = from_start ? 0 : road_segment.curve_samples.size();
+				rs_transition_e->from_path_array_index = from_start ? 0 : road_segment.curve_samples.size()-1;
 				rs_transition_e->from_start = !rs_transition_s->from_start;
 				rs_transition_s->from_right = rs_transition_s->from_right == from_start;
 				rs_transition_e->road_segment_index = end->connectedRoadSegment;
@@ -782,62 +782,153 @@ namespace  Can::Helper
 		RoadSegment& end_road_segment = road_segments[end->connectedRoadSegment];
 
 		std::vector<std::tuple<s64, s64, s64, s64>> linqs{};
-		std::vector<std::tuple<s64, s64, s64, s64>> visited_nodes{};
-		linqs.push_back(std::tuple<s64, s64, s64, s64>{1, start->connectedRoadSegment, -1, start_road_segment.StartNode});
-		linqs.push_back(std::tuple<s64, s64, s64, s64>{1, start->connectedRoadSegment, -1, start_road_segment.EndNode});
-
-		std::vector<u64> visited_junctions{};
-		std::vector<std::pair<u64, std::vector<u64>>> paths{}; // instead of this use links(watch the video again) 
-		std::vector<std::pair<u64, std::vector<u64>>> no_exit_paths{}; // delete me
-		paths.push_back(std::pair<u64, std::vector<u64>>{ 1, std::vector<u64>{ (u64)start->connectedRoadSegment, start_road_segment.StartNode } });
-		paths.push_back(std::pair<u64, std::vector<u64>>{ 1, std::vector<u64>{ (u64)start->connectedRoadSegment, start_road_segment.EndNode } });
+		std::vector<std::tuple<s64, s64, s64, s64>> fastest_road_to_these_nodes{};
+		std::vector<u64> visited_road_segments{};
+		linqs.push_back(std::tuple<s64, s64, s64, s64>{start->snapped_t_index, start->connectedRoadSegment, -1, start_road_segment.StartNode});
+		linqs.push_back(std::tuple<s64, s64, s64, s64>{start_road_segment.curve_samples.size() - start->snapped_t_index, start->connectedRoadSegment, -1, start_road_segment.EndNode});
+		visited_road_segments.push_back(start->connectedRoadSegment);
 
 
-		while (paths.empty() == false)
+		while (linqs.empty() == false)
 		{
 			std::sort(linqs.begin(), linqs.end(), Helper::sort_by_distance());
 			auto closest = linqs[linqs.size() - 1];
-			linqs.pop_back();
-			visited_nodes.push_back(closest);
-
+			s64 dist = std::get<0>(closest);
+			s64 road_segment_index = std::get<1>(closest);
 			s64 road_node_index = std::get<3>(closest);
+			linqs.pop_back();
+			auto it = std::find_if(
+				fastest_road_to_these_nodes.begin(),
+				fastest_road_to_these_nodes.end(),
+				[road_node_index](const std::tuple<s64, s64, s64, s64>& el) {
+					return std::get<3>(el) == road_node_index;
+				});
+			if (it != fastest_road_to_these_nodes.end())
+			{
+				if (std::get<0>(*it) > dist)
+				{
+					assert(false);// possible??
+					std::get<0>(*it) = dist;
+					std::get<1>(*it) = road_segment_index;
+					std::get<2>(*it) = std::get<2>(closest);
+				}
+				else
+				{
+				}
+			}
+			else
+			{
+				fastest_road_to_these_nodes.push_back(closest);
+			}
+
 			RoadNode& road_node = road_nodes[road_node_index];
 			auto& connected_road_segments = road_node.roadSegments;
 			for (u64 i = 0; i < connected_road_segments.size(); i++)
 			{
-				u64 road_segment_index = connected_road_segments[i];
-				if (road_segment_index == end->connectedRoadSegment)
+				u64 connected_road_segment_index = connected_road_segments[i];
+				RoadSegment& connected_road_segment = road_segments[connected_road_segment_index];
+				u64 curve_samples_count = connected_road_segment.curve_samples.size();
+				if (connected_road_segment_index == end->connectedRoadSegment)
 				{
+					u64 rn_index = road_node_index;
+					u64 rs_index = connected_road_segment_index;
+					std::vector<Transition*> the_temp_path{};
+
+					RS_Transition* rs_transition = new RS_Transition();
+					the_temp_path.push_back(rs_transition);
+					rs_transition->road_segment_index = rs_index;
+					rs_transition->from_start = connected_road_segment.StartNode == road_node_index;
+					rs_transition->from_right = end->snapped_to_right == rs_transition->from_start;
+					rs_transition->from_path_array_index = rs_transition->from_start ? 0 : curve_samples_count - 1;
+
+					auto& rss = road_nodes[rn_index].roadSegments;
+					auto to_it = std::find(rss.begin(), rss.end(), rs_index);
+					assert(to_it != rss.end());
+					u64 to_index = std::distance(rss.begin(), to_it);
+
+					RN_Transition* rn_transition = new RN_Transition();
+					the_temp_path.push_back(rn_transition);
+					rn_transition->road_node_index = rn_index;
+					rn_transition->to_road_segments_array_index = to_index;
+					while (true)
+					{
+						auto linq_it = std::find_if(
+							fastest_road_to_these_nodes.begin(),
+							fastest_road_to_these_nodes.end(),
+							[rn_index](const std::tuple<s64, s64, s64, s64>& el) {
+								return std::get<3>(el) == rn_index;
+							});
+						rs_index = std::get<1>(*linq_it);
+						std::vector<u64>& roads = road_nodes[rn_index].roadSegments;
+						auto from_it = std::find(roads.begin(), roads.end(), rs_index);
+						assert(from_it != roads.end());
+						u64 from_index = std::distance(roads.begin(), from_it);
+						rn_transition->from_road_segments_array_index = from_index;
+						rn_transition->sub_index = rs_transition->from_right ? 2 : 1;
+
+						int size = (int)roads.size();
+						f32 diff = rn_transition->to_road_segments_array_index - rn_transition->from_road_segments_array_index;
+						if (diff > 0.0f)
+							rn_transition->accending = diff < (size / 2.0f);
+						else if (diff == 0.0f)
+							rn_transition->accending = !rs_transition->from_right;
+						else
+							rn_transition->accending = diff * -1.0f > (size / 2.0f);
+
+
+						RoadSegment& prev_road_segment = road_segments[rs_index];
+						rs_transition = new RS_Transition();
+						the_temp_path.push_back(rs_transition);
+						rs_transition->road_segment_index = rs_index;
+						rs_transition->from_right = true;
+						rs_transition->from_start = prev_road_segment.EndNode == rn_index;
+						rs_transition->from_path_array_index = rs_transition->from_start ? 0 : prev_road_segment.curve_samples.size() - 1;
+
+						rn_index = std::get<2>(*linq_it);
+
+						if (rn_index == -1)
+						{
+							rs_transition->from_right = start->snapped_to_right == rs_transition->from_start;
+							break;
+						}
+
+						auto& rss = road_nodes[rn_index].roadSegments;
+						to_it = std::find(rss.begin(), rss.end(), rs_index);
+						assert(to_it != rss.end());
+						to_index = std::distance(rss.begin(), to_it);
+
+						rn_transition = new RN_Transition();
+						the_temp_path.push_back(rn_transition);
+						rn_transition->road_node_index = rn_index;
+						rn_transition->to_road_segments_array_index = to_index;
+					}
 					std::vector<Transition*> the_path{};
-					assert(false);
+					the_path.reserve(the_temp_path.size());
+					while (the_temp_path.size() > 0)
+					{
+						Transition* transition = the_temp_path[the_temp_path.size() - 1];
+						the_temp_path.pop_back();
+						the_path.push_back(transition);
+					}
 					return the_path;
 				}
-				RoadSegment& road_segment = road_segments[road_segment_index];
-				s64 new_distance = std::get<0>(closest) + 1;
-				if (types[road_segment.type].has_sidewalk == false) continue;
+				if (road_types[connected_road_segment.type].has_sidewalk == false) continue;
 
-				s64 next_road_node_index = road_segment.StartNode == road_node_index ? road_segment.EndNode : road_segment.StartNode;
+				auto v_it = std::find(visited_road_segments.begin(), visited_road_segments.end(), connected_road_segment_index);
+				if (v_it != visited_road_segments.end())
+					continue;
 
-				auto it = std::find_if(visited_nodes.begin(), visited_nodes.end(), [next_road_node_index](const std::tuple<s64, s64, s64, s64>& el) {
-					return std::get<2>(el) == next_road_node_index;
-					});
-				if (it != visited_nodes.end())
-				{
-					it = std::find_if(linqs.begin(), linqs.end(), [next_road_node_index](const std::tuple<s64, s64, s64, s64>& el) {
-						return std::get<2>(el) == next_road_node_index;
-						});
-					if (it == linqs.end())
-						if (std::get<0>(*it) <= new_distance)
-							continue;
-					linqs.push_back(std::tuple<s64, s64, s64, s64>{new_distance, road_segment_index, road_node_index, next_road_node_index});
-					assert(false); // check this
-				}
+				visited_road_segments.push_back(connected_road_segment_index);
 
+
+				s64 new_distance = dist + curve_samples_count;
+				s64 next_road_node_index = connected_road_segment.StartNode == road_node_index ? connected_road_segment.EndNode : connected_road_segment.StartNode;
+				s64 prev_road_node_index = connected_road_segment.StartNode == road_node_index ? connected_road_segment.StartNode : connected_road_segment.EndNode;
+				linqs.push_back({ new_distance, connected_road_segment_index ,prev_road_node_index,next_road_node_index });
 			}
 		}
 		return get_path(start, 4);
 	}
-
 
 	void UpdateTheTerrain(const std::vector<std::array<v3, 3>>& polygon, bool reset)
 	{
