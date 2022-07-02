@@ -7,7 +7,7 @@ namespace Can
 
 	struct RS_Transition : Transition
 	{
-		u64 from_path_array_index = 0;
+		u64 at_path_array_index = 0;
 		u64 road_segment_index = 0;
 		bool from_start = true;
 		bool from_right = true;

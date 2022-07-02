@@ -77,7 +77,7 @@ namespace Can
 					if (building_from->snapped_to_right == false)
 						sidewalf_position_offset *= -1.0f;
 					p->target = offsetted + sidewalf_position_offset;
-
+					((RS_Transition*)p->path[0])->at_path_array_index = building_from->snapped_t_index;
 					walking_people.push_back(p);
 				}
 
@@ -127,6 +127,9 @@ namespace Can
 							{
 								auto path = p->path[0];
 								p->path.erase(p->path.begin());
+								u64 at_index = p->road_node == current_road_segment.StartNode ? 0 : current_road_segment.curve_samples.size() - 1;
+
+								((RS_Transition*)p->path[0])->at_path_array_index = at_index;
 								p->in_junction = false;
 								assert(remove_person_from(road_node, p));
 
@@ -239,7 +242,8 @@ namespace Can
 						else
 							target_path_array_index = 0;
 
-						if (rs_transition->from_path_array_index == target_path_array_index)
+						if ((rs_transition->from_start && (rs_transition->at_path_array_index >= target_path_array_index)) || 
+							(!rs_transition->from_start && (rs_transition->at_path_array_index <= target_path_array_index)))
 						{
 							if (p->path.size() == 1)
 							{
@@ -267,31 +271,33 @@ namespace Can
 						v3 dir2{};
 						if (rs_transition->from_start)
 						{
-							p2 = road_segment.curve_samples[rs_transition->from_path_array_index + 1];
-							if (rs_transition->from_path_array_index + 2 < road_segment.curve_samples.size())
+							u64 next_index = std::min(rs_transition->at_path_array_index + 1, road_segment.curve_samples.size() - 1);
+							p2 = road_segment.curve_samples[next_index];
+							if (next_index < road_segment.curve_samples.size() - 1)
 							{
-								v3 p3 = road_segment.curve_samples[rs_transition->from_path_array_index + 2];
+								v3 p3 = road_segment.curve_samples[next_index + 1];
 								dir2 = glm::normalize(p3 - p2);
 							}
 							else
 							{
 								dir2 = road_segment.GetEndDirection() * -1.0f;
 							}
-							rs_transition->from_path_array_index++;
+							rs_transition->at_path_array_index = next_index;
 						}
 						else
 						{
-							p2 = road_segment.curve_samples[rs_transition->from_path_array_index - 1];
-							if (rs_transition->from_path_array_index > 1)
+							u64 next_index = std::min(rs_transition->at_path_array_index - 1, road_segment.curve_samples.size() - 1);
+							p2 = road_segment.curve_samples[next_index];
+							if (next_index > 0)
 							{
-								v3 p3 = road_segment.curve_samples[rs_transition->from_path_array_index - 2];
+								v3 p3 = road_segment.curve_samples[next_index - 1];
 								dir2 = glm::normalize(p3 - p2);
 							}
 							else
 							{
 								dir2 = road_segment.GetStartDirection() * -1.0f;
 							}
-							rs_transition->from_path_array_index--;
+							rs_transition->at_path_array_index = next_index;
 						}
 
 						v3 offset = glm::normalize(v3{ dir2.y,-dir2.x, 0.0f }) * road_segment_type.lanes_from_left[0].distance_from_center;

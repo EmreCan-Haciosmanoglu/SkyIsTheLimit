@@ -2508,7 +2508,6 @@ namespace Can
 					else
 						new_rn_transition->accending = diff * -1.0f > (3.0f / 2.0f);
 					RS_Transition* new_rs_transition = new RS_Transition();
-					new_rs_transition->from_path_array_index = new_road_segment.curve_samples.size() - 1;
 					new_rs_transition->from_start = false;
 					new_rs_transition->road_segment_index = new_rs_index;
 					new_rs_transition->from_right = rs_transition->from_right;
@@ -2518,7 +2517,6 @@ namespace Can
 				else
 				{
 					RS_Transition* new_rs_transition = new RS_Transition();
-					new_rs_transition->from_path_array_index = 0;
 					new_rs_transition->from_start = true;
 					new_rs_transition->road_segment_index = new_rs_index;
 					new_rs_transition->from_right = rs_transition->from_right;
