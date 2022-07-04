@@ -1590,15 +1590,6 @@ namespace Can
 				building->snapped_t = 1.0f - building->snapped_t;
 				building->snapped_t_index = (rs.curve_samples.size() - 1) - building->snapped_t_index;
 			}
-
-			for (Car* car : rs.Cars)
-			{
-				car->fromStart = !car->fromStart;
-				car->t_index = rs.curve_samples.size() - car->t_index;
-				u64 nextIndex = car->t_index + (car->fromStart ? +1 : -1);
-				nextIndex = std::max((const u64)0U, std::min(nextIndex, rs.curve_samples.size() - 1U));
-				car->target = rs.curve_samples[car->t_index];
-			}
 		}
 		else
 		{

@@ -367,10 +367,19 @@ namespace Can
 	}
 	bool BuildingManager::OnMousePressed_Construction()
 	{
+		auto& car_prefabs = m_Scene->MainApplication->cars;
+		auto& person_prefabs = m_Scene->MainApplication->people;
+
+		auto& person_manager = m_Scene->m_PersonManager;
+		auto& tree_manager = m_Scene->m_TreeManager;
+		auto& car_manager = m_Scene->m_CarManager;
+
+		auto& road_segments = m_Scene->m_RoadManager.road_segments;
+		auto& trees = tree_manager.GetTrees();
+
 		if (!b_ConstructionRestricted)
 		{
-			auto& segments = m_Scene->m_RoadManager.road_segments;
-			Building* newBuilding = new Building(
+			Building* new_building = new Building(
 				m_Guideline->prefab,
 				m_SnappedRoadSegment,
 				snapped_t_index,
@@ -378,49 +387,74 @@ namespace Can
 				m_GuidelinePosition,
 				m_GuidelineRotation
 			);
-			newBuilding->type = m_Type;
-			newBuilding->snapped_to_right = snapped_from_right;
+			new_building->type = m_Type;
+			new_building->snapped_to_right = snapped_from_right;
 			if (m_SnappedRoadSegment != (u64)-1)
-				segments[m_SnappedRoadSegment].Buildings.push_back(newBuilding);
-			m_Buildings.push_back(newBuilding);
+				road_segments[m_SnappedRoadSegment].Buildings.push_back(new_building);
+			m_Buildings.push_back(new_building);
 
-			newBuilding->is_home = Utility::Random::Float(1.0f) > 0.5f;
-			if (newBuilding->is_home)
+			new_building->is_home = Utility::Random::Float(1.0f) > 0.5f;
+			if (new_building->is_home)
 			{
-				m_HomeBuildings.push_back(newBuilding);
+				m_HomeBuildings.push_back(new_building);
 				u8 domicilled = Utility::Random::Integer(2, 5);
-				newBuilding->capacity = domicilled;
-				auto& manager = m_Scene->m_PersonManager;
+				new_building->capacity = domicilled;
 				for (u64 i = 0; i < domicilled; i++)
 				{
 					u64 type = 0;
-					Prefab* man = (m_Scene->MainApplication->people[type]);
-					Person* p = new Person(man, 1.0f);
-					p->type = type;
-					p->home = newBuilding;
-					p->status = PersonStatus::AtHome;
-					p->time_left = Utility::Random::Float(1.0f, 5.0f);
-					newBuilding->people.push_back(p);
+					Person* new_person = new Person(
+						person_prefabs[type],
+						1.0f
+					);
+					new_person->type = type;
+					new_person->home = new_building;
+					new_person->status = PersonStatus::AtHome;
+					new_person->time_left = Utility::Random::Float(1.0f, 5.0f);
+					new_building->people.push_back(new_person);
+					bool have_enough_money_to_own_car = Utility::Random::Float(1.0f) > 0.5f;
+					if (have_enough_money_to_own_car)
+					{
+						u64 new_car_type = 0;
+						Car* new_car = new Car(
+							car_prefabs[new_car_type],
+							new_car_type,
+							Utility::Random::Float(50.0f, 150.0f)
+						);
+						new_car->object->SetTransform(
+							new_building->position + new_building->car_park.offset,
+							glm::rotateZ(
+								new_building->object->rotation, 
+								glm::radians(new_building->car_park.rotation_in_degrees)
+							)
+						);
+						new_car->object->enabled = true;
+						new_car->owner = new_person;
+						new_person->car = new_car;
+						car_manager.m_Cars.push_back(new_car);
+					}
 
-					manager.m_People.push_back(p);
+					person_manager.m_People.push_back(new_person);
 					Building* work = getAvailableWorkBuilding();
-					p->work = work;
+					if (work)
+					{
+						work->people.push_back(new_person);
+						new_person->work = work;
+					}
 				}
 			}
 			else
 			{
-				m_WorkBuildings.push_back(newBuilding);
+				m_WorkBuildings.push_back(new_building);
 				u8 worker = Utility::Random::Integer(2, 5);
-				newBuilding->capacity = worker;
-				auto& manager = m_Scene->m_PersonManager;
+				new_building->capacity = worker;
 				for (u64 i = 0; i < worker; i++)
 				{
 
-					Person* p = manager.get_worklessPerson();
+					Person* p = person_manager.get_worklessPerson();
 					if (p)
 					{
-						p->work = newBuilding;
-						newBuilding->people.push_back(p);
+						p->work = new_building;
+						new_building->people.push_back(p);
 					}
 				}
 
@@ -428,20 +462,19 @@ namespace Can
 			ResetStates();
 			m_Guideline->enabled = true;
 
-			if (restrictions[0] && m_Scene->m_TreeManager.restrictions[0])
+			if (restrictions[0] && tree_manager.restrictions[0])
 			{
-				v2 buildingL = (v2)newBuilding->object->prefab->boundingBoxL;
-				v2 buildingM = (v2)newBuilding->object->prefab->boundingBoxM;
-				v2 buildingP = (v2)newBuilding->object->position;
+				v2 buildingL = (v2)new_building->object->prefab->boundingBoxL;
+				v2 buildingM = (v2)new_building->object->prefab->boundingBoxM;
+				v2 buildingP = (v2)new_building->object->position;
 
-				auto& trees = m_Scene->m_TreeManager.GetTrees();
 				for (size_t i = 0; i < trees.size(); i++)
 				{
 					Object* tree = trees[i]->object;
 					v2 mtv = Helper::CheckRotatedRectangleCollision(
 						buildingL,
 						buildingM,
-						newBuilding->object->rotation.z,
+						new_building->object->rotation.z,
 						buildingP,
 						(v2)tree->prefab->boundingBoxL,
 						(v2)tree->prefab->boundingBoxM,

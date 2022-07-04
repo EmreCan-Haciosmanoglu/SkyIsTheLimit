@@ -79,9 +79,6 @@ namespace Can
 			case ConstructionMode::Tree:
 				m_TreeManager.OnUpdate(I, camPos, forward);
 				break;
-			case ConstructionMode::Car:
-				m_CarManager.OnUpdate(I, camPos, forward);
-				break;
 			case ConstructionMode::None:
 				break;
 			}
@@ -90,7 +87,6 @@ namespace Can
 
 		for (uint8_t i = 0; i < (uint8_t)e_SpeedMode; i++)
 		{
-			MoveMe2AnotherFile(ts);
 			m_PersonManager.Update(ts);
 		}
 
@@ -154,9 +150,6 @@ namespace Can
 		case ConstructionMode::Tree:
 			m_TreeManager.OnMousePressed(button);
 			break;
-		case ConstructionMode::Car:
-			m_CarManager.OnMousePressed(button);
-			break;
 		case ConstructionMode::None:
 			break;
 		}
@@ -171,32 +164,22 @@ namespace Can
 		case ConstructionMode::Road:
 			m_TreeManager.ResetStates();
 			m_BuildingManager.ResetStates();
-			m_CarManager.ResetStates();
 			m_RoadManager.SetConstructionMode(m_RoadManager.GetConstructionMode());
 			break;
 		case ConstructionMode::Building:
 			m_RoadManager.ResetStates();
 			m_TreeManager.ResetStates();
-			m_CarManager.ResetStates();
 			m_BuildingManager.SetConstructionMode(m_BuildingManager.GetConstructionMode());
 			break;
 		case ConstructionMode::Tree:
 			m_RoadManager.ResetStates();
 			m_BuildingManager.ResetStates();
-			m_CarManager.ResetStates();
 			m_TreeManager.SetConstructionMode(m_TreeManager.GetConstructionMode());
-			break;
-		case ConstructionMode::Car:
-			m_RoadManager.ResetStates();
-			m_BuildingManager.ResetStates();
-			m_TreeManager.ResetStates();
-			m_CarManager.SetConstructionMode(m_CarManager.GetConstructionMode());
 			break;
 		case ConstructionMode::None:
 			m_RoadManager.ResetStates();
 			m_TreeManager.ResetStates();
 			m_BuildingManager.ResetStates();
-			m_CarManager.ResetStates();
 			break;
 		default:
 			break;
@@ -339,38 +322,23 @@ namespace Can
 		for (u64 i = 0; i < car_count; i++)
 		{
 			u64 type;
+			f32 speed;
 			s64 road_segment;
-			u64 t_index;
-			f32 speed, t;
-			std::array<v3, 3> drift_points;
-			v3 position, target, rotation;
-			bool from_start, in_junction;
+			v3 position, rotation;
 			fread(&type, sizeof(u64), 1, read_file);
-			fread(&road_segment, sizeof(s64), 1, read_file);
-			fread(&t_index, sizeof(u64), 1, read_file);
 			fread(&speed, sizeof(f32), 1, read_file);
-			fread(&t, sizeof(f32), 1, read_file);
-			fread(&drift_points, sizeof(f32), 3 * 3, read_file);
+			fread(&road_segment, sizeof(s64), 1, read_file);
 			fread(&position, sizeof(f32), 3, read_file);
-			fread(&target, sizeof(f32), 3, read_file);
 			fread(&rotation, sizeof(f32), 3, read_file);
-			fread(&from_start, sizeof(bool), 1, read_file);
-			fread(&in_junction, sizeof(bool), 1, read_file);
 			Car* car = new Car(
 				MainApplication->cars[type],
-				road_segment,
-				t_index,
-				speed,
-				position,
-				target,
-				rotation);
-			car->type = type;
-			car->t = t;
-			car->driftpoints = drift_points;
-			car->fromStart = from_start;
-			car->inJunction = in_junction;
+				type,
+				speed
+			);
+			car->object->SetTransform(position, rotation);
 			cars.push_back(car);
-			road_segments[road_segment].Cars.push_back(car);
+			if (road_segment != -1)
+				road_segments[road_segment].Cars.push_back(car);
 		}
 		///////////////////////////////////////////////////
 
@@ -417,12 +385,16 @@ namespace Can
 				person->home = buildings[home_index];
 				buildings[home_index]->people.push_back(person);
 			}
-			if(work_index != -1)
+			if (work_index != -1)
 			{
 				person->work = buildings[work_index];
 				buildings[work_index]->people.push_back(person);
 			}
-			person->iCar = car_index != -1 ? cars[car_index] : nullptr;
+			if (car_index != -1)
+			{
+				person->car = cars[car_index];
+				cars[car_index]->owner = person;
+			}
 			person->time_left = Utility::Random::Float(1.0f, 5.0f);
 			people.push_back(person);
 		}
@@ -512,16 +484,10 @@ namespace Can
 			for (u64 i = 0; i < car_count; i++)
 			{
 				fwrite(&cars[i]->type, sizeof(u64), 1, save_file);
-				fwrite(&cars[i]->roadSegment, sizeof(s64), 1, save_file);
-				fwrite(&cars[i]->t_index, sizeof(u64), 1, save_file);
 				fwrite(&cars[i]->speed, sizeof(f32), 1, save_file);
-				fwrite(&cars[i]->t, sizeof(f32), 1, save_file);
-				fwrite(cars[i]->driftpoints.data(), sizeof(f32), 3 * 3, save_file);
-				fwrite(&cars[i]->position, sizeof(f32), 3, save_file);
-				fwrite(&cars[i]->target, sizeof(f32), 3, save_file);
+				fwrite(&cars[i]->roadSegment, sizeof(s64), 1, save_file);
+				fwrite(&cars[i]->object->position, sizeof(f32), 3, save_file);
 				fwrite(&cars[i]->object->rotation, sizeof(f32), 3, save_file);
-				fwrite(&cars[i]->fromStart, sizeof(bool), 1, save_file);
-				fwrite(&cars[i]->inJunction, sizeof(bool), 1, save_file);
 			}
 		}
 
@@ -533,6 +499,7 @@ namespace Can
 		{
 			auto home_it = std::find(buildings.begin(), buildings.end(), people[i]->home);
 			s64 home_index = std::distance(buildings.begin(), home_it);
+
 			s64 work_index = -1;
 			s64 car_index = -1;
 			u64 first_name_char_count = people[i]->firstName.size();
@@ -541,7 +508,12 @@ namespace Can
 			if (people[i]->work)
 			{
 				auto work_it = std::find(buildings.begin(), buildings.end(), people[i]->work);
-				work_index = std::distance(buildings.begin(), home_it);
+				work_index = std::distance(buildings.begin(), work_it);
+			}
+			if (people[i]->car)
+			{
+				auto car_it = std::find(cars.begin(), cars.end(), people[i]->car);
+				car_index = std::distance(cars.begin(), car_it);
 			}
 			fwrite(&people[i]->speed, sizeof(f32), 1, save_file);
 			//fwrite(&people[i]->time_left, sizeof(f32), 1, save_file); What to do???
@@ -597,140 +569,4 @@ namespace Can
 		return forward;
 	}
 
-	void GameScene::MoveMe2AnotherFile(float ts)
-	{
-		auto& road_types = MainApplication->road_types;
-		auto& segments = m_RoadManager.road_segments;
-		auto& cars = m_CarManager.GetCars();
-		for (Car* car : cars)
-		{
-			v3 targeT = car->target;
-			v3 pos = car->position;
-			v3 ab = targeT - pos;
-			v3 unit = glm::normalize(ab);
-			float journeyLength = ts * car->speed;
-			float leftLenght = glm::length(ab);
-			RoadSegment& road = segments[car->roadSegment];
-
-			if (car->inJunction)
-			{
-				car->t += ts / 1.5f;
-				v3 driftPos = Math::QuadraticCurve(car->driftpoints, car->t);
-				v3 d1rection = glm::normalize(driftPos - car->position);
-				car->position = driftPos;
-
-
-				v2 dir = glm::normalize((v2)d1rection);
-				f32 yaw = glm::acos(dir.x) * ((float)(dir.y > 0.0f) * 2.0f - 1.0f);
-				v3 dirR = glm::rotateZ(d1rection, -yaw);
-				dir = glm::normalize(v2{ dirR.x, dirR.z });
-				f32 pitch = glm::acos(std::abs(dir.x)) * ((float)(dir.y < 0.0f) * 2.0f - 1.0f);
-
-
-				car->object->SetTransform(car->position, v3{ 0.0f, -pitch, yaw + glm::radians(180.0f) });
-				if (car->t >= 1.0f)
-				{
-					car->inJunction = false;
-				}
-
-			}
-			else
-			{
-				if (journeyLength < leftLenght)
-				{
-					car->position = car->position + unit * journeyLength;
-					car->object->SetTransform(car->position);
-				}
-				else
-				{
-					car->position = car->target;
-					car->object->SetTransform(car->position);
-					std::vector<float> ts{ 0 };
-
-					float lengthRoad = road_types[road.type].road_length;
-					std::vector<v3> samples = Math::GetCubicCurveSamples(road.GetCurvePoints(), lengthRoad, ts);
-
-					if ((samples.size() - 2 == car->t_index && car->fromStart) || (1 == car->t_index && !car->fromStart))
-					{
-						//////new road
-						u64 nodeIndex = car->fromStart ? road.EndNode : road.StartNode;
-						RoadNode& node = m_RoadManager.road_nodes[nodeIndex];
-						if (node.roadSegments.size() > 1)
-						{
-							car->driftpoints[0] = car->position;
-							car->driftpoints[1] = node.position;
-
-							std::vector<u64>& roads = node.roadSegments;
-							int newRoadIndex = Utility::Random::Integer((int)roads.size());
-							RoadSegment& rs = segments[car->roadSegment];
-
-							while (car->roadSegment == roads[newRoadIndex])
-							{
-								newRoadIndex = Utility::Random::Integer((int)roads.size());
-							}
-
-							rs.Cars.erase(std::find(rs.Cars.begin(), rs.Cars.end(), car));
-							car->roadSegment = roads[newRoadIndex];
-
-							segments[car->roadSegment].Cars.push_back(car);
-							std::vector<float> ts2{ 0 };
-							float lengthRoad2 = road_types[segments[car->roadSegment].type].road_length;
-							std::vector<v3> samples2 = Math::GetCubicCurveSamples(segments[car->roadSegment].GetCurvePoints(), lengthRoad2, ts2);
-
-							if (nodeIndex == segments[car->roadSegment].StartNode)
-							{
-								car->t_index = 0;
-								car->target = samples2[1];
-								car->fromStart = true;
-								car->driftpoints[2] = segments[car->roadSegment].GetStartPosition();
-							}
-							else
-							{
-								car->t_index = samples2.size();
-								car->target = samples2[samples2.size() - 1];
-								car->fromStart = false;
-								car->driftpoints[2] = segments[car->roadSegment].GetEndPosition();
-							}
-							car->t = 0;
-							car->inJunction = true;
-
-						}
-						else
-						{
-							if (!car->fromStart)
-							{
-								car->t_index = 0;
-								car->target = samples[1];
-								car->fromStart = true;
-							}
-							else
-							{
-								car->t_index = samples.size();
-								car->target = samples[samples.size() - 1];
-								car->fromStart = false;
-							}
-						}
-					}
-					else
-					{
-						v3 oldTarget = car->target;
-						car->target = samples[car->t_index + (car->fromStart ? +1 : -1)];
-						car->t_index += (car->fromStart ? +1 : -1);
-
-						v3 d1rection = glm::normalize(car->target - oldTarget);
-
-						v2 dir = glm::normalize((v2)d1rection);
-						f32 yaw = glm::acos(dir.x) * ((float)(dir.y > 0.0f) * 2.0f - 1.0f);
-						v3 dirR = glm::rotateZ(d1rection, -yaw);
-						dir = glm::normalize(v2{ dirR.x, dirR.z });
-						f32 pitch = glm::acos(std::abs(dir.x)) * ((float)(dir.y < 0.0f) * 2.0f - 1.0f);
-
-						car->object->SetTransform(car->position, v3{ 0.0f, -pitch, yaw + glm::radians(180.0f) });
-					}
-
-				}
-			}
-
-		}
-	}
 }

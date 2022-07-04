@@ -34,14 +34,12 @@ namespace Can
 		Button* m_ButtonRoads     = nullptr;
 		Button* m_ButtonBuildings = nullptr;
 		Button* m_ButtonTrees     = nullptr;
-		Button* m_ButtonCars      = nullptr;
 		Button* m_ButtonNeeds     = nullptr;
 		Button* m_ButtonTools     = nullptr;
 
 		Panel* m_PanelRoads     = nullptr;
 		Panel* m_PanelBuildings = nullptr;
 		Panel* m_PanelTrees     = nullptr;
-		Panel* m_PanelCars      = nullptr;
 		Panel* m_PanelNeeds     = nullptr;
 		Panel* m_PanelTools     = nullptr;
 
@@ -67,7 +65,6 @@ namespace Can
 		ScrollView* m_ScrollViewRoads = nullptr;
 		ScrollView* m_ScrollViewBuildings = nullptr;
 		ScrollView* m_ScrollViewTrees = nullptr;
-		ScrollView* m_ScrollViewCars = nullptr;
 
 		Button* m_ButtonTools_01 = nullptr;
 		Button* m_ButtonTools_02 = nullptr;
@@ -102,7 +99,6 @@ namespace Can
 		std::vector<Button*> m_RoadPanelButtonList;
 		std::vector<Button*> m_BuildingPanelButtonList;
 		std::vector<Button*> m_TreePanelButtonList;
-		std::vector<Button*> m_CarPanelButtonList;
 
 		GameApp* m_Parent;
 	private:

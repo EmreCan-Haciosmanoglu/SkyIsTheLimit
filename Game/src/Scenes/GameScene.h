@@ -18,7 +18,6 @@ namespace Can
 		Road,
 		Building,
 		Tree,
-		Car,
 		None
 	};
 
@@ -56,7 +55,6 @@ namespace Can
 
 	private:
 		glm::vec3 GetRayCastedFromScreen();
-		void MoveMe2AnotherFile(float ts);
 
 	public:
 		GameApp* MainApplication = nullptr;
