@@ -54,7 +54,7 @@ namespace Can
 						p->path = Helper::get_path(building_from, 5);
 						p->target_building = building_from;
 					}
-					RS_Transition* rs_transition = (RS_Transition*)p->path[0];
+					RS_Transition_For_Walking* rs_transition = (RS_Transition_For_Walking*)p->path[0];
 					p->road_segment = rs_transition->road_segment_index;
 					RoadSegment& road_segment = road_segments[p->road_segment];
 					RoadType& road_segment_type = road_types[road_segment.type];
@@ -77,7 +77,7 @@ namespace Can
 					if (building_from->snapped_to_right == false)
 						sidewalf_position_offset *= -1.0f;
 					p->target = offsetted + sidewalf_position_offset;
-					((RS_Transition*)p->path[0])->at_path_array_index = building_from->snapped_t_index;
+					((RS_Transition_For_Walking*)p->path[0])->at_path_array_index = building_from->snapped_t_index;
 					walking_people.push_back(p);
 				}
 
@@ -103,8 +103,8 @@ namespace Can
 						auto& road_node = road_nodes[p->road_node];
 						auto& connected_road_segments = road_node.roadSegments;
 
-						RN_Transition* rn_transition = (RN_Transition*)p->path[0];
-						RS_Transition* rs_transition = (RS_Transition*)p->path[1];
+						RN_Transition_For_Walking* rn_transition = (RN_Transition_For_Walking*)p->path[0];
+						RS_Transition_For_Walking* rs_transition = (RS_Transition_For_Walking*)p->path[1];
 
 						f32 half_crosswalk_width = 0.05f;
 
@@ -129,7 +129,7 @@ namespace Can
 								p->path.erase(p->path.begin());
 								u64 at_index = p->road_node == current_road_segment.StartNode ? 0 : current_road_segment.curve_samples.size() - 1;
 
-								((RS_Transition*)p->path[0])->at_path_array_index = at_index;
+								((RS_Transition_For_Walking*)p->path[0])->at_path_array_index = at_index;
 								p->in_junction = false;
 								assert(remove_person_from(road_node, p));
 
@@ -230,7 +230,7 @@ namespace Can
 					}
 					else
 					{
-						RS_Transition* rs_transition = (RS_Transition*)p->path[0];
+						RS_Transition_For_Walking* rs_transition = (RS_Transition_For_Walking*)p->path[0];
 						RoadSegment& road_segment = road_segments[p->road_segment];
 						RoadType& road_segment_type = road_types[road_segment.type];
 
@@ -242,7 +242,7 @@ namespace Can
 						else
 							target_path_array_index = 0;
 
-						if ((rs_transition->from_start && (rs_transition->at_path_array_index >= target_path_array_index)) || 
+						if ((rs_transition->from_start && (rs_transition->at_path_array_index >= target_path_array_index)) ||
 							(!rs_transition->from_start && (rs_transition->at_path_array_index <= target_path_array_index)))
 						{
 							if (p->path.size() == 1)

@@ -557,7 +557,7 @@ namespace  Can::Helper
 
 		std::vector<Transition*> path{};
 
-		RS_Transition* rs_transition = new RS_Transition();
+		RS_Transition_For_Walking* rs_transition = new RS_Transition_For_Walking();
 		path.push_back(rs_transition);
 		rs_transition->road_segment_index = current_road_segment_index;
 		bool go_right_from_house = Utility::Random::Integer(2) == 1;
@@ -574,7 +574,7 @@ namespace  Can::Helper
 			rs_transition->from_start = false;
 		}
 
-		RN_Transition* rn_transition = new RN_Transition();
+		RN_Transition_For_Walking* rn_transition = new RN_Transition_For_Walking();
 		path.push_back(rn_transition);
 		rn_transition->road_node_index = next_node;
 
@@ -591,7 +591,7 @@ namespace  Can::Helper
 			else
 				rn_transition->sub_index = 1;
 
-			rs_transition = new RS_Transition();
+			rs_transition = new RS_Transition_For_Walking();
 			path.push_back(rs_transition);
 
 			rs_transition->from_right = true;
@@ -637,7 +637,7 @@ namespace  Can::Helper
 				assert(false);
 			}
 
-			rn_transition = new RN_Transition();
+			rn_transition = new RN_Transition_For_Walking();
 			path.push_back(rn_transition);
 			current_road_segment_index = next_road_segment_index;
 			rn_transition->road_node_index = next_node;
@@ -657,8 +657,8 @@ namespace  Can::Helper
 
 		for (u64 i = path.size() - 1; i > 0; i--)
 		{
-			RS_Transition* mirror_rs_transition = (RS_Transition*)path[i - 1];
-			RS_Transition* rs_transition = new RS_Transition();
+			RS_Transition_For_Walking* mirror_rs_transition = (RS_Transition_For_Walking*)path[i - 1];
+			RS_Transition_For_Walking* rs_transition = new RS_Transition_For_Walking();
 			RoadSegment& road_segment = road_segments[rs_transition->road_segment_index];
 			path.push_back(rs_transition);
 			rs_transition->from_start = !mirror_rs_transition->from_start;
@@ -671,8 +671,8 @@ namespace  Can::Helper
 				rs_transition->from_right = !rs_transition->from_right;
 				break;
 			}
-			RN_Transition* mirror_rn_transition = (RN_Transition*)path[i - 1];
-			rn_transition = new RN_Transition();
+			RN_Transition_For_Walking* mirror_rn_transition = (RN_Transition_For_Walking*)path[i - 1];
+			rn_transition = new RN_Transition_For_Walking();
 			rn_transition->from_road_segments_array_index = mirror_rn_transition->to_road_segments_array_index;
 			rn_transition->to_road_segments_array_index = mirror_rn_transition->from_road_segments_array_index;
 
@@ -708,7 +708,7 @@ namespace  Can::Helper
 		{
 			if (start->snapped_to_right == end->snapped_to_right)
 			{
-				RS_Transition* rs_transition = new RS_Transition();
+				RS_Transition_For_Walking* rs_transition = new RS_Transition_For_Walking();
 				u64 diff = end->snapped_t_index - start->snapped_t_index;
 				if (diff > 0)
 				{
@@ -733,7 +733,7 @@ namespace  Can::Helper
 				RoadSegment& road_segment = road_segments[start->connectedRoadSegment];
 				bool from_start = road_segment.curve_samples.size() > start->snapped_t_index + end->snapped_t_index;
 
-				RS_Transition* rs_transition_s = new RS_Transition();
+				RS_Transition_For_Walking* rs_transition_s = new RS_Transition_For_Walking();
 				rs_transition_s->from_start = !from_start;
 				rs_transition_s->from_right = !start->snapped_to_right == from_start;
 				rs_transition_s->road_segment_index = start->connectedRoadSegment;
@@ -743,7 +743,7 @@ namespace  Can::Helper
 				auto it = std::find(road_node.roadSegments.begin(), road_node.roadSegments.end(), start->connectedRoadSegment);
 				assert(it != road_node.roadSegments.end());
 				u64 index = std::distance(road_node.roadSegments.begin(), it);
-				RN_Transition* rn_transition = new RN_Transition();
+				RN_Transition_For_Walking* rn_transition = new RN_Transition_For_Walking();
 				rn_transition->from_road_segments_array_index = index;
 				rn_transition->to_road_segments_array_index = index;
 				rn_transition->road_node_index = road_node_index;
@@ -758,7 +758,7 @@ namespace  Can::Helper
 					rn_transition->sub_index = 1;
 				}
 
-				RS_Transition* rs_transition_e = new RS_Transition();
+				RS_Transition_For_Walking* rs_transition_e = new RS_Transition_For_Walking();
 
 				rs_transition_e->from_start = !rs_transition_s->from_start;
 				rs_transition_s->from_right = rs_transition_s->from_right == from_start;
@@ -823,7 +823,7 @@ namespace  Can::Helper
 					u64 rs_index = connected_road_segment_index;
 					std::vector<Transition*> the_temp_path{};
 
-					RS_Transition* rs_transition = new RS_Transition();
+					RS_Transition_For_Walking* rs_transition = new RS_Transition_For_Walking();
 					the_temp_path.push_back(rs_transition);
 					rs_transition->road_segment_index = rs_index;
 					rs_transition->from_start = connected_road_segment.StartNode == road_node_index;
@@ -834,7 +834,7 @@ namespace  Can::Helper
 					assert(to_it != rss.end());
 					u64 to_index = std::distance(rss.begin(), to_it);
 
-					RN_Transition* rn_transition = new RN_Transition();
+					RN_Transition_For_Walking* rn_transition = new RN_Transition_For_Walking();
 					the_temp_path.push_back(rn_transition);
 					rn_transition->road_node_index = rn_index;
 					rn_transition->to_road_segments_array_index = to_index;
@@ -865,7 +865,7 @@ namespace  Can::Helper
 
 
 						RoadSegment& prev_road_segment = road_segments[rs_index];
-						rs_transition = new RS_Transition();
+						rs_transition = new RS_Transition_For_Walking();
 						the_temp_path.push_back(rs_transition);
 						rs_transition->road_segment_index = rs_index;
 						rs_transition->from_right = true;
@@ -884,7 +884,7 @@ namespace  Can::Helper
 						assert(to_it != rss.end());
 						to_index = std::distance(rss.begin(), to_it);
 
-						rn_transition = new RN_Transition();
+						rn_transition = new RN_Transition_For_Walking();
 						the_temp_path.push_back(rn_transition);
 						rn_transition->road_node_index = rn_index;
 						rn_transition->to_road_segments_array_index = to_index;

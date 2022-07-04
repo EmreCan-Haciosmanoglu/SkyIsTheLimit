@@ -1916,13 +1916,13 @@ namespace Can
 			{
 				j = 1;
 				for (; j < count; j += 2)
-					if (((RS_Transition*)path[j])->road_segment_index == road_segment_index)
+					if (((RS_Transition_For_Walking*)path[j])->road_segment_index == road_segment_index)
 						break;
 			}
 			else
 			{
 				for (; j < count; j += 2)
-					if (((RS_Transition*)path[j])->road_segment_index == road_segment_index)
+					if (((RS_Transition_For_Walking*)path[j])->road_segment_index == road_segment_index)
 						break;
 			}
 			if (j < count)
@@ -1946,13 +1946,13 @@ namespace Can
 			u64 j = 1;
 			if (count % 2 == 0)
 			{
-				if (((RN_Transition*)path[0])->to_road_segments_array_index > index)
-					((RN_Transition*)path[0])->to_road_segments_array_index--;
+				if (((RN_Transition_For_Walking*)path[0])->to_road_segments_array_index > index)
+					((RN_Transition_For_Walking*)path[0])->to_road_segments_array_index--;
 				j = 2;
 			}
 			for (; j < count; j += 2)
 			{
-				RN_Transition* rn_transition = (RN_Transition*)path[j];
+				RN_Transition_For_Walking* rn_transition = (RN_Transition_For_Walking*)path[j];
 				if (rn_transition->from_road_segments_array_index > index)
 					rn_transition->from_road_segments_array_index--;
 				if (rn_transition->to_road_segments_array_index > index)
@@ -1988,13 +1988,13 @@ namespace Can
 			u64 j = 1;
 			if (count % 2 == 0)
 			{
-				if (((RN_Transition*)path[0])->to_road_segments_array_index > index)
-					((RN_Transition*)path[0])->to_road_segments_array_index--;
+				if (((RN_Transition_For_Walking*)path[0])->to_road_segments_array_index > index)
+					((RN_Transition_For_Walking*)path[0])->to_road_segments_array_index--;
 				j = 2;
 			}
 			for (; j < count; j += 2)
 			{
-				RN_Transition* rn_transition = (RN_Transition*)path[j];
+				RN_Transition_For_Walking* rn_transition = (RN_Transition_For_Walking*)path[j];
 				if (rn_transition->from_road_segments_array_index > index)
 					rn_transition->from_road_segments_array_index--;
 				if (rn_transition->to_road_segments_array_index > index)
@@ -2456,7 +2456,7 @@ namespace Can
 			u64 transition_index = 1;
 			if (path.size() % 2 == 1)
 			{
-				auto rs_transition = (RS_Transition*)path[0];
+				auto rs_transition = (RS_Transition_For_Walking*)path[0];
 				if (rs_transition->road_segment_index == old_rs_index)
 				{
 					reset_person(person);
@@ -2470,13 +2470,13 @@ namespace Can
 			}
 			for (; transition_index < path.size(); transition_index += 2)
 			{
-				auto rs_transition = (RS_Transition*)path[transition_index];
+				auto rs_transition = (RS_Transition_For_Walking*)path[transition_index];
 				if (rs_transition->road_segment_index != old_rs_index) continue;
-				auto rn_transition = (RN_Transition*)path[transition_index - 1];
+				auto rn_transition = (RN_Transition_For_Walking*)path[transition_index - 1];
 
 				if (old_road_segment.StartNode == rn_transition->road_node_index)
 				{
-					RN_Transition* new_rn_transition = new RN_Transition();
+					RN_Transition_For_Walking* new_rn_transition = new RN_Transition_For_Walking();
 					new_rn_transition->from_road_segments_array_index = std::distance(
 						new_road_node.roadSegments.begin(),
 						std::find(
@@ -2498,7 +2498,7 @@ namespace Can
 						new_rn_transition->accending = diff < (3.0f / 2.0f);
 					else
 						new_rn_transition->accending = diff * -1.0f > (3.0f / 2.0f);
-					RS_Transition* new_rs_transition = new RS_Transition();
+					RS_Transition_For_Walking* new_rs_transition = new RS_Transition_For_Walking();
 					new_rs_transition->from_start = false;
 					new_rs_transition->road_segment_index = new_rs_index;
 					new_rs_transition->from_right = rs_transition->from_right;
@@ -2507,11 +2507,11 @@ namespace Can
 				}
 				else
 				{
-					RS_Transition* new_rs_transition = new RS_Transition();
+					RS_Transition_For_Walking* new_rs_transition = new RS_Transition_For_Walking();
 					new_rs_transition->from_start = true;
 					new_rs_transition->road_segment_index = new_rs_index;
 					new_rs_transition->from_right = rs_transition->from_right;
-					RN_Transition* new_rn_transition = new RN_Transition();
+					RN_Transition_For_Walking* new_rn_transition = new RN_Transition_For_Walking();
 					new_rn_transition->from_road_segments_array_index = std::distance(
 						new_road_node.roadSegments.begin(),
 						std::find(
@@ -2551,7 +2551,7 @@ namespace Can
 			u64 transition_index = 1;
 			if (path.size() % 2 == 0)
 			{
-				auto rn_transition = (RN_Transition*)path[0];
+				auto rn_transition = (RN_Transition_For_Walking*)path[0];
 				if (rn_transition->road_node_index == road_node_index)
 					if (rn_transition->to_road_segments_array_index >= new_index)
 						rn_transition->to_road_segments_array_index++;
@@ -2559,7 +2559,7 @@ namespace Can
 			}
 			for (; transition_index < path.size(); transition_index += 2)
 			{
-				auto rn_transition = (RN_Transition*)path[transition_index];
+				auto rn_transition = (RN_Transition_For_Walking*)path[transition_index];
 				if (rn_transition->road_node_index != road_node_index) continue;
 				if (rn_transition->from_road_segments_array_index >= new_index)
 					rn_transition->from_road_segments_array_index++;
