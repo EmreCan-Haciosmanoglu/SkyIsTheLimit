@@ -6,6 +6,12 @@ namespace Can
 	class RoadSegment;
 	class Person;
 
+	struct Car_Park
+	{
+		v3 offset{ 0.5f, 0.0f, 0.0f};
+		f32 rotation_in_degrees = 0.0f;
+	};
+
 	class Building
 	{
 	public:
@@ -32,7 +38,7 @@ namespace Can
 
 		u64 type = 0;
 		s64 connectedRoadSegment = -1;
-		u64 snapped_t_index = 0;
+		s64 snapped_t_index = 0;
 		f32 snapped_t = 0.0f;
 		u16 capacity = 0;
 		bool snapped_to_right = true;
@@ -40,5 +46,6 @@ namespace Can
 		std::vector<Person*> people{};
 		Object* object = nullptr;
 		v3 position{};
+		Car_Park car_park{};
 	};
 }

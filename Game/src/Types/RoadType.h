@@ -50,10 +50,12 @@ namespace Can
 		f32 bridge_height = 0.01f; // for later
 
 		bool asymmetric = false;
+		bool has_median = false;
+		bool two_way = true;
 		bool left_hand_drive = true; // for later
 		bool zoneable = true;
-		bool has_sidewalk = true; // change later
 
-		std::vector<Lane> lanes_from_left{ Lane{0.5f, 10.0f, 0.05f} };
+		std::vector<Lane> lanes_backward{ Lane{-0.5f, 5.0f, 0.05f}, Lane{-0.25f, 10.0f, 0.05f} };
+		std::vector<Lane> lanes_forward{ Lane{0.25f, 10.0f, 0.05f},  Lane{0.5f, 5.0f, 0.05f} };
 	};
 }

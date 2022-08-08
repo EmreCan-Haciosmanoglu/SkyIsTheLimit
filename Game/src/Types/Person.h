@@ -31,7 +31,8 @@ namespace Can
 		Building* target_building = nullptr;
 		bool from_right = true;
 		bool in_junction = false;
-		bool heading_to_a_building = false;
+		bool heading_to_a_building_or_parking = false;
+		bool heading_to_a_car = false;
 		PersonStatus status = PersonStatus::AtHome;
 		f32 time_left = 0.0f;
 		// 
@@ -42,6 +43,6 @@ namespace Can
 		std::string surName = "Tadaam";
 		Building* home = nullptr;
 		Building* work = nullptr;
-		Car* iCar = nullptr;
+		Car* car = nullptr;
 	};
 }

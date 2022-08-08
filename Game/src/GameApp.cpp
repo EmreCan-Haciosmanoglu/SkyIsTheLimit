@@ -108,7 +108,6 @@ namespace Can
 			char* name_key = "Name\0";
 			char* asym_key = "Asym\0";
 			char* zone_key = "Zoneable\0";
-			char* sidewalk_key = "Has_Sidewalk\0";
 
 			char* road_object_key = "Road_Object\0";
 			char* road_texture_key = "Road_Texture\0";
@@ -198,7 +197,6 @@ namespace Can
 						type.road_end = new Prefab(road_end_obj, TEMP_SHADER_FILE_PATH, road_end_png);
 						type.thumbnail = Texture2D::Create(thumbnail_png);
 						type.zoneable = zone != "False";
-						type.has_sidewalk = sidewalk != "False";
 						if (asym != "False")
 						{
 							type.asymmetric = true;
@@ -274,8 +272,6 @@ namespace Can
 						asym = std::string(print_from);
 					else if (std::equal(line.begin(), seperator, zone_key))
 						zone = std::string(print_from);
-					else if (std::equal(line.begin(), seperator, sidewalk_key))
-						sidewalk = std::string(print_from);
 					else if (std::equal(line.begin(), seperator, road_object_key))
 						road_obj.append(print_from);
 					else if (std::equal(line.begin(), seperator, road_texture_key))

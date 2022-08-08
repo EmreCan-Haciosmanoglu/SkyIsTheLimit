@@ -21,4 +21,12 @@ namespace Can
 		u64 road_node_index = 0;
 		bool accending = false;
 	};
+
+	struct RS_Transition_For_Driving : Transition
+	{
+		u64 at_path_array_index = 0;
+		u64 road_segment_index = 0;
+		s64 next_road_node_index = 0;
+		u32 lane_index = 0;
+	};
 }

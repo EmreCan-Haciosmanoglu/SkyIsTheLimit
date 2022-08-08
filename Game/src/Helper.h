@@ -47,6 +47,7 @@ namespace Can::Helper
 
 	std::vector<Transition*> get_path(Building* start, u8 dist);
 	std::vector<Transition*> get_path(Building* start, Building* end);
+	std::vector<Transition*> get_path_for_a_car(Building* start, Building* end);
 
 	struct sort_by_angle
 	{

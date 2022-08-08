@@ -10,7 +10,7 @@ namespace Can
 	{
 	public:
 		PersonManager(GameScene* scene);
-		~PersonManager();
+		~PersonManager(){}
 
 		void Update(TimeStep ts);
 
