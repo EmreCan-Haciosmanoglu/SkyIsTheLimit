@@ -72,6 +72,11 @@ namespace Can
 						p->heading_to_a_car = true;
 						p->target = p->car->object->position;
 						rs_transition->at_path_array_index = building_from->snapped_t_index;
+
+						v3 direction = glm::normalize(p->target - p->position);
+						v2 dir_ = glm::normalize((v2)direction);
+						f32 yaw = glm::acos(dir_.x) * ((float)(dir_.y > 0.0f) * 2.0f - 1.0f);
+						p->car->object->SetTransform(p->car->object->position, v3{ 0.0f, 0.0f, yaw + glm::radians(180.0f) });
 					}
 					else
 					{
@@ -94,6 +99,11 @@ namespace Can
 
 						p->target = offsetted + sidewalf_position_offset;
 						((RS_Transition_For_Walking*)p->path[0])->at_path_array_index = building_from->snapped_t_index;
+
+						v3 direction = glm::normalize(p->target - p->position);
+						v2 dir_ = glm::normalize((v2)direction);
+						f32 yaw = glm::acos(dir_.x) * ((float)(dir_.y > 0.0f) * 2.0f - 1.0f);
+						p->object->SetTransform(p->position, v3{ 0.0f, 0.0f, yaw + glm::radians(180.0f) });
 					}
 				}
 
@@ -241,6 +251,10 @@ namespace Can
 						p->heading_to_a_building_or_parking = false;
 						RoadSegment& segment = road_segments[p->road_segment];
 						p->road_segment = -1;
+
+						delete ((RS_Transition_For_Driving*)p->path[0]);
+						p->path.pop_back();
+
 						assert(remove_person_from(segment, p));
 						assert(remove_walking_person_from(walking_people, p));
 					}
@@ -384,6 +398,11 @@ namespace Can
 						p->object->enabled = true;
 						p->target = p->target_building->position;
 						p->status = PersonStatus::Walking;
+
+						v3 direction = glm::normalize(p->target - p->position);
+						v2 dir_ = glm::normalize((v2)direction);
+						f32 yaw = glm::acos(dir_.x) * ((float)(dir_.y > 0.0f) * 2.0f - 1.0f);
+						p->car->object->SetTransform(p->car->object->position, v3{ 0.0f, 0.0f, yaw + glm::radians(180.0f) });
 					}
 					else
 					{
@@ -398,10 +417,13 @@ namespace Can
 							{
 								if (rs_transition->at_path_array_index >= p->target_building->snapped_t_index)
 								{
-									delete rs_transition;
-									p->heading_to_a_building_or_parking = true;
-									p->path.pop_back();
 									p->target = p->target_building->position + p->target_building->car_park.offset;
+
+									v3 direction = glm::normalize(p->target - p->position);
+									v2 dir_ = glm::normalize((v2)direction);
+									f32 yaw = glm::acos(dir_.x) * ((float)(dir_.y > 0.0f) * 2.0f - 1.0f);
+									p->car->object->SetTransform(p->car->object->position, v3{ 0.0f, 0.0f, yaw + glm::radians(180.0f) });
+									p->heading_to_a_building_or_parking = true;
 									continue;
 								}
 							}
@@ -412,6 +434,11 @@ namespace Can
 								v3 rotated_dir = glm::normalize(v3{ dir.y, -dir.x, 0.0f });
 								p->target = road_segment.curve_samples[rs_transition->at_path_array_index];
 								p->target += rotated_dir * road_type.lanes_forward[rs_transition->lane_index - road_type.lanes_backward.size()].distance_from_center;
+
+								v3 direction = glm::normalize(p->target - p->position);
+								v2 dir_ = glm::normalize((v2)direction);
+								f32 yaw = glm::acos(dir_.x) * ((float)(dir_.y > 0.0f) * 2.0f - 1.0f);
+								p->car->object->SetTransform(p->car->object->position, v3{ 0.0f, 0.0f, yaw + glm::radians(180.0f) });
 								continue;
 							}
 						}
@@ -421,10 +448,13 @@ namespace Can
 							{
 								if (rs_transition->at_path_array_index <= p->target_building->snapped_t_index)
 								{
-									delete rs_transition;
-									p->heading_to_a_building_or_parking = true;
-									p->path.pop_back();
 									p->target = p->target_building->position + p->target_building->car_park.offset;
+
+									v3 direction = glm::normalize(p->target - p->position);
+									v2 dir_ = glm::normalize((v2)direction);
+									f32 yaw = glm::acos(dir_.x) * ((float)(dir_.y > 0.0f) * 2.0f - 1.0f);
+									p->car->object->SetTransform(p->car->object->position, v3{ 0.0f, 0.0f, yaw + glm::radians(180.0f) });
+									p->heading_to_a_building_or_parking = true;
 									continue;
 								}
 							}
@@ -438,11 +468,17 @@ namespace Can
 									p->target += rotated_dir * road_type.lanes_backward[rs_transition->lane_index].distance_from_center;
 								else
 									p->target += rotated_dir * road_type.lanes_forward[rs_transition->lane_index - road_type.lanes_backward.size()].distance_from_center;
+
+								v3 direction = glm::normalize(p->target - p->position);
+								v2 dir_ = glm::normalize((v2)direction);
+								f32 yaw = glm::acos(dir_.x) * ((float)(dir_.y > 0.0f) * 2.0f - 1.0f);
+								p->car->object->SetTransform(p->car->object->position, v3{ 0.0f, 0.0f, yaw + glm::radians(180.0f) });
 								continue;
 							}
 						}
 
 						/*Next Path*/ {
+							u64 next_road_node_index = rs_transition->next_road_node_index;
 							delete rs_transition;
 							p->path.erase(p->path.begin());
 							rs_transition = (RS_Transition_For_Driving*)p->path[0];
@@ -453,7 +489,9 @@ namespace Can
 							RoadSegment& next_road_segment = road_segments[rs_transition->road_segment_index];
 							RoadType& next_road_type = road_types[next_road_segment.type];
 							auto& curve_samples = next_road_segment.curve_samples;
-							bool from_start = next_road_segment.StartNode <= rs_transition->next_road_node_index;
+							bool from_start = next_road_segment.EndNode == rs_transition->next_road_node_index;
+							if (p->path.size() == 1)
+								from_start = next_road_node_index == next_road_segment.StartNode;
 							rs_transition->at_path_array_index = from_start ? 0 : curve_samples.size() - 1;
 							v3 end_point = curve_samples[rs_transition->at_path_array_index];
 							v3 end_dir = from_start ? road_segment.GetStartDirection() : road_segment.GetEndDirection();
@@ -467,6 +505,11 @@ namespace Can
 							p->target = end_point + rotated_dir;
 							p->road_segment = rs_transition->road_segment_index;
 							road_segments[p->road_segment].people.push_back(p);
+
+							v3 direction = glm::normalize(p->target - p->position);
+							v2 dir_ = glm::normalize((v2)direction);
+							f32 yaw = glm::acos(dir_.x) * ((float)(dir_.y > 0.0f) * 2.0f - 1.0f);
+							p->car->object->SetTransform(p->car->object->position, v3{ 0.0f, 0.0f, yaw + glm::radians(180.0f) });
 						}
 					}
 				}
@@ -539,6 +582,7 @@ namespace Can
 		auto& walking_people = game->m_PersonManager.walking_people;
 		auto& road_segments = game->m_RoadManager.road_segments;
 		auto& road_nodes = game->m_RoadManager.road_nodes;
+		auto& cars = game->m_CarManager.m_Cars;
 
 		if (p->road_segment != -1)
 		{
@@ -558,7 +602,11 @@ namespace Can
 		}
 		if (p->car)
 		{
-			assert(false);
+			auto it = std::find(cars.begin(), cars.end(), p->car);
+			assert(it != cars.end());
+			cars.erase(it);
+			delete p->car;
+			p->car = nullptr;
 		}
 		if (p->home)
 		{
