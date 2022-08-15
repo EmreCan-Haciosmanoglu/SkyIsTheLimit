@@ -925,7 +925,6 @@ namespace  Can::Helper
 				{
 					if (from_start == end->snapped_to_right || type.has_median == false)
 					{
-
 						u64 rs_index = connected_road_segment_index;
 						std::vector<Transition*> the_temp_path{};
 
@@ -1001,21 +1000,49 @@ namespace  Can::Helper
 								start_index = 0;
 								if (end_index < road_end_counts * 0.4f)
 								{
-									current_transition->lane_index = current_road_type.lanes_forward.size()-1;
-									if (current_road_type.zoneable) current_transition->lane_index -= 1;
-									current_transition->lane_index += current_road_type.lanes_backward.size();
+									if (current_transition->next_road_node_index == current_road_segment.EndNode)
+									{
+										current_transition->lane_index = current_road_type.lanes_forward.size() - 1;
+										if (current_road_type.zoneable) current_transition->lane_index -= 1;
+										current_transition->lane_index += current_road_type.lanes_backward.size();
+									}
+									else
+									{
+										current_transition->lane_index = 0;
+										if (current_road_type.zoneable) current_transition->lane_index += 1;
+									}
 								}
 								else if (end_index > road_end_counts * 0.4f)
 								{
-									current_transition->lane_index = 0;
-									current_transition->lane_index += current_road_type.lanes_backward.size();
+									if (current_transition->next_road_node_index == current_road_segment.EndNode)
+									{
+										current_transition->lane_index = 0;
+										current_transition->lane_index += current_road_type.lanes_backward.size();
+									}
+									else
+									{
+										current_transition->lane_index = current_road_type.lanes_backward.size() - 1;
+									}
 								}
 								else
 								{
-									s64 lane_count = current_road_type.lanes_forward.size();
-									if (current_road_type.zoneable) lane_count -= 1;
-									current_transition->lane_index = lane_count * 0.5f;
-									current_transition->lane_index += current_road_type.lanes_backward.size();
+									if (current_transition->next_road_node_index == current_road_segment.EndNode)
+									{
+										s64 lane_count = current_road_type.lanes_forward.size();
+										if (current_road_type.zoneable) lane_count -= 1;
+										current_transition->lane_index = lane_count * 0.5f;
+										current_transition->lane_index += current_road_type.lanes_backward.size();
+									}
+									else
+									{
+										s64 lane_count = current_road_type.lanes_backward.size();
+										if (current_road_type.zoneable)
+										{
+											lane_count -= 1;
+											current_transition->lane_index = 1;
+										}
+										current_transition->lane_index += lane_count * 0.5f;
+									}
 								}
 							}
 							current_transition = next_transition;

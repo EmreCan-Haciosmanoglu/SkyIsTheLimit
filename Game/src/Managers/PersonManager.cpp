@@ -411,7 +411,7 @@ namespace Can
 						RS_Transition_For_Driving* rs_transition = (RS_Transition_For_Driving*)p->path[0];
 						RoadSegment& road_segment = road_segments[rs_transition->road_segment_index];
 						RoadType& road_type = road_types[road_segment.type];
-						if (rs_transition->lane_index > road_type.lanes_backward.size())
+						if (rs_transition->lane_index >= road_type.lanes_backward.size())
 						{
 							if (p->path.size() == 1)
 							{
@@ -464,11 +464,8 @@ namespace Can
 								v3 dir = p->target - road_segment.curve_samples[rs_transition->at_path_array_index];
 								v3 rotated_dir = glm::normalize(v3{ dir.y, -dir.x, 0.0f });
 								p->target = road_segment.curve_samples[rs_transition->at_path_array_index];
-								if (rs_transition->lane_index < road_type.lanes_backward.size())
-									p->target += rotated_dir * road_type.lanes_backward[rs_transition->lane_index].distance_from_center;
-								else
-									p->target += rotated_dir * road_type.lanes_forward[rs_transition->lane_index - road_type.lanes_backward.size()].distance_from_center;
-
+								p->target += rotated_dir * road_type.lanes_backward[rs_transition->lane_index].distance_from_center;
+								
 								v3 direction = glm::normalize(p->target - p->position);
 								v2 dir_ = glm::normalize((v2)direction);
 								f32 yaw = glm::acos(dir_.x) * ((float)(dir_.y > 0.0f) * 2.0f - 1.0f);
