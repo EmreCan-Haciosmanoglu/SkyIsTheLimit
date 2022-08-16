@@ -108,6 +108,7 @@ namespace Can
 			char* name_key = "Name\0";
 			char* asym_key = "Asym\0";
 			char* zone_key = "Zoneable\0";
+			char* has_median_key = "Has_Median\0";
 
 			char* road_object_key = "Road_Object\0";
 			char* road_texture_key = "Road_Texture\0";
@@ -150,7 +151,7 @@ namespace Can
 				std::string name;
 				std::string asym;
 				std::string zone;
-				std::string sidewalk;
+				std::string has_median;
 
 				std::string road_obj = path_to_roads;
 				std::string road_png = path_to_roads;
@@ -197,6 +198,7 @@ namespace Can
 						type.road_end = new Prefab(road_end_obj, TEMP_SHADER_FILE_PATH, road_end_png);
 						type.thumbnail = Texture2D::Create(thumbnail_png);
 						type.zoneable = zone != "False";
+						type.has_median = has_median != "False";
 						if (asym != "False")
 						{
 							type.asymmetric = true;
@@ -228,7 +230,7 @@ namespace Can
 							name = "";
 							asym = "";
 							zone = "";
-							sidewalk = "";
+							has_median = "";
 
 							road_obj = path_to_roads;
 							road_png = path_to_roads;
@@ -272,6 +274,8 @@ namespace Can
 						asym = std::string(print_from);
 					else if (std::equal(line.begin(), seperator, zone_key))
 						zone = std::string(print_from);
+					else if (std::equal(line.begin(), seperator, has_median_key))
+						has_median = std::string(print_from);
 					else if (std::equal(line.begin(), seperator, road_object_key))
 						road_obj.append(print_from);
 					else if (std::equal(line.begin(), seperator, road_texture_key))

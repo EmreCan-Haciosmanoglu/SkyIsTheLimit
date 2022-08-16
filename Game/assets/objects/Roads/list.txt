@@ -2,7 +2,7 @@ START
 Name:Two-lane Two-way Road
 Asym:False
 Zoneable:True
-Has_Sidewalk:True
+Has_Median:False
 Road_Object:00/road.obj
 Road_Texture:00/road.png
 Road_Junc_Object:00/road_junction.obj
@@ -23,7 +23,7 @@ START
 Name:Four-lane Two-way Road
 Asym:False
 Zoneable:True
-Has_Sidewalk:True
+Has_Median:False
 Road_Object:01/road.obj
 Road_Texture:01/road.png
 Road_Junc_Object:01/road_junction.obj
@@ -44,7 +44,7 @@ START
 Name:Two-lane Two-way Road With Median
 Asym:False
 Zoneable:True
-Has_Sidewalk:True
+Has_Median:True
 Road_Object:02/road.obj
 Road_Texture:02/road.png
 Road_Junc_Object:02/road_junction.obj
@@ -65,7 +65,7 @@ START
 Name:Asymetric 1-2-lane Road
 Asym:True
 Zoneable:True
-Has_Sidewalk:True
+Has_Median:True
 Road_Object:03/road.obj
 Road_Texture:03/road.png
 Road_Junc_Object:03/road_junction.obj
@@ -96,7 +96,7 @@ START
 Name:Two-lane Two-way Highway Road
 Asym:False
 Zoneable:False
-Has_Sidewalk:False
+Has_Median:False
 Road_Object:04/road.obj
 Road_Texture:04/road.png
 Road_Junc_Object:04/road_junction.obj
@@ -117,7 +117,7 @@ START
 Name:Asymetric 1-2-lane Highway Road
 Asym:True
 Zoneable:False
-Has_Sidewalk:False
+Has_Median:False
 Road_Object:05/road.obj
 Road_Texture:05/road.png
 Road_Junc_Object:05/road_junction.obj
@@ -148,7 +148,7 @@ START
 Name:Four-lane Two-way Highway Road
 Asym:False
 Zoneable:False
-Has_Sidewalk:False
+Has_Median:False
 Road_Object:06/road.obj
 Road_Texture:06/road.png
 Road_Junc_Object:06/road_junction.obj
