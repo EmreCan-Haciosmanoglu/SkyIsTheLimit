@@ -399,10 +399,10 @@ namespace Can
 						p->target = p->target_building->position;
 						p->status = PersonStatus::Walking;
 
-						v3 direction = glm::normalize(p->target - p->position);
+						v3 direction = glm::normalize(p->target - c->object->position);
 						v2 dir_ = glm::normalize((v2)direction);
 						f32 yaw = glm::acos(dir_.x) * ((float)(dir_.y > 0.0f) * 2.0f - 1.0f);
-						p->car->object->SetTransform(p->car->object->position, v3{ 0.0f, 0.0f, yaw + glm::radians(180.0f) });
+						c->object->SetTransform(c->object->position, v3{ 0.0f, 0.0f, yaw + glm::radians(180.0f) });
 					}
 					else
 					{
@@ -419,10 +419,10 @@ namespace Can
 								{
 									p->target = p->target_building->position + p->target_building->car_park.offset;
 
-									v3 direction = glm::normalize(p->target - p->position);
+									v3 direction = glm::normalize(p->target - c->object->position);
 									v2 dir_ = glm::normalize((v2)direction);
 									f32 yaw = glm::acos(dir_.x) * ((float)(dir_.y > 0.0f) * 2.0f - 1.0f);
-									p->car->object->SetTransform(p->car->object->position, v3{ 0.0f, 0.0f, yaw + glm::radians(180.0f) });
+									c->object->SetTransform(c->object->position, v3{ 0.0f, 0.0f, yaw + glm::radians(180.0f) });
 									p->heading_to_a_building_or_parking = true;
 									continue;
 								}
@@ -435,10 +435,10 @@ namespace Can
 								p->target = road_segment.curve_samples[rs_transition->at_path_array_index];
 								p->target += rotated_dir * road_type.lanes_forward[rs_transition->lane_index - road_type.lanes_backward.size()].distance_from_center;
 
-								v3 direction = glm::normalize(p->target - p->car->object->position);
+								v3 direction = glm::normalize(p->target - c->object->position);
 								v2 dir_ = glm::normalize((v2)direction);
 								f32 yaw = glm::acos(dir_.x) * ((float)(dir_.y > 0.0f) * 2.0f - 1.0f);
-								p->car->object->SetTransform(p->car->object->position, v3{ 0.0f, 0.0f, yaw + glm::radians(180.0f) });
+								c->object->SetTransform(c->object->position, v3{ 0.0f, 0.0f, yaw + glm::radians(180.0f) });
 								continue;
 							}
 						}
@@ -450,10 +450,10 @@ namespace Can
 								{
 									p->target = p->target_building->position + p->target_building->car_park.offset;
 
-									v3 direction = glm::normalize(p->target - p->position);
+									v3 direction = glm::normalize(p->target - c->object->position);
 									v2 dir_ = glm::normalize((v2)direction);
 									f32 yaw = glm::acos(dir_.x) * ((float)(dir_.y > 0.0f) * 2.0f - 1.0f);
-									p->car->object->SetTransform(p->car->object->position, v3{ 0.0f, 0.0f, yaw + glm::radians(180.0f) });
+									c->object->SetTransform(c->object->position, v3{ 0.0f, 0.0f, yaw + glm::radians(180.0f) });
 									p->heading_to_a_building_or_parking = true;
 									continue;
 								}
@@ -466,10 +466,10 @@ namespace Can
 								p->target = road_segment.curve_samples[rs_transition->at_path_array_index];
 								p->target += rotated_dir * road_type.lanes_backward[rs_transition->lane_index].distance_from_center;
 								
-								v3 direction = glm::normalize(p->target - p->car->object->position);
+								v3 direction = glm::normalize(p->target - c->object->position);
 								v2 dir_ = glm::normalize((v2)direction);
 								f32 yaw = glm::acos(dir_.x) * ((float)(dir_.y > 0.0f) * 2.0f - 1.0f);
-								p->car->object->SetTransform(p->car->object->position, v3{ 0.0f, 0.0f, yaw + glm::radians(180.0f) });
+								c->object->SetTransform(c->object->position, v3{ 0.0f, 0.0f, yaw + glm::radians(180.0f) });
 								continue;
 							}
 						}
@@ -503,10 +503,10 @@ namespace Can
 							p->road_segment = rs_transition->road_segment_index;
 							road_segments[p->road_segment].people.push_back(p);
 
-							v3 direction = glm::normalize(p->target - p->position);
+							v3 direction = glm::normalize(p->target - c->object->position);
 							v2 dir_ = glm::normalize((v2)direction);
 							f32 yaw = glm::acos(dir_.x) * ((float)(dir_.y > 0.0f) * 2.0f - 1.0f);
-							p->car->object->SetTransform(p->car->object->position, v3{ 0.0f, 0.0f, yaw + glm::radians(180.0f) });
+							c->object->SetTransform(c->object->position, v3{ 0.0f, 0.0f, yaw + glm::radians(180.0f) });
 						}
 					}
 				}
