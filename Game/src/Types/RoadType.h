@@ -6,9 +6,9 @@ namespace Can
 {
 	struct Lane
 	{
-		float distance_from_center;
-		float speed_limit;
-		float width; // maybe?
+		float distance_from_center = 0.0f;
+		float speed_limit = 0.0f;
+		float width = 0.0f; // maybe?
 		// And other stuff??
 		// lane type? => 
 		//       for car, for tram for * 

@@ -139,6 +139,9 @@ namespace Can
 
 			char* thumbnail_key = "Thumbnail\0";
 
+			char* lanes_backward_key = "Lanes_Backward\0";
+			char* lanes_forward_key = "Lanes_Forward\0";
+
 			std::string line;
 			while (std::getline(file, line))
 			{
@@ -181,6 +184,11 @@ namespace Can
 				std::string tunnel_entrance_mirror_png = path_to_roads;
 
 				std::string thumbnail_png = path_to_roads;
+
+				std::vector<Lane> l_backward{};
+				u64 l_backward_count = 0;
+				std::vector<Lane> l_forward{};
+				u64 l_forward_count = 0;
 
 				// bool s for if key pair exist
 
@@ -226,6 +234,10 @@ namespace Can
 						type.road_width = type.road->boundingBoxM.y - type.road->boundingBoxL.y;
 						type.road_height = type.road->boundingBoxM.z - type.road->boundingBoxL.z;
 						type.road_junction_length = type.road_junction->boundingBoxM.x - type.road_junction->boundingBoxL.x;
+						if (l_backward_count > 0)
+							type.lanes_backward = l_backward;
+						if (l_forward_count > 0)
+							type.lanes_forward = l_forward;
 						/*clearing for next road*/ {
 							name = "";
 							asym = "";
@@ -260,6 +272,9 @@ namespace Can
 							tunnel_entrance_mirror_png = path_to_roads;
 
 							thumbnail_png = path_to_roads;
+
+							l_backward = std::vector<Lane>();
+							l_forward = std::vector<Lane>();
 
 							tunnel_is_found = false;
 						}
@@ -329,6 +344,73 @@ namespace Can
 						tunnel_entrance_mirror_png.append(print_from);
 					else if (std::equal(line.begin(), seperator, thumbnail_key))
 						thumbnail_png.append(print_from);
+					else if (std::equal(line.begin(), seperator, lanes_backward_key))
+					{
+						std::stringstream ss;
+						ss << std::string(print_from);
+
+						ss >> l_backward_count;
+						l_backward.reserve(l_backward_count);
+						u64 lanes_read = 0;
+						while (std::getline(file, line))
+						{
+							std::string::iterator first_seperator = std::find(line.begin(), line.end(), ':');
+							std::string::iterator second_seperator = std::find(first_seperator + 1, line.end(), ':');
+							Lane lane{};
+							ss.clear();
+							ss.str("");
+							ss << std::string(line.begin(), first_seperator);
+							ss >> lane.distance_from_center;
+
+							ss.clear();
+							ss.str("");
+							ss << std::string(first_seperator + 1, second_seperator);
+							ss >> lane.speed_limit;
+
+							ss.clear();
+							ss.str("");
+							ss << std::string(second_seperator + 1, line.end());
+							ss >> lane.width;
+							l_backward.push_back(lane);
+							lanes_read++;
+							if (lanes_read >= l_backward_count)
+								break;
+						}
+						
+					}
+					else if (std::equal(line.begin(), seperator, lanes_forward_key))
+					{
+						std::stringstream ss;
+						ss << std::string(print_from);
+
+						ss >> l_forward_count;
+						l_backward.reserve(l_forward_count);
+						u64 lanes_read = 0;
+						while (std::getline(file, line))
+						{
+							std::string::iterator first_seperator = std::find(line.begin(), line.end(), ':');
+							std::string::iterator second_seperator = std::find(first_seperator + 1, line.end(), ':');
+							Lane lane{};
+							ss.clear();
+							ss.str("");
+							ss << std::string(line.begin(), first_seperator);
+							ss >> lane.distance_from_center;
+
+							ss.clear();
+							ss.str("");
+							ss << std::string(first_seperator + 1, second_seperator);
+							ss >> lane.speed_limit;
+
+							ss.clear();
+							ss.str("");
+							ss << std::string(second_seperator + 1, line.end());
+							ss >> lane.width;
+							l_forward.push_back(lane);
+							lanes_read++;
+							if (lanes_read >= l_forward_count)
+								break;
+						}
+					}
 				}
 			}
 			file.close();
