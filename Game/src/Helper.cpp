@@ -718,7 +718,15 @@ namespace  Can::Helper
 				{
 					RS_Transition_For_Driving* rs_transition = new RS_Transition_For_Driving();
 					rs_transition->road_segment_index = start->snapped_t_index;
-					rs_transition->lane_index = end->snapped_to_right ? start_road_type.lanes_forward.size() - 2 : 1;
+					if (end->snapped_to_right)
+					{
+						rs_transition->lane_index = start_road_type.lanes_backward.size();
+						rs_transition->lane_index += start_road_type.lanes_forward.size() - 2;
+					}
+					else
+					{
+						rs_transition->lane_index = 1;
+					}
 					return { rs_transition };
 				}
 			}
@@ -728,15 +736,30 @@ namespace  Can::Helper
 				{
 					RS_Transition_For_Driving* rs_transition = new RS_Transition_For_Driving();
 					rs_transition->road_segment_index = start->snapped_t_index;
-					rs_transition->lane_index = end->snapped_to_right ? start_road_type.lanes_forward.size() - 2 : 0;
-					rs_transition->lane_index += start_road_type.lanes_backward.size();
+					if (end->snapped_to_right)
+					{
+						rs_transition->lane_index = start_road_type.lanes_forward.size() - 2;
+						rs_transition->lane_index += start_road_type.lanes_backward.size();
+					}
+					else
+					{
+						rs_transition->lane_index = 0;
+						rs_transition->lane_index += start_road_type.lanes_backward.size();
+					}
 					return { rs_transition };
 				}
 				else
 				{
 					RS_Transition_For_Driving* rs_transition = new RS_Transition_For_Driving();
 					rs_transition->road_segment_index = start->snapped_t_index;
-					rs_transition->lane_index = end->snapped_to_right ? start_road_type.lanes_backward.size() - 1 : 1;
+					if (end->snapped_to_right)
+					{
+						rs_transition->lane_index = start_road_type.lanes_backward.size() - 1;
+					}
+					else
+					{
+						rs_transition->lane_index = 1;
+					}
 					return { rs_transition };
 				}
 			}
@@ -940,9 +963,9 @@ namespace  Can::Helper
 								[road_node_index](const std::tuple<s64, s64, s64, s64>& el) {
 									return std::get<3>(el) == road_node_index;
 								});
+							assert(linq_it != fastest_road_to_these_nodes.end());
 							rs_index = std::get<1>(*linq_it);
 
-							assert(rs_transition->at_path_array_index < 0xFFFF);
 							rs_transition = new RS_Transition_For_Driving();
 							the_temp_path.push_back(rs_transition);
 							rs_transition->road_segment_index = rs_index;
@@ -989,8 +1012,15 @@ namespace  Can::Helper
 								next_it
 							);
 							if (start_index == end_index) {
-								current_transition->lane_index = 0;
-								current_transition->lane_index += current_road_type.lanes_backward.size();
+								if (current_road_segment.EndNode == current_transition->next_road_node_index)
+								{
+									current_transition->lane_index = 0;
+									current_transition->lane_index += current_road_type.lanes_backward.size();
+								}
+								else
+								{
+									current_transition->lane_index += current_road_type.lanes_backward.size() - 1;
+								}
 							}
 							else
 							{
