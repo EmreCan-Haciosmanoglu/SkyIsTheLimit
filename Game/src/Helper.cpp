@@ -1012,7 +1012,7 @@ namespace  Can::Helper
 								next_it
 							);
 							if (start_index == end_index) {
-								if (current_road_segment.EndNode == current_transition->next_road_node_index)
+								if (current_transition->next_road_node_index == current_road_segment.EndNode)
 								{
 									current_transition->lane_index = 0;
 									current_transition->lane_index += current_road_type.lanes_backward.size();
@@ -1026,9 +1026,10 @@ namespace  Can::Helper
 							{
 								s64 road_end_counts = next_road_node_connected_road_segments.size();
 								end_index = (end_index + road_end_counts - start_index) % road_end_counts;
-								road_end_counts -= 1;
+								road_end_counts -= 2;
 								start_index = 0;
-								if (end_index < road_end_counts * 0.4f)
+								end_index--;
+								if (end_index < road_end_counts * 0.3f)
 								{
 									if (current_transition->next_road_node_index == current_road_segment.EndNode)
 									{
@@ -1042,7 +1043,7 @@ namespace  Can::Helper
 										if (current_road_type.zoneable) current_transition->lane_index += 1;
 									}
 								}
-								else if (end_index > road_end_counts * 0.4f)
+								else if (end_index > road_end_counts * 0.7f)
 								{
 									if (current_transition->next_road_node_index == current_road_segment.EndNode)
 									{
@@ -1076,6 +1077,33 @@ namespace  Can::Helper
 								}
 							}
 							current_transition = next_transition;
+						}
+						RoadSegment& current_road_segment = road_segments[current_transition->road_segment_index];
+						RoadType& current_road_type = road_types[current_road_segment.type];
+						u64 n_index = ((RS_Transition_For_Driving*)the_path[the_path.size() - 2])->next_road_node_index;
+						if (end->snapped_to_right)
+						{
+							if (n_index == current_road_segment.StartNode)
+							{
+								current_transition->lane_index = current_road_type.lanes_forward.size() - 2;
+								current_transition->lane_index += current_road_type.lanes_backward.size();
+							}
+							else
+							{
+								current_transition->lane_index = current_road_type.lanes_backward.size()-1;
+							}
+						}
+						else
+						{
+							if (n_index == current_road_segment.StartNode)
+							{
+								current_transition->lane_index = 0;
+								current_transition->lane_index += current_road_type.lanes_backward.size();
+							}
+							else
+							{
+								current_transition->lane_index = 1;
+							}
 						}
 						return the_path;
 					}
