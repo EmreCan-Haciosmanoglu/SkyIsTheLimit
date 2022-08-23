@@ -356,12 +356,11 @@ namespace Can
 							}
 							rs_transition->at_path_array_index = next_index;
 						}
-						v3 offset =
-							glm::normalize(v3{ dir2.y,-dir2.x, 0.0f }) *
-							(rs_transition->from_right ?
-								road_segment_type.lanes_forward[road_segment_type.lanes_forward.size() - 1].distance_from_center :
-								road_segment_type.lanes_backward[0].distance_from_center
-								);
+						v3 offset = glm::normalize(v3{ dir2.y,-dir2.x, 0.0f });
+						if (rs_transition->from_right)
+							offset *= road_segment_type.lanes_forward[road_segment_type.lanes_forward.size() - 1].distance_from_center;
+						else
+							offset *= road_segment_type.lanes_backward[0].distance_from_center;
 
 						p->target = p2 + offset;
 
@@ -498,7 +497,7 @@ namespace Can
 								from_start = next_road_segment.StartNode == next_road_node_index;
 							rs_transition->at_path_array_index = from_start ? 0 : curve_samples.size() - 1;
 							v3 end_point = curve_samples[rs_transition->at_path_array_index];
-							v3 end_dir = from_start ? road_segment.GetStartDirection() : road_segment.GetEndDirection() * -1.0f;
+							v3 end_dir = from_start ? next_road_segment.GetStartDirection() : next_road_segment.GetEndDirection() * -1.0f;
 							v3 rotated_dir = glm::normalize(v3{ end_dir.y, -end_dir.x, 0.0f });
 							RoadType& next_road_type = road_types[next_road_segment.type];
 							u64 lanes_backward_size = next_road_type.lanes_backward.size();
