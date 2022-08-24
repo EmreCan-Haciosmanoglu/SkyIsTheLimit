@@ -9,6 +9,13 @@ namespace Can::Helper
 #define TERRAIN_SCALE_DOWN 10.0f
 #define COLOR_COUNT 5
 
+	struct Dijkstra_Node {
+		s64 distance;
+		s64 road_segment_index;
+		s64 prev_road_node_index;
+		s64 next_road_node_index;
+	};
+
 	bool CheckBoundingBoxHit(const v3& rayStartPoint, const v3& ray, const v3& least, const v3& most);
 
 	v2 CheckRotatedRectangleCollision(
@@ -92,9 +99,9 @@ namespace Can::Helper
 		{
 			return path1.first > path2.first;
 		}
-		inline bool operator() (std::tuple<s64, s64, s64, s64> path1, std::tuple<s64, s64, s64, s64> path2)
+		inline bool operator() (Dijkstra_Node path1, Dijkstra_Node path2)
 		{
-			return std::get<0>(path1) > std::get<0>(path2);
+			return path1.distance > path2.distance;
 		}
 	};
 }
