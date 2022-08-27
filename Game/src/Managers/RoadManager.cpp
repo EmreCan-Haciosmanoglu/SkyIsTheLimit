@@ -1564,19 +1564,63 @@ namespace Can
 	}
 	bool RoadManager::OnMousePressed_Change()
 	{
-		GameApp* app = m_Scene->MainApplication;
+		auto& road_types = m_Scene->MainApplication->road_types;
+		auto& people_on_the_road = m_Scene->m_PersonManager.walking_people;
 		if (selected_road_segment == -1)
 			return false;
 		RoadSegment& rs = road_segments[selected_road_segment];
 		if (rs.elevation_type == 0)
 			Helper::UpdateTheTerrain(&rs, true);
 
-		auto& currentType = app->road_types[rs.type];
-		auto& newType = m_Scene->MainApplication->road_types[m_Type];
-		if (newType.road == currentType.road)
+		auto& currentType = road_types[rs.type];
+		auto& new_type = road_types[m_Type];
+
+		// -if no zonable 
+		if (new_type.zoneable == false)
+		{
+			//	*delete houses
+			while (rs.Buildings.size() > 0)
+				remove_building(rs.Buildings[0]);
+
+			//	*reset people walking sidewalks on this road
+			while (rs.people.size() > 0)
+			{
+				Person* p = rs.people[0];
+				if (p->status == PersonStatus::Walking)
+					reset_person(p);
+			}
+		}
+
+		// if asymetric -> turn sides
+		if (new_type.road == currentType.road)
 		{
 			if (!currentType.asymmetric)
 				return false;
+			//	*flip path's next_road_node 
+			//		end->start
+			//		start->end
+			for (Person* p : people_on_the_road)
+			{
+				for (Transition* t : p->path)
+				{
+					if (p->status == PersonStatus::Driving)
+					{
+						auto td = (RS_Transition_For_Driving*)t;
+						if (td->road_segment_index == selected_road_segment)
+							td->next_road_node_index = td->road_segment_index == rs.EndNode ? rs.StartNode : rs.EndNode;
+					}
+					else if (p->status == PersonStatus::Walking)
+					{
+						auto tw = (RS_Transition_For_Walking*)t;
+						if (tw->road_segment_index == selected_road_segment)
+						{
+							tw->from_right = !tw->from_right;
+							tw->from_start = !tw->from_start;
+						}
+					}
+				}
+			}
+
 
 			auto& cps = rs.GetCurvePoints();
 			u64 temp = rs.StartNode;
@@ -1598,6 +1642,147 @@ namespace Can
 		road_nodes[rs.StartNode].Reconstruct();
 		road_nodes[rs.EndNode].Reconstruct();
 
+		// *update paths that passes this road
+		for (Person* p : people_on_the_road)
+		{
+			if (p->status != PersonStatus::Driving) continue;
+
+			u64 count = p->path.size();
+			for (u64 i = 0; i < count - 1; i++)
+			{
+				auto td = (RS_Transition_For_Driving*)p->path[i];
+				if (td->road_segment_index == selected_road_segment)
+				{
+					auto td_next = (RS_Transition_For_Driving*)p->path[i + 1];
+
+					RoadSegment& current_road_segment = road_segments[td->road_segment_index];
+					RoadType& current_road_type = road_types[current_road_segment.type];
+					auto& next_road_node_connected_road_segments = road_nodes[td->next_road_node_index].roadSegments;
+
+					auto curr_it = std::find(
+						next_road_node_connected_road_segments.begin(),
+						next_road_node_connected_road_segments.end(),
+						td->road_segment_index
+					);
+					assert(curr_it != next_road_node_connected_road_segments.end());
+					s64 start_index = std::distance(
+						next_road_node_connected_road_segments.begin(),
+						curr_it
+					);
+
+					auto next_it = std::find(
+						next_road_node_connected_road_segments.begin(),
+						next_road_node_connected_road_segments.end(),
+						td_next->road_segment_index
+					);
+					assert(next_it != next_road_node_connected_road_segments.end());
+					s64 end_index = std::distance(
+						next_road_node_connected_road_segments.begin(),
+						next_it
+					);
+					if (start_index == end_index) {
+						if (td_next->next_road_node_index == current_road_segment.EndNode)
+						{
+							td->lane_index = 0;
+							td->lane_index += current_road_type.lanes_backward.size();
+						}
+						else
+						{
+							td->lane_index += current_road_type.lanes_backward.size() - 1;
+						}
+					}
+					else
+					{
+						s64 road_end_counts = next_road_node_connected_road_segments.size();
+						end_index = (end_index + road_end_counts - start_index) % road_end_counts;
+						road_end_counts -= 2;
+						start_index = 0;
+						end_index--;
+						if (end_index < road_end_counts * 0.3f)
+						{
+							if (td->next_road_node_index == current_road_segment.EndNode)
+							{
+								td->lane_index = current_road_type.lanes_forward.size() - 1;
+								if (current_road_type.zoneable) td->lane_index -= 1;
+								td->lane_index += current_road_type.lanes_backward.size();
+							}
+							else
+							{
+								td->lane_index = 0;
+								if (current_road_type.zoneable) td->lane_index += 1;
+							}
+						}
+						else if (end_index > road_end_counts * 0.7f)
+						{
+							if (td->next_road_node_index == current_road_segment.EndNode)
+							{
+								td->lane_index = 0;
+								td->lane_index += current_road_type.lanes_backward.size();
+							}
+							else
+							{
+								td->lane_index = current_road_type.lanes_backward.size() - 1;
+							}
+						}
+						else
+						{
+							if (td->next_road_node_index == current_road_segment.EndNode)
+							{
+								s64 lane_count = current_road_type.lanes_forward.size();
+								if (current_road_type.zoneable) lane_count -= 1;
+								td->lane_index = lane_count * 0.5f;
+								td->lane_index += current_road_type.lanes_backward.size();
+							}
+							else
+							{
+								s64 lane_count = current_road_type.lanes_backward.size();
+								if (current_road_type.zoneable)
+								{
+									lane_count -= 1;
+									td->lane_index = 1;
+								}
+								td->lane_index += lane_count * 0.5f;
+							}
+						}
+					}
+				}
+			}
+
+			auto td_prev = (RS_Transition_For_Driving*)p->path[count - 2];
+			auto td = (RS_Transition_For_Driving*)p->path[count - 1];
+			if (td->road_segment_index == selected_road_segment)
+			{
+				RoadSegment& current_road_segment = road_segments[td->road_segment_index];
+				RoadType& current_road_type = road_types[current_road_segment.type];
+				if (p->target_building->snapped_to_right)
+				{
+					if (td->lane_index < current_road_type.lanes_backward.size())
+					{
+						td->lane_index = current_road_type.lanes_forward.size() - 2;
+						td->lane_index += current_road_type.lanes_backward.size();
+					}
+					else
+					{
+						td->lane_index = current_road_type.lanes_backward.size() - 1;
+					}
+				}
+				else
+				{
+					if (td->lane_index < current_road_type.lanes_backward.size())
+					{
+						td->lane_index = 0;
+						td->lane_index += current_road_type.lanes_backward.size();
+					}
+					else
+					{
+						td->lane_index = 1;
+					}
+				}
+			}
+		}
+
+		// *resnap houses
+		resnapp_buildings(selected_road_segment, selected_road_segment, rs.curve_samples.size());
 		return false;
 	}
 	bool RoadManager::OnMousePressed_Destruction()
