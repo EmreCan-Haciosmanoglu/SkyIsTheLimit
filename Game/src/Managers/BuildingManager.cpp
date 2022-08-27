@@ -153,7 +153,7 @@ namespace Can
 						};
 						m_Guideline->SetTransform(m_GuidelinePosition, m_GuidelineRotation);
 						snappedToRoad = true;
-						snapped_t_index = i;
+						snapped_t_index = i-1;
 						snapped_t = scaler;
 
 #if 1
