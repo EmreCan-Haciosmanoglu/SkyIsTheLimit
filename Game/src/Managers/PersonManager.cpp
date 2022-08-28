@@ -57,7 +57,6 @@ namespace Can
 					p->position = building_from->position;
 					p->object->SetTransform(p->position);
 					p->object->enabled = true;
-					p->in_junction = false;
 					p->heading_to_a_building_or_parking = false;
 					p->heading_to_a_car = false;
 					p->road_segment = building_from->connectedRoadSegment;
@@ -124,7 +123,7 @@ namespace Can
 					p->position = p->target;
 					p->object->SetTransform(p->position);
 
-					if (p->in_junction)
+					if (p->road_node != -1)
 					{
 						auto& road_node = road_nodes[p->road_node];
 						auto& connected_road_segments = road_node.roadSegments;
@@ -156,7 +155,6 @@ namespace Can
 								u64 at_index = p->road_node == current_road_segment.StartNode ? 0 : current_road_segment.curve_samples.size() - 1;
 
 								((RS_Transition_For_Walking*)p->path[0])->at_path_array_index = at_index;
-								p->in_junction = false;
 								assert(remove_person_from(road_node, p));
 
 								p->road_segment = connected_road_segments[rn_transition->to_road_segments_array_index];
@@ -314,7 +312,6 @@ namespace Can
 								RoadNode& road_node = road_nodes[p->road_node];
 								road_node.people.push_back(p);
 								assert(remove_person_from(road_segment, p));
-								p->in_junction = true;
 								p->road_segment = -1;
 
 								auto path = p->path[0];
@@ -573,7 +570,6 @@ namespace Can
 		p->object->enabled = false;
 		p->heading_to_a_building_or_parking = false;
 		p->heading_to_a_car = false;
-		p->in_junction = false;
 		p->target_building = nullptr;
 	}
 	void remove_person(Person* p)

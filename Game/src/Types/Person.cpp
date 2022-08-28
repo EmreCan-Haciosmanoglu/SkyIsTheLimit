@@ -8,11 +8,7 @@
 
 namespace Can
 {
-	Person::Person(
-		Prefab* type,
-		f32 speed
-		
-	)
+	Person::Person(Prefab* type, f32 speed)
 		: speed(speed)
 		, object(new Object(type))
 	{

@@ -10,6 +10,7 @@
 #include "Types/Tree.h"
 #include "Types/Person.h"
 #include "Building.h"
+#include "Types/Transition.h"
 
 namespace Can
 {
@@ -342,63 +343,129 @@ namespace Can
 		}
 		///////////////////////////////////////////////////
 
-		//PersonManager
-		auto& people = m_PersonManager.m_People;
-		u64 people_count;
-		fread(&people_count, sizeof(u64), 1, read_file);
-		people.reserve(people_count);
-		for (u64 i = 0; i < people_count; i++)
-		{
-			f32 speed;
-			u64 type;
-			u64 first_name_char_count;
-			u64 middle_name_char_count;
-			u64 last_name_char_count;
-			u64 home_index, work_index, car_index;
-			fread(&speed, sizeof(f32), 1, read_file);
-			//fread(&people[i]->time_left, sizeof(f32), 1, save_file); What to do???
-			fread(&type, sizeof(u64), 1, read_file);
-			fread(&first_name_char_count, sizeof(u64), 1, read_file);
-			char* first_name = (char*)malloc(first_name_char_count + 1);
-			fread(first_name, sizeof(char), first_name_char_count, read_file);
-			fread(&middle_name_char_count, sizeof(u64), 1, read_file);
-			char* middle_name = (char*)malloc(middle_name_char_count + 1);
-			fread(middle_name, sizeof(char), middle_name_char_count, read_file);
-			fread(&last_name_char_count, sizeof(u64), 1, read_file);
-			char* last_name = (char*)malloc(last_name_char_count + 1);
-			fread(last_name, sizeof(char), last_name_char_count, read_file);
-			fread(&home_index, sizeof(s64), 1, read_file);
-			fread(&work_index, sizeof(s64), 1, read_file);
-			fread(&car_index, sizeof(s64), 1, read_file);
-			first_name[first_name_char_count] = '\0';
-			middle_name[middle_name_char_count] = '\0';
-			last_name[last_name_char_count] = '\0';
-			Person* person = new Person(
-				MainApplication->people[type],
-				speed
-			);
-			person->firstName = std::string(first_name);
-			person->midName = std::string(middle_name);
-			person->surName = std::string(last_name);
-			if (home_index != -1)
+		/*PersonManager*/ {
+			auto& people = m_PersonManager.m_People;
+			u64 people_count;
+			fread(&people_count, sizeof(u64), 1, read_file);
+			people.reserve(people_count);
+			for (u64 i = 0; i < people_count; i++)
 			{
-				person->home = buildings[home_index];
-				buildings[home_index]->people.push_back(person);
+				u64 path_count;
+				u64 target_building_index;
+				u64 type;
+				u64 first_name_char_count;
+				u64 middle_name_char_count;
+				u64 last_name_char_count;
+				u64 home_index, work_index, car_index;
+				Person* person = new Person();
+				fread(&type, sizeof(u64), 1, read_file);
+				person->object = new Object(MainApplication->people[type]);
+				fread(&person->object->enabled, sizeof(bool), 1, read_file);
+				fread(&person->road_segment, sizeof(s64), 1, read_file);
+				if (person->road_segment != -1)
+					road_segments[person->road_segment].people.push_back(person);
+				fread(&person->road_node, sizeof(s64), 1, read_file);
+				if (person->road_node != -1)
+					road_nodes[person->road_node].people.push_back(person);
+				fread(&person->speed, sizeof(f32), 1, read_file);
+				fread(&person->position, sizeof(f32), 3, read_file);
+				person->object->SetTransform(person->position);
+				fread(&person->target, sizeof(f32), 3, read_file);
+				// set direction for target-position
+				fread(&person->status, sizeof(PersonStatus), 1, read_file);
+				fread(&path_count, sizeof(u64), 1, read_file);
+				person->path.reserve(path_count);
+				if (person->status == PersonStatus::Walking)
+				{
+					u64 j = 0;
+					if (path_count % 2 == 1)
+					{
+						auto rst = new RS_Transition_For_Walking();
+						fread(&rst->at_path_array_index, sizeof(u64), 1, read_file);
+						fread(&rst->road_segment_index, sizeof(u64), 1, read_file);
+						fread(&rst->from_start, sizeof(bool), 1, read_file);
+						fread(&rst->from_right, sizeof(bool), 1, read_file);
+						person->path.push_back(rst);
+						j = 1;
+					}
+					for (; j < path_count; j++)
+					{
+						auto rnt = new RN_Transition_For_Walking();
+						fread(&rnt->from_road_segments_array_index, sizeof(u64), 1, read_file);
+						fread(&rnt->to_road_segments_array_index, sizeof(u64), 1, read_file);
+						fread(&rnt->sub_index, sizeof(u64), 1, read_file);
+						fread(&rnt->road_node_index, sizeof(u64), 1, read_file);
+						fread(&rnt->accending, sizeof(bool), 1, read_file);
+						person->path.push_back(rnt);
+						j++;
+						auto rst = new RS_Transition_For_Walking();
+						fread(&rst->at_path_array_index, sizeof(u64), 1, read_file);
+						fread(&rst->road_segment_index, sizeof(u64), 1, read_file);
+						fread(&rst->from_start, sizeof(bool), 1, read_file);
+						fread(&rst->from_right, sizeof(bool), 1, read_file);
+						person->path.push_back(rst);
+					}
+				}
+				else if (person->status == PersonStatus::Driving)
+				{
+					for (u64 j = 0; j < path_count; j++)
+					{
+						auto td = new RS_Transition_For_Driving();
+						fread(&td->at_path_array_index, sizeof(u64), 1, read_file);
+						fread(&td->road_segment_index, sizeof(u64), 1, read_file);
+						fread(&td->next_road_node_index, sizeof(s64), 1, read_file);
+						fread(&td->lane_index, sizeof(u32), 1, read_file);
+						person->path.push_back(td);
+					}
+				}
+				fread(&target_building_index, sizeof(s64), 1, read_file);
+				if (target_building_index != -1)
+					person->target_building = buildings[target_building_index];
+				fread(&person->from_right, sizeof(bool), 1, read_file);
+				fread(&person->heading_to_a_building_or_parking, sizeof(bool), 1, read_file);
+				fread(&person->heading_to_a_car, sizeof(bool), 1, read_file);
+				fread(&person->time_left, sizeof(f32), 1, read_file);
+
+				fread(&first_name_char_count, sizeof(u64), 1, read_file);
+				char* first_name = (char*)malloc(first_name_char_count + 1);
+				fread(first_name, sizeof(char), first_name_char_count, read_file);
+				first_name[first_name_char_count] = '\0';
+				person->firstName = std::string(first_name);
+
+				fread(&middle_name_char_count, sizeof(u64), 1, read_file);
+				char* middle_name = (char*)malloc(middle_name_char_count + 1);
+				fread(middle_name, sizeof(char), middle_name_char_count, read_file);
+				middle_name[middle_name_char_count] = '\0';
+				person->midName = std::string(middle_name);
+
+				fread(&last_name_char_count, sizeof(u64), 1, read_file);
+				char* last_name = (char*)malloc(last_name_char_count + 1);
+				fread(last_name, sizeof(char), last_name_char_count, read_file);
+				last_name[last_name_char_count] = '\0';
+				person->surName = std::string(last_name);
+
+				fread(&home_index, sizeof(s64), 1, read_file);
+				if (home_index != -1)
+				{
+					person->home = buildings[home_index];
+					person->home->people.push_back(person);
+				}
+				fread(&work_index, sizeof(s64), 1, read_file);
+				if (work_index != -1)
+				{
+					person->work = buildings[work_index];
+					person->work->people.push_back(person);
+				}
+				fread(&car_index, sizeof(s64), 1, read_file);
+				if (car_index != -1)
+				{
+					person->car = cars[car_index];
+					person->car->owner = person;
+				}
+
+				people.push_back(person);
 			}
-			if (work_index != -1)
-			{
-				person->work = buildings[work_index];
-				buildings[work_index]->people.push_back(person);
-			}
-			if (car_index != -1)
-			{
-				person->car = cars[car_index];
-				cars[car_index]->owner = person;
-			}
-			person->time_left = Utility::Random::Float(1.0f, 5.0f);
-			people.push_back(person);
 		}
-		///////////////////////////////////////////////////
 
 		//Camera
 		auto& camera = camera_controller.camera;
@@ -485,50 +552,111 @@ namespace Can
 			{
 				fwrite(&cars[i]->type, sizeof(u64), 1, save_file);
 				fwrite(&cars[i]->speed, sizeof(f32), 1, save_file);
-				fwrite(&cars[i]->roadSegment, sizeof(s64), 1, save_file);
 				fwrite(&cars[i]->object->position, sizeof(f32), 3, save_file);
 				fwrite(&cars[i]->object->rotation, sizeof(f32), 3, save_file);
 			}
 		}
-
-		//PersonManager
-		auto& people = m_PersonManager.m_People;
-		u64 people_count = people.size();
-		fwrite(&people_count, sizeof(u64), 1, save_file);
-		for (u64 i = 0; i < people_count; i++)
-		{
-			auto home_it = std::find(buildings.begin(), buildings.end(), people[i]->home);
-			s64 home_index = std::distance(buildings.begin(), home_it);
-
-			s64 work_index = -1;
-			s64 car_index = -1;
-			u64 first_name_char_count = people[i]->firstName.size();
-			u64 middle_name_char_count = people[i]->midName.size();
-			u64 last_name_char_count = people[i]->surName.size();
-			if (people[i]->work)
+		/*PersonManager*/ {
+			auto& people = m_PersonManager.m_People;
+			u64 people_count = people.size();
+			fwrite(&people_count, sizeof(u64), 1, save_file);
+			for (u64 i = 0; i < people_count; i++)
 			{
-				auto work_it = std::find(buildings.begin(), buildings.end(), people[i]->work);
-				work_index = std::distance(buildings.begin(), work_it);
+				Person* p = people[i];
+				auto home_it = std::find(buildings.begin(), buildings.end(), p->home);
+
+				s64 target_building_index = -1;
+				s64 home_index = -1;
+				s64 work_index = -1;
+				s64 car_index = -1;
+				u64 first_name_char_count = p->firstName.size();
+				u64 middle_name_char_count = p->midName.size();
+				u64 last_name_char_count = p->surName.size();
+				u64 path_count = p->path.size();
+				if (p->target_building)
+				{
+					auto target_building_it = std::find(buildings.begin(), buildings.end(), p->target_building);
+					target_building_index = std::distance(buildings.begin(), target_building_it);
+				}
+				if (p->home)
+				{
+					auto home_it = std::find(buildings.begin(), buildings.end(), p->home);
+					home_index = std::distance(buildings.begin(), home_it);
+				}
+				if (p->work)
+				{
+					auto work_it = std::find(buildings.begin(), buildings.end(), p->work);
+					work_index = std::distance(buildings.begin(), work_it);
+				}
+				if (p->car)
+				{
+					auto car_it = std::find(cars.begin(), cars.end(), p->car);
+					car_index = std::distance(cars.begin(), car_it);
+				}
+				fwrite(&p->type, sizeof(u64), 1, save_file);
+				fwrite(&p->object->enabled, sizeof(bool), 1, save_file);
+				fwrite(&p->road_segment, sizeof(s64), 1, save_file);
+				fwrite(&p->road_node, sizeof(s64), 1, save_file);
+				fwrite(&p->speed, sizeof(f32), 1, save_file);
+				fwrite(&p->position, sizeof(f32), 3, save_file);
+				fwrite(&p->target, sizeof(f32), 3, save_file);
+				fwrite(&p->status, sizeof(PersonStatus), 1, save_file);
+				fwrite(&path_count, sizeof(u64), 1, save_file);
+				if (p->status == PersonStatus::Walking)
+				{
+					u64 j = 0;
+					if (path_count % 2 == 1)
+					{
+						auto rst = (RS_Transition_For_Walking*)p->path[0];
+						fwrite(&rst->at_path_array_index, sizeof(u64), 1, save_file);
+						fwrite(&rst->road_segment_index, sizeof(u64), 1, save_file);
+						fwrite(&rst->from_start, sizeof(bool), 1, save_file);
+						fwrite(&rst->from_right, sizeof(bool), 1, save_file);
+						j = 1;
+					}
+					for (; j < path_count; j++)
+					{
+						auto rnt = (RN_Transition_For_Walking*)p->path[j];
+						fwrite(&rnt->from_road_segments_array_index, sizeof(u64), 1, save_file);
+						fwrite(&rnt->to_road_segments_array_index, sizeof(u64), 1, save_file);
+						fwrite(&rnt->sub_index, sizeof(u64), 1, save_file);
+						fwrite(&rnt->road_node_index, sizeof(u64), 1, save_file);
+						fwrite(&rnt->accending, sizeof(bool), 1, save_file);
+						j++;
+						auto rst = (RS_Transition_For_Walking*)p->path[j];
+						fwrite(&rst->at_path_array_index, sizeof(u64), 1, save_file);
+						fwrite(&rst->road_segment_index, sizeof(u64), 1, save_file);
+						fwrite(&rst->from_start, sizeof(bool), 1, save_file);
+						fwrite(&rst->from_right, sizeof(bool), 1, save_file);
+					}
+				}
+				else if (p->status == PersonStatus::Driving)
+				{
+					for (u64 j = 0; j < path_count; j++)
+					{
+						auto td = (RS_Transition_For_Driving*)p->path[j];
+						fwrite(&td->at_path_array_index, sizeof(u64), 1, save_file);
+						fwrite(&td->road_segment_index, sizeof(u64), 1, save_file);
+						fwrite(&td->next_road_node_index, sizeof(s64), 1, save_file);
+						fwrite(&td->lane_index, sizeof(u32), 1, save_file);
+					}
+				}
+				fwrite(&target_building_index, sizeof(s64), 1, save_file);
+				fwrite(&p->from_right, sizeof(bool), 1, save_file);
+				fwrite(&p->heading_to_a_building_or_parking, sizeof(bool), 1, save_file);
+				fwrite(&p->heading_to_a_car, sizeof(bool), 1, save_file);
+				fwrite(&p->time_left, sizeof(f32), 1, save_file);
+				fwrite(&first_name_char_count, sizeof(u64), 1, save_file);
+				fwrite(p->firstName.data(), sizeof(char), first_name_char_count, save_file);
+				fwrite(&middle_name_char_count, sizeof(u64), 1, save_file);
+				fwrite(p->midName.data(), sizeof(char), middle_name_char_count, save_file);
+				fwrite(&last_name_char_count, sizeof(u64), 1, save_file);
+				fwrite(p->surName.data(), sizeof(char), last_name_char_count, save_file);
+				fwrite(&home_index, sizeof(s64), 1, save_file);
+				fwrite(&work_index, sizeof(s64), 1, save_file);
+				fwrite(&car_index, sizeof(s64), 1, save_file);
 			}
-			if (people[i]->car)
-			{
-				auto car_it = std::find(cars.begin(), cars.end(), people[i]->car);
-				car_index = std::distance(cars.begin(), car_it);
-			}
-			fwrite(&people[i]->speed, sizeof(f32), 1, save_file);
-			//fwrite(&people[i]->time_left, sizeof(f32), 1, save_file); What to do???
-			fwrite(&people[i]->type, sizeof(u64), 1, save_file);
-			fwrite(&first_name_char_count, sizeof(u64), 1, save_file);
-			fwrite(people[i]->firstName.data(), sizeof(char), first_name_char_count, save_file);
-			fwrite(&middle_name_char_count, sizeof(u64), 1, save_file);
-			fwrite(people[i]->midName.data(), sizeof(char), middle_name_char_count, save_file);
-			fwrite(&last_name_char_count, sizeof(u64), 1, save_file);
-			fwrite(people[i]->surName.data(), sizeof(char), last_name_char_count, save_file);
-			fwrite(&home_index, sizeof(s64), 1, save_file);
-			fwrite(&work_index, sizeof(s64), 1, save_file);
-			fwrite(&car_index, sizeof(s64), 1, save_file);
 		}
-		///////////////////////////////////////////////////
 
 		//Camera
 		auto& camera = camera_controller.camera;

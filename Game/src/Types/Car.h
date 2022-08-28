@@ -16,7 +16,6 @@ namespace Can
 		Object* object;
 		u64 type;
 		f32 speed;
-		s64 roadSegment = -1;
 		Person* owner = nullptr;
 	};
 }
