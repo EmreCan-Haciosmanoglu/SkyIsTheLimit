@@ -60,7 +60,6 @@ namespace Can
 
 		u64 type = 0;
 		std::vector<Building*> Buildings = {};
-		std::vector<Car*> Cars = {};
 		std::vector<Person*> people = {};
 
 		u64 StartNode = (u64)-1;

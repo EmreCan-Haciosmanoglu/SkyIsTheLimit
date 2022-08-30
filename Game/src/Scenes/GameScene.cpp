@@ -324,11 +324,9 @@ namespace Can
 		{
 			u64 type;
 			f32 speed;
-			s64 road_segment;
 			v3 position, rotation;
 			fread(&type, sizeof(u64), 1, read_file);
 			fread(&speed, sizeof(f32), 1, read_file);
-			fread(&road_segment, sizeof(s64), 1, read_file);
 			fread(&position, sizeof(f32), 3, read_file);
 			fread(&rotation, sizeof(f32), 3, read_file);
 			Car* car = new Car(
@@ -338,8 +336,6 @@ namespace Can
 			);
 			car->object->SetTransform(position, rotation);
 			cars.push_back(car);
-			if (road_segment != -1)
-				road_segments[road_segment].Cars.push_back(car);
 		}
 		///////////////////////////////////////////////////
 

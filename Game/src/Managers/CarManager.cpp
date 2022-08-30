@@ -15,6 +15,6 @@ namespace Can
 	}
 	void remove_car(Car* c)
 	{
-
+		delete c;
 	}
 }

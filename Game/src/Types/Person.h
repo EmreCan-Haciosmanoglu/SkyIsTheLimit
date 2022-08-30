@@ -32,7 +32,10 @@ namespace Can
 		v3 target{};
 		PersonStatus status = PersonStatus::AtHome;
 		std::vector<Transition*> path{};
-		Building* target_building = nullptr;
+
+		Building* path_end_building = nullptr;
+		Building* path_start_building = nullptr;
+
 		bool from_right = true;
 		bool heading_to_a_building_or_parking = false;
 		bool heading_to_a_car = false;

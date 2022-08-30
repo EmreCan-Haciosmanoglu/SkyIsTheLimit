@@ -16,7 +16,6 @@ namespace Can
 		: type(other.type)
 		, Buildings(other.Buildings)
 		, people(other.people)
-		, Cars(other.Cars)
 		, StartNode(other.StartNode)
 		, EndNode(other.EndNode)
 		, curve_samples(other.curve_samples)
@@ -29,12 +28,12 @@ namespace Can
 		, Directions(other.Directions)
 		, Rotations(other.Rotations)
 	{
+		assert(false);
 		other.object = nullptr;
 		other.curve_samples.clear();
 		other.curve_t_samples.clear();
 		other.bounding_polygon.clear();
 		other.Buildings.clear();
-		other.Cars.clear();
 		other.people.clear();
 	}
 	RoadSegment::~RoadSegment()
@@ -46,10 +45,10 @@ namespace Can
 
 	RoadSegment& RoadSegment::operator=(RoadSegment&& other)
 	{
+		assert(false);
 		if (object) delete object;
 		type = other.type;
 		Buildings = other.Buildings;
-		Cars = other.Cars;
 		people = other.people;
 		StartNode = other.StartNode;
 		EndNode = other.EndNode;
@@ -67,7 +66,6 @@ namespace Can
 		other.curve_t_samples.clear();
 		other.bounding_polygon.clear();
 		other.Buildings.clear();
-		other.Cars.clear();
 		other.people.clear();
 
 		return *this;
@@ -246,10 +244,10 @@ namespace Can
 
 	void RoadSegment::move(RoadSegment* dest, RoadSegment* src)
 	{
+		assert(false);
 		dest->type = src->type;
 		dest->Buildings = src->Buildings;
 		dest->people = src->people;
-		dest->Cars = src->Cars;
 		dest->StartNode = src->StartNode;
 		dest->EndNode = src->EndNode;
 		dest->curve_samples = src->curve_samples;
@@ -267,12 +265,11 @@ namespace Can
 
 	void RoadSegment::reset_to_default(RoadSegment* dest)
 	{
+		assert(false);
 		dest->type = 0;
 
 		while (dest->Buildings.size() > 0)
 			remove_building(dest->Buildings[dest->Buildings.size() - 1]);
-		while (dest->Cars.size() > 0)
-			remove_car(dest->Cars[dest->Cars.size() - 1]);
 		while (dest->people.size() > 0)
 			reset_person(dest->people[dest->people.size() - 1]);
 

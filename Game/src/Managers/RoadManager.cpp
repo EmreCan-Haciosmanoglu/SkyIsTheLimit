@@ -2083,8 +2083,6 @@ namespace Can
 		while (road_segment.Buildings.size() > 0)
 			remove_building(road_segment.Buildings[0]);
 
-		while (road_segment.Cars.size() > 0)
-			remove_car(road_segment.Cars[0]);
 
 		while (road_segment.people.size() > 0)
 			reset_person(road_segment.people[0]);
