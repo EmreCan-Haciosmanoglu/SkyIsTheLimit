@@ -46,12 +46,14 @@ namespace Can
 							p->path = Helper::get_path_for_a_car(building_from, building_to);
 						else
 							p->path = Helper::get_path(building_from, building_to);
-						p->target_building = building_to;
+						p->path_end_building = building_to;
+						p->path_start_building = building_from;
 					}
 					else
 					{
 						p->path = Helper::get_path(building_from, 5);
-						p->target_building = building_from;
+						p->path_end_building = building_from;
+						p->path_start_building = building_from;
 					}
 
 					p->position = building_from->position;
@@ -228,7 +230,7 @@ namespace Can
 					}
 					else if (p->heading_to_a_building_or_parking)
 					{
-						if (p->target_building == p->home)
+						if (p->path_end_building == p->home)
 							p->status = PersonStatus::AtHome;
 						else
 							p->status = PersonStatus::AtWork;
@@ -278,7 +280,7 @@ namespace Can
 
 						u64 target_path_array_index;
 						if (p->path.size() == 1)
-							target_path_array_index = p->target_building->snapped_t_index;
+							target_path_array_index = p->path_end_building->snapped_t_index;
 						else if (rs_transition->from_start)
 							target_path_array_index = road_segment.curve_samples.size() - 1;
 						else
@@ -289,7 +291,7 @@ namespace Can
 						{
 							if (p->path.size() == 1)
 							{
-								p->target = p->target_building->position;
+								p->target = p->path_end_building->position;
 								p->heading_to_a_building_or_parking = true;
 							}
 							else
@@ -368,8 +370,8 @@ namespace Can
 						c->object->SetTransform(
 							p->target,
 							glm::rotateZ(
-								p->target_building->object->rotation,
-								glm::radians(p->target_building->car_park.rotation_in_degrees)
+								p->path_end_building->object->rotation,
+								glm::radians(p->path_end_building->car_park.rotation_in_degrees)
 							)
 						);
 						p->position = c->object->position;
@@ -391,7 +393,7 @@ namespace Can
 						{
 							if (p->path.size() == 1)
 							{
-								if (rs_transition->at_path_array_index >= p->target_building->snapped_t_index)
+								if (rs_transition->at_path_array_index >= p->path_end_building->snapped_t_index)
 								{
 									set_target_and_car_direction(p, p->path_end_building->position + p->path_end_building->car_park.offset);
 									p->heading_to_a_building_or_parking = true;
@@ -417,7 +419,7 @@ namespace Can
 						{
 							if (p->path.size() == 1)
 							{
-								if (rs_transition->at_path_array_index <= p->target_building->snapped_t_index)
+								if (rs_transition->at_path_array_index <= p->path_end_building->snapped_t_index)
 								{
 									set_target_and_car_direction(p, p->path_end_building->position + p->path_end_building->car_park.offset);
 									p->heading_to_a_building_or_parking = true;

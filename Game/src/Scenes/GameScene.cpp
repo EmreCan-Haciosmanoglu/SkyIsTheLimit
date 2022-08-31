@@ -347,7 +347,7 @@ namespace Can
 			for (u64 i = 0; i < people_count; i++)
 			{
 				u64 path_count;
-				u64 target_building_index;
+				u64 path_end_building_index, path_start_building_index;
 				u64 type;
 				u64 first_name_char_count;
 				u64 middle_name_char_count;
@@ -414,9 +414,12 @@ namespace Can
 						person->path.push_back(td);
 					}
 				}
-				fread(&target_building_index, sizeof(s64), 1, read_file);
-				if (target_building_index != -1)
-					person->target_building = buildings[target_building_index];
+				fread(&path_end_building_index, sizeof(s64), 1, read_file);
+				if (path_end_building_index != -1)
+					person->path_end_building = buildings[path_end_building_index];
+				fread(&path_start_building_index, sizeof(s64), 1, read_file);
+				if (path_start_building_index != -1)
+					person->path_start_building = buildings[path_start_building_index];
 				fread(&person->from_right, sizeof(bool), 1, read_file);
 				fread(&person->heading_to_a_building_or_parking, sizeof(bool), 1, read_file);
 				fread(&person->heading_to_a_car, sizeof(bool), 1, read_file);
@@ -561,7 +564,8 @@ namespace Can
 				Person* p = people[i];
 				auto home_it = std::find(buildings.begin(), buildings.end(), p->home);
 
-				s64 target_building_index = -1;
+				s64 path_end_building_index = -1;
+				s64 path_start_building_index = -1;
 				s64 home_index = -1;
 				s64 work_index = -1;
 				s64 car_index = -1;
@@ -569,10 +573,15 @@ namespace Can
 				u64 middle_name_char_count = p->midName.size();
 				u64 last_name_char_count = p->surName.size();
 				u64 path_count = p->path.size();
-				if (p->target_building)
+				if (p->path_end_building)
 				{
-					auto target_building_it = std::find(buildings.begin(), buildings.end(), p->target_building);
-					target_building_index = std::distance(buildings.begin(), target_building_it);
+					auto path_end_building_it = std::find(buildings.begin(), buildings.end(), p->path_end_building);
+					path_end_building_index = std::distance(buildings.begin(), path_end_building_it);
+				}
+				if (p->path_start_building)
+				{
+					auto path_start_building_it = std::find(buildings.begin(), buildings.end(), p->path_start_building);
+					path_start_building_index = std::distance(buildings.begin(), path_start_building_it);
 				}
 				if (p->home)
 				{
@@ -637,7 +646,8 @@ namespace Can
 						fwrite(&td->lane_index, sizeof(u32), 1, save_file);
 					}
 				}
-				fwrite(&target_building_index, sizeof(s64), 1, save_file);
+				fwrite(&path_end_building_index, sizeof(s64), 1, save_file);
+				fwrite(&path_start_building_index, sizeof(s64), 1, save_file);
 				fwrite(&p->from_right, sizeof(bool), 1, save_file);
 				fwrite(&p->heading_to_a_building_or_parking, sizeof(bool), 1, save_file);
 				fwrite(&p->heading_to_a_car, sizeof(bool), 1, save_file);

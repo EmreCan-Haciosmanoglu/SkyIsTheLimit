@@ -1587,7 +1587,7 @@ namespace Can
 			{
 				Person* p = rs.people[0];
 				if (p->status == PersonStatus::Walking)
-					reset_person(p);
+					reset_person_back_to_building_from(p);
 			}
 		}
 
@@ -1754,7 +1754,7 @@ namespace Can
 			{
 				RoadSegment& current_road_segment = road_segments[td->road_segment_index];
 				RoadType& current_road_type = road_types[current_road_segment.type];
-				if (p->target_building->snapped_to_right)
+				if (p->path_end_building->snapped_to_right)
 				{
 					if (td->lane_index < current_road_type.lanes_backward.size())
 					{
@@ -2085,7 +2085,7 @@ namespace Can
 
 
 		while (road_segment.people.size() > 0)
-			reset_person(road_segment.people[0]);
+			reset_person_back_to_building_from(road_segment.people[0]);
 
 		for (u64 i = walking_people.size(); i > 0; i--)
 		{
@@ -2106,7 +2106,7 @@ namespace Can
 						break;
 			}
 			if (j < count)
-				reset_person(walking_people[i - 1]);
+				reset_person_back_to_building_from(walking_people[i - 1]);
 		}
 
 		RoadNode& start_road_node = road_nodes[road_segment.StartNode];
@@ -2576,7 +2576,7 @@ namespace Can
 					// TODO: instead reset people targeting this building
 					for (Person* p : building->people)
 						if (p->status == PersonStatus::Walking)
-							reset_person(p);
+							reset_person_back_to_building_from(p);
 					auto it = std::find(snapped_buildings.begin(), snapped_buildings.end(), building);
 					assert(it != snapped_buildings.end());
 					snapped_buildings.erase(it);
@@ -2618,7 +2618,7 @@ namespace Can
 					auto rs_transition = (RS_Transition_For_Walking*)path[0];
 					if (rs_transition->road_segment_index == old_rs_index)
 					{
-						reset_person(person);
+						reset_person_back_to_building_from(person);
 						person_index--;
 						continue;
 					}

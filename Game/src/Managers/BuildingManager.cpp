@@ -572,8 +572,8 @@ namespace Can
 		for (u64 i = people_on_the_road.size(); i > 0; i--)
 		{
 			Person* p = people_on_the_road[i - 1];
-			if (p->target_building == b)
-				reset_person(p);
+			if (p->path_end_building == b)
+				reset_person_back_to_building_from(p);
 		}
 
 		if (b->connectedRoadSegment != -1)
