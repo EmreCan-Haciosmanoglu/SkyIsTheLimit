@@ -408,5 +408,4 @@ namespace Can
 		}
 		return false;
 	}
-
 }
