@@ -595,7 +595,6 @@ namespace Can
 			assert(it != cars.end());
 			cars.erase(it);
 			remove_car(p->car);
-			delete p->car;
 			p->car = nullptr;
 		}
 		if (p->home)
