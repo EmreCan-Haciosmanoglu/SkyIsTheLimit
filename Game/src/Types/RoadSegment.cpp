@@ -244,7 +244,6 @@ namespace Can
 
 	void RoadSegment::move(RoadSegment* dest, RoadSegment* src)
 	{
-		assert(false);
 		dest->type = src->type;
 		dest->Buildings = src->Buildings;
 		dest->people = src->people;
@@ -265,14 +264,9 @@ namespace Can
 
 	void RoadSegment::reset_to_default(RoadSegment* dest)
 	{
-		assert(false);
 		dest->type = 0;
-
-		while (dest->Buildings.size() > 0)
-			remove_building(dest->Buildings[dest->Buildings.size() - 1]);
-		while (dest->people.size() > 0)
-			reset_person(dest->people[dest->people.size() - 1]);
-
+		dest->Buildings = {};
+		dest->people = {};
 		dest->StartNode = (u64)-1;
 		dest->EndNode = (u64)-1;
 		dest->curve_samples.clear();

@@ -58,6 +58,7 @@ namespace Can
 		static void reset_to_default (RoadSegment* dest);
 		static void remove(RoadSegment* obj);
 
+	public:
 		u64 type = 0;
 		std::vector<Building*> Buildings = {};
 		std::vector<Person*> people = {};
@@ -80,7 +81,6 @@ namespace Can
 		// +0 ground
 		// +1 bridge
 
-	private:
 
 		std::array<v3, 2> Directions{};
 		std::array<v2, 2> Rotations{

@@ -18,18 +18,18 @@ namespace Can
 		, elevation_type(other.elevation_type)
 		, bounding_polygon(other.bounding_polygon)
 	{
+		assert(false);
 		other.roadSegments.clear();
 		other.object = nullptr;
 	}
 	RoadNode::~RoadNode()
 	{
-		if (object)
-			std::cout << "";
 		delete object;
 	}
 
 	RoadNode& RoadNode::operator=(RoadNode&& other)
 	{
+		assert(false);
 		if (object) delete object;
 		object = other.object;
 		roadSegments = other.roadSegments;
@@ -87,15 +87,12 @@ namespace Can
 	void RoadNode::reset_to_default(RoadNode* dest)
 	{
 		dest->object = nullptr;
-		dest->roadSegments.clear();
-
-		while (dest->people.size()>0)
-			reset_person(dest->people[dest->people.size() - 1]);
-
+		dest->roadSegments = {};
+		dest->people = {};
 		dest->position = v3(0.0f);
 		dest->index = (u64)(-1);
 		dest->elevation_type = 0;
-		dest->bounding_polygon.clear();
+		dest->bounding_polygon = {};
 	}
 
 	void RoadNode::remove(RoadNode* obj)
