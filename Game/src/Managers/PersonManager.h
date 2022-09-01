@@ -19,7 +19,7 @@ namespace Can
 
 		GameScene* m_Scene = nullptr;
 		std::vector<Person*> m_People = {};
-		std::vector<Person*> walking_people = {};
+		std::vector<Person*> people_on_the_road = {};
 	};
 
 	void reset_person_back_to_building_from(Person* p);

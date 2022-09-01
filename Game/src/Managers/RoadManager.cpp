@@ -20,7 +20,7 @@ namespace Can
 {
 	void resnapp_buildings(u64 old_rs_index, u64 new_rs_index, u64 snapped_index);
 	void reassign_people_on_the_road(u64 old_rs_index, u64 new_rs_index, u64 new_rn_index, u64 snapped_index);
-	void update_path_of_walking_people_if_a_node_is_changed(u64 road_node_index, u64 new_index);
+	void update_path_of_walking_people_if_a_node_is_changed(u64 road_node_index, u64 modified_index, bool isAdded);
 
 	RoadManager::RoadManager(GameScene* scene)
 		: m_Scene(scene)
@@ -1565,7 +1565,7 @@ namespace Can
 	bool RoadManager::OnMousePressed_Change()
 	{
 		auto& road_types = m_Scene->MainApplication->road_types;
-		auto& people_on_the_road = m_Scene->m_PersonManager.walking_people;
+		auto& people_on_the_road = m_Scene->m_PersonManager.people_on_the_road;
 		if (selected_road_segment == -1)
 			return false;
 		RoadSegment& rs = road_segments[selected_road_segment];
@@ -1901,7 +1901,7 @@ namespace Can
 					road_node.roadSegments.end(),
 					road_segment_index
 				));
-			update_path_of_walking_people_if_a_node_is_changed(m_StartSnappedNode, new_index);
+			update_path_of_walking_people_if_a_node_is_changed(m_StartSnappedNode, new_index, true);
 		}
 		else if (m_StartSnappedSegment != -1)
 		{
@@ -1991,7 +1991,7 @@ namespace Can
 					road_node.roadSegments.end(),
 					road_segment_index
 				));
-			update_path_of_walking_people_if_a_node_is_changed(m_EndSnappedNode, new_index);
+			update_path_of_walking_people_if_a_node_is_changed(m_EndSnappedNode, new_index, true);
 		}
 		else if (m_EndSnappedSegment != -1)
 		{
@@ -2075,7 +2075,7 @@ namespace Can
 		auto& buildings = m_Scene->m_BuildingManager.m_Buildings;
 		auto& cars = m_Scene->m_CarManager.m_Cars;
 		auto& people = m_Scene->m_PersonManager.m_People;
-		auto& walking_people = m_Scene->m_PersonManager.walking_people;
+		auto& people_on_the_road = m_Scene->m_PersonManager.people_on_the_road;
 
 		if (road_segment.elevation_type == 0)
 			Helper::UpdateTheTerrain(&road_segment, true);
@@ -2087,26 +2087,40 @@ namespace Can
 		while (road_segment.people.size() > 0)
 			reset_person_back_to_building_from(road_segment.people[0]);
 
-		for (u64 i = walking_people.size(); i > 0; i--)
+		for (u64 i = people_on_the_road.size(); i > 0; i--)
 		{
-			auto& path = walking_people[i - 1]->path;
+			Person* person = people_on_the_road[i - 1];
+			auto& path = person->path;
 			u64 j = 0;
 			u64 count = path.size();
-			if (count % 2 == 0)
+			if (person->status == PersonStatus::Driving)
 			{
-				j = 1;
-				for (; j < count; j += 2)
-					if (((RS_Transition_For_Walking*)path[j])->road_segment_index == road_segment_index)
+				for (; j < count; j++)
+					if (((RS_Transition_For_Driving*)path[j])->road_segment_index == road_segment_index)
 						break;
+			}
+			else if (person->status == PersonStatus::Walking)
+			{
+				if (count % 2 == 0)
+				{
+					j = 1;
+					for (; j < count; j += 2)
+						if (((RS_Transition_For_Walking*)path[j])->road_segment_index == road_segment_index)
+							break;
+				}
+				else
+				{
+					for (; j < count; j += 2)
+						if (((RS_Transition_For_Walking*)path[j])->road_segment_index == road_segment_index)
+							break;
+				}
 			}
 			else
 			{
-				for (; j < count; j += 2)
-					if (((RS_Transition_For_Walking*)path[j])->road_segment_index == road_segment_index)
-						break;
+				assert(false);
 			}
 			if (j < count)
-				reset_person_back_to_building_from(walking_people[i - 1]);
+				reset_person_back_to_building_from(person);
 		}
 
 		RoadNode& start_road_node = road_nodes[road_segment.StartNode];
@@ -2116,29 +2130,7 @@ namespace Can
 			road_segment_index
 		));
 		start_road_node.roadSegments.erase(start_road_node.roadSegments.begin() + index);
-
-		for (u64 i = walking_people.size(); i > 0; i--)
-		{
-			auto& path = walking_people[i - 1]->path;
-
-			u64 count = path.size();
-			assert(count > 0);
-			u64 j = 1;
-			if (count % 2 == 0)
-			{
-				if (((RN_Transition_For_Walking*)path[0])->to_road_segments_array_index > index)
-					((RN_Transition_For_Walking*)path[0])->to_road_segments_array_index--;
-				j = 2;
-			}
-			for (; j < count; j += 2)
-			{
-				RN_Transition_For_Walking* rn_transition = (RN_Transition_For_Walking*)path[j];
-				if (rn_transition->from_road_segments_array_index > index)
-					rn_transition->from_road_segments_array_index--;
-				if (rn_transition->to_road_segments_array_index > index)
-					rn_transition->to_road_segments_array_index--;
-			}
-		}
+		update_path_of_walking_people_if_a_node_is_changed(road_segment.StartNode, index, false);
 		if (start_road_node.roadSegments.size() == 0)
 		{
 			Helper::UpdateTheTerrain(start_road_node.bounding_polygon, true);
@@ -2159,28 +2151,7 @@ namespace Can
 			road_segment_index
 		));
 		end_road_node.roadSegments.erase(end_road_node.roadSegments.begin() + index);
-		for (u64 i = walking_people.size(); i > 0; i--)
-		{
-			auto& path = walking_people[i - 1]->path;
-
-			u64 count = path.size();
-			assert(count > 0);
-			u64 j = 1;
-			if (count % 2 == 0)
-			{
-				if (((RN_Transition_For_Walking*)path[0])->to_road_segments_array_index > index)
-					((RN_Transition_For_Walking*)path[0])->to_road_segments_array_index--;
-				j = 2;
-			}
-			for (; j < count; j += 2)
-			{
-				RN_Transition_For_Walking* rn_transition = (RN_Transition_For_Walking*)path[j];
-				if (rn_transition->from_road_segments_array_index > index)
-					rn_transition->from_road_segments_array_index--;
-				if (rn_transition->to_road_segments_array_index > index)
-					rn_transition->to_road_segments_array_index--;
-			}
-		}
+		update_path_of_walking_people_if_a_node_is_changed(road_segment.EndNode, index, false);
 		if (end_road_node.roadSegments.size() == 0)
 		{
 			Helper::UpdateTheTerrain(end_road_node.bounding_polygon, true);
@@ -2730,30 +2701,35 @@ namespace Can
 			}
 		}
 	}
-	void update_path_of_walking_people_if_a_node_is_changed(u64 road_node_index, u64 new_index)
+	void update_path_of_walking_people_if_a_node_is_changed(u64 road_node_index, u64 modified_index, bool isAdded)
 	{
-		auto& walking_people = GameScene::ActiveGameScene->m_PersonManager.walking_people;
-		for (u64 person_index = 0; person_index < walking_people.size(); person_index++)
+		u64 addition = isAdded ? +1 : -1;
+		auto& people_on_the_road = GameScene::ActiveGameScene->m_PersonManager.people_on_the_road;
+		for (u64 person_index = 0; person_index < people_on_the_road.size(); person_index++)
 		{
-			Person* person = walking_people[person_index];
+			Person* person = people_on_the_road[person_index];
+			if (person->status != PersonStatus::Walking) continue;
+
 			auto& path = person->path;
 			u64 transition_index = 1;
 			if (path.size() % 2 == 0)
 			{
 				auto rn_transition = (RN_Transition_For_Walking*)path[0];
 				if (rn_transition->road_node_index == road_node_index)
-					if (rn_transition->to_road_segments_array_index >= new_index)
-						rn_transition->to_road_segments_array_index++;
+					if (rn_transition->to_road_segments_array_index >= modified_index)
+						rn_transition->to_road_segments_array_index += addition;
 				transition_index = 2;
 			}
 			for (; transition_index < path.size(); transition_index += 2)
 			{
 				auto rn_transition = (RN_Transition_For_Walking*)path[transition_index];
-				if (rn_transition->road_node_index != road_node_index) continue;
-				if (rn_transition->from_road_segments_array_index >= new_index)
-					rn_transition->from_road_segments_array_index++;
-				if (rn_transition->to_road_segments_array_index >= new_index)
-					rn_transition->to_road_segments_array_index++;
+				if (rn_transition->road_node_index == road_node_index)
+				{
+					if (rn_transition->from_road_segments_array_index >= modified_index)
+						rn_transition->from_road_segments_array_index += addition;
+					if (rn_transition->to_road_segments_array_index >= modified_index)
+						rn_transition->to_road_segments_array_index += addition;
+				}
 			}
 		}
 	}

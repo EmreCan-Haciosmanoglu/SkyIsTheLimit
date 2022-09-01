@@ -564,7 +564,7 @@ namespace Can
 		auto& home_buildings = game->m_BuildingManager.m_HomeBuildings;
 		auto& work_buildings = game->m_BuildingManager.m_WorkBuildings;
 		auto& segments = game->m_RoadManager.road_segments;
-		auto& people_on_the_road = game->m_PersonManager.walking_people;
+		auto& people_on_the_road = game->m_PersonManager.people_on_the_road;
 
 		while (b->people.size() > 0)
 			remove_person(b->people[0]);

@@ -13,8 +13,13 @@ namespace Can
 		: m_Scene(scene)
 	{
 	}
-	void remove_car(Car* c)
+	void remove_car(Car* car)
 	{
-		delete c;
+		auto& cars = GameScene::ActiveGameScene->m_CarManager.m_Cars;
+
+		auto it = std::find(cars.begin(), cars.end(), car);
+		assert(it != cars.end());
+		cars.erase(it);
+		delete car;
 	}
 }

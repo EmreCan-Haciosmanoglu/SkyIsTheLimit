@@ -65,7 +65,7 @@ namespace Can
 					RoadSegment& road_segment = road_segments[p->road_segment];
 					road_segment.people.push_back(p);
 					p->status = PersonStatus::Walking;
-					walking_people.push_back(p);
+					people_on_the_road.push_back(p);
 
 					if (p->car && building_to)
 					{
@@ -245,9 +245,9 @@ namespace Can
 
 						assert(remove_person_from(segment, p));
 
-						auto it = std::find(walking_people.begin(), walking_people.end(), p);
-						assert(it != walking_people.end());
-						walking_people.erase(it);
+						auto it = std::find(people_on_the_road.begin(), people_on_the_road.end(), p);
+						assert(it != people_on_the_road.end());
+						people_on_the_road.erase(it);
 					}
 					else if (p->heading_to_a_car)
 					{
@@ -497,9 +497,8 @@ namespace Can
 	}
 	void reset_person_back_to_building_from(Person* p)
 	{
-		assert(false);
 		GameScene* game = GameScene::ActiveGameScene;
-		auto& walking_people = game->m_PersonManager.walking_people;
+		auto& people_on_the_road = game->m_PersonManager.people_on_the_road;
 		auto& road_segments = game->m_RoadManager.road_segments;
 		auto& road_nodes = game->m_RoadManager.road_nodes;
 
@@ -536,7 +535,7 @@ namespace Can
 		}
 		else
 		{
-			assert(false);
+			assert(false); // at some other building (for the future)
 		}
 
 		while (p->path.size() > 0)
@@ -548,62 +547,67 @@ namespace Can
 		p->path_end_building = nullptr;
 		p->path_start_building = nullptr;
 
-		p->from_right = true;
+		p->from_right = false;
 		p->heading_to_a_building_or_parking = false;
 		p->heading_to_a_car = false;
 
 		if (p->car)
 		{
-			assert(false);
+			assert(false); // Parking things
 			Building* b = p->status == PersonStatus::AtWork ? p->work : p->home;
 			p->car->object->SetTransform(b->position + b->car_park.offset);
 		}
 
-		auto it = std::find(walking_people.begin(), walking_people.end(), p);
-		if (it == walking_people.end()) assert(false);
-		walking_people.erase(it);
+		auto it = std::find(people_on_the_road.begin(), people_on_the_road.end(), p);
+		if (it == people_on_the_road.end()) assert(false);
+		people_on_the_road.erase(it);
 
 	}
 	void remove_person(Person* p)
 	{
 		GameScene* game = GameScene::ActiveGameScene;
 		auto& people = game->m_PersonManager.m_People;
-		auto& walking_people = game->m_PersonManager.walking_people;
+		auto& people_on_the_road = game->m_PersonManager.people_on_the_road;
 		auto& road_segments = game->m_RoadManager.road_segments;
 		auto& road_nodes = game->m_RoadManager.road_nodes;
-		auto& cars = game->m_CarManager.m_Cars;
 
 		if (p->road_segment != -1)
 		{
-			auto& walking_people_road_segments = road_segments[p->road_segment].people;
-			auto it = std::find(walking_people_road_segments.begin(), walking_people_road_segments.end(), p);
-			assert(it != walking_people_road_segments.end());
+			auto& people_on_the_road_segment = road_segments[p->road_segment].people;
+			auto it = std::find(people_on_the_road_segment.begin(), people_on_the_road_segment.end(), p);
+			assert(it != people_on_the_road_segment.end());
 
-			walking_people_road_segments.erase(it);
+			people_on_the_road_segment.erase(it);
 		}
 		else if (p->road_node != -1)
 		{
-			auto& walking_people_road_node = road_nodes[p->road_node].people;
-			auto it = std::find(walking_people_road_node.begin(), walking_people_road_node.end(), p);
-			assert(it != walking_people_road_node.end());
+			auto& people_on_the_road_node = road_nodes[p->road_node].people;
+			auto it = std::find(people_on_the_road_node.begin(), people_on_the_road_node.end(), p);
+			assert(it != people_on_the_road_node.end());
 
-			walking_people_road_node.erase(it);
+			people_on_the_road_node.erase(it);
 		}
-		if (p->car)
+		u64 path_count = p->path.size();
+		if (path_count > 0)
 		{
-			auto it = std::find(cars.begin(), cars.end(), p->car);
-			assert(it != cars.end());
-			cars.erase(it);
-			remove_car(p->car);
-			p->car = nullptr;
+			auto it = std::find(people_on_the_road.begin(), people_on_the_road.end(), p);
+			assert(it != people_on_the_road.end());
+			people_on_the_road.erase(it);
+			while (path_count > 0)
+			{
+				auto t = p->path[path_count - 1];
+				p->path.pop_back();
+				delete t;
+				path_count--;
+			}
 		}
 		if (p->home)
 		{
-			auto& resident = p->home->people;
-			auto it = std::find(resident.begin(), resident.end(), p);
-			assert(it != resident.end());
+			auto& residents = p->home->people;
+			auto it = std::find(residents.begin(), residents.end(), p);
+			assert(it != residents.end());
 
-			resident.erase(it);
+			residents.erase(it);
 		}
 		if (p->work)
 		{
@@ -613,12 +617,12 @@ namespace Can
 
 			workers.erase(it);
 		}
-		if (p->status == PersonStatus::Walking)
+		if (p->car)
 		{
-			auto it = std::find(walking_people.begin(), walking_people.end(), p);
-			assert(it != walking_people.end());
-			walking_people.erase(it);
+			remove_car(p->car);
+			p->car = nullptr;
 		}
+
 		auto it = std::find(people.begin(), people.end(), p);
 		assert(it != people.end());
 		people.erase(it);
