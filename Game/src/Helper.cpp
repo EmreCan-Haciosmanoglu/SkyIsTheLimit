@@ -1117,7 +1117,7 @@ namespace  Can::Helper
 			}
 		}
 
-		return get_path(start, 5);
+		return {};
 	}
 
 	//TODO memory leak possible
@@ -1336,7 +1336,7 @@ namespace  Can::Helper
 					});
 			}
 		}
-		return get_path(start, 4);
+		return {};
 	}
 
 	void UpdateTheTerrain(const std::vector<std::array<v3, 3>>& polygon, bool reset)

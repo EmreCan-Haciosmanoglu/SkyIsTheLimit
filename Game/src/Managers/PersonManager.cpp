@@ -35,6 +35,7 @@ namespace Can
 					// go to work work work work
 					Building* building_from = p->home;
 					Building* building_to = p->work;
+					bool is_buildings_connected = true;
 					if (p->status == PersonStatus::AtWork)
 					{
 						building_from = p->work;
@@ -42,12 +43,24 @@ namespace Can
 					}
 					if (building_to)
 					{
+						p->path_end_building = building_to;
+						p->path_start_building = building_from;
 						if (p->car)
 							p->path = Helper::get_path_for_a_car(building_from, building_to);
 						else
 							p->path = Helper::get_path(building_from, building_to);
-						p->path_end_building = building_to;
-						p->path_start_building = building_from;
+
+						if (p->path.size() == 0)
+						{
+							if (building_from == p->work)
+							{
+								reset_person_back_to_home(p);
+								continue;
+							}
+							is_buildings_connected = false;
+							p->path = Helper::get_path(building_from, 5);
+							p->path_end_building = building_from;
+						}
 					}
 					else
 					{
@@ -67,7 +80,7 @@ namespace Can
 					p->status = PersonStatus::Walking;
 					people_on_the_road.push_back(p);
 
-					if (p->car && building_to)
+					if (p->car && building_to && building_from != p->path_end_building)
 					{
 						RS_Transition_For_Driving* rs_transition = (RS_Transition_For_Driving*)p->path[0];
 						p->heading_to_a_car = true;
@@ -537,6 +550,62 @@ namespace Can
 		{
 			assert(false); // at some other building (for the future)
 		}
+
+		while (p->path.size() > 0)
+		{
+			delete p->path[p->path.size() - 1];
+			p->path.pop_back();
+		}
+
+		p->path_end_building = nullptr;
+		p->path_start_building = nullptr;
+
+		p->from_right = false;
+		p->heading_to_a_building_or_parking = false;
+		p->heading_to_a_car = false;
+
+		if (p->car)
+		{
+			assert(false); // Parking things
+			Building* b = p->status == PersonStatus::AtWork ? p->work : p->home;
+			p->car->object->SetTransform(b->position + b->car_park.offset);
+		}
+
+		auto it = std::find(people_on_the_road.begin(), people_on_the_road.end(), p);
+		if (it == people_on_the_road.end()) assert(false);
+		people_on_the_road.erase(it);
+
+	}
+	void reset_person_back_to_home(Person* p)
+	{
+		GameScene* game = GameScene::ActiveGameScene;
+		auto& people_on_the_road = game->m_PersonManager.people_on_the_road;
+		auto& road_segments = game->m_RoadManager.road_segments;
+		auto& road_nodes = game->m_RoadManager.road_nodes;
+
+		if (p->road_segment != -1)
+		{
+			auto& people_on_the_road_segment = road_segments[p->road_segment].people;
+			auto it = std::find(people_on_the_road_segment.begin(), people_on_the_road_segment.end(), p);
+			if (it == people_on_the_road_segment.end()) assert(false);
+
+			people_on_the_road_segment.erase(it);
+			p->road_segment = -1;
+		}
+		else if (p->road_node != -1)
+		{
+			auto& people_on_the_road_node = road_nodes[p->road_node].people;
+			auto it = std::find(people_on_the_road_node.begin(), people_on_the_road_node.end(), p);
+			if (it == people_on_the_road_node.end()) assert(false);
+
+			people_on_the_road_node.erase(it);
+			p->road_node = -1;
+		}
+		p->position = p->path_start_building->position;
+		p->object->SetTransform(p->position);
+		p->object->enabled = false;
+		p->status = PersonStatus::AtHome;
+		p->time_left = Utility::Random::Float(1.0f, 2.0f);	// home values
 
 		while (p->path.size() > 0)
 		{
