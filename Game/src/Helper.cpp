@@ -717,7 +717,7 @@ namespace  Can::Helper
 				if (end->snapped_t_index >= start->snapped_t_index)
 				{
 					RS_Transition_For_Driving* rs_transition = new RS_Transition_For_Driving();
-					rs_transition->road_segment_index = start->snapped_t_index;
+					rs_transition->road_segment_index = start->connectedRoadSegment;
 					if (end->snapped_to_right)
 					{
 						rs_transition->lane_index = start_road_type.lanes_backward.size();
@@ -735,7 +735,7 @@ namespace  Can::Helper
 				if (end->snapped_t_index >= start->snapped_t_index)
 				{
 					RS_Transition_For_Driving* rs_transition = new RS_Transition_For_Driving();
-					rs_transition->road_segment_index = start->snapped_t_index;
+					rs_transition->road_segment_index = start->connectedRoadSegment;
 					if (end->snapped_to_right)
 					{
 						rs_transition->lane_index = start_road_type.lanes_forward.size() - 2;
@@ -751,7 +751,7 @@ namespace  Can::Helper
 				else
 				{
 					RS_Transition_For_Driving* rs_transition = new RS_Transition_For_Driving();
-					rs_transition->road_segment_index = start->snapped_t_index;
+					rs_transition->road_segment_index = start->connectedRoadSegment;
 					if (end->snapped_to_right)
 					{
 						rs_transition->lane_index = start_road_type.lanes_backward.size() - 1;
@@ -772,7 +772,7 @@ namespace  Can::Helper
 						if (end->snapped_t_index >= start->snapped_t_index)
 						{
 							RS_Transition_For_Driving* rs_transition = new RS_Transition_For_Driving();
-							rs_transition->road_segment_index = start->snapped_t_index;
+							rs_transition->road_segment_index = start->connectedRoadSegment;
 							rs_transition->lane_index = start_road_type.lanes_forward.size() - 2;
 							rs_transition->lane_index += start_road_type.lanes_backward.size();
 							return { rs_transition };
@@ -780,16 +780,16 @@ namespace  Can::Helper
 						else
 						{
 							RS_Transition_For_Driving* rs_transition_1 = new RS_Transition_For_Driving();
-							rs_transition_1->road_segment_index = start->snapped_t_index;
+							rs_transition_1->road_segment_index = start->connectedRoadSegment;
 							rs_transition_1->lane_index = 0;
 							rs_transition_1->lane_index += start_road_type.lanes_backward.size();
 
 							RS_Transition_For_Driving* rs_transition_2 = new RS_Transition_For_Driving();
-							rs_transition_2->road_segment_index = start->snapped_t_index;
+							rs_transition_2->road_segment_index = start->connectedRoadSegment;
 							rs_transition_2->lane_index = start_road_type.lanes_backward.size() - 1;
 
 							RS_Transition_For_Driving* rs_transition_3 = new RS_Transition_For_Driving();
-							rs_transition_3->road_segment_index = start->snapped_t_index;
+							rs_transition_3->road_segment_index = start->connectedRoadSegment;
 							rs_transition_3->lane_index = start_road_type.lanes_forward.size() - 2;
 							rs_transition_3->lane_index += start_road_type.lanes_backward.size();
 
@@ -799,12 +799,12 @@ namespace  Can::Helper
 					else
 					{
 						RS_Transition_For_Driving* rs_transition_1 = new RS_Transition_For_Driving();
-						rs_transition_1->road_segment_index = start->snapped_t_index;
+						rs_transition_1->road_segment_index = start->connectedRoadSegment;
 						rs_transition_1->lane_index = 0;
 						rs_transition_1->lane_index += start_road_type.lanes_backward.size();
 
 						RS_Transition_For_Driving* rs_transition_2 = new RS_Transition_For_Driving();
-						rs_transition_2->road_segment_index = start->snapped_t_index;
+						rs_transition_2->road_segment_index = start->connectedRoadSegment;
 						rs_transition_2->lane_index = 1;
 
 						return { rs_transition_1, rs_transition_2 };
@@ -815,11 +815,11 @@ namespace  Can::Helper
 					if (end->snapped_to_right)
 					{
 						RS_Transition_For_Driving* rs_transition_1 = new RS_Transition_For_Driving();
-						rs_transition_1->road_segment_index = start->snapped_t_index;
+						rs_transition_1->road_segment_index = start->connectedRoadSegment;
 						rs_transition_1->lane_index = start_road_type.lanes_backward.size() - 1;
 
 						RS_Transition_For_Driving* rs_transition_2 = new RS_Transition_For_Driving();
-						rs_transition_2->road_segment_index = start->snapped_t_index;
+						rs_transition_2->road_segment_index = start->connectedRoadSegment;
 						rs_transition_2->lane_index = start_road_type.lanes_forward.size() - 2;
 						rs_transition_2->lane_index += start_road_type.lanes_backward.size();
 
@@ -830,16 +830,16 @@ namespace  Can::Helper
 						if (end->snapped_t_index >= start->snapped_t_index)
 						{
 							RS_Transition_For_Driving* rs_transition_1 = new RS_Transition_For_Driving();
-							rs_transition_1->road_segment_index = start->snapped_t_index;
+							rs_transition_1->road_segment_index = start->connectedRoadSegment;
 							rs_transition_1->lane_index = start_road_type.lanes_backward.size() - 1;
 
 							RS_Transition_For_Driving* rs_transition_2 = new RS_Transition_For_Driving();
-							rs_transition_2->road_segment_index = start->snapped_t_index;
+							rs_transition_2->road_segment_index = start->connectedRoadSegment;
 							rs_transition_2->lane_index = 0;
 							rs_transition_2->lane_index += start_road_type.lanes_backward.size();
 
 							RS_Transition_For_Driving* rs_transition_3 = new RS_Transition_For_Driving();
-							rs_transition_3->road_segment_index = start->snapped_t_index;
+							rs_transition_3->road_segment_index = start->connectedRoadSegment;
 							rs_transition_3->lane_index = 1;
 
 							return { rs_transition_1, rs_transition_2, rs_transition_3 };
@@ -847,7 +847,7 @@ namespace  Can::Helper
 						else
 						{
 							RS_Transition_For_Driving* rs_transition = new RS_Transition_For_Driving();
-							rs_transition->road_segment_index = start->snapped_t_index;
+							rs_transition->road_segment_index = start->connectedRoadSegment;
 							rs_transition->lane_index = 1;
 							return { rs_transition };
 						}
