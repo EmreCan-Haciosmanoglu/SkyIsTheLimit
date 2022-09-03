@@ -408,7 +408,12 @@ namespace Can
 							{
 								if (rs_transition->at_path_array_index >= p->path_end_building->snapped_t_index)
 								{
-									set_target_and_car_direction(p, p->path_end_building->position + p->path_end_building->car_park.offset);
+									v3 car_park_pos = p->path_end_building->position +
+										(v3)(glm::rotate(m4(1.0f), p->path_end_building->object->rotation.z, v3{ 0.0f, 0.0f, 1.0f }) *
+											glm::rotate(m4(1.0f), p->path_end_building->object->rotation.y, v3{ 0.0f, 1.0f, 0.0f }) *
+											glm::rotate(m4(1.0f), p->path_end_building->object->rotation.x, v3{ 1.0f, 0.0f, 0.0f }) *
+											v4(p->path_end_building->car_park.offset, 1.0f));
+									set_target_and_car_direction(p, car_park_pos);
 									p->heading_to_a_building_or_parking = true;
 									continue;
 								}
@@ -434,7 +439,12 @@ namespace Can
 							{
 								if (rs_transition->at_path_array_index <= p->path_end_building->snapped_t_index)
 								{
-									set_target_and_car_direction(p, p->path_end_building->position + p->path_end_building->car_park.offset);
+									v3 car_park_pos = p->path_end_building->position +
+										(v3)(glm::rotate(m4(1.0f), p->path_end_building->object->rotation.z, v3{ 0.0f, 0.0f, 1.0f }) *
+											glm::rotate(m4(1.0f), p->path_end_building->object->rotation.y, v3{ 0.0f, 1.0f, 0.0f }) *
+											glm::rotate(m4(1.0f), p->path_end_building->object->rotation.x, v3{ 1.0f, 0.0f, 0.0f }) *
+											v4(p->path_end_building->car_park.offset, 1.0f));
+									set_target_and_car_direction(p, car_park_pos);
 									p->heading_to_a_building_or_parking = true;
 									continue;
 								}
@@ -557,19 +567,29 @@ namespace Can
 			p->path.pop_back();
 		}
 
+		if (p->car)
+		{
+			Building* b = p->path_start_building;
+			v3 car_pos = b->position +
+				(v3)(glm::rotate(m4(1.0f), b->object->rotation.z, v3{ 0.0f, 0.0f, 1.0f }) *
+					glm::rotate(m4(1.0f), b->object->rotation.y, v3{ 0.0f, 1.0f, 0.0f }) *
+					glm::rotate(m4(1.0f), b->object->rotation.x, v3{ 1.0f, 0.0f, 0.0f }) *
+					v4(b->car_park.offset, 1.0f));
+			p->car->object->SetTransform(
+				car_pos,
+				glm::rotateZ(
+					b->object->rotation,
+					glm::radians(b->car_park.rotation_in_degrees)
+				)
+			);
+		}
+
 		p->path_end_building = nullptr;
 		p->path_start_building = nullptr;
 
 		p->from_right = false;
 		p->heading_to_a_building_or_parking = false;
 		p->heading_to_a_car = false;
-
-		if (p->car)
-		{
-			assert(false); // Parking things
-			Building* b = p->status == PersonStatus::AtWork ? p->work : p->home;
-			p->car->object->SetTransform(b->position + b->car_park.offset);
-		}
 
 		auto it = std::find(people_on_the_road.begin(), people_on_the_road.end(), p);
 		if (it == people_on_the_road.end()) assert(false);
@@ -613,19 +633,29 @@ namespace Can
 			p->path.pop_back();
 		}
 
+		if (p->car)
+		{
+			Building* b = p->path_start_building;
+			v3 car_pos = b->position +
+				(v3)(glm::rotate(m4(1.0f), b->object->rotation.z, v3{ 0.0f, 0.0f, 1.0f }) *
+					glm::rotate(m4(1.0f), b->object->rotation.y, v3{ 0.0f, 1.0f, 0.0f }) *
+					glm::rotate(m4(1.0f), b->object->rotation.x, v3{ 1.0f, 0.0f, 0.0f }) *
+					v4(b->car_park.offset, 1.0f));
+			p->car->object->SetTransform(
+				car_pos,
+				glm::rotateZ(
+					b->object->rotation,
+					glm::radians(b->car_park.rotation_in_degrees)
+				)
+			);
+		}
+
 		p->path_end_building = nullptr;
 		p->path_start_building = nullptr;
 
 		p->from_right = false;
 		p->heading_to_a_building_or_parking = false;
 		p->heading_to_a_car = false;
-
-		if (p->car)
-		{
-			assert(false); // Parking things
-			Building* b = p->status == PersonStatus::AtWork ? p->work : p->home;
-			p->car->object->SetTransform(b->position + b->car_park.offset);
-		}
 
 		auto it = std::find(people_on_the_road.begin(), people_on_the_road.end(), p);
 		if (it == people_on_the_road.end()) assert(false);
