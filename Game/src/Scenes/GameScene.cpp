@@ -323,16 +323,16 @@ namespace Can
 		for (u64 i = 0; i < car_count; i++)
 		{
 			u64 type;
-			f32 speed;
+			f32 speed_in_kmh;
 			v3 position, rotation;
 			fread(&type, sizeof(u64), 1, read_file);
-			fread(&speed, sizeof(f32), 1, read_file);
+			fread(&speed_in_kmh, sizeof(f32), 1, read_file);
 			fread(&position, sizeof(f32), 3, read_file);
 			fread(&rotation, sizeof(f32), 3, read_file);
 			Car* car = new Car(
 				MainApplication->cars[type],
 				type,
-				speed
+				speed_in_kmh
 			);
 			car->object->SetTransform(position, rotation);
 			cars.push_back(car);
@@ -363,7 +363,7 @@ namespace Can
 				fread(&person->road_node, sizeof(s64), 1, read_file);
 				if (person->road_node != -1)
 					road_nodes[person->road_node].people.push_back(person);
-				fread(&person->speed, sizeof(f32), 1, read_file);
+				fread(&person->speed_in_kmh, sizeof(f32), 1, read_file);
 				fread(&person->position, sizeof(f32), 3, read_file);
 				person->object->SetTransform(person->position);
 				fread(&person->target, sizeof(f32), 3, read_file);
@@ -550,7 +550,7 @@ namespace Can
 			for (u64 i = 0; i < car_count; i++)
 			{
 				fwrite(&cars[i]->type, sizeof(u64), 1, save_file);
-				fwrite(&cars[i]->speed, sizeof(f32), 1, save_file);
+				fwrite(&cars[i]->speed_in_kmh, sizeof(f32), 1, save_file);
 				fwrite(&cars[i]->object->position, sizeof(f32), 3, save_file);
 				fwrite(&cars[i]->object->rotation, sizeof(f32), 3, save_file);
 			}
@@ -602,7 +602,7 @@ namespace Can
 				fwrite(&p->object->enabled, sizeof(bool), 1, save_file);
 				fwrite(&p->road_segment, sizeof(s64), 1, save_file);
 				fwrite(&p->road_node, sizeof(s64), 1, save_file);
-				fwrite(&p->speed, sizeof(f32), 1, save_file);
+				fwrite(&p->speed_in_kmh, sizeof(f32), 1, save_file);
 				fwrite(&p->position, sizeof(f32), 3, save_file);
 				fwrite(&p->target, sizeof(f32), 3, save_file);
 				fwrite(&p->status, sizeof(PersonStatus), 1, save_file);

@@ -968,6 +968,7 @@ namespace  Can::Helper
 							the_temp_path.pop_back();
 						}
 						RS_Transition_For_Driving* current_transition = (RS_Transition_For_Driving*)the_path[0];
+						s64 prev_road_node_index = -1;
 						for (u64 i = 1; i < transition_count; i++)
 						{
 							RS_Transition_For_Driving* next_transition = (RS_Transition_For_Driving*)the_path[i];
@@ -1061,6 +1062,40 @@ namespace  Can::Helper
 									}
 								}
 							}
+
+							auto& current_road_segment_curve_samples = current_road_segment.curve_samples;
+							u64 curve_sample_count = current_road_segment_curve_samples.size();
+							if (current_transition->next_road_node_index == current_road_segment.EndNode)
+							{
+								v3 p0 = current_road_segment_curve_samples[0];
+								for (u64 curve_sample_index = 1; curve_sample_index < curve_sample_count - 1; curve_sample_index++)
+								{
+									v3 p1 = current_road_segment_curve_samples[curve_sample_index];
+									v3 dir_to_p1 = p1 - p0;
+									v3 cw_rotated_dir = glm::normalize(v3{ dir_to_p1.y, -dir_to_p1.x, 0.0f });
+									v3 path_point = p0;
+									if (rs_transition->lane_index < current_road_type.lanes_backward.size())
+										path_point += cw_rotated_dir * current_road_type.lanes_backward[rs_transition->lane_index].distance_from_center;
+									else
+										path_point += cw_rotated_dir * current_road_type.lanes_forward[rs_transition->lane_index - current_road_type.lanes_backward.size()].distance_from_center;
+									rs_transition->points.push_back(path_point);
+									p0 = p1;
+								}
+								v3 dir_to_p1 = current_road_segment.GetEndDirection() * -1.0f;
+								v3 cw_rotated_dir = glm::normalize(v3{ dir_to_p1.y, -dir_to_p1.x, 0.0f });
+								v3 path_point = p0;
+								if (rs_transition->lane_index < current_road_type.lanes_backward.size())
+									path_point += cw_rotated_dir * current_road_type.lanes_backward[rs_transition->lane_index].distance_from_center;
+								else
+									path_point += cw_rotated_dir * current_road_type.lanes_forward[rs_transition->lane_index - current_road_type.lanes_backward.size()].distance_from_center;
+								rs_transition->points.push_back(path_point);
+							}
+							else
+							{
+
+							}
+
+							prev_road_node_index = current_transition->next_road_node_index;
 							current_transition = next_transition;
 						}
 						RoadSegment& current_road_segment = road_segments[current_transition->road_segment_index];

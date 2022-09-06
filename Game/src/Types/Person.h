@@ -20,14 +20,14 @@ namespace Can
 	{
 	public:
 		Person(){}
-		Person(Prefab* type, f32 speed);
+		Person(Prefab* type, f32 speed_in_kmh);
 		~Person() { delete object; }
 
 		u64 type = 0;
 		Object* object = nullptr;
 		s64 road_segment = -1;
 		s64 road_node = -1;
-		f32 speed = 10.0f;
+		f32 speed_in_kmh = 10.0f;
 		v3 position{};
 		v3 target{};
 		PersonStatus status = PersonStatus::AtHome;

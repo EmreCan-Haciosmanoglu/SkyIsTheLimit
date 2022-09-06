@@ -9,13 +9,13 @@ namespace Can
 	class Car
 	{
 	public:
-		Car(Prefab* prefab, u64 type, f32 speed = 100.0f);
+		Car(Prefab* prefab, u64 type, f32 speed_in_kmh = 100.0f);
 		~Car() { delete object; }
 
 	public:
 		Object* object;
 		u64 type;
-		f32 speed;
+		f32 speed_in_kmh;
 		Person* owner = nullptr;
 	};
 }

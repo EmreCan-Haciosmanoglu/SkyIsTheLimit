@@ -27,6 +27,7 @@ namespace Can
 		u64 at_path_array_index = 0;
 		u64 road_segment_index = 0;
 		s64 next_road_node_index = -1;
+		std::vector<v3> points{};
 		u32 lane_index = 0;
 	};
 }

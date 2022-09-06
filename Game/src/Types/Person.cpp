@@ -8,8 +8,8 @@
 
 namespace Can
 {
-	Person::Person(Prefab* type, f32 speed)
-		: speed(speed)
+	Person::Person(Prefab* type, f32 speed_in_kmh)
+		: speed_in_kmh(speed_in_kmh)
 		, object(new Object(type))
 	{
 		object->enabled = false;

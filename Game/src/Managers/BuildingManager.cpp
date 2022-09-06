@@ -397,14 +397,14 @@ namespace Can
 			if (new_building->is_home)
 			{
 				m_HomeBuildings.push_back(new_building);
-				u8 domicilled = Utility::Random::Integer(2, 5);
+				u8 domicilled = Utility::Random::Integer(6, 10);
 				new_building->capacity = domicilled;
 				for (u64 i = 0; i < domicilled; i++)
 				{
 					u64 type = 0;
 					Person* new_person = new Person(
 						person_prefabs[type],
-						1.0f
+						Utility::Random::Float(4.0f, 6.0f)
 					);
 					new_person->type = type;
 					new_person->home = new_building;
@@ -412,13 +412,13 @@ namespace Can
 					new_person->time_left = Utility::Random::Float(1.0f, 5.0f);
 					new_building->people.push_back(new_person);
 					bool have_enough_money_to_own_car = Utility::Random::Float(1.0f) > 0.5f;
-					if (have_enough_money_to_own_car)
+					if (have_enough_money_to_own_car || true)
 					{
 						u64 new_car_type = 0;
 						Car* new_car = new Car(
 							car_prefabs[new_car_type], 
 							new_car_type,
-							Utility::Random::Float(50.0f, 150.0f)
+							Utility::Random::Float(30.0f, 50.0f)
 						);
 						v3 car_pos = new_building->position + 
 							(v3)(glm::rotate(m4(1.0f), new_building->object->rotation.z, v3{ 0.0f, 0.0f, 1.0f }) *
@@ -450,7 +450,7 @@ namespace Can
 			else
 			{
 				m_WorkBuildings.push_back(new_building);
-				u8 worker = Utility::Random::Integer(2, 5);
+				u8 worker = Utility::Random::Integer(20, 50);
 				new_building->capacity = worker;
 				for (u64 i = 0; i < worker; i++)
 				{
