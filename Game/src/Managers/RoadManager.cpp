@@ -1745,6 +1745,35 @@ namespace Can
 							}
 						}
 					}
+
+					u64 prev_points_count = td->points_stack.size();
+					td->points_stack.clear();
+					auto& current_road_segment_curve_samples = current_road_segment.curve_samples;
+					u64 curve_sample_count = current_road_segment_curve_samples.size();
+					f32 dist_from_center = 0.0f;
+					if (td->lane_index < current_road_type.lanes_backward.size())
+						dist_from_center = current_road_type.lanes_backward[td->lane_index].distance_from_center;
+					else
+						dist_from_center = current_road_type.lanes_forward[td->lane_index - current_road_type.lanes_backward.size()].distance_from_center;
+					v3 p0 = current_road_segment_curve_samples[0];
+					for (u64 curve_sample_index = 1; curve_sample_index < curve_sample_count; curve_sample_index++)
+					{
+						v3 p1 = current_road_segment_curve_samples[curve_sample_index];
+						v3 dir_to_p1 = p1 - p0;
+						v3 cw_rotated_dir = glm::normalize(v3{ dir_to_p1.y, -dir_to_p1.x, 0.0f });
+						v3 path_point = p0 + cw_rotated_dir * dist_from_center;
+						td->points_stack.push_back(path_point);
+						p0 = p1;
+					}
+					v3 dir_to_p1 = current_road_segment.GetEndDirection() * -1.0f;
+					v3 cw_rotated_dir = glm::normalize(v3{ dir_to_p1.y, -dir_to_p1.x, 0.0f });
+					v3 path_point = p0 + cw_rotated_dir * dist_from_center;
+					td->points_stack.push_back(path_point);
+					if (td->next_road_node_index == current_road_segment.EndNode)
+						std::reverse(td->points_stack.begin(), td->points_stack.end());
+					u64 curr_points_count = td->points_stack.size();
+					for (u64 k = 0; curr_points_count - prev_points_count; k++)
+						td->points_stack.pop_back();
 				}
 			}
 
@@ -1778,6 +1807,36 @@ namespace Can
 						td->lane_index = 1;
 					}
 				}
+
+
+				u64 prev_points_count = td->points_stack.size();
+				td->points_stack.clear();
+				auto& current_road_segment_curve_samples = current_road_segment.curve_samples;
+				u64 curve_sample_count = current_road_segment_curve_samples.size();
+				f32 dist_from_center = 0.0f;
+				if (td->lane_index < current_road_type.lanes_backward.size())
+					dist_from_center = current_road_type.lanes_backward[td->lane_index].distance_from_center;
+				else
+					dist_from_center = current_road_type.lanes_forward[td->lane_index - current_road_type.lanes_backward.size()].distance_from_center;
+				v3 p0 = current_road_segment_curve_samples[0];
+				for (u64 curve_sample_index = 1; curve_sample_index < curve_sample_count; curve_sample_index++)
+				{
+					v3 p1 = current_road_segment_curve_samples[curve_sample_index];
+					v3 dir_to_p1 = p1 - p0;
+					v3 cw_rotated_dir = glm::normalize(v3{ dir_to_p1.y, -dir_to_p1.x, 0.0f });
+					v3 path_point = p0 + cw_rotated_dir * dist_from_center;
+					td->points_stack.push_back(path_point);
+					p0 = p1;
+				}
+				v3 dir_to_p1 = current_road_segment.GetEndDirection() * -1.0f;
+				v3 cw_rotated_dir = glm::normalize(v3{ dir_to_p1.y, -dir_to_p1.x, 0.0f });
+				v3 path_point = p0 + cw_rotated_dir * dist_from_center;
+				td->points_stack.push_back(path_point);
+				if (td->next_road_node_index == current_road_segment.EndNode)
+					std::reverse(td->points_stack.begin(), td->points_stack.end());
+				u64 curr_points_count = td->points_stack.size();
+				for (u64 k = 0; curr_points_count - prev_points_count; k++)
+					td->points_stack.pop_back();
 			}
 		}
 
@@ -2682,7 +2741,7 @@ namespace Can
 						auto new_rs_transition = new RS_Transition_For_Driving();
 						new_rs_transition->road_segment_index = new_rs_index;
 						new_rs_transition->next_road_node_index = new_rn_index;
-						assert(false); // calculate lane index for new_rs_transition
+						assert(false); // calculate lane index for new_rs_transition and points_stack
 						path.insert(path.begin() + index, (Transition*)new_rs_transition);
 					}
 					else
@@ -2694,7 +2753,7 @@ namespace Can
 						path.insert(path.begin() + (index + 1), (Transition*)new_rs_transition);
 
 						rs_transition->next_road_node_index = old_road_segment.EndNode;
-						assert(false); // calculate lane index for rs_transition
+						assert(false); // calculate lane index for rs_transition and points_stack
 					}
 					index++;
 				}

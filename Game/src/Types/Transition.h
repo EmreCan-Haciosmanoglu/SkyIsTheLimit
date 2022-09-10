@@ -24,10 +24,9 @@ namespace Can
 
 	struct RS_Transition_For_Driving : Transition
 	{
-		u64 at_path_array_index = 0;
 		u64 road_segment_index = 0;
 		s64 next_road_node_index = -1;
-		std::vector<v3> points{};
+		std::vector<v3> points_stack{};
 		u32 lane_index = 0;
 	};
 }

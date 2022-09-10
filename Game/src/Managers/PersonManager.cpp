@@ -84,7 +84,6 @@ namespace Can
 					{
 						RS_Transition_For_Driving* rs_transition = (RS_Transition_For_Driving*)p->path[0];
 						p->heading_to_a_car = true;
-						rs_transition->at_path_array_index = building_from->snapped_t_index;
 
 						set_person_target(p, p->car->object->position);
 					}
@@ -272,19 +271,10 @@ namespace Can
 						RS_Transition_For_Driving* rs_transition = (RS_Transition_For_Driving*)p->path[0];
 						RoadSegment& road_segment = road_segments[rs_transition->road_segment_index];
 						RoadType& road_segment_type = road_types[road_segment.type];
+						v3 target_position = rs_transition->points_stack[rs_transition->points_stack.size() - 1];
 
-						v3 target_position = road_segment.curve_samples[rs_transition->at_path_array_index];
-						assert(rs_transition->at_path_array_index + 1 < road_segment.curve_samples.size());
-						v3 target_position_plus_one = road_segment.curve_samples[rs_transition->at_path_array_index + 1];
-
-						v3 dir = target_position_plus_one - target_position;
-						v3 sidewalf_position_offset = glm::normalize(v3{ dir.y, -dir.x, 0.0f });
-						if (rs_transition->lane_index < road_segment_type.lanes_backward.size())
-							sidewalf_position_offset *= road_segment_type.lanes_backward[rs_transition->lane_index].distance_from_center;
-						else
-							sidewalf_position_offset *= road_segment_type.lanes_forward[rs_transition->lane_index - road_segment_type.lanes_backward.size()].distance_from_center;
 						p->position = p->car->object->position;
-						set_target_and_car_direction(p, target_position + sidewalf_position_offset);
+						set_target_and_car_direction(p, target_position);
 					}
 					else
 					{
@@ -372,9 +362,11 @@ namespace Can
 				f32 car_legth = c->object->prefab->boundingBoxM.x - c->object->prefab->boundingBoxL.x;
 				v3 left = p->target - c->object->position;
 				f32 left_length = glm::length(left);
+				v3 unit = left / left_length;
 				f32 converted_speed = (p->car->speed_in_kmh / 10.f) / 3.6f;
 				f32 journey_length = ts * converted_speed;
-
+				u64 path_count = p->path.size();
+				assert(path_count > 0);
 				RS_Transition_For_Driving* rs_transition = (RS_Transition_For_Driving*)p->path[0];
 				RoadSegment& current_road_segment = road_segments[rs_transition->road_segment_index];
 				RoadType& current_road_type = road_types[current_road_segment.type];
@@ -392,7 +384,26 @@ namespace Can
 					else
 					{
 						person_s_position_in_next_frame = p->target;
+						v3 next_target;
+						u64 points_count = rs_transition->points_stack.size();
+						if (points_count > 0)
+						{
+							next_target = rs_transition->points_stack[points_count - 1];
+						}
+						else
+						{
+							if (path_count > 1)
+								next_target = ((RS_Transition_For_Driving*)(p->path[1]))->points_stack[points_count - 1];
+							else
+								next_target = p->path_end_building->position +
+								(v3)(glm::rotate(m4(1.0f), p->path_end_building->object->rotation.z, v3{ 0.0f, 0.0f, 1.0f }) *
+									glm::rotate(m4(1.0f), p->path_end_building->object->rotation.y, v3{ 0.0f, 1.0f, 0.0f }) *
+									glm::rotate(m4(1.0f), p->path_end_building->object->rotation.x, v3{ 1.0f, 0.0f, 0.0f }) *
+									v4(p->path_end_building->car_park.offset, 1.0f));
+						}
 
+						v2 direction = glm::normalize((v2)(next_target - person_s_position_in_next_frame));
+						person_s_rotation_in_next_frame = glm::acos(direction.x) * ((float)(direction.y > 0.0f) * 2.0f - 1.0f) + glm::radians(180.0f);
 					}
 
 					auto& people_on_the_road = current_road_segment.people;
@@ -400,50 +411,28 @@ namespace Can
 					bool road_is_blocked = false;
 					for (u64 i = 0; i < count; i++)
 					{
-						Person* person_on_the_road = people_on_the_road[i];
-						if (person_on_the_road->status != PersonStatus::Driving) continue;
-						auto other_person_s_transition = (RS_Transition_For_Driving*)person_on_the_road->path[0];
+						Person* other_person_on_the_road = people_on_the_road[i];
+						if (other_person_on_the_road->status != PersonStatus::Driving) continue;
+						auto other_person_s_transition = (RS_Transition_For_Driving*)other_person_on_the_road->path[0];
 						if (other_person_s_transition->lane_index != rs_transition->lane_index) continue;
 
-						v3 other_person_s_journey_left = person_on_the_road->target - person_on_the_road->car->object->position;
+						v3 other_person_s_journey_left = other_person_on_the_road->target - other_person_on_the_road->car->object->position;
 						f32 other_person_s_journey_left_length = glm::length(other_person_s_journey_left);
+						v3 other_person_s_journey_unit = other_person_s_journey_left / other_person_s_journey_left_length;
 
-						if (rs_transition->lane_index < current_road_type.lanes_backward.size())
-						{
-							if (other_person_s_transition->at_path_array_index > rs_transition->at_path_array_index)
-							{
-								continue;
-							}
-						}
-						else
-						{
-							if (other_person_s_transition->at_path_array_index < rs_transition->at_path_array_index)
-							{
-								continue;
-							}
-						}
-						
-						if (other_person_s_transition->at_path_array_index == rs_transition->at_path_array_index)
-						{
-							assert(false); // Each segments are not long enough to put two cars at the same time???
-							if (other_person_s_journey_left_length >= left_length)
-								continue;
-							if (other_person_s_journey_left_length >= left_length - car_legth - journey_length)
-								road_is_blocked = true;
-						}
-						else
-						{
-							v3 other_person_s_position_in_next_frame;
-							f32 other_person_s_rotation_in_next_frame;
-							// collision check
-						}
+						if (other_person_s_transition->points_stack.size() > rs_transition->points_stack.size())
+							continue;
+
+						assert(false);
+						v3 other_person_s_position_in_next_frame;
+						f32 other_person_s_rotation_in_next_frame;
+						// collision check
 					}
 					if (road_is_blocked) continue;
 				}
 
 				if (journey_length < left_length)
 				{
-					v3 unit = left / left_length;
 					c->object->SetTransform(c->object->position + unit * journey_length);
 				}
 				else
@@ -468,67 +457,24 @@ namespace Can
 					{
 						c->object->SetTransform(p->target);
 						p->position = p->target;
-						assert(p->path.size() > 0);
-						if (rs_transition->lane_index >= current_road_type.lanes_backward.size())
+						u64 points_count = rs_transition->points_stack.size();
+						if (points_count > 0)
 						{
-							if (p->path.size() == 1)
-							{
-								if (rs_transition->at_path_array_index >= p->path_end_building->snapped_t_index)
-								{
-									v3 car_park_pos = p->path_end_building->position +
-										(v3)(glm::rotate(m4(1.0f), p->path_end_building->object->rotation.z, v3{ 0.0f, 0.0f, 1.0f }) *
-											glm::rotate(m4(1.0f), p->path_end_building->object->rotation.y, v3{ 0.0f, 1.0f, 0.0f }) *
-											glm::rotate(m4(1.0f), p->path_end_building->object->rotation.x, v3{ 1.0f, 0.0f, 0.0f }) *
-											v4(p->path_end_building->car_park.offset, 1.0f));
-									set_target_and_car_direction(p, car_park_pos);
-									p->heading_to_a_building_or_parking = true;
-									continue;
-								}
-							}
-							if (rs_transition->at_path_array_index < current_road_segment.curve_samples.size() - 1)
-							{
-								rs_transition->at_path_array_index++;
-								v3 dir = (rs_transition->at_path_array_index < current_road_segment.curve_samples.size() - 1) ?
-									current_road_segment.curve_samples[rs_transition->at_path_array_index + 1] - current_road_segment.curve_samples[rs_transition->at_path_array_index] :
-									current_road_segment.GetEndDirection() * -1.0f;
-
-								v3 rotated_dir = glm::normalize(v3{ dir.y, -dir.x, 0.0f });
-								v3 target = current_road_segment.curve_samples[rs_transition->at_path_array_index];
-								target += rotated_dir * current_road_type.lanes_forward[rs_transition->lane_index - current_road_type.lanes_backward.size()].distance_from_center;
-
-								set_target_and_car_direction(p, target);
-								continue;
-							}
+							v3 target = rs_transition->points_stack[points_count - 1];
+							rs_transition->points_stack.pop_back();
+							set_target_and_car_direction(p, target);
+							continue;
 						}
-						else
+						if (p->path.size() == 1)
 						{
-							if (p->path.size() == 1)
-							{
-								if (rs_transition->at_path_array_index <= p->path_end_building->snapped_t_index)
-								{
-									v3 car_park_pos = p->path_end_building->position +
-										(v3)(glm::rotate(m4(1.0f), p->path_end_building->object->rotation.z, v3{ 0.0f, 0.0f, 1.0f }) *
-											glm::rotate(m4(1.0f), p->path_end_building->object->rotation.y, v3{ 0.0f, 1.0f, 0.0f }) *
-											glm::rotate(m4(1.0f), p->path_end_building->object->rotation.x, v3{ 1.0f, 0.0f, 0.0f }) *
-											v4(p->path_end_building->car_park.offset, 1.0f));
-									set_target_and_car_direction(p, car_park_pos);
-									p->heading_to_a_building_or_parking = true;
-									continue;
-								}
-							}
-							if (rs_transition->at_path_array_index > 0)
-							{
-								rs_transition->at_path_array_index--;
-								assert(rs_transition->at_path_array_index + 1 < current_road_segment.curve_samples.size());
-								v3 dir = current_road_segment.curve_samples[rs_transition->at_path_array_index + 1] - current_road_segment.curve_samples[rs_transition->at_path_array_index];
-
-								v3 rotated_dir = glm::normalize(v3{ dir.y, -dir.x, 0.0f });
-								v3 target = current_road_segment.curve_samples[rs_transition->at_path_array_index];
-								target += rotated_dir * current_road_type.lanes_backward[rs_transition->lane_index].distance_from_center;
-
-								set_target_and_car_direction(p, target);
-								continue;
-							}
+							v3 car_park_pos = p->path_end_building->position +
+								(v3)(glm::rotate(m4(1.0f), p->path_end_building->object->rotation.z, v3{ 0.0f, 0.0f, 1.0f }) *
+									glm::rotate(m4(1.0f), p->path_end_building->object->rotation.y, v3{ 0.0f, 1.0f, 0.0f }) *
+									glm::rotate(m4(1.0f), p->path_end_building->object->rotation.x, v3{ 1.0f, 0.0f, 0.0f }) *
+									v4(p->path_end_building->car_park.offset, 1.0f));
+							set_target_and_car_direction(p, car_park_pos);
+							p->heading_to_a_building_or_parking = true;
+							continue;
 						}
 
 						/*Next Path*/ {
@@ -547,22 +493,7 @@ namespace Can
 							p->road_segment = rs_transition->road_segment_index;
 							next_road_segment.people.push_back(p);
 
-							auto& curve_samples = next_road_segment.curve_samples;
-							bool from_start = next_road_segment.EndNode == rs_transition->next_road_node_index;
-							if (rs_transition->next_road_node_index == -1)
-								from_start = next_road_segment.StartNode == next_road_node_index;
-							rs_transition->at_path_array_index = from_start ? 0 : curve_samples.size() - 1;
-							v3 end_point = curve_samples[rs_transition->at_path_array_index];
-							v3 end_dir = from_start ? next_road_segment.GetStartDirection() : next_road_segment.GetEndDirection() * -1.0f;
-							v3 rotated_dir = glm::normalize(v3{ end_dir.y, -end_dir.x, 0.0f });
-							RoadType& next_road_type = road_types[next_road_segment.type];
-							u64 lanes_backward_size = next_road_type.lanes_backward.size();
-							if (rs_transition->lane_index < lanes_backward_size)
-								rotated_dir *= next_road_type.lanes_backward[rs_transition->lane_index].distance_from_center;
-							else
-								rotated_dir *= next_road_type.lanes_forward[rs_transition->lane_index - lanes_backward_size].distance_from_center;
-
-							set_target_and_car_direction(p, end_point + rotated_dir);
+							set_target_and_car_direction(p, rs_transition->points_stack[rs_transition->points_stack.size() - 1]);
 						}
 					}
 				}
