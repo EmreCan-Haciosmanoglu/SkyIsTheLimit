@@ -407,12 +407,17 @@ namespace Can
 					for (u64 j = 0; j < path_count; j++)
 					{
 						auto td = new RS_Transition_For_Driving();
-						u64 points_count = td->points_stack.size();
 						fread(&td->road_segment_index, sizeof(u64), 1, read_file);
 						fread(&td->next_road_node_index, sizeof(s64), 1, read_file);
+						u64 points_count = 0;
 						fread(&points_count, sizeof(u64), 1, read_file);
-						for (v3& point : td->points_stack)
+						td->points_stack.reserve(points_count);
+						for (u64 k = 0; k < points_count; k++)
+						{
+							v3 point{};
 							fread(&point, sizeof(f32), 3, read_file);
+							td->points_stack.push_back(point);
+						}
 						fread(&td->lane_index, sizeof(u32), 1, read_file);
 						person->path.push_back(td);
 					}
@@ -643,17 +648,12 @@ namespace Can
 					for (u64 j = 0; j < path_count; j++)
 					{
 						auto td = (RS_Transition_For_Driving*)p->path[j];
-						u64 points_count = 0;
 						fwrite(&td->road_segment_index, sizeof(u64), 1, save_file);
 						fwrite(&td->next_road_node_index, sizeof(s64), 1, save_file);
+						u64 points_count = td->points_stack.size();
 						fwrite(&points_count, sizeof(u64), 1, save_file);
-						td->points_stack.reserve(points_count);
-						for (u64 k = 0; k < points_count; k++)
-						{
-							v3 point{};
+						for (v3& point : td->points_stack)
 							fwrite(&point, sizeof(f32), 3, save_file);
-							td->points_stack.push_back(point);
-						}
 						fwrite(&td->lane_index, sizeof(u32), 1, save_file);
 					}
 				}

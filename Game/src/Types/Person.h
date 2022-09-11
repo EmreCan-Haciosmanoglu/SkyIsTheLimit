@@ -36,6 +36,8 @@ namespace Can
 		Building* path_end_building = nullptr;
 		Building* path_start_building = nullptr;
 
+		bool path_is_blocked = false;
+
 		bool from_right = false;
 		bool heading_to_a_building_or_parking = false;
 		bool heading_to_a_car = false;

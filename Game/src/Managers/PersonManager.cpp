@@ -23,6 +23,13 @@ namespace Can
 		auto& road_segments = m_Scene->m_RoadManager.road_segments;
 		auto& road_nodes = m_Scene->m_RoadManager.road_nodes;
 		auto& road_types = m_Scene->MainApplication->road_types;
+
+		for (size_t person_index = 0; person_index < m_People.size(); person_index++)
+		{
+			Person* p = m_People[person_index];
+			if (p->status == PersonStatus::Driving)
+				p->path_is_blocked = false;
+		}
 		for (size_t person_index = 0; person_index < m_People.size(); person_index++)
 		{
 			Person* p = m_People[person_index];
@@ -360,9 +367,9 @@ namespace Can
 			{
 				Car* c = p->car;
 				f32 car_legth = c->object->prefab->boundingBoxM.x - c->object->prefab->boundingBoxL.x;
-				v3 left = p->target - c->object->position;
-				f32 left_length = glm::length(left);
-				v3 unit = left / left_length;
+				v3 journey_left = p->target - c->object->position;
+				f32 journey_left_length = glm::length(journey_left);
+				v3 unit = journey_left / journey_left_length;
 				f32 converted_speed = (p->car->speed_in_kmh / 10.f) / 3.6f;
 				f32 journey_length = ts * converted_speed;
 				u64 path_count = p->path.size();
@@ -374,9 +381,10 @@ namespace Can
 
 				if (p->heading_to_a_building_or_parking == false)
 				{
+					bool don_t_ignore_this_person = true;
 					v3 person_s_position_in_next_frame;
 					f32 person_s_rotation_in_next_frame;
-					if (journey_length < left_length)
+					if (journey_length < journey_left_length)
 					{
 						person_s_position_in_next_frame = c->object->position + unit * journey_length;
 						person_s_rotation_in_next_frame = c->object->rotation.z;
@@ -393,45 +401,112 @@ namespace Can
 						else
 						{
 							if (path_count > 1)
-								next_target = ((RS_Transition_For_Driving*)(p->path[1]))->points_stack[points_count - 1];
+							{
+								auto next_rs = (RS_Transition_For_Driving*)(p->path[1]);
+								next_target = next_rs->points_stack[next_rs->points_stack.size() - 1];
+							}
 							else
-								next_target = p->path_end_building->position +
-								(v3)(glm::rotate(m4(1.0f), p->path_end_building->object->rotation.z, v3{ 0.0f, 0.0f, 1.0f }) *
-									glm::rotate(m4(1.0f), p->path_end_building->object->rotation.y, v3{ 0.0f, 1.0f, 0.0f }) *
-									glm::rotate(m4(1.0f), p->path_end_building->object->rotation.x, v3{ 1.0f, 0.0f, 0.0f }) *
-									v4(p->path_end_building->car_park.offset, 1.0f));
+							{
+								don_t_ignore_this_person = false;
+							}
 						}
 
 						v2 direction = glm::normalize((v2)(next_target - person_s_position_in_next_frame));
 						person_s_rotation_in_next_frame = glm::acos(direction.x) * ((float)(direction.y > 0.0f) * 2.0f - 1.0f) + glm::radians(180.0f);
 					}
 
-					auto& people_on_the_road = current_road_segment.people;
-					u64 count = people_on_the_road.size();
-					bool road_is_blocked = false;
-					for (u64 i = 0; i < count; i++)
+					if (don_t_ignore_this_person)
 					{
-						Person* other_person_on_the_road = people_on_the_road[i];
-						if (other_person_on_the_road->status != PersonStatus::Driving) continue;
-						auto other_person_s_transition = (RS_Transition_For_Driving*)other_person_on_the_road->path[0];
-						if (other_person_s_transition->lane_index != rs_transition->lane_index) continue;
+						auto& people_on_the_road = current_road_segment.people;
+						u64 count = people_on_the_road.size();
+						p->path_is_blocked = false;
+						for (u64 in = 0; in < count; in++)
+						{
+							Person* other_person_on_the_road = people_on_the_road[in];
+							if (other_person_on_the_road == p) continue;
 
-						v3 other_person_s_journey_left = other_person_on_the_road->target - other_person_on_the_road->car->object->position;
-						f32 other_person_s_journey_left_length = glm::length(other_person_s_journey_left);
-						v3 other_person_s_journey_unit = other_person_s_journey_left / other_person_s_journey_left_length;
+							if (other_person_on_the_road->status != PersonStatus::Driving) continue;
+							auto other_person_s_transition = (RS_Transition_For_Driving*)other_person_on_the_road->path[0];
 
-						if (other_person_s_transition->points_stack.size() > rs_transition->points_stack.size())
-							continue;
+							if (other_person_s_transition->lane_index != rs_transition->lane_index) continue;
+							if (other_person_s_transition->points_stack.size() > rs_transition->points_stack.size()) continue;
+							Car* other_person_s_car = other_person_on_the_road->car;
+							
+							v3 other_person_s_journey_left = other_person_on_the_road->target - other_person_on_the_road->car->object->position;
+							f32 other_person_s_journey_left_length = glm::length(other_person_s_journey_left);
 
-						assert(false);
-						v3 other_person_s_position_in_next_frame;
-						f32 other_person_s_rotation_in_next_frame;
-						// collision check
+							if (other_person_s_transition->points_stack.size() == rs_transition->points_stack.size())
+								if (other_person_s_journey_left_length >= journey_left_length) continue;
+
+							v3 other_person_s_position_in_next_frame;
+							f32 other_person_s_rotation_in_next_frame;
+							if (other_person_on_the_road->path_is_blocked)
+							{
+								other_person_s_position_in_next_frame = other_person_s_car->object->position;
+								other_person_s_rotation_in_next_frame = other_person_s_car->object->rotation.z;
+							}
+							else
+							{
+								v3 other_person_s_journey_left = other_person_on_the_road->target - other_person_on_the_road->car->object->position;
+								f32 other_person_s_journey_left_length = glm::length(other_person_s_journey_left);
+								v3 other_person_s_journey_unit = other_person_s_journey_left / other_person_s_journey_left_length;
+
+								f32 other_person_s_converted_speed = (other_person_s_car->speed_in_kmh / 10.f) / 3.6f;
+								f32 other_person_s_journey_length = ts * other_person_s_converted_speed;
+								if (other_person_s_journey_length < other_person_s_journey_left_length)
+								{
+									other_person_s_position_in_next_frame = other_person_s_car->object->position + other_person_s_journey_unit * other_person_s_journey_length;
+									other_person_s_rotation_in_next_frame = other_person_s_car->object->rotation.z;
+								}
+								else
+								{
+									other_person_s_position_in_next_frame = other_person_on_the_road->target;
+									v3 next_target;
+									u64 points_count = other_person_s_transition->points_stack.size();
+									if (points_count > 0)
+									{
+										next_target = other_person_s_transition->points_stack[points_count - 1];
+									}
+									else
+									{
+										if (other_person_on_the_road->path.size() > 1)
+										{
+											auto next_rs = (RS_Transition_For_Driving*)(other_person_on_the_road->path[1]);
+											next_target = next_rs->points_stack[next_rs->points_stack.size() - 1];
+										}
+										else
+										{
+											continue;
+										}
+									}
+
+									v2 direction = glm::normalize((v2)(next_target - other_person_s_position_in_next_frame));
+									other_person_s_rotation_in_next_frame = glm::acos(direction.x) * ((float)(direction.y > 0.0f) * 2.0f - 1.0f) + glm::radians(180.0f);
+								}
+							}
+
+							v2 mtv = Helper::CheckRotatedRectangleCollision(
+								c->object->prefab->boundingBoxL,
+								c->object->prefab->boundingBoxM,
+								person_s_rotation_in_next_frame,
+								person_s_position_in_next_frame,
+								other_person_s_car->object->prefab->boundingBoxL,
+								other_person_s_car->object->prefab->boundingBoxM,
+								other_person_s_rotation_in_next_frame,
+								other_person_s_position_in_next_frame
+							);
+
+							if (glm::length(mtv) > 0.0f)
+							{
+								p->path_is_blocked = true;
+								break;
+							}
+						}
+						if (p->path_is_blocked) continue;
 					}
-					if (road_is_blocked) continue;
 				}
 
-				if (journey_length < left_length)
+				if (journey_length < journey_left_length)
 				{
 					c->object->SetTransform(c->object->position + unit * journey_length);
 				}
