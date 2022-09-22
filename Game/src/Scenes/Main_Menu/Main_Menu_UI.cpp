@@ -314,7 +314,7 @@ namespace Can
 		u16 flags = immediate_button(button_rect, text_1, button_theme, __LINE__);
 		if (flags & BUTTON_STATE_FLAGS_PRESSED)
 			std::cout << "Continue The Game is Pressed\n";
-		if (flags & BUTTON_STATE_FLAGS_RELEASED)
+		if (flags & BUTTON_STATE_FLAGS_RELEASED && ui.game_instances.size() > 0)
 		{
 			std::cout << "Continue The Game is Released\n";
 			GameApp::instance->start_the_game(ui.game_instances[0], true);
@@ -451,7 +451,7 @@ namespace Can
 			r.y += r.h + sub_region_button_margin;
 
 			immediate_begin_sub_region(sub_region_rect, sub_region_theme, __LINE__);
-			for(u64 i = 0; i < ui.game_instances.size(); i++)
+			for (u64 i = 0; i < ui.game_instances.size(); i++)
 			{
 				r.y -= r.h + sub_region_button_margin;
 				check_box_rect.y = r.y + r.h / 2 - check_box_rect.h / 2;

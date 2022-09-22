@@ -22,9 +22,6 @@ namespace Can
 		m_Guideline = new Object(m_Scene->MainApplication->buildings[m_Type]);
 		m_Guideline->enabled = false;
 	}
-	BuildingManager::~BuildingManager()
-	{
-	}
 
 	void BuildingManager::OnUpdate(v3& prevLocation, const v3& cameraPosition, const v3& cameraDirection)
 	{
@@ -53,71 +50,118 @@ namespace Can
 		GameApp* app = m_Scene->MainApplication;
 		Prefab* selectedBuilding = m_Guideline->prefab;
 		f32 buildingWidth = selectedBuilding->boundingBoxM.y - selectedBuilding->boundingBoxL.y;
-		f32 buildingDepthFromCenter = -selectedBuilding->boundingBoxL.x;
+		f32 offset_from_side_road = -selectedBuilding->boundingBoxL.x;
 
 		bool snappedToRoad = false;
 		if (snapOptions[0])
 		{
-			auto& segments = m_Scene->m_RoadManager.m_Segments;
-			u64 count = segments.size();
-			for (u64 rsIndex = 0; rsIndex < count; rsIndex++)
+			auto& segments = m_Scene->m_RoadManager.road_segments;
+			u64 capacity = segments.capacity;
+			for (u64 rsIndex = 0; rsIndex < capacity; rsIndex++)
 			{
-				RoadSegment& rs = segments[rsIndex];
+				auto values = segments.values;
+				if (values[rsIndex].valid == false)
+					continue;
+				RoadSegment& rs = values[rsIndex].value;
 				RoadType& type = app->road_types[rs.type];
 				if (type.zoneable == false)
 					continue;
 				f32 roadWidth = type.road_width;
 				f32 roadLength = type.road_length;
-				f32 snapDistance = buildingDepthFromCenter + (roadWidth * 0.5f);
+				f32 snapDistance = offset_from_side_road + (roadWidth * 0.5f);
 
 				const std::array<v3, 4>& vs = rs.GetCurvePoints();
 				std::array<std::array<v2, 3>, 2> roadPolygon = Math::GetBoundingBoxOfBezierCurve(vs, snapDistance);
 
 				if (Math::CheckPolygonPointCollision(roadPolygon, (v2)prevLocation))
 				{
-					std::vector<f32> ts{ 0.0f };
-					std::vector<v3> ps = Math::GetCubicCurveSamples(vs, roadLength, ts);
-					size_t size = ps.size();
-					v3 p0 = ps[0];
-					for (size_t i = 1; i < size; i++)
+					auto& ps = rs.curve_samples;
+					size_t curve_sample_count = ps.size();
+					v3 p_0;
+					v3 p_1 = ps[0];
+					for (size_t i = 1; i < curve_sample_count; i++)
 					{
-						v3 p1 = ps[i];
-						v3 dirToP1 = p1 - p0;
-						dirToP1.z = 0.0f;
-						dirToP1 = glm::normalize(dirToP1);
+						p_0 = p_1;
+						p_1 = ps[i];
+						v3 dir_to_p_1 = p_1 - p_0;
+						v3 dir_to_bulding_from_road_center = prevLocation - p_0;
+						v3 dir_to_p_2 = (i < curve_sample_count - 1) ? ps[i + 1] - p_1 : rs.GetEndDirection() * -1.0f;
 
-						v3 dirToPrev = prevLocation - p0;
-						dirToPrev.z = 0.0f;
-						f32 l1 = glm::length(dirToPrev);
+						dir_to_p_1.z = 0.0f;
+						dir_to_bulding_from_road_center.z = 0.0f;
+						dir_to_p_2.z = 0.0f;
 
-						f32 angle = glm::acos(glm::dot(dirToP1, dirToPrev) / l1);
-						f32 dist = l1 * glm::sin(angle);
 
-						if (dist < snapDistance)
+						f32 len_p_0_to_p_1 = glm::length(dir_to_p_1);
+						dir_to_p_1 = dir_to_p_1 / len_p_0_to_p_1;
+						dir_to_bulding_from_road_center = glm::normalize(dir_to_bulding_from_road_center);
+						dir_to_p_2 = glm::normalize(dir_to_p_2);
+
+						v3 rotated_1 = glm::normalize(v3{ dir_to_p_1.y, -dir_to_p_1.x, 0.0f }) * (roadWidth * 0.5f);
+						v3 rotated_2 = glm::normalize(v3{ dir_to_p_2.y, -dir_to_p_2.x, 0.0f }) * (roadWidth * 0.5f);
+
+						snapped_from_right = glm::cross(dir_to_p_1, dir_to_bulding_from_road_center).z < 0.0f;
+						if (snapped_from_right == false)
 						{
-							f32 c = l1 * glm::cos(angle);
-							if (c >= -0.5f * roadLength && c <= 1.5f * roadLength) // needs lil' bit more length to each directions
-							{
-								bool r = glm::cross(dirToP1, dirToPrev).z > 0.0f;
-								v3 shiftDir{ -dirToP1.y, dirToP1.x, 0.0f };
-								v3 shiftAmount = ((f32)r * 2.0f - 1.0f) * shiftDir * snapDistance;
-								prevLocation = p0 + (dirToP1 * c) + shiftAmount;
-								m_SnappedRoadSegment = rsIndex;
-								m_GuidelinePosition = prevLocation;
-								f32 rotationOffset = (f32)(dirToP1.x < 0.0f) * glm::radians(180.0f);
-								f32 rotation = glm::atan(dirToP1.y / dirToP1.x) + rotationOffset;
-								m_GuidelineRotation = v3{
-									0.0f,
-									0.0f,
-									(f32)r * glm::radians(180.0f) + glm::radians(-90.0f) + rotation
-								};
-								m_Guideline->SetTransform(m_GuidelinePosition, m_GuidelineRotation);
-								snappedToRoad = true;
-								m_SnappedT = ts[i];
-								goto snapped;
-							}
+							rotated_1 *= -1.0f;
+							rotated_2 *= -1.0f;
 						}
-						p0 = p1;
+
+						v3 road_side_end_point_one = p_0 + rotated_1;
+						v3 road_side_end_point_two = p_1 + rotated_2;
+
+						v3 dir_side_road = road_side_end_point_two - road_side_end_point_one;
+						v3 dir_to_building_from_side_road = prevLocation - road_side_end_point_one;
+						f32 scaler = glm::dot(dir_side_road, dir_to_building_from_side_road) / glm::length2(dir_side_road);
+						f32 scaler_max = std::max(1.0f, len_p_0_to_p_1 / glm::length(dir_side_road));
+						if (scaler > scaler_max) {
+
+							if (i < curve_sample_count - 1)
+								continue;
+							scaler = 1.0f;
+						}
+						else if (scaler > 1.0f)
+						{
+							scaler = 1.0f;
+						}
+						else if (scaler < 0.0f)
+						{
+							if (i == 1)
+								break;
+							if (scaler < 0.5f)
+								break;
+							scaler = 0.0f;
+						}
+
+						f32 dotted = std::max(-1.0f, std::min(1.0f, glm::dot(dir_to_p_1, dir_to_bulding_from_road_center)));
+						f32 angle = glm::acos(dotted);
+						f32 lenn = glm::length(prevLocation - p_0);
+						f32 dist = lenn * glm::sin(angle);
+						if (dist > snapDistance || dist < -snapDistance) continue;
+
+						v3 rotated_3 = glm::normalize(v3{ dir_side_road.y, -dir_side_road.x, 0.0f }) * offset_from_side_road;
+						if (snapped_from_right == false)
+							rotated_3 *= -1.0f;
+
+						prevLocation = road_side_end_point_one + dir_side_road * scaler + rotated_3;
+						f32 rotation_offset = (f32)(dir_side_road.x < 0.0f) * glm::radians(180.0f);
+						f32 rotation = glm::atan(dir_side_road.y / dir_side_road.x) + rotation_offset;
+						m_SnappedRoadSegment = rsIndex;
+						m_GuidelinePosition = prevLocation;
+						m_GuidelineRotation = v3{ 0.0f, 0.0f,
+							((f32)snapped_from_right - 1.0f) * glm::radians(180.0f) + glm::radians(-90.0f) + rotation
+						};
+						m_Guideline->SetTransform(m_GuidelinePosition, m_GuidelineRotation);
+						snappedToRoad = true;
+						snapped_t_index = i - 1;
+						snapped_t = scaler;
+
+#if 1
+						rsIndex = capacity;
+						break;
+#elif
+						goto snapped;
+#endif
 					}
 				}
 			}
@@ -131,7 +175,7 @@ namespace Can
 				v2 boundingL = (v2)m_Guideline->prefab->boundingBoxL;
 				v2 boundingM = (v2)m_Guideline->prefab->boundingBoxM;
 				v2 boundingP = (v2)prevLocation;
-				auto& segments = m_Scene->m_RoadManager.m_Segments;
+				auto& segments = m_Scene->m_RoadManager.road_segments;
 
 				for (Building* building : segments[m_SnappedRoadSegment].Buildings)
 				{
@@ -188,11 +232,14 @@ namespace Can
 				v3{std::max({A.x, B.x, C.x, D.x}), std::max({A.y, B.y, C.y, D.y}), A.z + building_height}
 			};
 
-			auto& segments = m_Scene->m_RoadManager.m_Segments;
-			u64 count = segments.size();
-			for (u64 rsIndex = 0; rsIndex < count; rsIndex++)
+			auto& segments = m_Scene->m_RoadManager.road_segments;
+			u64 capacity = segments.capacity;
+			for (u64 rsIndex = 0; rsIndex < capacity; rsIndex++)
 			{
-				RoadSegment& rs = segments[rsIndex];
+				auto values = segments.values;
+				if (values[rsIndex].valid == false)
+					continue;
+				RoadSegment& rs = values[rsIndex].value;
 				RoadType& type = app->road_types[rs.type];
 				if (rsIndex == m_SnappedRoadSegment)
 					continue;
@@ -320,58 +367,99 @@ namespace Can
 	}
 	bool BuildingManager::OnMousePressed_Construction()
 	{
+		auto& car_prefabs = m_Scene->MainApplication->cars;
+		auto& person_prefabs = m_Scene->MainApplication->people;
+
+		auto& person_manager = m_Scene->m_PersonManager;
+		auto& tree_manager = m_Scene->m_TreeManager;
+		auto& car_manager = m_Scene->m_CarManager;
+
+		auto& road_segments = m_Scene->m_RoadManager.road_segments;
+		auto& trees = tree_manager.GetTrees();
+
 		if (!b_ConstructionRestricted)
 		{
-			auto& segments = m_Scene->m_RoadManager.m_Segments;
-			Building* newBuilding = new Building(
+			Building* new_building = new Building(
 				m_Guideline->prefab,
 				m_SnappedRoadSegment,
-				m_SnappedT,
+				snapped_t_index,
+				snapped_t,
 				m_GuidelinePosition,
 				m_GuidelineRotation
 			);
-			newBuilding->type = m_Type;
+			new_building->type = m_Type;
+			new_building->snapped_to_right = snapped_from_right;
 			if (m_SnappedRoadSegment != (u64)-1)
-				segments[m_SnappedRoadSegment].Buildings.push_back(newBuilding);
-			m_Buildings.push_back(newBuilding);
-			
-			bool ishome = Utility::Random::Float(1.0f)>0.5f;
-			if (ishome)
+				road_segments[m_SnappedRoadSegment].Buildings.push_back(new_building);
+			m_Buildings.push_back(new_building);
+
+			new_building->is_home = Utility::Random::Float(1.0f) > 0.5f;
+			if (new_building->is_home)
 			{
-				m_HomeBuildings.push_back(newBuilding);
-				u8 domicilled = Utility::Random::Integer(2, 5);
-				newBuilding->capacity = domicilled;
-				auto& manager = m_Scene->m_PersonManager;
+				m_HomeBuildings.push_back(new_building);
+				u8 domicilled = Utility::Random::Integer(6, 10);
+				new_building->capacity = domicilled;
 				for (u64 i = 0; i < domicilled; i++)
 				{
 					u64 type = 0;
-					Prefab* man = (m_Scene->MainApplication->people[type]);
-					Person* p = new Person(man, 1);
-					p->type = type;
-					p->home = newBuilding;
-					p->status = PersonStatus::AtHome;
-					p->time_left = Utility::Random::Float(1.0f,5.0f);
-					newBuilding->residents.push_back(p);
+					Person* new_person = new Person(
+						person_prefabs[type],
+						Utility::Random::Float(4.0f, 6.0f)
+					);
+					new_person->type = type;
+					new_person->home = new_building;
+					new_person->status = PersonStatus::AtHome;
+					new_person->time_left = Utility::Random::Float(1.0f, 5.0f);
+					new_building->people.push_back(new_person);
+					bool have_enough_money_to_own_car = Utility::Random::Float(1.0f) > 0.5f;
+					if (have_enough_money_to_own_car || true)
+					{
+						u64 new_car_type = 0;
+						Car* new_car = new Car(
+							car_prefabs[new_car_type], 
+							new_car_type,
+							Utility::Random::Float(30.0f, 50.0f)
+						);
+						v3 car_pos = new_building->position + 
+							(v3)(glm::rotate(m4(1.0f), new_building->object->rotation.z, v3{ 0.0f, 0.0f, 1.0f }) *
+							glm::rotate(m4(1.0f), new_building->object->rotation.y, v3{ 0.0f, 1.0f, 0.0f }) *
+							glm::rotate(m4(1.0f), new_building->object->rotation.x, v3{ 1.0f, 0.0f, 0.0f }) *
+							v4(new_building->car_park.offset,1.0f));
+						new_car->object->SetTransform(
+							car_pos,
+							glm::rotateZ(
+								new_building->object->rotation,
+								glm::radians(new_building->car_park.rotation_in_degrees)
+							)
+						);
+						new_car->object->enabled = true;
+						new_car->owner = new_person;
+						new_person->car = new_car;
+						car_manager.m_Cars.push_back(new_car);
+					}
 
-					manager.m_People.push_back(p);
+					person_manager.m_People.push_back(new_person);
 					Building* work = getAvailableWorkBuilding();
-					p->work = work;
+					if (work)
+					{
+						work->people.push_back(new_person);
+						new_person->work = work;
+					}
 				}
 			}
 			else
 			{
-				m_WorkBuildings.push_back(newBuilding);
-				u8 worker = Utility::Random::Integer(2, 5);
-				newBuilding->capacity = worker;
-				auto& manager = m_Scene->m_PersonManager;
+				m_WorkBuildings.push_back(new_building);
+				u8 worker = Utility::Random::Integer(20, 50);
+				new_building->capacity = worker;
 				for (u64 i = 0; i < worker; i++)
 				{
 
-					Person* p = manager.get_worklessPerson();
+					Person* p = person_manager.get_worklessPerson();
 					if (p)
 					{
-						p->work = newBuilding;
-						newBuilding->workers.push_back(p);
+						p->work = new_building;
+						new_building->people.push_back(p);
 					}
 				}
 
@@ -379,20 +467,19 @@ namespace Can
 			ResetStates();
 			m_Guideline->enabled = true;
 
-			if (restrictions[0] && m_Scene->m_TreeManager.restrictions[0])
+			if (restrictions[0] && tree_manager.restrictions[0])
 			{
-				v2 buildingL = (v2)newBuilding->object->prefab->boundingBoxL;
-				v2 buildingM = (v2)newBuilding->object->prefab->boundingBoxM;
-				v2 buildingP = (v2)newBuilding->object->position;
+				v2 buildingL = (v2)new_building->object->prefab->boundingBoxL;
+				v2 buildingM = (v2)new_building->object->prefab->boundingBoxM;
+				v2 buildingP = (v2)new_building->object->position;
 
-				auto& trees = m_Scene->m_TreeManager.GetTrees();
 				for (size_t i = 0; i < trees.size(); i++)
 				{
 					Object* tree = trees[i]->object;
 					v2 mtv = Helper::CheckRotatedRectangleCollision(
 						buildingL,
 						buildingM,
-						newBuilding->object->rotation.z,
+						new_building->object->rotation.z,
 						buildingP,
 						(v2)tree->prefab->boundingBoxL,
 						(v2)tree->prefab->boundingBoxM,
@@ -452,7 +539,8 @@ namespace Can
 		m_GuidelineRotation = v3(0.0f);
 
 		m_SnappedRoadSegment = (u64)-1;
-		m_SnappedT = -1.0f;
+		snapped_t_index = 0;
+		snapped_t = -1.0f;
 
 		m_SelectedBuildingToDestruct = m_Buildings.end();
 
@@ -464,40 +552,54 @@ namespace Can
 	}
 	Building* BuildingManager::getAvailableWorkBuilding()
 	{
-		for(Building* b : m_WorkBuildings)
+		for (Building* b : m_WorkBuildings)
 		{
-			if (b->capacity > b->workers.size())
+			if (b->capacity > b->people.size())
 			{
 				return b;
 			}
 		}
 		return nullptr;
 	}
-	
+
 	void remove_building(Building* b)
 	{
 		GameScene* game = GameScene::ActiveGameScene;
 		auto& buildings = game->m_BuildingManager.m_Buildings;
-		auto& segments = game->m_RoadManager.m_Segments;
+		auto& home_buildings = game->m_BuildingManager.m_HomeBuildings;
+		auto& work_buildings = game->m_BuildingManager.m_WorkBuildings;
+		auto& segments = game->m_RoadManager.road_segments;
+		auto& people_on_the_road = game->m_PersonManager.people_on_the_road;
 
-		while (b->residents.size() > 0)
-			remove_person(b->residents[0]);
+		while (b->people.size() > 0)
+			remove_person(b->people[0]);
+
+		for (u64 i = people_on_the_road.size(); i > 0; i--)
+		{
+			Person* p = people_on_the_road[i - 1];
+			if (p->path_end_building == b)
+				reset_person_back_to_building_from(p);
+		}
 
 		if (b->connectedRoadSegment != -1)
 		{
 			auto& connected_buildings = segments[b->connectedRoadSegment].Buildings;
 			auto it = std::find(connected_buildings.begin(), connected_buildings.end(), b);
-			if (it != connected_buildings.end())
-				connected_buildings.erase(it);
-			else
-				assert(false);
+			assert(it != connected_buildings.end());
+			connected_buildings.erase(it);
 		}
 
 		auto it = std::find(buildings.begin(), buildings.end(), b);
-		if (it != buildings.end())
-			buildings.erase(it);
-		else
-			assert(false);
+		assert(it != buildings.end());
+		buildings.erase(it);
+
+		auto home_it = std::find(home_buildings.begin(), home_buildings.end(), b);
+		if (home_it != home_buildings.end())
+			home_buildings.erase(home_it);
+
+		auto work_it = std::find(work_buildings.begin(), work_buildings.end(), b);
+		if (work_it != work_buildings.end())
+			work_buildings.erase(work_it);
 
 		delete b;
 	}

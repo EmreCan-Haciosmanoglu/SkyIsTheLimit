@@ -56,6 +56,9 @@
       <Filter>Types</Filter>
     </ClInclude>
     <ClInclude Include="src\UIScene.h" />
+    <ClInclude Include="src\Managers\PersonManager.h" />
+    <ClInclude Include="src\Types\Person.h" />
+    <ClInclude Include="src\Types\Transition.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Building.cpp" />
@@ -93,5 +96,7 @@
       <Filter>Types</Filter>
     </ClCompile>
     <ClCompile Include="src\UIScene.cpp" />
+    <ClCompile Include="src\Managers\PersonManager.cpp" />
+    <ClCompile Include="src\Types\Person.cpp" />
   </ItemGroup>
 </Project>

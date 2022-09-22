@@ -9,6 +9,13 @@ namespace Can::Helper
 #define TERRAIN_SCALE_DOWN 10.0f
 #define COLOR_COUNT 5
 
+	struct Dijkstra_Node {
+		s64 distance;
+		s64 road_segment_index;
+		s64 prev_road_node_index;
+		s64 next_road_node_index;
+	};
+
 	bool CheckBoundingBoxHit(const v3& rayStartPoint, const v3& ray, const v3& least, const v3& most);
 
 	v2 CheckRotatedRectangleCollision(
@@ -45,14 +52,15 @@ namespace Can::Helper
 
 	std::string trim_path_and_extension(std::string& path);
 
-	std::vector<u64> get_path(u64 start, u8 dist);
-	std::vector<u64> get_path(u64 start, u64 end);
+	std::vector<Transition*> get_path(Building* start, u8 dist);
+	std::vector<Transition*> get_path(Building* start, Building* end);
+	std::vector<Transition*> get_path_for_a_car(Building* start, Building* end);
 
 	struct sort_by_angle
 	{
 		inline bool operator() (u64 roadSegment1, u64 roadSegment2)
 		{
-			auto& segments = GameScene::ActiveGameScene->m_RoadManager.m_Segments;
+			auto& segments = GameScene::ActiveGameScene->m_RoadManager.road_segments;
 			RoadSegment& rs1 = segments[roadSegment1];
 			RoadSegment& rs2 = segments[roadSegment2];
 			f32 roadSegmentR1 = 0.002f;
@@ -78,9 +86,8 @@ namespace Can::Helper
 				roadSegmentR2 = rs2.GetStartRotation().y;
 			}
 			else
-			{
-				std::cout << "Why are you here" << std::endl;
-			}
+				assert(false); // Why are you here
+			
 			roadSegmentR1 = std::fmod(roadSegmentR1 + glm::radians(360.0f), glm::radians(360.0f));
 			roadSegmentR2 = std::fmod(roadSegmentR2 + glm::radians(360.0f), glm::radians(360.0f));
 			return (roadSegmentR1 < roadSegmentR2);
@@ -90,7 +97,11 @@ namespace Can::Helper
 	{
 		inline bool operator() (std::pair<u64, std::vector<u64>> path1, std::pair<u64, std::vector<u64>> path2)
 		{
-			return path1 > path2;
+			return path1.first > path2.first;
+		}
+		inline bool operator() (Dijkstra_Node path1, Dijkstra_Node path2)
+		{
+			return path1.distance > path2.distance;
 		}
 	};
 }

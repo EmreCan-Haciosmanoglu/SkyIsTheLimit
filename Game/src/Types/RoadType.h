@@ -6,9 +6,9 @@ namespace Can
 {
 	struct Lane
 	{
-		float distance_from_center;
-		float speed_limit;
-		float width; // maybe?
+		float distance_from_center = 0.0f;
+		float speed_limit = 0.0f;
+		float width = 0.0f; // maybe?
 		// And other stuff??
 		// lane type? => 
 		//       for car, for tram for * 
@@ -19,7 +19,7 @@ namespace Can
 	{
 	public:
 		std::string name = "Unnamed Road";
-		
+
 		Prefab* road = nullptr;
 		Prefab* road_junction = nullptr;
 		Prefab* road_junction_mirror = nullptr;
@@ -50,10 +50,12 @@ namespace Can
 		f32 bridge_height = 0.01f; // for later
 
 		bool asymmetric = false;
+		bool has_median = false;
+		bool two_way = true;
 		bool left_hand_drive = true; // for later
 		bool zoneable = true;
 
-		std::vector<Lane> left;
-		std::vector<Lane> rigth;
+		std::vector<Lane> lanes_backward{ Lane{-0.5f, 5.0f, 0.05f}, Lane{-0.25f, 10.0f, 0.05f} };
+		std::vector<Lane> lanes_forward{ Lane{0.25f, 10.0f, 0.05f},  Lane{0.5f, 5.0f, 0.05f} };
 	};
 }

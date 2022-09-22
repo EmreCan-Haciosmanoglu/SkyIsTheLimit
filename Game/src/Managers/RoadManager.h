@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Can/Renderer/Object.h"
+#include "Can/Unordered_Array.h"
 
 namespace Can
 {
@@ -39,7 +40,8 @@ namespace Can
 		v3 location{ 0.0f, 0.0f, 0.0f };
 		s64 segment = -1;
 		s64 node = -1;
-		f32 T = 0.0f;
+		f32 t = 0.0f;
+		u64 t_index = 0;
 		s8 elevation_type = 0;
 	};
 
@@ -85,7 +87,7 @@ namespace Can
 		//inline std::vector<RoadSegment*>& GetRoadSegments() { return m_RoadSegments; }
 
 		u64 AddRoadSegment(const std::array<v3, 4>& curvePoints, s8 elevation_type);
-		u8 RemoveRoadSegment(u64 roadSIndex, u64 roadNode);
+		void RemoveRoadSegment(u64 road_segment_index);
 
 		SnapInformation CheckSnapping(const v3& prevLocation);
 
@@ -94,9 +96,9 @@ namespace Can
 		void SnapToGrid(v3& prevLocation);
 		void SnapToRoad(v3& prevLocation, bool isStart);
 		void SnapToHeight(const std::vector<u8>& indices, u8 index, v3& AB);
-		void SnapToAngle(v3& AB, s64 snappedNode, s64 snappedRoadSegment, f32 snappedT);
+		void SnapToAngle(v3& AB, s64 snappedNode, s64 snappedRoadSegment, u64 snapped_index);
+		bool RestrictSmallAngles(v2 direction, s64 snappedNode, s64 snappedRoadSegment, u64 snapped_index);
 		void ResetGuideLines();
-		bool RestrictSmallAngles(v2 direction, s64 snappedNode, s64 snappedRoadSegment, f32 snappedT);
 
 	public:
 
@@ -114,8 +116,8 @@ namespace Can
 		GameScene* m_Scene = nullptr;
 		RoadConstructionMode m_ConstructionMode = RoadConstructionMode::None;
 
-		std::vector<RoadSegment> m_Segments{};
-		std::vector<RoadNode> m_Nodes{};
+		Unordered_Array<RoadNode> road_nodes{};
+		Unordered_Array<RoadSegment> road_segments{};
 
 		int m_ConstructionPhase = 0;
 
@@ -136,13 +138,13 @@ namespace Can
 		bool b_ConstructionStartSnapped = false;
 		s64 m_StartSnappedSegment = -1;
 		s64 m_StartSnappedNode = -1;
-		f32 m_StartSnappedT = 0.0f;
+		u64 start_snapped_index = (u64)-1;
 
 		// End Snap
 		bool b_ConstructionEndSnapped = false;
 		s64 m_EndSnappedSegment = -1;
 		s64 m_EndSnappedNode = -1;
-		f32 m_EndSnappedT = 0.0f;
+		u64 end_snapped_index = (u64)-1;
 
 		// Destruction Snap
 		s64 m_DestructionSegment = -1;
@@ -167,4 +169,5 @@ namespace Can
 
 		u64 m_Type = 0;
 	};
+
 }

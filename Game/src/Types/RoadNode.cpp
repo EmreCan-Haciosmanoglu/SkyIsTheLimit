@@ -10,13 +10,6 @@
 
 namespace Can
 {
-	RoadNode::RoadNode(const std::vector<u64>& roadSegments, const v3& position, u8 elevation_type)
-		: roadSegments(roadSegments)
-		, position(position)
-		, elevation_type(elevation_type)
-	{
-		Reconstruct();
-	}
 	RoadNode::RoadNode(RoadNode&& other)
 		: object(other.object)
 		, roadSegments(other.roadSegments)
@@ -25,18 +18,18 @@ namespace Can
 		, elevation_type(other.elevation_type)
 		, bounding_polygon(other.bounding_polygon)
 	{
+		assert(false);
 		other.roadSegments.clear();
 		other.object = nullptr;
 	}
 	RoadNode::~RoadNode()
 	{
-		if (object)
-			std::cout << "";
 		delete object;
 	}
 
 	RoadNode& RoadNode::operator=(RoadNode&& other)
 	{
+		assert(false);
 		if (object) delete object;
 		object = other.object;
 		roadSegments = other.roadSegments;
@@ -68,6 +61,46 @@ namespace Can
 		}
 	}
 
+	void RoadNode::construct(RoadNode* dest, const std::vector<u64>& roadSegments, const v3& position, u8 elevation_type, u64 index)
+	{
+		dest->roadSegments = roadSegments;
+		dest->position = position;
+		dest->elevation_type = elevation_type;
+		dest->index = index;
+
+		dest->Reconstruct();
+	}
+
+	void RoadNode::move(RoadNode* dest, RoadNode* src)
+	{
+		dest->object = src->object;
+		dest->roadSegments = src->roadSegments;
+		dest->position = src->position;
+		dest->index = src->index;
+		dest->elevation_type = src->elevation_type;
+		dest->bounding_polygon = src->bounding_polygon;
+
+		src->roadSegments.clear();
+		src->object = nullptr;
+	}
+
+	void RoadNode::reset_to_default(RoadNode* dest)
+	{
+		dest->object = nullptr;
+		dest->roadSegments = {};
+		dest->people = {};
+		dest->position = v3(0.0f);
+		dest->index = (u64)(-1);
+		dest->elevation_type = 0;
+		dest->bounding_polygon = {};
+	}
+
+	void RoadNode::remove(RoadNode* obj)
+	{
+		delete obj->object;
+		RoadNode::reset_to_default(obj);
+	}
+
 	void RoadNode::Reconstruct()
 	{
 		GameApp* app = GameScene::ActiveGameScene->MainApplication;
@@ -75,40 +108,40 @@ namespace Can
 			return;
 
 		if (object) delete object;
-		auto& segments = GameScene::ActiveGameScene->m_RoadManager.m_Segments;
-		auto& nodes = GameScene::ActiveGameScene->m_RoadManager.m_Nodes;
+		auto& road_segments = GameScene::ActiveGameScene->m_RoadManager.road_segments;
+		auto& road_nodes = GameScene::ActiveGameScene->m_RoadManager.road_nodes;
 
 		Helper::UpdateTheTerrain(bounding_polygon, true);
 		bounding_polygon.clear();
 
-		RoadSegment& rs = segments[roadSegments[0]];
+		RoadSegment& road_segment = road_segments[roadSegments[0]];
 		if (roadSegments.size() == 1)
 		{
 			v3 rotation = v3(0.0f);
-			bool isStartNode = index == rs.StartNode;
+			bool isStartNode = index == road_segment.StartNode;
 
 			if (isStartNode)
 			{
-				rs.SetStartPosition(position);
+				road_segment.SetStartPosition(position);
 				rotation = {
 					0.0f,
 					0.0f, //-rs.GetStartRotation().x,
-					rs.GetStartRotation().y + glm::radians(180.0f)
+					road_segment.GetStartRotation().y + glm::radians(180.0f)
 				};
 			}
 			else
 			{
-				rs.SetEndPosition(position);
+				road_segment.SetEndPosition(position);
 				rotation = {
 					0.0f,
 					0.0f, //-rs.GetEndRotation().x,
-					rs.GetEndRotation().y + glm::radians(180.0f)
+					road_segment.GetEndRotation().y + glm::radians(180.0f)
 				};
 			}
-			RoadType& type = app->road_types[rs.type];
+			RoadType& type = app->road_types[road_segment.type];
 			Prefab* prefab =
-				rs.elevation_type == -1 ? (type.asymmetric && isStartNode ? type.tunnel_end_mirror : type.tunnel_end) :
-				rs.elevation_type == 0 ? (type.asymmetric && isStartNode ? type.road_end_mirror : type.road_end) : nullptr;
+				road_segment.elevation_type == -1 ? (type.asymmetric && isStartNode ? type.tunnel_end_mirror : type.tunnel_end) :
+				road_segment.elevation_type == 0 ? (type.asymmetric && isStartNode ? type.road_end_mirror : type.road_end) : nullptr;
 
 			object = new Object(prefab, position, rotation);
 			v3 A = prefab->boundingBoxL;
@@ -145,17 +178,17 @@ namespace Can
 		{
 			u64 next_i = (i + 1) % count;
 
-			RoadSegment& rs1 = segments[roadSegments[i]];
-			RoadSegment& rs2 = segments[roadSegments[next_i]];
+			RoadSegment& road_segment_1 = road_segments[roadSegments[i]];
+			RoadSegment& road_segment_2 = road_segments[roadSegments[next_i]];
 
-			v3 r1Dir = index == rs1.StartNode ? rs1.GetStartDirection() : rs1.GetEndDirection();
-			v3 r2Dir = index == rs2.StartNode ? rs2.GetStartDirection() : rs2.GetEndDirection();
+			v3 r1Dir = index == road_segment_1.StartNode ? road_segment_1.GetStartDirection() : road_segment_1.GetEndDirection();
+			v3 r2Dir = index == road_segment_2.StartNode ? road_segment_2.GetStartDirection() : road_segment_2.GetEndDirection();
 
 			v3 shiftR1Dir = glm::normalize(v3{ -r1Dir.y, +r1Dir.x, 0.0f });
 			v3 shiftR2Dir = glm::normalize(v3{ +r2Dir.y, -r2Dir.x, 0.0f });
 
-			RoadType& type1 = app->road_types[rs1.type];
-			RoadType& type2 = app->road_types[rs2.type];
+			RoadType& type1 = app->road_types[road_segment_1.type];
+			RoadType& type2 = app->road_types[road_segment_2.type];
 			v3 shiftR1Amount = shiftR1Dir * (type1.road_width * 0.5f);
 			v3 shiftR2Amount = shiftR2Dir * (type2.road_width * 0.5f);
 
@@ -184,7 +217,7 @@ namespace Can
 		u64 indexCount = 0;
 		for (u64 i = 0; i < count; i++)
 		{
-			const RoadSegment& rs = segments[roadSegments[i]];
+			const RoadSegment& rs = road_segments[roadSegments[i]];
 			RoadType& type = app->road_types[rs.type];
 			bool asym = type.asymmetric;
 			bool isStartNode = index == rs.StartNode;
@@ -203,7 +236,7 @@ namespace Can
 		u64 offset = 0;
 		for (u64 i = 0; i < count; i++)
 		{
-			RoadSegment& rs = segments[roadSegments[i]];
+			RoadSegment& rs = road_segments[roadSegments[i]];
 			RoadType& type = app->road_types[rs.type];
 			bool asym = type.asymmetric;
 			bool isStartNode = index == rs.StartNode;
@@ -353,7 +386,7 @@ namespace Can
 
 		Prefab* newPrefab = new Prefab(
 			"",
-			app->road_types[segments[roadSegments[0]].type].road_junction->shaderPath, // we may have different shaders in the future
+			app->road_types[road_segments[roadSegments[0]].type].road_junction->shaderPath, // we may have different shaders in the future
 			textures,
 			textureSlotIndex,
 			(f32*)TOVertices,
@@ -362,7 +395,17 @@ namespace Can
 		);
 		object = new Object(newPrefab, position);
 		object->owns_prefab = true;
-		if(elevation_type == 0)
-		Helper::UpdateTheTerrain(bounding_polygon, false);
+		if (elevation_type == 0)
+			Helper::UpdateTheTerrain(bounding_polygon, false);
+	}
+	bool remove_person_from(RoadNode& node, Person* person)
+	{
+		auto it = std::find(node.people.begin(), node.people.end(), person);
+		if (it != node.people.end())
+		{
+			node.people.erase(it);
+			return true;
+		}
+		return false;
 	}
 }

@@ -45,8 +45,6 @@ namespace Can
 			gameScene->SetConstructionMode(ConstructionMode::Building);
 		if (ImGui::RadioButton("Tree", gameScene->e_ConstructionMode == ConstructionMode::Tree))
 			gameScene->SetConstructionMode(ConstructionMode::Tree);
-		if (ImGui::RadioButton("Car", gameScene->e_ConstructionMode == ConstructionMode::Car))
-			gameScene->SetConstructionMode(ConstructionMode::Car);
 		if (ImGui::RadioButton("None", gameScene->e_ConstructionMode == ConstructionMode::None))
 			gameScene->SetConstructionMode(ConstructionMode::None);
 		ImGui::EndChild();
@@ -93,18 +91,6 @@ namespace Can
 				treeManager->SetConstructionMode(TreeConstructionMode::Removing);
 			if (ImGui::RadioButton("None", treeManager->GetConstructionMode() == TreeConstructionMode::None))
 				treeManager->SetConstructionMode(TreeConstructionMode::None);
-			ImGui::EndChild();
-		}
-		else if (gameScene->e_ConstructionMode == ConstructionMode::Car)
-		{
-			ImGui::Text("Car Construction Mode");
-			ImGui::BeginChild("Car Construction Mode", ImVec2(0, 85), true);
-			if (ImGui::RadioButton("Add", carManager->GetConstructionMode() == CarConstructionMode::Adding))
-				carManager->SetConstructionMode(CarConstructionMode::Adding);
-			if (ImGui::RadioButton("Remove", carManager->GetConstructionMode() == CarConstructionMode::Removing))
-				carManager->SetConstructionMode(CarConstructionMode::Removing);
-			if (ImGui::RadioButton("None", carManager->GetConstructionMode() == CarConstructionMode::None))
-				carManager->SetConstructionMode(CarConstructionMode::None);
 			ImGui::EndChild();
 		}
 

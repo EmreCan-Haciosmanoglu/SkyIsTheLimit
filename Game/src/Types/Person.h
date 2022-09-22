@@ -13,38 +13,40 @@ namespace Can
 		Driving
 	};
 	
+	struct Transition;
 	class Building;
 	class Car;
 	class Person
 	{
 	public:
-		Person(Prefab* type, f32 speed);
+		Person(){}
+		Person(Prefab* type, f32 speed_in_kmh);
 		~Person() { delete object; }
 
-		// Simulation
-		s64 road_segment = -1;
-		u64 t_index = 0;
-		f32 speed = 10.0f;
-		f32 t = 0.0f;
-		f32 junction_t = 0.0f;
-		std::array<v3, 3> drift_points;
-		v3 position;
-		v3 target;
-		std::vector<u64> path{};
-		Building* target_building = nullptr;
-		bool from_start = false;
-		bool in_junction = false;
-		bool heading_to_a_building = false;
-		PersonStatus status = PersonStatus::AtHome;
-		f32 time_left = 0.0f;
-		// 
-		Object* object;
 		u64 type = 0;
+		Object* object = nullptr;
+		s64 road_segment = -1;
+		s64 road_node = -1;
+		f32 speed_in_kmh = 10.0f;
+		v3 position{};
+		v3 target{};
+		PersonStatus status = PersonStatus::AtHome;
+		std::vector<Transition*> path{};
+
+		Building* path_end_building = nullptr;
+		Building* path_start_building = nullptr;
+
+		bool path_is_blocked = false;
+
+		bool from_right = false;
+		bool heading_to_a_building_or_parking = false;
+		bool heading_to_a_car = false;
+		f32 time_left = 0.0f;
 		std::string firstName = "Adam";
 		std::string midName = "Madam";
 		std::string surName = "Tadaam";
 		Building* home = nullptr;
 		Building* work = nullptr;
-		Car* iCar = nullptr;
+		Car* car = nullptr;
 	};
 }

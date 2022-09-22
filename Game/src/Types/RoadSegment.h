@@ -3,6 +3,7 @@
 #include <vector>
 
 #include "RoadType.h"
+#include "Can/Unordered_Array.h"
 
 namespace Can
 {
@@ -16,11 +17,6 @@ namespace Can
 	{
 	public:
 		RoadSegment() {}
-		RoadSegment(
-			u64 type,
-			const std::array<v3, 4>& curvePoints,
-			s8 elevation_type
-		);
 		RoadSegment(RoadSegment&& other);
 		~RoadSegment();
 
@@ -52,11 +48,20 @@ namespace Can
 		void Construct();
 		void CalcRotsAndDirs();
 
+		static void construct(
+			RoadSegment* dest,
+			u64 type,
+			const std::array<v3, 4>& curvePoints,
+			s8 elevation_type
+		);
+		static void move(RoadSegment* dest, RoadSegment* src);
+		static void reset_to_default (RoadSegment* dest);
+		static void remove(RoadSegment* obj);
 
+	public:
 		u64 type = 0;
 		std::vector<Building*> Buildings = {};
-		std::vector<Car*> Cars = {};
-		std::vector<Person*> peoples = {};
+		std::vector<Person*> people = {};
 
 		u64 StartNode = (u64)-1;
 		u64 EndNode = (u64)-1;
@@ -76,7 +81,6 @@ namespace Can
 		// +0 ground
 		// +1 bridge
 
-	private:
 
 		std::array<v3, 2> Directions{};
 		std::array<v2, 2> Rotations{
@@ -84,4 +88,6 @@ namespace Can
 			v2(0.0f)
 		};
 	};
+
+	bool remove_person_from(RoadSegment& segment, Person* person);
 }

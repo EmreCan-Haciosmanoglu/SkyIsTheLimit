@@ -72,10 +72,10 @@ namespace Can
 		PushLayer(gameScene);
 		if (is_old_game)
 			gameScene->load_the_game();
-		
+
 		uiScene = new UIScene(this);
 		PushOverlay(uiScene);
-		
+
 		debugScene = new Debug(this);
 		PushOverlay(debugScene);
 	}
@@ -108,6 +108,7 @@ namespace Can
 			char* name_key = "Name\0";
 			char* asym_key = "Asym\0";
 			char* zone_key = "Zoneable\0";
+			char* has_median_key = "Has_Median\0";
 
 			char* road_object_key = "Road_Object\0";
 			char* road_texture_key = "Road_Texture\0";
@@ -138,6 +139,9 @@ namespace Can
 
 			char* thumbnail_key = "Thumbnail\0";
 
+			char* lanes_backward_key = "Lanes_Backward\0";
+			char* lanes_forward_key = "Lanes_Forward\0";
+
 			std::string line;
 			while (std::getline(file, line))
 			{
@@ -150,6 +154,7 @@ namespace Can
 				std::string name;
 				std::string asym;
 				std::string zone;
+				std::string has_median;
 
 				std::string road_obj = path_to_roads;
 				std::string road_png = path_to_roads;
@@ -180,6 +185,11 @@ namespace Can
 
 				std::string thumbnail_png = path_to_roads;
 
+				std::vector<Lane> l_backward{};
+				u64 l_backward_count = 0;
+				std::vector<Lane> l_forward{};
+				u64 l_forward_count = 0;
+
 				// bool s for if key pair exist
 
 				road_types.push_back(RoadType());
@@ -196,6 +206,7 @@ namespace Can
 						type.road_end = new Prefab(road_end_obj, TEMP_SHADER_FILE_PATH, road_end_png);
 						type.thumbnail = Texture2D::Create(thumbnail_png);
 						type.zoneable = zone != "False";
+						type.has_median = has_median != "False";
 						if (asym != "False")
 						{
 							type.asymmetric = true;
@@ -223,10 +234,15 @@ namespace Can
 						type.road_width = type.road->boundingBoxM.y - type.road->boundingBoxL.y;
 						type.road_height = type.road->boundingBoxM.z - type.road->boundingBoxL.z;
 						type.road_junction_length = type.road_junction->boundingBoxM.x - type.road_junction->boundingBoxL.x;
+						if (l_backward_count > 0)
+							type.lanes_backward = l_backward;
+						if (l_forward_count > 0)
+							type.lanes_forward = l_forward;
 						/*clearing for next road*/ {
 							name = "";
 							asym = "";
 							zone = "";
+							has_median = "";
 
 							road_obj = path_to_roads;
 							road_png = path_to_roads;
@@ -257,6 +273,9 @@ namespace Can
 
 							thumbnail_png = path_to_roads;
 
+							l_backward = std::vector<Lane>();
+							l_forward = std::vector<Lane>();
+
 							tunnel_is_found = false;
 						}
 					}
@@ -270,6 +289,8 @@ namespace Can
 						asym = std::string(print_from);
 					else if (std::equal(line.begin(), seperator, zone_key))
 						zone = std::string(print_from);
+					else if (std::equal(line.begin(), seperator, has_median_key))
+						has_median = std::string(print_from);
 					else if (std::equal(line.begin(), seperator, road_object_key))
 						road_obj.append(print_from);
 					else if (std::equal(line.begin(), seperator, road_texture_key))
@@ -323,6 +344,73 @@ namespace Can
 						tunnel_entrance_mirror_png.append(print_from);
 					else if (std::equal(line.begin(), seperator, thumbnail_key))
 						thumbnail_png.append(print_from);
+					else if (std::equal(line.begin(), seperator, lanes_backward_key))
+					{
+						std::stringstream ss;
+						ss << std::string(print_from);
+
+						ss >> l_backward_count;
+						l_backward.reserve(l_backward_count);
+						u64 lanes_read = 0;
+						while (std::getline(file, line))
+						{
+							std::string::iterator first_seperator = std::find(line.begin(), line.end(), ':');
+							std::string::iterator second_seperator = std::find(first_seperator + 1, line.end(), ':');
+							Lane lane{};
+							ss.clear();
+							ss.str("");
+							ss << std::string(line.begin(), first_seperator);
+							ss >> lane.distance_from_center;
+
+							ss.clear();
+							ss.str("");
+							ss << std::string(first_seperator + 1, second_seperator);
+							ss >> lane.speed_limit;
+
+							ss.clear();
+							ss.str("");
+							ss << std::string(second_seperator + 1, line.end());
+							ss >> lane.width;
+							l_backward.push_back(lane);
+							lanes_read++;
+							if (lanes_read >= l_backward_count)
+								break;
+						}
+						
+					}
+					else if (std::equal(line.begin(), seperator, lanes_forward_key))
+					{
+						std::stringstream ss;
+						ss << std::string(print_from);
+
+						ss >> l_forward_count;
+						l_backward.reserve(l_forward_count);
+						u64 lanes_read = 0;
+						while (std::getline(file, line))
+						{
+							std::string::iterator first_seperator = std::find(line.begin(), line.end(), ':');
+							std::string::iterator second_seperator = std::find(first_seperator + 1, line.end(), ':');
+							Lane lane{};
+							ss.clear();
+							ss.str("");
+							ss << std::string(line.begin(), first_seperator);
+							ss >> lane.distance_from_center;
+
+							ss.clear();
+							ss.str("");
+							ss << std::string(first_seperator + 1, second_seperator);
+							ss >> lane.speed_limit;
+
+							ss.clear();
+							ss.str("");
+							ss << std::string(second_seperator + 1, line.end());
+							ss >> lane.width;
+							l_forward.push_back(lane);
+							lanes_read++;
+							if (lanes_read >= l_forward_count)
+								break;
+						}
+					}
 				}
 			}
 			file.close();

@@ -140,22 +140,18 @@ namespace Can
 				entt::entity panelRoadsID = this->m_PanelRoads->entityID;
 				entt::entity panelBuildingsID = this->m_PanelBuildings->entityID;
 				entt::entity panelTreesID = this->m_PanelTrees->entityID;
-				entt::entity panelCarsID = this->m_PanelCars->entityID;
 
 				if (mainRegistry.has<HiddenComponent>(panelBuildingsID) &&
-					mainRegistry.has<HiddenComponent>(panelTreesID) &&
-					mainRegistry.has<HiddenComponent>(panelCarsID)
+					mainRegistry.has<HiddenComponent>(panelTreesID)
 					)
 				{
 					entt::entity buttonRoadsID = this->m_ButtonRoads->entityID;
 					entt::entity buttonBuildingsID = this->m_ButtonBuildings->entityID;
 					entt::entity buttonTreesID = this->m_ButtonTrees->entityID;
-					entt::entity buttonCarsID = this->m_ButtonCars->entityID;
 
 					TransformComponent& transformR = mainRegistry.get<TransformComponent>(buttonRoadsID);
 					TransformComponent& transformB = mainRegistry.get<TransformComponent>(buttonBuildingsID);
 					TransformComponent& transformT = mainRegistry.get<TransformComponent>(buttonTreesID);
-					TransformComponent& transformC = mainRegistry.get<TransformComponent>(buttonCarsID);
 
 					v3 movement = { 0.0f, 5.2f, 0.0f };
 
@@ -165,7 +161,6 @@ namespace Can
 						transformR.Position -= movement;
 						transformB.Position -= movement;
 						transformT.Position -= movement;
-						transformC.Position -= movement;
 					}
 					else
 					{
@@ -173,7 +168,6 @@ namespace Can
 						transformR.Position += movement;
 						transformB.Position += movement;
 						transformT.Position += movement;
-						transformC.Position += movement;
 					}
 				}
 				else
@@ -181,7 +175,6 @@ namespace Can
 					mainRegistry.remove<HiddenComponent>(panelRoadsID);
 					mainRegistry.emplace_or_replace<HiddenComponent>(panelBuildingsID);
 					mainRegistry.emplace_or_replace<HiddenComponent>(panelTreesID);
-					mainRegistry.emplace_or_replace<HiddenComponent>(panelCarsID);
 
 				}
 			},
@@ -203,24 +196,20 @@ namespace Can
 				entt::entity panelRoadsID = this->m_PanelRoads->entityID;
 				entt::entity panelBuildingsID = this->m_PanelBuildings->entityID;
 				entt::entity panelTreesID = this->m_PanelTrees->entityID;
-				entt::entity panelCarsID = this->m_PanelCars->entityID;
 
 				if (
 					mainRegistry.has<HiddenComponent>(panelRoadsID) &&
-					mainRegistry.has<HiddenComponent>(panelTreesID) &&
-					mainRegistry.has<HiddenComponent>(panelCarsID)
+					mainRegistry.has<HiddenComponent>(panelTreesID)
 
 					)
 				{
 					entt::entity buttonRoadsID = this->m_ButtonRoads->entityID;
 					entt::entity buttonBuildingsID = this->m_ButtonBuildings->entityID;
 					entt::entity buttonTreesID = this->m_ButtonTrees->entityID;
-					entt::entity buttonCarsID = this->m_ButtonCars->entityID;
 
 					TransformComponent& transformR = mainRegistry.get<TransformComponent>(buttonRoadsID);
 					TransformComponent& transformB = mainRegistry.get<TransformComponent>(buttonBuildingsID);
 					TransformComponent& transformT = mainRegistry.get<TransformComponent>(buttonTreesID);
-					TransformComponent& transformC = mainRegistry.get<TransformComponent>(buttonCarsID);
 
 					v3 movement = { 0.0f, 5.2f, 0.0f };
 
@@ -230,7 +219,6 @@ namespace Can
 						transformR.Position -= movement;
 						transformB.Position -= movement;
 						transformT.Position -= movement;
-						transformC.Position -= movement;
 					}
 					else
 					{
@@ -238,7 +226,6 @@ namespace Can
 						transformR.Position += movement;
 						transformB.Position += movement;
 						transformT.Position += movement;
-						transformC.Position += movement;
 					}
 				}
 				else
@@ -246,7 +233,6 @@ namespace Can
 						mainRegistry.remove<HiddenComponent>(panelBuildingsID);
 						mainRegistry.emplace_or_replace<HiddenComponent>(panelRoadsID);
 						mainRegistry.emplace_or_replace<HiddenComponent>(panelTreesID);
-						mainRegistry.emplace_or_replace<HiddenComponent>(panelCarsID);
 				}
 			},
 			0.3f
@@ -267,22 +253,18 @@ namespace Can
 				entt::entity panelRoadsID = this->m_PanelRoads->entityID;
 				entt::entity panelBuildingsID = this->m_PanelBuildings->entityID;
 				entt::entity panelTreesID = this->m_PanelTrees->entityID;
-				entt::entity panelCarsID = this->m_PanelCars->entityID;
 
 				if (mainRegistry.has<HiddenComponent>(panelRoadsID) &&
-					mainRegistry.has<HiddenComponent>(panelBuildingsID) &&
-					mainRegistry.has<HiddenComponent>(panelCarsID)
+					mainRegistry.has<HiddenComponent>(panelBuildingsID)
 					)
 				{
 					entt::entity buttonRoadsID = this->m_ButtonRoads->entityID;
 					entt::entity buttonBuildingsID = this->m_ButtonBuildings->entityID;
 					entt::entity buttonTreesID = this->m_ButtonTrees->entityID;
-					entt::entity buttonCarsID = this->m_ButtonCars->entityID;
 
 					TransformComponent& transformR = mainRegistry.get<TransformComponent>(buttonRoadsID);
 					TransformComponent& transformB = mainRegistry.get<TransformComponent>(buttonBuildingsID);
 					TransformComponent& transformT = mainRegistry.get<TransformComponent>(buttonTreesID);
-					TransformComponent& transformC = mainRegistry.get<TransformComponent>(buttonCarsID);
 
 					v3 movement = { 0.0f, 5.2f, 0.0f };
 
@@ -292,7 +274,6 @@ namespace Can
 						transformR.Position -= movement;
 						transformB.Position -= movement;
 						transformT.Position -= movement;
-						transformC.Position -= movement;
 					}
 					else
 					{
@@ -300,7 +281,6 @@ namespace Can
 						transformR.Position += movement;
 						transformB.Position += movement;
 						transformT.Position += movement;
-						transformC.Position += movement;
 					}
 				}
 				else
@@ -308,75 +288,11 @@ namespace Can
 					mainRegistry.remove<HiddenComponent>(panelTreesID);
 					mainRegistry.emplace_or_replace<HiddenComponent>(panelRoadsID);
 					mainRegistry.emplace_or_replace<HiddenComponent>(panelBuildingsID);
-					mainRegistry.emplace_or_replace<HiddenComponent>(panelCarsID);
 				}
 			},
 			0.3f
 		};
 		m_ButtonTrees = new Button(buttonTreesParams);
-		ButtonConstructorParameters buttonCarsParams = ButtonConstructorParameters{
-			m_Scene->m_Registry,
-			m_Scene->entityID,
-			v3{ 13.0f, height - 6.5f, 0.0011f },
-			v2{ 3.0f, 1.0f },
-			v4{ 15.0f / 255.0f, 231.0f / 255.0f, 177.0f / 255.0f, 1.0f },
-			nullptr,
-			[this, height]() {
-				if (!Input::IsMouseButtonPressed(MouseCode::Button0))
-					return;
-				entt::registry& mainRegistry = this->m_Scene->m_Registry;
-
-				entt::entity panelRoadsID = this->m_PanelRoads->entityID;
-				entt::entity panelBuildingsID = this->m_PanelBuildings->entityID;
-				entt::entity panelTreesID = this->m_PanelTrees->entityID;
-				entt::entity panelCarsID = this->m_PanelCars->entityID;
-
-				if (
-					mainRegistry.has<HiddenComponent>(panelRoadsID) &&
-					mainRegistry.has<HiddenComponent>(panelBuildingsID) &&
-					mainRegistry.has<HiddenComponent>(panelTreesID)
-					)
-				{
-					entt::entity buttonRoadsID = this->m_ButtonRoads->entityID;
-					entt::entity buttonBuildingsID = this->m_ButtonBuildings->entityID;
-					entt::entity buttonTreesID = this->m_ButtonTrees->entityID;
-					entt::entity buttonCarsID = this->m_ButtonCars->entityID;
-
-					TransformComponent& transformR = mainRegistry.get<TransformComponent>(buttonRoadsID);
-					TransformComponent& transformB = mainRegistry.get<TransformComponent>(buttonBuildingsID);
-					TransformComponent& transformT = mainRegistry.get<TransformComponent>(buttonTreesID);
-					TransformComponent& transformC = mainRegistry.get<TransformComponent>(buttonCarsID);
-
-					v3 movement = { 0.0f, 5.2f, 0.0f };
-
-					if (mainRegistry.has<HiddenComponent>(panelCarsID))
-					{
-						mainRegistry.remove<HiddenComponent>(panelCarsID);
-						transformR.Position -= movement;
-						transformB.Position -= movement;
-						transformT.Position -= movement;
-						transformC.Position -= movement;
-					}
-					else
-					{
-						mainRegistry.emplace<HiddenComponent>(panelCarsID);
-						transformR.Position += movement;
-						transformB.Position += movement;
-						transformT.Position += movement;
-						transformC.Position += movement;
-					}
-				}
-				else
-				{
-					mainRegistry.remove<HiddenComponent>(panelCarsID);
-					mainRegistry.emplace_or_replace<HiddenComponent>(panelRoadsID);
-					mainRegistry.emplace_or_replace<HiddenComponent>(panelBuildingsID);
-					mainRegistry.emplace_or_replace<HiddenComponent>(panelTreesID);
-				}
-			},
-			0.3f
-		};
-		m_ButtonCars = new Button(buttonCarsParams);
 
 		ButtonConstructorParameters buttonNeedsParams = ButtonConstructorParameters{
 			m_Scene->m_Registry,
@@ -444,7 +360,6 @@ namespace Can
 			m_ButtonRoads->entityID,
 			m_ButtonBuildings->entityID,
 			m_ButtonTrees->entityID,
-			m_ButtonCars->entityID,
 			m_ButtonNeeds->entityID,
 			m_ButtonTools->entityID
 		};
@@ -463,6 +378,7 @@ namespace Can
 		m_PanelRoads = new Panel(panelRoadsParams);
 		//m_Scene->m_Registry.emplace<HiddenComponent>(m_PanelRoads->entityID);
 		m_Scene->m_Registry.emplace<ChildrenComponent>(m_ButtonRoads->entityID, std::vector<entt::entity>{ m_PanelRoads->entityID });
+
 		PanelConstructorParameters panelBuildingsParams = PanelConstructorParameters{
 					m_Scene->m_Registry,
 					m_ButtonBuildings->entityID,
@@ -476,6 +392,7 @@ namespace Can
 		m_PanelBuildings = new Panel(panelBuildingsParams);
 		m_Scene->m_Registry.emplace<HiddenComponent>(m_PanelBuildings->entityID);
 		m_Scene->m_Registry.emplace<ChildrenComponent>(m_ButtonBuildings->entityID, std::vector<entt::entity>{ m_PanelBuildings->entityID });
+
 		PanelConstructorParameters panelTreesParams = PanelConstructorParameters{
 					m_Scene->m_Registry,
 					m_ButtonTrees->entityID,
@@ -489,19 +406,7 @@ namespace Can
 		m_PanelTrees = new Panel(panelTreesParams);
 		m_Scene->m_Registry.emplace<HiddenComponent>(m_PanelTrees->entityID);
 		m_Scene->m_Registry.emplace<ChildrenComponent>(m_ButtonTrees->entityID, std::vector<entt::entity>{ m_PanelTrees->entityID });
-		PanelConstructorParameters panelCarsParams = PanelConstructorParameters{
-					m_Scene->m_Registry,
-					m_ButtonCars->entityID,
-					v3{ 0.5f, height - 5.4f, 0.001f },
-					v2{ width - 1.0f, 5.2f },
-					v4{ 15.0f / 255.0f, 231.0f / 255.0f, 177.0f / 255.0f, 1.0f },
-					nullptr,
-					[]() {std::cout << "You clicked the panel that is for Cars!" << std::endl; },
-					0.1f
-		};
-		m_PanelCars = new Panel(panelCarsParams);
-		m_Scene->m_Registry.emplace<HiddenComponent>(m_PanelCars->entityID);
-		m_Scene->m_Registry.emplace<ChildrenComponent>(m_ButtonCars->entityID, std::vector<entt::entity>{ m_PanelCars->entityID });
+
 		PanelConstructorParameters panelNeedsParams = PanelConstructorParameters{
 					m_Scene->m_Registry,
 					m_ButtonTools->entityID,
@@ -515,6 +420,7 @@ namespace Can
 		m_PanelNeeds = new Panel(panelNeedsParams);
 		m_Scene->m_Registry.emplace<HiddenComponent>(m_PanelNeeds->entityID);
 		m_Scene->m_Registry.emplace<ChildrenComponent>(m_ButtonNeeds->entityID, std::vector<entt::entity>{ m_PanelNeeds->entityID });
+
 		PanelConstructorParameters panelToolsParams = PanelConstructorParameters{
 					m_Scene->m_Registry,
 					m_ButtonTools->entityID,
@@ -582,6 +488,7 @@ namespace Can
 				}
 		};
 		m_ScrollViewRoads = new ScrollView(scrollViewRoadsParams, scrollBarRoadsParams);
+
 		ScrollViewConstructorParameters scrollViewBuildingsParams = ScrollViewConstructorParameters{
 				m_Scene->m_Registry,
 				m_PanelBuildings->entityID,
@@ -635,6 +542,7 @@ namespace Can
 				}
 		};
 		m_ScrollViewBuildings = new ScrollView(scrollViewBuildingsParams, scrollBarBuildingsParams);
+
 		ScrollViewConstructorParameters scrollViewTreesParams = ScrollViewConstructorParameters{
 				m_Scene->m_Registry,
 				m_PanelTrees->entityID,
@@ -688,59 +596,6 @@ namespace Can
 				}
 		};
 		m_ScrollViewTrees = new ScrollView(scrollViewTreesParams, scrollBarTreesParams);
-		ScrollViewConstructorParameters scrollViewCarsParams = ScrollViewConstructorParameters{
-				m_Scene->m_Registry,
-				m_PanelCars->entityID,
-				v3{ width * 0.25f - 0.6f, height - 5.3f, 0.01f },
-				v2{ width * 0.75f, 5.0f},
-				v4{ 201.0f / 255.0f, 235.0f / 255.0f, 227.0f / 255.0f, 1.0f },
-				2,
-				[]() {std::cout << "You clicked to the ScrollView for cars!" << std::endl; }
-		};
-		ScrollBarConstructorParameters scrollBarCarsParams = ScrollBarConstructorParameters{
-				m_Scene->m_Registry,
-				entt::null,
-				v3(0.0f),
-				v2{ width * 0.75f - 0.5f, 0.5f},
-				v4{ 221.0f / 255.0f, 155.0f / 255.0f, 247.0f / 255.0f, 1.0f },
-				v4{ 255.0f / 255.0f, 166.0f / 255.0f, 158.0f / 255.0f, 1.0f },
-				false,
-				false,
-				0.0f,
-				4.0f,
-				0.0f,
-				[this, width, w, height, h]() {
-					if (!Input::IsMouseButtonPressed(MouseCode::Button0))
-						return;
-					entt::registry& mainRegistry = this->m_Scene->m_Registry;
-					entt::entity scrollbarID = this->m_ScrollViewCars->scrollbar->entityID;
-
-					auto [mouseX, mouseY] = Input::get_mouse_pos_float();
-					bool changed = this->m_ScrollViewCars->scrollbar->Update(v2{
-							(mouseX * width) / w,
-							(mouseY * height) / h
-						});
-					if (changed)
-						this->m_ScrollViewCars->Update();
-					mainRegistry.emplace_or_replace<OnDragCallbackComponent>(scrollbarID,this->m_ScrollViewCars->scrollbar->OnDragCallback);
-				},
-				[this, width, w, height, h]() {
-					entt::registry& mainRegistry = this->m_Scene->m_Registry;
-					entt::entity scrollbarID = this->m_ScrollViewCars->scrollbar->entityID;
-
-					auto [mouseX, mouseY] = Input::get_mouse_pos_float();
-					bool changed = this->m_ScrollViewCars->scrollbar->Update(v2{
-							(mouseX * width) / w,
-							(mouseY * height) / h
-						});
-					if (changed)
-						this->m_ScrollViewCars->Update();
-
-					if (!Input::IsMouseButtonPressed(MouseCode::Button0))
-						mainRegistry.remove<OnDragCallbackComponent>(scrollbarID);
-				}
-		};
-		m_ScrollViewCars = new ScrollView(scrollViewCarsParams, scrollBarCarsParams);
 
 		v2 roadConstructionModeButtonsSize(0.8f);
 		f32 padding = 0.2f;
@@ -1202,9 +1057,6 @@ namespace Can
 			m_CancelTreeButton->entityID
 			});
 
-		m_Scene->m_Registry.emplace<ChildrenComponent>(m_PanelCars->entityID, std::vector<entt::entity>{
-			m_ScrollViewCars->entityID
-			});
 
 		/*Buttons in the tools panel*/ {
 			v2 buttonSize{ 1.0f, 1.0f };
@@ -1381,7 +1233,7 @@ namespace Can
 			};
 			m_Scene->m_Registry.emplace<ChildrenComponent>(m_PanelTools->entityID, toolsButtonList);
 		}
-		/*Buttons in the needs panel*/{
+		/*Buttons in the needs panel*/ {
 			v2 buttonSize{ 1.0f, 1.0f };
 			v4 buttonColor{ 1.0f, 1.0f, 1.0f, 1.0f };
 			ButtonConstructorParameters buttonNeeds_01Params = ButtonConstructorParameters{
@@ -1563,16 +1415,10 @@ namespace Can
 		std::string s = fs::current_path().string();
 
 		std::string pathh = s + "\\assets\\objects\\Houses";
-
 		std::vector<std::string> buildingtumbnailimagefiles = Helper::GetFiles(pathh, "Thumbnail_", ".png");
 
 		std::string patht = s + "\\assets\\objects\\Trees";
-
 		std::vector<std::string> treetumbnailimagefiles = Helper::GetFiles(patht, "Thumbnail_", ".png");
-
-		std::string pathc = s + "\\assets\\objects\\Cars";
-
-		std::vector<std::string> cartumbnailimagefiles = Helper::GetFiles(pathc, "Thumbnail_", ".png");
 
 		/*Buttons in the Roads panel*/ {
 			size_t roadCount = m_Parent->road_types.size();
@@ -1664,36 +1510,6 @@ namespace Can
 			}
 			m_ScrollViewTrees->Update();
 		}
-		/*Buttons in the Car panel*/ {
-			size_t carCount = m_Parent->cars.size();
-			ChildrenComponent& children = m_Scene->m_Registry.emplace<ChildrenComponent>(m_ScrollViewCars->entityID, std::vector<entt::entity>{});
-			for (size_t i = 0; i < carCount; i++)
-			{
-				ButtonConstructorParameters carPanelButtonParams = ButtonConstructorParameters{
-					m_Scene->m_Registry,
-					m_ScrollViewCars->entityID,
-					v3(0.0f),
-					v2(3.5f),
-					v4{ 1.0f, 1.0f, 1.0f, 1.0f },
-					Texture2D::Create(cartumbnailimagefiles[i]),
-					[i, this]() {
-						if (!Input::IsMouseButtonPressed(MouseCode::Button0))
-							return;
-						std::cout << "You clicked the " << (i + 1) << "th Button inside the Car panel!" << std::endl;
-						this->m_Parent->gameScene->SetConstructionMode(ConstructionMode::Car);
-						auto mode = this->m_Parent->gameScene->m_CarManager.GetConstructionMode();
-						if (mode == CarConstructionMode::None || mode == CarConstructionMode::Removing)
-							this->m_Parent->gameScene->m_CarManager.SetConstructionMode(CarConstructionMode::Adding);
-						this->m_Parent->gameScene->m_CarManager.SetType(i);
-					},
-					0.1f
-				};
-				Button* carPanelbutton = new Button(carPanelButtonParams);
-				children.Children.push_back(carPanelbutton->entityID);
-				m_CarPanelButtonList.push_back(carPanelbutton);
-			}
-			m_ScrollViewCars->Update();
-		}
 	}
 
 	UIScene::~UIScene()
@@ -1706,14 +1522,12 @@ namespace Can
 		delete m_ButtonRoads;
 		delete m_ButtonBuildings;
 		delete m_ButtonTrees;
-		delete m_ButtonCars;
 		delete m_ButtonNeeds;
 		delete m_ButtonTools;
 
 		delete m_PanelRoads;
 		delete m_PanelBuildings;
 		delete m_PanelTrees;
-		delete m_PanelCars;
 		delete m_PanelNeeds;
 		delete m_PanelTools;
 
@@ -1739,7 +1553,6 @@ namespace Can
 		delete m_ScrollViewRoads;
 		delete m_ScrollViewBuildings;
 		delete m_ScrollViewTrees;
-		delete m_ScrollViewCars;
 
 		delete m_ButtonTools_01;
 		delete m_ButtonTools_02;
@@ -1794,14 +1607,6 @@ namespace Can
 			index--;
 			Button* b = m_TreePanelButtonList[index];
 			m_TreePanelButtonList.pop_back();
-			delete b;
-		}
-		index = m_CarPanelButtonList.size();
-		while (index != 0)
-		{
-			index--;
-			Button* b = m_CarPanelButtonList[index];
-			m_CarPanelButtonList.pop_back();
 			delete b;
 		}
 

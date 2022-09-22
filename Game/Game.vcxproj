@@ -153,6 +153,7 @@
     <ClInclude Include="src\Types\RoadSegment.h" />
     <ClInclude Include="src\Types\RoadType.h" />
     <ClInclude Include="src\Types\Tree.h" />
+    <ClInclude Include="src\Types\Transition.h" />
     <ClInclude Include="src\UIScene.h" />
   </ItemGroup>
   <ItemGroup>

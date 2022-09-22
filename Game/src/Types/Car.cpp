@@ -5,22 +5,9 @@
 
 namespace Can
 {
-	Car::Car(
-		Prefab* type,
-		s64 roadSegment,
-		u64 t_index,
-		f32 speed,
-		const v3& position,
-		const v3& target,
-		const v3& rotation
-	)
-		: roadSegment(roadSegment)
-		, t_index(t_index)
-		, speed(speed)
-		, object(new Object(type, position, rotation))
-		, position(position)
-		, target(target)
-		, fromStart(true)
-	{
-	}
+	Car::Car(Prefab* prefab, u64 type, f32 speed_in_kmh)
+		: object(new Object(prefab))
+		, type(type)
+		, speed_in_kmh(speed_in_kmh)
+	{}
 }

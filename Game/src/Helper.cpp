@@ -5,6 +5,7 @@
 #include "Can/Math.h"
 #include "GameApp.h"
 #include "Types/RoadNode.h"
+#include "Types/Transition.h"
 #include "Building.h"
 
 namespace  Can::Helper
@@ -331,8 +332,8 @@ namespace  Can::Helper
 		u64 count = (u64)(len * 3.0f);
 		for (u64 indexd = 0; indexd < count; indexd++)
 		{
-			u64 x = current_point.x;
-			u64 y = current_point.y;
+			u64 x = (u64)current_point.x;
+			u64 y = (u64)current_point.y;
 			u64 dist_00 = ((x + 0) + (w - 1) * (y + 0)) * 60;
 
 			vertices[dist_00 + 2U] = 0.0f;
@@ -501,8 +502,8 @@ namespace  Can::Helper
 				f32 y2 = minvx->y + dy2 * perc2;
 				f32 y3 = medvx->y + dy3 * perc3;
 
-				u64 ly = std::min(x < medvx->x ? y1 : y3, y2);
-				u64 my = std::max(x < medvx->x ? y1 : y3, y2);
+				u64 ly = (u64)std::min(x < medvx->x ? y1 : y3, y2);
+				u64 my = (u64)std::max(x < medvx->x ? y1 : y3, y2);
 				//u64 ly = std::min(y1, y2);
 				//u64 my = std::max(y1, y2);
 
@@ -545,99 +546,875 @@ namespace  Can::Helper
 			if (paths[i].second[paths[i].second.size() - 1] == node) return i;
 		return (u64)(-1);
 	}
-	std::vector<u64> get_path(u64 start, u8 dist)
+	std::vector<Transition*> get_path(Building* start, u8 dist)
 	{
-		auto& segments = GameScene::ActiveGameScene->m_RoadManager.m_Segments;
-		auto& nodes = GameScene::ActiveGameScene->m_RoadManager.m_Nodes;
-		std::vector<u64> path{};
-		path.push_back(start);
-		int left_or_right = Utility::Random::Integer(2);
-		u64 next_node = left_or_right == 0 ? segments[start].StartNode : segments[start].EndNode;
-		path.push_back(next_node);
+		auto& road_segments = GameScene::ActiveGameScene->m_RoadManager.road_segments;
+		auto& road_types = GameScene::ActiveGameScene->MainApplication->road_types;
+		auto& road_nodes = GameScene::ActiveGameScene->m_RoadManager.road_nodes;
+
+		u64 current_road_segment_index = start->connectedRoadSegment;
+		RoadSegment& current_road_segment = road_segments[current_road_segment_index];
+
+		std::vector<Transition*> path{};
+
+		RS_Transition_For_Walking* rs_transition = new RS_Transition_For_Walking();
+		path.push_back(rs_transition);
+		rs_transition->road_segment_index = current_road_segment_index;
+		bool go_right_from_house = Utility::Random::Integer(2) == 1;
+		u64 next_node = 0;
+		rs_transition->from_right = go_right_from_house;
+		if (go_right_from_house == start->snapped_to_right)
+		{
+			next_node = current_road_segment.EndNode;
+			rs_transition->from_start = true;
+		}
+		else
+		{
+			next_node = current_road_segment.StartNode;
+			rs_transition->from_start = false;
+		}
+
+		RN_Transition_For_Walking* rn_transition = new RN_Transition_For_Walking();
+		path.push_back(rn_transition);
+		rn_transition->road_node_index = next_node;
+
 		for (u64 i = 0; i < dist; i++)
 		{
-			RoadNode& node = nodes[next_node];
-			std::vector<u64>& roads = node.roadSegments;
-			int size = (int)roads.size();
-			if (size == 1)
+			RoadNode& road_node = road_nodes[next_node];
+			auto it = std::find(road_node.roadSegments.begin(), road_node.roadSegments.end(), current_road_segment_index);
+			assert(it != road_node.roadSegments.end());
+			u64 index = std::distance(road_node.roadSegments.begin(), it);
+
+			rn_transition->from_road_segments_array_index = index;
+			if (rs_transition->from_right)
+				rn_transition->sub_index = 2;
+			else
+				rn_transition->sub_index = 1;
+
+			assert(rs_transition->at_path_array_index < 0xFFFF);
+			rs_transition = new RS_Transition_For_Walking();
+			path.push_back(rs_transition);
+
+			rs_transition->from_right = true;
+			std::vector<u64>& roads = road_node.roadSegments;
+			std::vector<u64> available_road_segment_indexes{};
+			for (u64 road_segment_index : roads)
+				if (
+					(road_segment_index != current_road_segment_index) &&
+					(road_types[road_segments[road_segment_index].type].zoneable)
+					)
+					available_road_segment_indexes.push_back(road_segment_index);
+
+			int size = (int)available_road_segment_indexes.size();
+			u64 road_segment_i = (size == 0) ? current_road_segment_index : road_segment_i = available_road_segment_indexes[Utility::Random::Integer(size)];
+			it = std::find(road_node.roadSegments.begin(), road_node.roadSegments.end(), road_segment_i);
+			assert(it != road_node.roadSegments.end());
+			int new_road_index = std::distance(road_node.roadSegments.begin(), it);
+
+			u64 next_road_segment_index = roads[new_road_index];
+			RoadSegment& next_road_segment = road_segments[next_road_segment_index];
+
+			rn_transition->to_road_segments_array_index = new_road_index;
+			rs_transition->road_segment_index = next_road_segment_index;
+			if (new_road_index > index)
+				rn_transition->accending = (f32)(new_road_index - index) < (size / 2.0f);
+			else if (new_road_index == index)
+				rn_transition->accending = !rs_transition->from_right;
+			else
+				rn_transition->accending = (f32)(index - new_road_index) > (size / 2.0f);
+
+			if (next_road_segment.StartNode == next_node)
 			{
-				u64 next_segment = path[path.size() - 2];
-				if (path.size() == 2)
-					next_node = left_or_right == 0 ? segments[start].EndNode : segments[start].StartNode;
-				else
-					next_node = path[path.size() - 3];
-				path.push_back(next_segment);
-				path.push_back(next_node);
-				continue;
+				rs_transition->from_start = true;
+				next_node = next_road_segment.EndNode;
 			}
-			int new_road_index = Utility::Random::Integer(size);
-			while (path[path.size() - 2] == roads[new_road_index])
-				new_road_index = Utility::Random::Integer(size);
-			path.push_back(roads[new_road_index]);
-			RoadSegment& rs = segments[roads[new_road_index]];
-			next_node = next_node == rs.StartNode ? rs.EndNode : rs.StartNode;
-			path.push_back(next_node);
+			else if (next_road_segment.EndNode == next_node)
+			{
+				rs_transition->from_start = false;
+				next_node = next_road_segment.StartNode;
+			}
+			else
+			{
+				assert(false);
+			}
+
+			rn_transition = new RN_Transition_For_Walking();
+			path.push_back(rn_transition);
+			current_road_segment_index = next_road_segment_index;
+			rn_transition->road_node_index = next_node;
 		}
+
+		auto& node_road_segments = road_nodes[rn_transition->road_node_index].roadSegments;
+		auto it = std::find(node_road_segments.begin(), node_road_segments.end(), current_road_segment_index);
+		assert(it != node_road_segments.end());
+		rn_transition->from_road_segments_array_index = std::distance(node_road_segments.begin(), it);
+		rn_transition->to_road_segments_array_index = rn_transition->from_road_segments_array_index;
+		if (rs_transition->from_right)
+			rn_transition->sub_index = 2;
+		else
+			rn_transition->sub_index = 1;
+		rn_transition->accending = !rs_transition->from_right;
+
+
 		for (u64 i = path.size() - 1; i > 0; i--)
 		{
-			path.push_back(path[i - 1]);
+			RS_Transition_For_Walking* mirror_rs_transition = (RS_Transition_For_Walking*)path[i - 1];
+			RS_Transition_For_Walking* rs_transition = new RS_Transition_For_Walking();
+			RoadSegment& road_segment = road_segments[rs_transition->road_segment_index];
+			path.push_back(rs_transition);
+			rs_transition->from_start = !mirror_rs_transition->from_start;
+
+			rs_transition->from_right = mirror_rs_transition->from_right;
+			rs_transition->road_segment_index = mirror_rs_transition->road_segment_index;
+			i--;
+			if (i == 0)
+			{
+				rs_transition->from_right = !rs_transition->from_right;
+				break;
+			}
+			RN_Transition_For_Walking* mirror_rn_transition = (RN_Transition_For_Walking*)path[i - 1];
+			rn_transition = new RN_Transition_For_Walking();
+			rn_transition->from_road_segments_array_index = mirror_rn_transition->to_road_segments_array_index;
+			rn_transition->to_road_segments_array_index = mirror_rn_transition->from_road_segments_array_index;
+
+			RoadNode& road_node = road_nodes[rn_transition->road_node_index];
+			std::vector<u64>& roads = road_node.roadSegments;
+			int size = (int)roads.size();
+			f32 diff = rn_transition->to_road_segments_array_index - rn_transition->from_road_segments_array_index;
+			if (diff > 0.0f)
+				rn_transition->accending = diff < (size / 2.0f);
+			else if (diff == 0.0f)
+				rn_transition->accending = !rs_transition->from_right;
+			else
+				rn_transition->accending = diff * -1.0f > (size / 2.0f);
+
+			rn_transition->road_node_index = mirror_rn_transition->road_node_index;
+			if (rs_transition->from_right)
+				rn_transition->sub_index = 1;
+			else
+				rn_transition->sub_index = 2;
+
+			path.push_back(rn_transition);
 		}
 		return path;
 	}
-	//TODO memory leak possible
-	std::vector<u64> get_path(u64 start, u64 end)
+	std::vector<Transition*> get_path_for_a_car(Building* start, Building* end)
 	{
-		auto& segments = GameScene::ActiveGameScene->m_RoadManager.m_Segments;
-		auto& nodes = GameScene::ActiveGameScene->m_RoadManager.m_Nodes;
-		if (start == end)
+		auto& road_segments = GameScene::ActiveGameScene->m_RoadManager.road_segments;
+		auto& road_nodes = GameScene::ActiveGameScene->m_RoadManager.road_nodes;
+		auto& road_types = GameScene::ActiveGameScene->MainApplication->road_types;
+
+		RoadSegment& start_road_segment = road_segments[start->connectedRoadSegment];
+		RoadSegment& end_road_segment = road_segments[end->connectedRoadSegment];
+
+		RoadType& start_road_type = road_types[start_road_segment.type];
+
+		if (start->connectedRoadSegment == end->connectedRoadSegment)
 		{
-			return { start };
-		}
-		RoadSegment& startRoad = segments[start];
-		RoadSegment& endRoad = segments[end];
-		std::vector<u64> visited_junctions{};
-		std::vector<std::pair<u64, std::vector<u64>>> paths{}; // instead of this use links(watch the video again) 
-		std::vector<std::pair<u64, std::vector<u64>>> no_exit_paths{}; // delete me
-		paths.push_back(std::pair<u64, std::vector<u64>>{ 1, std::vector<u64>{ start, startRoad.StartNode } });
-		paths.push_back(std::pair<u64, std::vector<u64>>{ 1, std::vector<u64>{ start, startRoad.EndNode } });
-		while (paths.empty() == false)
-		{
-			std::sort(paths.begin(), paths.end(), Helper::sort_by_distance());
-			auto path = paths[paths.size() - 1];
-			no_exit_paths.push_back(path);
-			paths.pop_back();
-			RoadNode& node = nodes[path.second[path.second.size() - 1]];
-			for (u64 i = 0; i < node.roadSegments.size(); i++)
+			auto& start_road_type = road_types[start_road_segment.type];
+			if (start_road_type.two_way == false)
 			{
-				u64 rs = node.roadSegments[i];
-				if (path.second.size() > 1 && path.second[path.second.size() - 2] == rs) continue;
-				auto new_path = path.second;
-				new_path.push_back(rs);
-				if (end == rs)
+				if (end->snapped_t_index >= start->snapped_t_index)
 				{
-					return new_path;
-				}
-				RoadSegment& segment = segments[rs];
-				u64 other_end = segment.EndNode == new_path[new_path.size() - 2] ? segment.StartNode : segment.EndNode;
-				new_path.push_back(other_end);
-				u64 new_cost = path.first + 1/*length of the road*/;
-				u64 index = find_special(paths, other_end);
-				if (index != (u64)(-1))
-				{
-					if (paths[index].first > new_cost)
+					RS_Transition_For_Driving* rs_transition = new RS_Transition_For_Driving();
+					rs_transition->road_segment_index = start->connectedRoadSegment;
+					if (end->snapped_to_right)
 					{
-						paths.erase(std::next(paths.begin(), index));
-						visited_junctions.erase(std::find(visited_junctions.begin(), visited_junctions.end(), other_end));
+						rs_transition->lane_index = start_road_type.lanes_backward.size();
+						rs_transition->lane_index += start_road_type.lanes_forward.size() - 2;
+					}
+					else
+					{
+						rs_transition->lane_index = 1;
+					}
+					return { rs_transition };
+				}
+			}
+			else if (start_road_type.has_median == false)
+			{
+				if (end->snapped_t_index >= start->snapped_t_index)
+				{
+					RS_Transition_For_Driving* rs_transition = new RS_Transition_For_Driving();
+					rs_transition->road_segment_index = start->connectedRoadSegment;
+					if (end->snapped_to_right)
+					{
+						rs_transition->lane_index = start_road_type.lanes_forward.size() - 2;
+						rs_transition->lane_index += start_road_type.lanes_backward.size();
+					}
+					else
+					{
+						rs_transition->lane_index = 0;
+						rs_transition->lane_index += start_road_type.lanes_backward.size();
+					}
+					return { rs_transition };
+				}
+				else
+				{
+					RS_Transition_For_Driving* rs_transition = new RS_Transition_For_Driving();
+					rs_transition->road_segment_index = start->connectedRoadSegment;
+					if (end->snapped_to_right)
+					{
+						rs_transition->lane_index = start_road_type.lanes_backward.size() - 1;
+					}
+					else
+					{
+						rs_transition->lane_index = 1;
+					}
+					return { rs_transition };
+				}
+			}
+			else
+			{
+				if (start->snapped_to_right)
+				{
+					if (end->snapped_to_right)
+					{
+						if (end->snapped_t_index >= start->snapped_t_index)
+						{
+							RS_Transition_For_Driving* rs_transition = new RS_Transition_For_Driving();
+							rs_transition->road_segment_index = start->connectedRoadSegment;
+							rs_transition->lane_index = start_road_type.lanes_forward.size() - 2;
+							rs_transition->lane_index += start_road_type.lanes_backward.size();
+							return { rs_transition };
+						}
+						else
+						{
+							RS_Transition_For_Driving* rs_transition_1 = new RS_Transition_For_Driving();
+							rs_transition_1->road_segment_index = start->connectedRoadSegment;
+							rs_transition_1->lane_index = 0;
+							rs_transition_1->lane_index += start_road_type.lanes_backward.size();
+
+							RS_Transition_For_Driving* rs_transition_2 = new RS_Transition_For_Driving();
+							rs_transition_2->road_segment_index = start->connectedRoadSegment;
+							rs_transition_2->lane_index = start_road_type.lanes_backward.size() - 1;
+
+							RS_Transition_For_Driving* rs_transition_3 = new RS_Transition_For_Driving();
+							rs_transition_3->road_segment_index = start->connectedRoadSegment;
+							rs_transition_3->lane_index = start_road_type.lanes_forward.size() - 2;
+							rs_transition_3->lane_index += start_road_type.lanes_backward.size();
+
+							return { rs_transition_1, rs_transition_2, rs_transition_3 };
+						}
+					}
+					else
+					{
+						RS_Transition_For_Driving* rs_transition_1 = new RS_Transition_For_Driving();
+						rs_transition_1->road_segment_index = start->connectedRoadSegment;
+						rs_transition_1->lane_index = 0;
+						rs_transition_1->lane_index += start_road_type.lanes_backward.size();
+
+						RS_Transition_For_Driving* rs_transition_2 = new RS_Transition_For_Driving();
+						rs_transition_2->road_segment_index = start->connectedRoadSegment;
+						rs_transition_2->lane_index = 1;
+
+						return { rs_transition_1, rs_transition_2 };
 					}
 				}
-				if (std::find(visited_junctions.begin(), visited_junctions.end(), other_end) != visited_junctions.end()) continue;
-				visited_junctions.push_back(other_end);
-				paths.push_back({ new_cost , new_path });
+				else
+				{
+					if (end->snapped_to_right)
+					{
+						RS_Transition_For_Driving* rs_transition_1 = new RS_Transition_For_Driving();
+						rs_transition_1->road_segment_index = start->connectedRoadSegment;
+						rs_transition_1->lane_index = start_road_type.lanes_backward.size() - 1;
+
+						RS_Transition_For_Driving* rs_transition_2 = new RS_Transition_For_Driving();
+						rs_transition_2->road_segment_index = start->connectedRoadSegment;
+						rs_transition_2->lane_index = start_road_type.lanes_forward.size() - 2;
+						rs_transition_2->lane_index += start_road_type.lanes_backward.size();
+
+						return { rs_transition_1, rs_transition_2 };
+					}
+					else
+					{
+						if (end->snapped_t_index >= start->snapped_t_index)
+						{
+							RS_Transition_For_Driving* rs_transition_1 = new RS_Transition_For_Driving();
+							rs_transition_1->road_segment_index = start->connectedRoadSegment;
+							rs_transition_1->lane_index = start_road_type.lanes_backward.size() - 1;
+
+							RS_Transition_For_Driving* rs_transition_2 = new RS_Transition_For_Driving();
+							rs_transition_2->road_segment_index = start->connectedRoadSegment;
+							rs_transition_2->lane_index = 0;
+							rs_transition_2->lane_index += start_road_type.lanes_backward.size();
+
+							RS_Transition_For_Driving* rs_transition_3 = new RS_Transition_For_Driving();
+							rs_transition_3->road_segment_index = start->connectedRoadSegment;
+							rs_transition_3->lane_index = 1;
+
+							return { rs_transition_1, rs_transition_2, rs_transition_3 };
+						}
+						else
+						{
+							RS_Transition_For_Driving* rs_transition = new RS_Transition_For_Driving();
+							rs_transition->road_segment_index = start->connectedRoadSegment;
+							rs_transition->lane_index = 1;
+							return { rs_transition };
+						}
+					}
+				}
+			}
+
+		}
+
+		// distance, road_segment, prev_road_node, next_road_node
+		std::vector<Dijkstra_Node> linqs{};
+		std::vector<Dijkstra_Node> fastest_road_to_these_nodes{};
+		std::vector<std::tuple<s64, bool>> visited_road_segments{};
+		if (start_road_type.has_median)
+		{
+			linqs.push_back(Dijkstra_Node{
+				(s64)(start->snapped_to_right ? start_road_segment.curve_samples.size() - start->snapped_t_index : start->snapped_t_index),
+				start->connectedRoadSegment,
+				-1,
+				(s64)(start->snapped_to_right ? start_road_segment.EndNode : start_road_segment.StartNode)
+				});
+			visited_road_segments.push_back({ start->connectedRoadSegment, start->snapped_to_right });
+		}
+		else if (start_road_type.two_way)
+		{
+			linqs.push_back(Dijkstra_Node{
+					(s64)(start_road_segment.curve_samples.size() - start->snapped_t_index),
+					start->connectedRoadSegment,
+					-1,
+					(s64)(start_road_segment.EndNode)
+				});
+			visited_road_segments.push_back({ start->connectedRoadSegment, true });
+			linqs.push_back(Dijkstra_Node{
+					(s64)(start->snapped_t_index),
+					start->connectedRoadSegment,
+					-1,
+					(s64)(start_road_segment.StartNode)
+				});
+			visited_road_segments.push_back({ start->connectedRoadSegment, false });
+		}
+		else
+		{
+			linqs.push_back(Dijkstra_Node{
+					(s64)(start_road_segment.curve_samples.size() - start->snapped_t_index),
+					start->connectedRoadSegment,
+					-1,
+					(s64)(start_road_segment.EndNode)
+				});
+			visited_road_segments.push_back({ start->connectedRoadSegment, true });
+		}
+
+
+		while (linqs.empty() == false)
+		{
+			std::sort(linqs.begin(), linqs.end(), Helper::sort_by_distance());
+			auto closest = linqs[linqs.size() - 1];
+			s64 road_node_index = closest.next_road_node_index;
+			linqs.pop_back();
+
+			auto fastest_it = std::find_if(
+				fastest_road_to_these_nodes.begin(),
+				fastest_road_to_these_nodes.end(),
+				[road_node_index](const Dijkstra_Node& el) {
+					return el.next_road_node_index == road_node_index;
+				});
+			if (fastest_it == fastest_road_to_these_nodes.end())
+			{
+				fastest_road_to_these_nodes.push_back(closest);
+			}
+
+			RoadNode& road_node = road_nodes[road_node_index];
+			auto& connected_road_segments = road_node.roadSegments;
+			for (u64 i = 0; i < connected_road_segments.size(); i++)
+			{
+				u64 connected_road_segment_index = connected_road_segments[i];
+				RoadSegment& connected_road_segment = road_segments[connected_road_segment_index];
+				u64 curve_samples_count = connected_road_segment.curve_samples.size();
+				bool from_start = road_node_index == connected_road_segment.StartNode;
+				RoadType& type = road_types[connected_road_segment.type];
+				if (type.two_way == false && connected_road_segment.EndNode == road_node_index) continue;
+
+				if (connected_road_segment_index == end->connectedRoadSegment)
+				{
+					if (from_start == end->snapped_to_right || type.has_median == false)
+					{
+						u64 rs_index = connected_road_segment_index;
+						std::vector<Transition*> the_temp_path{};
+
+						RS_Transition_For_Driving* temp_rs_transition = new RS_Transition_For_Driving();
+						the_temp_path.push_back(temp_rs_transition);
+						temp_rs_transition->road_segment_index = rs_index;
+
+						while (road_node_index != -1)
+						{
+							auto linq_it = std::find_if(
+								fastest_road_to_these_nodes.begin(),
+								fastest_road_to_these_nodes.end(),
+								[road_node_index](const Dijkstra_Node& el) {
+									return el.next_road_node_index == road_node_index;
+								});
+							assert(linq_it != fastest_road_to_these_nodes.end());
+							rs_index = linq_it->road_segment_index;
+
+							temp_rs_transition = new RS_Transition_For_Driving();
+							the_temp_path.push_back(temp_rs_transition);
+							temp_rs_transition->road_segment_index = rs_index;
+							temp_rs_transition->next_road_node_index = road_node_index;
+
+							road_node_index = linq_it->prev_road_node_index;
+						}
+
+						u64 transition_count = the_temp_path.size();
+						std::vector<Transition*> the_path{};
+						the_path.reserve(transition_count);
+						while (the_temp_path.size() > 0)
+						{
+							the_path.push_back(the_temp_path[the_temp_path.size() - 1]);
+							the_temp_path.pop_back();
+						}
+						RS_Transition_For_Driving* current_transition = (RS_Transition_For_Driving*)the_path[0];
+						s64 prev_road_node_index = -1;
+						for (u64 i = 1; i < transition_count; i++)
+						{
+							RS_Transition_For_Driving* next_transition = (RS_Transition_For_Driving*)the_path[i];
+							RoadSegment& current_road_segment = road_segments[current_transition->road_segment_index];
+							RoadType& current_road_type = road_types[current_road_segment.type];
+							auto& next_road_node_connected_road_segments = road_nodes[current_transition->next_road_node_index].roadSegments;
+
+							auto curr_it = std::find(
+								next_road_node_connected_road_segments.begin(),
+								next_road_node_connected_road_segments.end(),
+								current_transition->road_segment_index
+							);
+							assert(curr_it != next_road_node_connected_road_segments.end());
+							s64 start_index = std::distance(
+								next_road_node_connected_road_segments.begin(),
+								curr_it
+							);
+
+							auto next_it = std::find(
+								next_road_node_connected_road_segments.begin(),
+								next_road_node_connected_road_segments.end(),
+								next_transition->road_segment_index
+							);
+							assert(next_it != next_road_node_connected_road_segments.end());
+							s64 end_index = std::distance(
+								next_road_node_connected_road_segments.begin(),
+								next_it
+							);
+							if (start_index == end_index) {
+								if (current_transition->next_road_node_index == current_road_segment.EndNode)
+								{
+									current_transition->lane_index = 0;
+									current_transition->lane_index += current_road_type.lanes_backward.size();
+								}
+								else
+								{
+									current_transition->lane_index += current_road_type.lanes_backward.size() - 1;
+								}
+							}
+							else
+							{
+								s64 road_end_counts = next_road_node_connected_road_segments.size();
+								end_index = (end_index + road_end_counts - start_index) % road_end_counts;
+								road_end_counts -= 2;
+								start_index = 0;
+								end_index--;
+								if (end_index < road_end_counts * 0.3f)
+								{
+									if (current_transition->next_road_node_index == current_road_segment.EndNode)
+									{
+										current_transition->lane_index = current_road_type.lanes_forward.size() - 1;
+										if (current_road_type.zoneable) current_transition->lane_index -= 1;
+										current_transition->lane_index += current_road_type.lanes_backward.size();
+									}
+									else
+									{
+										current_transition->lane_index = 0;
+										if (current_road_type.zoneable) current_transition->lane_index += 1;
+									}
+								}
+								else if (end_index > road_end_counts * 0.7f)
+								{
+									if (current_transition->next_road_node_index == current_road_segment.EndNode)
+									{
+										current_transition->lane_index = 0;
+										current_transition->lane_index += current_road_type.lanes_backward.size();
+									}
+									else
+									{
+										current_transition->lane_index = current_road_type.lanes_backward.size() - 1;
+									}
+								}
+								else
+								{
+									if (current_transition->next_road_node_index == current_road_segment.EndNode)
+									{
+										s64 lane_count = current_road_type.lanes_forward.size();
+										if (current_road_type.zoneable) lane_count -= 1;
+										current_transition->lane_index = lane_count * 0.5f;
+										current_transition->lane_index += current_road_type.lanes_backward.size();
+									}
+									else
+									{
+										s64 lane_count = current_road_type.lanes_backward.size();
+										if (current_road_type.zoneable)
+										{
+											lane_count -= 1;
+											current_transition->lane_index = 1;
+										}
+										current_transition->lane_index += lane_count * 0.5f;
+									}
+								}
+							}
+
+							auto& current_road_segment_curve_samples = current_road_segment.curve_samples;
+							u64 curve_sample_count = current_road_segment_curve_samples.size();
+							f32 dist_from_center = 0.0f;
+							if (current_transition->lane_index < current_road_type.lanes_backward.size())
+								dist_from_center = current_road_type.lanes_backward[current_transition->lane_index].distance_from_center;
+							else
+								dist_from_center = current_road_type.lanes_forward[current_transition->lane_index - current_road_type.lanes_backward.size()].distance_from_center;
+							v3 p0 = current_road_segment_curve_samples[0];
+							for (u64 curve_sample_index = 1; curve_sample_index < curve_sample_count; curve_sample_index++)
+							{
+								v3 p1 = current_road_segment_curve_samples[curve_sample_index];
+								v3 dir_to_p1 = p1 - p0;
+								v3 cw_rotated_dir = glm::normalize(v3{ dir_to_p1.y, -dir_to_p1.x, 0.0f });
+								v3 path_point = p0 + cw_rotated_dir * dist_from_center;
+								current_transition->points_stack.push_back(path_point);
+								p0 = p1;
+							}
+							v3 dir_to_p1 = current_road_segment.GetEndDirection() * -1.0f;
+							v3 cw_rotated_dir = glm::normalize(v3{ dir_to_p1.y, -dir_to_p1.x, 0.0f });
+							v3 path_point = p0 + cw_rotated_dir * dist_from_center;
+							current_transition->points_stack.push_back(path_point);
+							if (current_transition->next_road_node_index == current_road_segment.EndNode)
+								std::reverse(current_transition->points_stack.begin(), current_transition->points_stack.end());
+
+							prev_road_node_index = current_transition->next_road_node_index;
+							current_transition = next_transition;
+						}
+						RoadSegment& current_road_segment = road_segments[current_transition->road_segment_index];
+						RoadType& current_road_type = road_types[current_road_segment.type];
+						u64 n_index = ((RS_Transition_For_Driving*)the_path[the_path.size() - 2])->next_road_node_index;
+						if (end->snapped_to_right)
+						{
+							if (n_index == current_road_segment.StartNode)
+							{
+								current_transition->lane_index = current_road_type.lanes_forward.size() - 2;
+								current_transition->lane_index += current_road_type.lanes_backward.size();
+							}
+							else
+							{
+								current_transition->lane_index = current_road_type.lanes_backward.size() - 1;
+							}
+						}
+						else
+						{
+							if (n_index == current_road_segment.StartNode)
+							{
+								current_transition->lane_index = 0;
+								current_transition->lane_index += current_road_type.lanes_backward.size();
+							}
+							else
+							{
+								current_transition->lane_index = 1;
+							}
+						}
+
+						auto& current_road_segment_curve_samples = current_road_segment.curve_samples;
+						f32 dist_from_center = 0.0f;
+						if (current_transition->lane_index < current_road_type.lanes_backward.size())
+							dist_from_center = current_road_type.lanes_backward[current_transition->lane_index].distance_from_center;
+						else
+							dist_from_center = current_road_type.lanes_forward[current_transition->lane_index - current_road_type.lanes_backward.size()].distance_from_center;
+						if (prev_road_node_index == current_road_segment.StartNode)
+						{
+							v3 p0 = current_road_segment_curve_samples[0];
+							for (u64 curve_sample_index = 1; curve_sample_index <= end->snapped_t_index; curve_sample_index++)
+							{
+								v3 p1 = current_road_segment_curve_samples[curve_sample_index];
+								v3 dir_to_p1 = p1 - p0;
+								v3 cw_rotated_dir = glm::normalize(v3{ dir_to_p1.y, -dir_to_p1.x, 0.0f });
+								v3 path_point = p0 + cw_rotated_dir * dist_from_center;
+								current_transition->points_stack.push_back(path_point);
+								p0 = p1;
+							}
+							std::reverse(current_transition->points_stack.begin(), current_transition->points_stack.end());
+						}
+						else
+						{
+							v3 p0 = current_road_segment_curve_samples[end->snapped_t_index];
+							for (u64 curve_sample_index = end->snapped_t_index + 1; curve_sample_index < current_road_segment_curve_samples.size(); curve_sample_index++)
+							{
+								v3 p1 = current_road_segment_curve_samples[curve_sample_index];
+								v3 dir_to_p1 = p1 - p0;
+								v3 cw_rotated_dir = glm::normalize(v3{ dir_to_p1.y, -dir_to_p1.x, 0.0f });
+								v3 path_point = p0 + cw_rotated_dir * dist_from_center;
+								current_transition->points_stack.push_back(path_point);
+								p0 = p1;
+							}
+							v3 dir_to_p1 = current_road_segment.GetEndDirection() * -1.0f;
+							v3 cw_rotated_dir = glm::normalize(v3{ dir_to_p1.y, -dir_to_p1.x, 0.0f });
+							v3 path_point = p0 + cw_rotated_dir * dist_from_center;
+							current_transition->points_stack.push_back(path_point);
+						}
+						auto first_path = (RS_Transition_For_Driving*)the_path[0];
+						RoadSegment& first_road_segment = road_segments[first_path->road_segment_index];
+						if (first_path->next_road_node_index == first_road_segment.EndNode)
+						{
+							for (u64 k = 0; k < start->snapped_t_index; k++)
+								first_path->points_stack.pop_back();
+						}
+						else
+						{
+							for (u64 k = 0; k < first_road_segment.curve_samples.size() - start->snapped_t_index - 1; k++)
+								first_path->points_stack.pop_back();
+						}
+						return the_path;
+					}
+				}
+				auto v_it = std::find_if(
+					visited_road_segments.begin(),
+					visited_road_segments.end(),
+					[connected_road_segment_index, from_start](const std::tuple<s64, bool>& el) {
+						return std::get<0>(el) == connected_road_segment_index && std::get<1>(el) == from_start;
+					});
+				if (v_it != visited_road_segments.end())
+					continue;
+
+				visited_road_segments.push_back({ connected_road_segment_index, from_start });
+
+
+				s64 new_distance = closest.distance + curve_samples_count;
+				s64 next_road_node_index = connected_road_segment.StartNode == road_node_index ? connected_road_segment.EndNode : connected_road_segment.StartNode;
+				s64 prev_road_node_index = road_node_index;
+				linqs.push_back(Dijkstra_Node{
+					(s64)new_distance,
+					(s64)connected_road_segment_index,
+					(s64)prev_road_node_index,
+					(s64)next_road_node_index
+					});
 			}
 		}
-		return{ start };
+
+		return {};
 	}
 
+	//TODO memory leak possible
+	std::vector<Transition*> get_path(Building* start, Building* end)
+	{
+		auto& road_segments = GameScene::ActiveGameScene->m_RoadManager.road_segments;
+		auto& road_nodes = GameScene::ActiveGameScene->m_RoadManager.road_nodes;
+		auto& road_types = GameScene::ActiveGameScene->MainApplication->road_types;
+		if (start->connectedRoadSegment == end->connectedRoadSegment)
+		{
+			if (start->snapped_to_right == end->snapped_to_right)
+			{
+				RS_Transition_For_Walking* rs_transition = new RS_Transition_For_Walking();
+				u64 diff = end->snapped_t_index - start->snapped_t_index;
+				if (diff > 0)
+				{
+					rs_transition->from_start = true;
+					rs_transition->from_right = start->snapped_to_right;
+				}
+				else if (diff == 0)
+				{
+					rs_transition->from_start = end->snapped_t > start->snapped_t;
+					rs_transition->from_right = start->snapped_to_right == (end->snapped_t > start->snapped_t);
+				}
+				else
+				{
+					rs_transition->from_start = false;
+					rs_transition->from_right = !start->snapped_to_right;
+				}
+				rs_transition->road_segment_index = start->connectedRoadSegment;
+				return { rs_transition };
+			}
+			else
+			{
+				RoadSegment& road_segment = road_segments[start->connectedRoadSegment];
+				bool from_start = road_segment.curve_samples.size() > start->snapped_t_index + end->snapped_t_index;
+
+				RS_Transition_For_Walking* rs_transition_s = new RS_Transition_For_Walking();
+				rs_transition_s->from_start = !from_start;
+				rs_transition_s->from_right = !start->snapped_to_right == from_start;
+				rs_transition_s->road_segment_index = start->connectedRoadSegment;
+
+				u64 road_node_index = from_start ? road_segment.StartNode : road_segment.EndNode;
+				RoadNode& road_node = road_nodes[road_node_index];
+				auto it = std::find(road_node.roadSegments.begin(), road_node.roadSegments.end(), start->connectedRoadSegment);
+				assert(it != road_node.roadSegments.end());
+				u64 index = std::distance(road_node.roadSegments.begin(), it);
+				RN_Transition_For_Walking* rn_transition = new RN_Transition_For_Walking();
+				rn_transition->from_road_segments_array_index = index;
+				rn_transition->to_road_segments_array_index = index;
+				rn_transition->road_node_index = road_node_index;
+				if (rs_transition_s->from_right)
+				{
+					rn_transition->accending = false;
+					rn_transition->sub_index = 2;
+				}
+				else
+				{
+					rn_transition->accending = true;
+					rn_transition->sub_index = 1;
+				}
+
+				RS_Transition_For_Walking* rs_transition_e = new RS_Transition_For_Walking();
+
+				rs_transition_e->from_start = !rs_transition_s->from_start;
+				rs_transition_s->from_right = rs_transition_s->from_right == from_start;
+				rs_transition_e->road_segment_index = end->connectedRoadSegment;
+				return { rs_transition_s, rn_transition, rs_transition_e };
+			}
+		}
+
+		RoadSegment& start_road_segment = road_segments[start->connectedRoadSegment];
+		RoadSegment& end_road_segment = road_segments[end->connectedRoadSegment];
+
+		std::vector<Dijkstra_Node> linqs{};
+		std::vector<Dijkstra_Node> fastest_road_to_these_nodes{};
+		std::vector<u64> visited_road_segments{};
+		linqs.push_back(Dijkstra_Node{
+			start->snapped_t_index,
+			start->connectedRoadSegment,
+			-1,
+			(s64)(start_road_segment.StartNode)
+			});
+		linqs.push_back(Dijkstra_Node{
+			(s64)(start_road_segment.curve_samples.size() - start->snapped_t_index),
+			start->connectedRoadSegment,
+			-1,
+			(s64)(start_road_segment.EndNode)
+			});
+		visited_road_segments.push_back(start->connectedRoadSegment);
+
+
+		while (linqs.empty() == false)
+		{
+			std::sort(linqs.begin(), linqs.end(), Helper::sort_by_distance());
+			auto closest = linqs[linqs.size() - 1];
+			linqs.pop_back();
+			auto it = std::find_if(
+				fastest_road_to_these_nodes.begin(),
+				fastest_road_to_these_nodes.end(),
+				[closest](const Dijkstra_Node& el) {
+					return el.next_road_node_index == closest.next_road_node_index;
+				});
+			if (it == fastest_road_to_these_nodes.end())
+			{
+				fastest_road_to_these_nodes.push_back(closest);
+			}
+
+			RoadNode& road_node = road_nodes[closest.next_road_node_index];
+			auto& connected_road_segments = road_node.roadSegments;
+			for (u64 i = 0; i < connected_road_segments.size(); i++)
+			{
+				u64 connected_road_segment_index = connected_road_segments[i];
+				RoadSegment& connected_road_segment = road_segments[connected_road_segment_index];
+				u64 curve_samples_count = connected_road_segment.curve_samples.size();
+				if (connected_road_segment_index == end->connectedRoadSegment)
+				{
+					u64 rn_index = closest.next_road_node_index;
+					u64 rs_index = connected_road_segment_index;
+					std::vector<Transition*> the_temp_path{};
+
+					RS_Transition_For_Walking* rs_transition = new RS_Transition_For_Walking();
+					the_temp_path.push_back(rs_transition);
+					rs_transition->road_segment_index = rs_index;
+					rs_transition->from_start = connected_road_segment.StartNode == closest.next_road_node_index;
+					rs_transition->from_right = end->snapped_to_right == rs_transition->from_start;
+
+					auto& rss = road_nodes[rn_index].roadSegments;
+					auto to_it = std::find(rss.begin(), rss.end(), rs_index);
+					assert(to_it != rss.end());
+					u64 to_index = std::distance(rss.begin(), to_it);
+
+					RN_Transition_For_Walking* rn_transition = new RN_Transition_For_Walking();
+					the_temp_path.push_back(rn_transition);
+					rn_transition->road_node_index = rn_index;
+					rn_transition->to_road_segments_array_index = to_index;
+					while (true)
+					{
+						auto linq_it = std::find_if(
+							fastest_road_to_these_nodes.begin(),
+							fastest_road_to_these_nodes.end(),
+							[rn_index](const Dijkstra_Node& el) {
+								return el.next_road_node_index == rn_index;
+							});
+						rs_index = linq_it->road_segment_index;
+						std::vector<u64>& roads = road_nodes[rn_index].roadSegments;
+						auto from_it = std::find(roads.begin(), roads.end(), rs_index);
+						assert(from_it != roads.end());
+						u64 from_index = std::distance(roads.begin(), from_it);
+						rn_transition->from_road_segments_array_index = from_index;
+						rn_transition->sub_index = rs_transition->from_right ? 2 : 1;
+
+						int size = (int)roads.size();
+						f32 diff = rn_transition->to_road_segments_array_index - rn_transition->from_road_segments_array_index;
+						if (diff > 0.0f)
+							rn_transition->accending = diff < (size / 2.0f);
+						else if (diff == 0.0f)
+							rn_transition->accending = !rs_transition->from_right;
+						else
+							rn_transition->accending = diff * -1.0f > (size / 2.0f);
+
+
+						RoadSegment& prev_road_segment = road_segments[rs_index];
+						assert(rs_transition->at_path_array_index < 0xFFFF);
+						rs_transition = new RS_Transition_For_Walking();
+						the_temp_path.push_back(rs_transition);
+						rs_transition->road_segment_index = rs_index;
+						rs_transition->from_right = true;
+						rs_transition->from_start = prev_road_segment.EndNode == rn_index;
+
+						rn_index = linq_it->prev_road_node_index;
+
+						if (rn_index == -1)
+						{
+							rs_transition->from_right = start->snapped_to_right == rs_transition->from_start;
+							break;
+						}
+
+						auto& rss = road_nodes[rn_index].roadSegments;
+						to_it = std::find(rss.begin(), rss.end(), rs_index);
+						assert(to_it != rss.end());
+						to_index = std::distance(rss.begin(), to_it);
+
+						rn_transition = new RN_Transition_For_Walking();
+						the_temp_path.push_back(rn_transition);
+						rn_transition->road_node_index = rn_index;
+						rn_transition->to_road_segments_array_index = to_index;
+					}
+					std::vector<Transition*> the_path{};
+					the_path.reserve(the_temp_path.size());
+					while (the_temp_path.size() > 0)
+					{
+						Transition* transition = the_temp_path[the_temp_path.size() - 1];
+						the_temp_path.pop_back();
+						the_path.push_back(transition);
+					}
+					return the_path;
+				}
+				if (road_types[connected_road_segment.type].zoneable == false) continue;
+
+				auto v_it = std::find(visited_road_segments.begin(), visited_road_segments.end(), connected_road_segment_index);
+				if (v_it != visited_road_segments.end())
+					continue;
+
+				visited_road_segments.push_back(connected_road_segment_index);
+
+
+				s64 new_distance = closest.distance + curve_samples_count;
+				s64 next_road_node_index = connected_road_segment.StartNode == closest.next_road_node_index ? connected_road_segment.EndNode : connected_road_segment.StartNode;
+				s64 prev_road_node_index = connected_road_segment.StartNode == closest.next_road_node_index ? connected_road_segment.StartNode : connected_road_segment.EndNode;
+				linqs.push_back(Dijkstra_Node{
+					new_distance,
+					(s64)(connected_road_segment_index),
+					prev_road_node_index,
+					next_road_node_index
+					});
+			}
+		}
+		return {};
+	}
 
 	void UpdateTheTerrain(const std::vector<std::array<v3, 3>>& polygon, bool reset)
 	{
@@ -662,20 +1439,25 @@ namespace  Can::Helper
 
 		u64 vertexCount = app->terrainPrefab->indexCount * (3 + 4 + 3);
 		app->terrainPrefab->vertexBuffer->Bind();
-		app->terrainPrefab->vertexBuffer->ReDo(app->terrainPrefab->vertices, sizeof(f32) * vertexCount);
+		app->terrainPrefab->vertexBuffer->ReDo(app->terrainPrefab->vertices, (u32)(sizeof(f32) * vertexCount));
 		app->terrainPrefab->vertexBuffer->Unbind();
 	}
 
 	void UpdateTheTerrain(RoadSegment* rs, bool reset)
 	{
 		GameApp* app = GameScene::ActiveGameScene->MainApplication;
-		std::vector<RoadNode>& nodes = app->gameScene->m_RoadManager.m_Nodes;
-		if (rs->StartNode >= nodes.size())
+		auto& road_nodes = app->gameScene->m_RoadManager.road_nodes;
+		if (rs->StartNode >= road_nodes.capacity)
 			return;
-		if (rs->EndNode >= nodes.size())
+		if (rs->EndNode >= road_nodes.capacity)
 			return;
-		RoadNode& startNode = nodes[rs->StartNode];
-		RoadNode& endNode = nodes[rs->EndNode];
+		if (road_nodes.values[rs->StartNode].valid == false)
+			return;
+		if (road_nodes.values[rs->EndNode].valid == false)
+			return;
+
+		RoadNode& startNode = road_nodes[rs->StartNode];
+		RoadNode& endNode = road_nodes[rs->EndNode];
 		bool start_node_is_tunnel = startNode.elevation_type == -1;
 		bool end_node_is_tunnel = endNode.elevation_type == -1;
 
