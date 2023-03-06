@@ -120,8 +120,6 @@ namespace Can
 			else if (ui.selected_key == 5) controller.rotate_ccw_key = keycode;
 			else if (ui.selected_key == 6) controller.pitch_down_key = keycode;
 			else if (ui.selected_key == 7) controller.pitch_up_key = keycode;
-			else if (ui.selected_key == 8) controller.raise_key = keycode;
-			else if (ui.selected_key == 9) controller.lower_key = keycode;
 			else if (ui.selected_key == 10) controller.increase_fov_key = keycode;
 			else if (ui.selected_key == 11) controller.decrease_fov_key = keycode;
 
@@ -815,8 +813,6 @@ namespace Can
 			const std::string& text_selected_rotate_ccw_key = keycode_to_string(camera_controller.rotate_ccw_key);
 			const std::string& text_selected_pitch_down_key = keycode_to_string(camera_controller.pitch_down_key);
 			const std::string& text_selected_pitch_up_key = keycode_to_string(camera_controller.pitch_up_key);
-			const std::string& text_selected_raise_key = keycode_to_string(camera_controller.raise_key);
-			const std::string& text_selected_lower_key = keycode_to_string(camera_controller.lower_key);
 			const std::string& text_selected_increase_fov_key = keycode_to_string(camera_controller.increase_fov_key);
 			const std::string& text_selected_decrease_fov_key = keycode_to_string(camera_controller.decrease_fov_key);
 			std::string text_cross = "X";
@@ -931,34 +927,6 @@ namespace Can
 				{
 					ui.key_bind_selection_is_openned = true;
 					ui.selected_key = 7;
-				}
-			}
-			{
-				r.y -= r.h + sub_region_button_margin;
-				immediate_quad(r, background_color, true);
-				r.z++;
-				immediate_text(text_raise_key_bind, r, graphics_options_label_theme);
-				r.z--;
-				key_selection_rect.y = r.y;
-				u16 flags = immediate_button(key_selection_rect, text_selected_raise_key, button_theme_centered, __LINE__);
-				if (flags & BUTTON_STATE_FLAGS_RELEASED)
-				{
-					ui.key_bind_selection_is_openned = true;
-					ui.selected_key = 8;
-				}
-			}
-			{
-				r.y -= r.h + sub_region_button_margin;
-				immediate_quad(r, background_color, true);
-				r.z++;
-				immediate_text(text_lower_key_bind, r, graphics_options_label_theme);
-				r.z--;
-				key_selection_rect.y = r.y;
-				u16 flags = immediate_button(key_selection_rect, text_selected_lower_key, button_theme_centered, __LINE__);
-				if (flags & BUTTON_STATE_FLAGS_RELEASED)
-				{
-					ui.key_bind_selection_is_openned = true;
-					ui.selected_key = 9;
 				}
 			}
 			{
