@@ -473,6 +473,33 @@ namespace Can
 				people.push_back(person);
 			}
 		}
+		/*CameraController*/ {
+			fread(&camera_controller.forward_key, sizeof(u16), 1, read_file);
+			fread(&camera_controller.backward_key, sizeof(u16), 1, read_file);
+			fread(&camera_controller.left_key, sizeof(u16), 1, read_file);
+			fread(&camera_controller.right_key, sizeof(u16), 1, read_file);
+			fread(&camera_controller.rotate_cw_key, sizeof(u16), 1, read_file);
+			fread(&camera_controller.rotate_ccw_key, sizeof(u16), 1, read_file);
+			fread(&camera_controller.pitch_down_key, sizeof(u16), 1, read_file);
+			fread(&camera_controller.pitch_up_key, sizeof(u16), 1, read_file);
+			fread(&camera_controller.increase_fov_key, sizeof(u16), 1, read_file);
+			fread(&camera_controller.decrease_fov_key, sizeof(u16), 1, read_file);
+
+			fread(&camera_controller.zoom_in_key, sizeof(u16), 1, read_file);
+			fread(&camera_controller.zoom_out_key, sizeof(u16), 1, read_file);
+
+			fread(&camera_controller.center, sizeof(f32), 3, read_file);
+
+			fread(&camera_controller.min_pos_z, sizeof(f32), 1, read_file);
+			fread(&camera_controller.max_pos_z, sizeof(f32), 1, read_file);
+			fread(&camera_controller.min_rot_y, sizeof(f32), 1, read_file);
+			fread(&camera_controller.max_rot_y, sizeof(f32), 1, read_file);
+			fread(&camera_controller.zoom_t, sizeof(f32), 1, read_file);
+
+			fread(&camera_controller.translation_speed, sizeof(f32), 1, read_file);
+			fread(&camera_controller.rotation_speed, sizeof(f32), 1, read_file);
+			fread(&camera_controller.zoom_speed, sizeof(f32), 1, read_file);
+		}
 
 		//Camera
 		auto& camera = camera_controller.camera;
@@ -673,6 +700,33 @@ namespace Can
 				fwrite(&work_index, sizeof(s64), 1, save_file);
 				fwrite(&car_index, sizeof(s64), 1, save_file);
 			}
+		}
+		/*CameraController*/ {
+			fwrite(&camera_controller.forward_key, sizeof(u16), 1, save_file);
+			fwrite(&camera_controller.backward_key, sizeof(u16), 1, save_file);
+			fwrite(&camera_controller.left_key, sizeof(u16), 1, save_file);
+			fwrite(&camera_controller.right_key, sizeof(u16), 1, save_file);
+			fwrite(&camera_controller.rotate_cw_key, sizeof(u16), 1, save_file);
+			fwrite(&camera_controller.rotate_ccw_key, sizeof(u16), 1, save_file);
+			fwrite(&camera_controller.pitch_down_key, sizeof(u16), 1, save_file);
+			fwrite(&camera_controller.pitch_up_key, sizeof(u16), 1, save_file);
+			fwrite(&camera_controller.increase_fov_key, sizeof(u16), 1, save_file);
+			fwrite(&camera_controller.decrease_fov_key, sizeof(u16), 1, save_file);
+
+			fwrite(&camera_controller.zoom_in_key, sizeof(u16), 1, save_file);
+			fwrite(&camera_controller.zoom_out_key, sizeof(u16), 1, save_file);
+
+			fwrite(&camera_controller.center, sizeof(f32), 3, save_file);
+
+			fwrite(&camera_controller.min_pos_z, sizeof(f32), 1, save_file);
+			fwrite(&camera_controller.max_pos_z, sizeof(f32), 1, save_file);
+			fwrite(&camera_controller.min_rot_y, sizeof(f32), 1, save_file);
+			fwrite(&camera_controller.max_rot_y, sizeof(f32), 1, save_file);
+			fwrite(&camera_controller.zoom_t, sizeof(f32), 1, save_file);
+
+			fwrite(&camera_controller.translation_speed, sizeof(f32), 1, save_file);
+			fwrite(&camera_controller.rotation_speed, sizeof(f32), 1, save_file);
+			fwrite(&camera_controller.zoom_speed, sizeof(f32), 1, save_file);
 		}
 
 		//Camera
