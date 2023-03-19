@@ -485,10 +485,8 @@ namespace Can
 			fread(&camera_controller.increase_fov_key, sizeof(u16), 1, read_file);
 			fread(&camera_controller.decrease_fov_key, sizeof(u16), 1, read_file);
 
-			fread(&camera_controller.zoom_in_key, sizeof(u16), 1, read_file);
-			fread(&camera_controller.zoom_out_key, sizeof(u16), 1, read_file);
-
-			fread(&camera_controller.center, sizeof(f32), 3, read_file);
+			fread(&camera_controller.center_pos, sizeof(f32), 3, read_file);
+			fread(&camera_controller.center_rot, sizeof(f32), 3, read_file);
 
 			fread(&camera_controller.min_pos_z, sizeof(f32), 1, read_file);
 			fread(&camera_controller.max_pos_z, sizeof(f32), 1, read_file);
@@ -498,6 +496,9 @@ namespace Can
 
 			fread(&camera_controller.translation_speed, sizeof(f32), 1, read_file);
 			fread(&camera_controller.rotation_speed, sizeof(f32), 1, read_file);
+			fread(&camera_controller.rotation_with_mouse_speed_multiplier_z, sizeof(f32), 1, read_file);
+			fread(&camera_controller.rotation_with_mouse_speed_multiplier_y, sizeof(f32), 1, read_file);
+			fread(&camera_controller.is_y_inverted, sizeof(bool), 1, read_file);
 			fread(&camera_controller.zoom_speed, sizeof(f32), 1, read_file);
 		}
 
@@ -713,10 +714,8 @@ namespace Can
 			fwrite(&camera_controller.increase_fov_key, sizeof(u16), 1, save_file);
 			fwrite(&camera_controller.decrease_fov_key, sizeof(u16), 1, save_file);
 
-			fwrite(&camera_controller.zoom_in_key, sizeof(u16), 1, save_file);
-			fwrite(&camera_controller.zoom_out_key, sizeof(u16), 1, save_file);
-
-			fwrite(&camera_controller.center, sizeof(f32), 3, save_file);
+			fwrite(&camera_controller.center_pos, sizeof(f32), 3, save_file);
+			fwrite(&camera_controller.center_rot, sizeof(f32), 3, save_file);
 
 			fwrite(&camera_controller.min_pos_z, sizeof(f32), 1, save_file);
 			fwrite(&camera_controller.max_pos_z, sizeof(f32), 1, save_file);
@@ -726,6 +725,9 @@ namespace Can
 
 			fwrite(&camera_controller.translation_speed, sizeof(f32), 1, save_file);
 			fwrite(&camera_controller.rotation_speed, sizeof(f32), 1, save_file);
+			fwrite(&camera_controller.rotation_with_mouse_speed_multiplier_z, sizeof(f32), 1, save_file);
+			fwrite(&camera_controller.rotation_with_mouse_speed_multiplier_y, sizeof(f32), 1, save_file);
+			fwrite(&camera_controller.is_y_inverted, sizeof(bool), 1, save_file);
 			fwrite(&camera_controller.zoom_speed, sizeof(f32), 1, save_file);
 		}
 
