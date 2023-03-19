@@ -25,6 +25,9 @@
     <ClInclude Include="src\Managers\CarManager.h">
       <Filter>Managers</Filter>
     </ClInclude>
+    <ClInclude Include="src\Managers\PersonManager.h">
+      <Filter>Managers</Filter>
+    </ClInclude>
     <ClInclude Include="src\Managers\RoadManager.h">
       <Filter>Managers</Filter>
     </ClInclude>
@@ -43,6 +46,9 @@
     <ClInclude Include="src\Types\Car.h">
       <Filter>Types</Filter>
     </ClInclude>
+    <ClInclude Include="src\Types\Person.h">
+      <Filter>Types</Filter>
+    </ClInclude>
     <ClInclude Include="src\Types\RoadNode.h">
       <Filter>Types</Filter>
     </ClInclude>
@@ -52,13 +58,13 @@
     <ClInclude Include="src\Types\RoadType.h">
       <Filter>Types</Filter>
     </ClInclude>
+    <ClInclude Include="src\Types\Transition.h">
+      <Filter>Types</Filter>
+    </ClInclude>
     <ClInclude Include="src\Types\Tree.h">
       <Filter>Types</Filter>
     </ClInclude>
     <ClInclude Include="src\UIScene.h" />
-    <ClInclude Include="src\Managers\PersonManager.h" />
-    <ClInclude Include="src\Types\Person.h" />
-    <ClInclude Include="src\Types\Transition.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Building.cpp" />
@@ -69,6 +75,9 @@
       <Filter>Managers</Filter>
     </ClCompile>
     <ClCompile Include="src\Managers\CarManager.cpp">
+      <Filter>Managers</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Managers\PersonManager.cpp">
       <Filter>Managers</Filter>
     </ClCompile>
     <ClCompile Include="src\Managers\RoadManager.cpp">
@@ -89,6 +98,9 @@
     <ClCompile Include="src\Types\Car.cpp">
       <Filter>Types</Filter>
     </ClCompile>
+    <ClCompile Include="src\Types\Person.cpp">
+      <Filter>Types</Filter>
+    </ClCompile>
     <ClCompile Include="src\Types\RoadNode.cpp">
       <Filter>Types</Filter>
     </ClCompile>
@@ -96,7 +108,5 @@
       <Filter>Types</Filter>
     </ClCompile>
     <ClCompile Include="src\UIScene.cpp" />
-    <ClCompile Include="src\Managers\PersonManager.cpp" />
-    <ClCompile Include="src\Types\Person.cpp" />
   </ItemGroup>
 </Project>
