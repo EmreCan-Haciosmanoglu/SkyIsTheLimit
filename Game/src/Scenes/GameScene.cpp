@@ -707,6 +707,8 @@ namespace Can
 			fwrite(&camera_controller.backward_key, sizeof(u16), 1, save_file);
 			fwrite(&camera_controller.left_key, sizeof(u16), 1, save_file);
 			fwrite(&camera_controller.right_key, sizeof(u16), 1, save_file);
+			fwrite(&camera_controller.lower_key, sizeof(u16), 1, save_file);
+			fwrite(&camera_controller.raise_key, sizeof(u16), 1, save_file);
 			fwrite(&camera_controller.rotate_cw_key, sizeof(u16), 1, save_file);
 			fwrite(&camera_controller.rotate_ccw_key, sizeof(u16), 1, save_file);
 			fwrite(&camera_controller.pitch_down_key, sizeof(u16), 1, save_file);
