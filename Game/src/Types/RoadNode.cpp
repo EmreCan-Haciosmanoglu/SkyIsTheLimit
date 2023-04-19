@@ -203,7 +203,7 @@ namespace Can
 			}
 			else
 			{
-				Intersections[i] = Helper::RayPlaneIntersection(
+				Intersections[i] = Math::ray_plane_intersection(
 					position + shiftR1Amount,
 					r1Dir,
 					position + shiftR2Amount,

@@ -937,7 +937,7 @@ namespace Can
 
 		if (eA != eB)
 		{
-			v3 intersectionPoint = Helper::RayPlaneIntersection(
+			v3 intersectionPoint = Math::ray_plane_intersection(
 				pointA,
 				direction,
 				v3{ 0.0f, 0.0f, -type.tunnel_height },
@@ -1348,7 +1348,7 @@ namespace Can
 			{
 				RoadType& type = m_Scene->MainApplication->road_types[m_Type];
 
-				v3 intersectionPoint = Helper::RayPlaneIntersection(
+				v3 intersectionPoint = Math::ray_plane_intersection(
 					m_ConstructionPositions[0],
 					glm::normalize(m_ConstructionPositions[3] - m_ConstructionPositions[0]),
 					v3{ 0.0f, 0.0f, -type.tunnel_height },

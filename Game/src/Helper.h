@@ -31,8 +31,6 @@ namespace Can::Helper
 
 	v3 GetRayHitPointOnTerrain(void* s, const v3& cameraPosition, const v3& cameraDirection);
 
-	v3 RayPlaneIntersection(const v3& X, const v3& v, const v3& C, const v3& n);
-
 	f32 DistanceBetweenLineSLineS(v2 p1, v2 p2, v2 p3, v2 p4);
 
 	bool RayTriangleIntersection(const v3& camPos, const v3& ray, const v3& A, const v3& B, const v3& C, const v3& normal, v3& intersection);
