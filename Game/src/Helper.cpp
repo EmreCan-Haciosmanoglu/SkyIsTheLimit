@@ -12,14 +12,14 @@ namespace  Can::Helper
 {
 	bool CheckBoundingBoxHit(const v3& rayStartPoint, const v3& ray, const v3& least, const v3& most)
 	{
-		v3 leftPlaneCP = Helper::RayPlaneIntersection(rayStartPoint, ray, { least.x, 0.0f, 0.0f }, { 1.0f, 0.0f, 0.0f });
-		v3 rigthPlaneCP = Helper::RayPlaneIntersection(rayStartPoint, ray, { most.x, 0.0f, 0.0f }, { 1.0f, 0.0f, 0.0f });
+		v3 leftPlaneCP = Math::ray_plane_intersection(rayStartPoint, ray, { least.x, 0.0f, 0.0f }, { 1.0f, 0.0f, 0.0f });
+		v3 rigthPlaneCP = Math::ray_plane_intersection(rayStartPoint, ray, { most.x, 0.0f, 0.0f }, { 1.0f, 0.0f, 0.0f });
 
-		v3 bottomPlaneCP = Helper::RayPlaneIntersection(rayStartPoint, ray, { 0.0f, least.y, 0.0f }, { 0.0f, 1.0f, 0.0f });
-		v3 topPlaneCP = Helper::RayPlaneIntersection(rayStartPoint, ray, { 0.0f, most.y, 0.0f }, { 0.0f, 1.0f, 0.0f });
+		v3 bottomPlaneCP = Math::ray_plane_intersection(rayStartPoint, ray, { 0.0f, least.y, 0.0f }, { 0.0f, 1.0f, 0.0f });
+		v3 topPlaneCP = Math::ray_plane_intersection(rayStartPoint, ray, { 0.0f, most.y, 0.0f }, { 0.0f, 1.0f, 0.0f });
 
-		v3 nearPlaneCP = Helper::RayPlaneIntersection(rayStartPoint, ray, { 0.0f, 0.0f, least.z }, { 0.0f, 0.0f, 1.0f });
-		v3 farPlaneCP = Helper::RayPlaneIntersection(rayStartPoint, ray, { 0.0f, 0.0f, most.z }, { 0.0f, 0.0f, 1.0f });
+		v3 nearPlaneCP = Math::ray_plane_intersection(rayStartPoint, ray, { 0.0f, 0.0f, least.z }, { 0.0f, 0.0f, 1.0f });
+		v3 farPlaneCP = Math::ray_plane_intersection(rayStartPoint, ray, { 0.0f, 0.0f, most.z }, { 0.0f, 0.0f, 1.0f });
 
 
 		return
@@ -102,8 +102,8 @@ namespace  Can::Helper
 		Can::GameScene* scene = (Can::GameScene*)s; //I have no idea how to change this
 
 		f32* data = scene->m_Terrain->prefab->vertices;
-		v3 bottomPlaneCollisionPoint = Helper::RayPlaneIntersection(cameraPosition, cameraDirection, { 0.0f, 0.0f, 0.0f }, { 0.0f, 1.0f, 0.0f });
-		v3 topPlaneCollisionPoint = Helper::RayPlaneIntersection(cameraPosition, cameraDirection, { 0.0f, 1.0f * COLOR_COUNT, 0.0f }, { 0.0f, 1.0f, 0.0f });
+		v3 bottomPlaneCollisionPoint = Math::ray_plane_intersection(cameraPosition, cameraDirection, { 0.0f, 0.0f, 0.0f }, { 0.0f, 1.0f, 0.0f });
+		v3 topPlaneCollisionPoint = Math::ray_plane_intersection(cameraPosition, cameraDirection, { 0.0f, 1.0f * COLOR_COUNT, 0.0f }, { 0.0f, 1.0f, 0.0f });
 
 		bottomPlaneCollisionPoint.z *= -1;
 		topPlaneCollisionPoint.z *= -1;
@@ -148,13 +148,6 @@ namespace  Can::Helper
 			}
 		}
 		return v3(-1.0f);
-	}
-
-	v3 RayPlaneIntersection(const v3& X, const v3& v, const v3& C, const v3& n)
-	{
-		v3 w = C - X;
-		f32 k = glm::dot(w, n) / glm::dot(v, n);
-		return X + k * v;
 	}
 
 	f32 DistanceBetweenLineSLineS(v2 p1, v2 p2, v2 p3, v2 p4)

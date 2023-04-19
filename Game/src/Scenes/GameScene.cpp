@@ -60,7 +60,7 @@ namespace Can
 		v3 camPos = camera_controller.camera.position;
 		v3 forward = GetRayCastedFromScreen();
 
-		v3 I = Helper::RayPlaneIntersection(
+		v3 I = Math::ray_plane_intersection(
 			camPos,
 			forward,
 			v3{ 0.0f, 0.0f, 0.0f },
@@ -119,13 +119,13 @@ namespace Can
 		v3 forward = GetRayCastedFromScreen();
 
 
-		v3 bottomPlaneCollisionPoint = Helper::RayPlaneIntersection(
+		v3 bottomPlaneCollisionPoint = Math::ray_plane_intersection(
 			camPos,
 			forward,
 			v3{ 0.0f, 0.0f, 0.0f },
 			v3{ 0.0f, 0.0f, 1.0f }
 		);
-		v3 topPlaneCollisionPoint = Helper::RayPlaneIntersection(
+		v3 topPlaneCollisionPoint = Math::ray_plane_intersection(
 			camPos,
 			forward,
 			v3{ 0.0f, 0.0f, 1.0f * COLOR_COUNT },
