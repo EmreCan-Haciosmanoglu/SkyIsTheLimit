@@ -28,18 +28,8 @@ namespace Can
 	void Main_Menu_UI::OnEvent(Event::Event& event)
 	{
 		Event::EventDispatcher dispatcher(event);
-		dispatcher.Dispatch<Event::KeyReleasedEvent>(CAN_BIND_EVENT_FN(Main_Menu_UI::OnKeyReleased));
-		dispatcher.Dispatch<Event::KeyTypedEvent>(CAN_BIND_EVENT_FN(Main_Menu_UI::OnKeyTyped));
-	}
-
-	bool Main_Menu_UI::OnKeyReleased(Event::KeyReleasedEvent& event)
-	{
-		return on_main_menu_ui_layer_key_released(*this, event);
-	}
-	bool Main_Menu_UI::OnKeyTyped(Event::KeyTypedEvent& event)
-	{
-		on_main_menu_ui_layer_key_typed(*this, event);
-		return false;
+		dispatcher.dispatch<Event::KeyReleasedEvent>(this,CAN_BIND_EVENT_FN(on_main_menu_ui_layer_key_released));
+		dispatcher.dispatch<Event::KeyTypedEvent>(this, CAN_BIND_EVENT_FN(on_main_menu_ui_layer_key_typed));
 	}
 
 	extern Buffer_Data buffer_data;
@@ -103,8 +93,9 @@ namespace Can
 	}
 
 
-	bool on_main_menu_ui_layer_key_released(Main_Menu_UI& ui, Event::KeyReleasedEvent& event)
+	bool on_main_menu_ui_layer_key_released(void* p, Event::KeyReleasedEvent& event)
 	{
+		Main_Menu_UI& ui = *((Main_Menu_UI*)p);
 		Perspective_Camera_Controller& controller = GameApp::instance->perspective_camera_controller;
 		KeyCode keycode = event.GetKeyCode();
 		if (ui.key_bind_selection_is_openned)
@@ -170,16 +161,17 @@ namespace Can
 		return false;
 	}
 
-	void on_main_menu_ui_layer_key_typed(Main_Menu_UI& ui, Event::KeyTypedEvent& event)
+	bool on_main_menu_ui_layer_key_typed(void* p, Event::KeyTypedEvent& event)
 	{
-		if (!ui.global_focus) return;
+		Main_Menu_UI& ui = *((Main_Menu_UI*)p);
+		if (!ui.global_focus) return false;
 		KeyCode keycode = event.GetKeyCode();
 
 		if (ui.char_count >= ui.max_char)
-			return;
+			return false;
 		char key = (char)keycode;
 
-		if (!(key >= 32 && key <= 126))	return;
+		if (!(key >= 32 && key <= 126))	return false;
 
 		if (ui.char_count == ui.cursor)
 		{
@@ -197,6 +189,8 @@ namespace Can
 			ui.cursor++;
 		}
 		ui.char_is_typed = true;
+
+		return false;
 	}
 
 	void main_menu_screen(Main_Menu_UI& ui)

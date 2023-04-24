@@ -26,13 +26,11 @@ namespace Can
 	{
 		Main_Menu_UI() {}
 
-		virtual void OnAttach() override;
-		virtual void OnDetach() override;
+		void OnAttach() override;
+		void OnDetach() override;
 
-		virtual bool OnUpdate(TimeStep ts) override;
-		virtual void OnEvent(Event::Event& event) override;
-		bool OnKeyReleased(Event::KeyReleasedEvent& event);
-		bool OnKeyTyped(Event::KeyTypedEvent& event);
+		bool OnUpdate(TimeStep ts) override;
+		void OnEvent(Event::Event& event) override;
 
 		void* font = nullptr;
 		Orthographic_Camera_Controller camera_controller;
@@ -83,8 +81,8 @@ namespace Can
 	void on_main_menu_ui_layer_detach(Main_Menu_UI& ui);
 
 	bool on_main_menu_ui_layer_update(Main_Menu_UI& ui, TimeStep ts);
-	bool on_main_menu_ui_layer_key_released(Main_Menu_UI& ui, Event::KeyReleasedEvent& event);
-	void on_main_menu_ui_layer_key_typed(Main_Menu_UI& ui, Event::KeyTypedEvent& event);
+	bool on_main_menu_ui_layer_key_released(void* p, Event::KeyReleasedEvent& event);
+	bool on_main_menu_ui_layer_key_typed(void* p, Event::KeyTypedEvent& event);
 
 	void main_menu_screen(Main_Menu_UI& ui);
 	void options_screen(Main_Menu_UI& ui);
