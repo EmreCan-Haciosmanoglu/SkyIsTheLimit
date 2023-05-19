@@ -9,6 +9,8 @@
 #include "Managers/BuildingManager.h"
 #include "Managers/CarManager.h"
 
+#include "Scenes/Game_Scene/Game_Scene_UI.h"
+
 namespace Can
 {
 	class GameApp;
@@ -80,5 +82,13 @@ namespace Can
 		glm::vec3 m_LightPosition{ +0.0f, 0.0f, 1.0f };
 		glm::vec3 m_LightDirection{ +1.0f, -1.0f, -1.0f };
 
+	public:
+		Game_Scene_UI ui_layer{};
 	};
+
+	void init_game_scene(class GameApp& app, GameScene& game_scene);
+	void load_game_scene(class GameApp& app, GameScene& game_scene);
+
+	void unload_game_scene(class GameApp& app, GameScene& game_scene);
+	void deinit_game_scene(class GameApp& app, GameScene& game_scene);
 }

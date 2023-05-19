@@ -148,6 +148,7 @@
     <ClInclude Include="src\Managers\RoadManager.h" />
     <ClInclude Include="src\Managers\TreeManager.h" />
     <ClInclude Include="src\Scenes\GameScene.h" />
+    <ClInclude Include="src\Scenes\Game_Scene\Game_Scene_UI.h" />
     <ClInclude Include="src\Scenes\Main_Menu\Main_Menu.h" />
     <ClInclude Include="src\Scenes\Main_Menu\Main_Menu_UI.h" />
     <ClInclude Include="src\Types\Car.h" />
@@ -170,6 +171,7 @@
     <ClCompile Include="src\Managers\RoadManager.cpp" />
     <ClCompile Include="src\Managers\TreeManager.cpp" />
     <ClCompile Include="src\Scenes\GameScene.cpp" />
+    <ClCompile Include="src\Scenes\Game_Scene\Game_Scene_UI.cpp" />
     <ClCompile Include="src\Scenes\Main_Menu\Main_Menu.cpp" />
     <ClCompile Include="src\Scenes\Main_Menu\Main_Menu_UI.cpp" />
     <ClCompile Include="src\Types\Car.cpp" />

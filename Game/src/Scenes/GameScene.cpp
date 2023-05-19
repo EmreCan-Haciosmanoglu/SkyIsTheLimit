@@ -38,17 +38,21 @@ namespace Can
 		m_LightDirection = glm::normalize(m_LightDirection);
 		m_ShadowMapMasterRenderer = new ShadowMapMasterRenderer(&camera_controller);
 
+		init_game_scene(*MainApplication, *this);
 	}
 	GameScene::~GameScene()
 	{
+		deinit_game_scene(*MainApplication, *this);
 		delete m_Terrain;
 	}
 	void GameScene::OnAttach()
 	{
 		ActiveGameScene = this;
+		load_game_scene(*MainApplication, *this);
 	}
 	void GameScene::OnDetach()
 	{
+		unload_game_scene(*MainApplication, *this);
 	}
 	bool GameScene::OnUpdate(TimeStep ts)
 	{
@@ -768,4 +772,21 @@ namespace Can
 		return forward;
 	}
 
+	void init_game_scene(GameApp& app, GameScene& game_scene)
+	{
+		init_game_scene_ui_layer(game_scene.ui_layer);
+	}
+	void load_game_scene(GameApp& app, GameScene& game_scene)
+	{
+		app.PushOverlay(&game_scene.ui_layer);
+	}
+
+	void unload_game_scene(GameApp& app, GameScene& game_scene)
+	{
+		app.PopOverlay(&game_scene.ui_layer);
+	}
+	void deinit_game_scene(GameApp& app, GameScene& game_scene)
+	{
+		deinit_game_scene_ui_layer(game_scene.ui_layer);
+	}
 }
