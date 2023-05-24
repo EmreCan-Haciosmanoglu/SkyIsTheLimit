@@ -55,7 +55,6 @@ namespace Can
 		void save_the_game();
 		void load_the_game();
 
-	private:
 		glm::vec3 GetRayCastedFromScreen();
 
 	public:
@@ -74,10 +73,10 @@ namespace Can
 
 		SpeedMode e_SpeedMode = SpeedMode::Normal;
 
-	private:
 		Perspective_Camera_Controller camera_controller;
 
 
+	private:
 		ShadowMapMasterRenderer* m_ShadowMapMasterRenderer = nullptr;
 		glm::vec3 m_LightPosition{ +0.0f, 0.0f, 1.0f };
 		glm::vec3 m_LightDirection{ +1.0f, -1.0f, -1.0f };
@@ -91,4 +90,5 @@ namespace Can
 
 	void unload_game_scene(class GameApp& app, GameScene& game_scene);
 	void deinit_game_scene(class GameApp& app, GameScene& game_scene);
+	void does_select_object(GameScene& game_scene);
 }

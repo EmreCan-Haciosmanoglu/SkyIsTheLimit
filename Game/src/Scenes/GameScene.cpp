@@ -144,6 +144,9 @@ namespace Can
 		if (!inside_game_zone)
 			return false;
 
+		if (button == MouseCode::Button0)
+			does_select_object(*this);
+
 		switch (e_ConstructionMode)
 		{
 		case ConstructionMode::Road:
@@ -774,7 +777,7 @@ namespace Can
 
 	void init_game_scene(GameApp& app, GameScene& game_scene)
 	{
-		init_game_scene_ui_layer(game_scene.ui_layer);
+		init_game_scene_ui_layer(game_scene.ui_layer, game_scene);
 	}
 	void load_game_scene(GameApp& app, GameScene& game_scene)
 	{
@@ -788,5 +791,28 @@ namespace Can
 	void deinit_game_scene(GameApp& app, GameScene& game_scene)
 	{
 		deinit_game_scene_ui_layer(game_scene.ui_layer);
+	}
+
+	void does_select_object(GameScene& game_scene)
+	{
+		auto& people = game_scene.m_PersonManager.m_People;
+		auto& cars = game_scene.m_CarManager.m_Cars;
+
+		v3 cameraPosition = game_scene.camera_controller.camera.position;
+		v3 forward = game_scene.GetRayCastedFromScreen();
+
+		for (auto person : people)
+		{
+			if (Helper::CheckBoundingBoxHit(
+				cameraPosition,
+				forward,
+				person->object->prefab->boundingBoxL + person->position,
+				person->object->prefab->boundingBoxM + person->position
+			))
+			{
+				game_scene.ui_layer.focus_object = person->object;
+				break;
+			}
+		}
 	}
 }
