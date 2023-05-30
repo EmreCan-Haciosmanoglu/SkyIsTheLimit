@@ -44,6 +44,7 @@ namespace Can
 		auto ptr = &ui.camera_controller;
 		buffer_data.camera_controller = ptr;
 		ui.font = load_font("assets/fonts/DancingScript/DancingScript-Regular.ttf");
+		ui.game_scene = &game_scene;
 		ui.game_scene_camera = &game_scene.camera_controller.camera;
 
 
@@ -51,6 +52,10 @@ namespace Can
 			ui.label_theme_button.color = { 0.1f, 0.1f, 0.1f, 1.0f };
 			ui.label_theme_button.font = buffer_data.default_font;
 			ui.label_theme_button.font_size_in_pixel = 30;
+
+			ui.label_theme_camera_mode_button.color = { 0.1f, 0.1f, 0.1f, 1.0f };
+			ui.label_theme_camera_mode_button.font = buffer_data.default_font;
+			ui.label_theme_camera_mode_button.font_size_in_pixel = 20;
 
 			ui.label_theme_text.color = { 0.9f, 0.9f, 0.9f, 1.0f };
 			ui.label_theme_text.font = buffer_data.default_font;
@@ -61,6 +66,11 @@ namespace Can
 			ui.button_theme_cross.background_color = { 0.80f, 0.50f, 0.30f, 1.0f };
 			ui.button_theme_cross.background_color_over = { 0.90f, 0.70f, 0.55f, 1.0f };
 			ui.button_theme_cross.background_color_pressed = { 0.95f, 0.85f, 0.70f, 1.0f };
+
+			ui.button_theme_camera_mode.label_theme = &ui.label_theme_camera_mode_button;
+			ui.button_theme_camera_mode.background_color = { 0.89f, 0.50f, 0.30f, 1.0f };
+			ui.button_theme_camera_mode.background_color_over = { 0.96f, 0.70f, 0.55f, 1.0f };
+			ui.button_theme_camera_mode.background_color_pressed = { 0.98f, 0.85f, 0.70f, 1.0f };
 
 			ui.button_theme_thumb.label_theme = &ui.label_theme_button;
 			ui.button_theme_thumb.background_color = { 0.80f, 0.50f, 0.30f, 1.0f };
@@ -130,6 +140,11 @@ namespace Can
 	bool on_game_scene_ui_layer_mouse_pressed(void* p, Event::MouseButtonPressedEvent& event)
 	{
 		Game_Scene_UI& ui = *((Game_Scene_UI*)p);
+
+		MouseCode key_code = event.GetMouseButton();
+		if (key_code == MouseCode::Button0)
+		{
+		}
 		return false;
 	}
 	bool on_game_scene_ui_layer_mouse_moved(void* p, Event::MouseMovedEvent& event)
@@ -151,8 +166,16 @@ namespace Can
 		if (ui.focus_object)
 		{
 			v4 position_on_screen = ui.game_scene_camera->view_projection * ui.focus_object->transform * v4(0.0f, 0.0f, ui.focus_object->prefab->boundingBoxM.z, 1.0f);
-			ui.menu_x = glm::clamp(u32(glm::clamp(position_on_screen.x / position_on_screen.w + 1.0f, 0.0f,2.0f) * width_in_pixels * 0.5f), 0U, width_in_pixels - 200);
-			ui.menu_y = glm::clamp(u32(glm::clamp(position_on_screen.y / position_on_screen.w + 1.0f, 0.0f, 2.0f) * height_in_pixels * 0.5f) - 200, 0U, height_in_pixels - 200);
+			ui.rect_sub_region.x = glm::clamp(
+				u32(glm::clamp(position_on_screen.x / position_on_screen.w + 1.0f, 0.0f, 2.0f) * width_in_pixels * 0.5f), 
+				0U, 
+				width_in_pixels - ui.rect_sub_region.w
+			);
+			ui.rect_sub_region.y = glm::clamp(
+				u32(glm::clamp(position_on_screen.y / position_on_screen.w + 1.0f, 0.0f, 2.0f) * height_in_pixels * 0.5f) - ui.rect_sub_region.h,
+				0U, 
+				height_in_pixels - ui.rect_sub_region.h
+			);
 		}
 	}
 
@@ -168,21 +191,33 @@ namespace Can
 
 		if (ui.focus_object != nullptr)
 		{
-			Rect rect_sub_region;
-			rect_sub_region.w = 200;
-			rect_sub_region.h = 200;
-			rect_sub_region.x = ui.menu_x; //ui.mouse_pos_x;
-			rect_sub_region.y = ui.menu_y; //(height_in_pixels - ui.mouse_pos_y) - rect_sub_region.h;
-
 			Rect rect_button_cross;
 			rect_button_cross.w = 40;
 			rect_button_cross.h = 40;
-			rect_button_cross.x = rect_sub_region.x + rect_sub_region.w - rect_button_cross.w;
-			rect_button_cross.y = rect_sub_region.y + rect_sub_region.h - rect_button_cross.h;
+			rect_button_cross.x = ui.rect_sub_region.x + ui.rect_sub_region.w - rect_button_cross.w;
+			rect_button_cross.y = ui.rect_sub_region.y + ui.rect_sub_region.h - rect_button_cross.h;
+			rect_button_cross.z = 1;
+
+			Rect rect_button_fpc;
+			rect_button_fpc.w = 60;
+			rect_button_fpc.h = 30;
+			rect_button_fpc.x = ui.rect_sub_region.x + 10;
+			rect_button_fpc.y = ui.rect_sub_region.y + ui.rect_sub_region.h - rect_button_fpc.h - 10;
+			rect_button_fpc.z = 1;
+
+			Rect rect_button_tpc;
+			rect_button_tpc.w = rect_button_fpc.w;
+			rect_button_tpc.h = rect_button_fpc.h;
+			rect_button_tpc.x = rect_button_fpc.x + rect_button_fpc.w + 10;
+			rect_button_tpc.y = rect_button_fpc.y;
+			rect_button_tpc.z = rect_button_fpc.z;
 
 
 			std::string text_x = "X";
-			immediate_quad(rect_sub_region, ui.sub_region_theme_details.background_color);
+			std::string text_fpc = "FPC";
+			std::string text_tpc = "TPC";
+			//immediate_begin_sub_region(rect_sub_region, ui.sub_region_theme_details, __LINE__);
+			immediate_quad(ui.rect_sub_region, ui.sub_region_theme_details.background_color);
 
 			u16 flags = immediate_button(rect_button_cross, text_x, ui.button_theme_cross, __LINE__, true);
 			if (flags & BUTTON_STATE_FLAGS_PRESSED)
@@ -193,7 +228,40 @@ namespace Can
 				ui.focus_object = nullptr;
 				return;
 			}
+
+			flags = immediate_button(rect_button_fpc, text_fpc, ui.button_theme_camera_mode, __LINE__, true);
+			if (flags & BUTTON_STATE_FLAGS_PRESSED)
+				std::cout << "FPC is Pressed\n";
+			if (flags & BUTTON_STATE_FLAGS_RELEASED)
+			{
+				std::cout << "FPC is Released\n";
+				//set mode to FPC
+				ui.game_scene->camera_controller.follow_object = ui.focus_object;
+				ui.game_scene->camera_controller.mode = Mode::FollowFirstPerson;
+				ui.focus_object = nullptr;
+				return;
+			}
+
+			flags = immediate_button(rect_button_tpc, text_tpc, ui.button_theme_camera_mode, __LINE__, true);
+			if (flags & BUTTON_STATE_FLAGS_PRESSED)
+				std::cout << "TPC is Pressed\n";
+			if (flags & BUTTON_STATE_FLAGS_RELEASED)
+			{
+				std::cout << "TPC is Released\n";
+				//set mode to TPC
+				ui.game_scene->camera_controller.follow_object = ui.focus_object;
+				ui.game_scene->camera_controller.mode = Mode::FollowThirdPerson;
+				ui.focus_object = nullptr;
+				return;
+			}
+
+			//immediate_end_sub_region(track_width);
 		}
 	}
+
+
+	bool on_game_scene_ui_layer_mouse_released(void* p, Event::MouseButtonReleasedEvent& event)
+	{
+		return false;
 	}
 }

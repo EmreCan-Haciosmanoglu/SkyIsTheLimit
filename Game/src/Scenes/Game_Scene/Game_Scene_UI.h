@@ -23,9 +23,11 @@ namespace Can
 		Orthographic_Camera_Controller camera_controller;
 
 		Label_Theme label_theme_button;
+		Label_Theme label_theme_camera_mode_button;
 		Label_Theme label_theme_text;
 
 		Button_Theme button_theme_cross;
+		Button_Theme button_theme_camera_mode;
 		Button_Theme button_theme_thumb;
 		Button_Theme button_theme_track;
 
@@ -33,11 +35,17 @@ namespace Can
 		Slider_Theme slider_theme_vertical;
 
 		Sub_Region_Theme sub_region_theme_details;
+		Rect rect_sub_region{ 
+			0, 		// x
+			0, 		// y
+			0, 		// z
+			200, 	// w
+			100 	// h
+		};
 
-		u32 menu_x = 0;
-		u32 menu_y = 0;
 
 		Object* focus_object = nullptr;
+		GameScene* game_scene = nullptr;
 		Perspective_Camera* game_scene_camera = nullptr;
 
 		bool force_update = false;
@@ -58,4 +66,7 @@ namespace Can
 
 	void update_screen(Game_Scene_UI& ui);
 	void draw_screen(Game_Scene_UI& ui);
+
+
+	bool on_game_scene_ui_layer_mouse_released(void* p, Event::MouseButtonReleasedEvent& event);
 }
