@@ -396,9 +396,6 @@ namespace Can
 				}
 			}
 
-			text_box_rect.y -= text_box_rect.h + sub_region_button_margin;
-			immediate_text_box(text_box_rect, ui.text_buffer, ui.cursor, ui.char_count, ui.max_char, ui.global_focus, ui.global_focus_hash, text_box_theme, __LINE__);
-
 			button_rect.y = sub_region_rect.y - sub_region_button_margin - button_rect.h;
 			button_rect.x = sub_region_rect.x + sub_region_rect.w - button_rect.w;
 			flags = immediate_button(button_rect, text_start_a_game, button_theme, __LINE__);
