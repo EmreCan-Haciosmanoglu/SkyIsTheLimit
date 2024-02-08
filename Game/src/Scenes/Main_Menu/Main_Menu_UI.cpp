@@ -991,6 +991,8 @@ namespace Can
 				"Ultra"
 			};
 			std::vector<std::string> resolutions{
+				"3840 x 2160",
+				"2560 x 1440",
 				"1920 x 1080",
 				"1600 x 900",
 				"1280 x 1024",
@@ -1042,14 +1044,18 @@ namespace Can
 				{
 					auto& window = main_application->GetWindow();
 					if (selected_ressolution_item == 0)
-						window.set_resolution(1920, 1080);
+						window.set_resolution(3840, 2160);
 					else if (selected_ressolution_item == 1)
-						window.set_resolution(1600, 900);
+						window.set_resolution(2560, 1440);
 					else if (selected_ressolution_item == 2)
-						window.set_resolution(1280, 1024);
+						window.set_resolution(1920, 1080);
 					else if (selected_ressolution_item == 3)
-						window.set_resolution(1280, 720);
+						window.set_resolution(1600, 900);
 					else if (selected_ressolution_item == 4)
+						window.set_resolution(1280, 1024);
+					else if (selected_ressolution_item == 5)
+						window.set_resolution(1280, 720);
+					else if (selected_ressolution_item == 6)
 						window.set_resolution(800, 600);
 				}
 			}
