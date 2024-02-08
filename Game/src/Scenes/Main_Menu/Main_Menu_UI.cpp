@@ -283,7 +283,7 @@ namespace Can
 			text_box_theme.label_theme = &label_theme;
 		}
 
-		std::string title = "Sky Is The Limit";
+		std::string title = "Sky Is The Limit Demo";
 		if ((GetKeyState(VK_CAPITAL) & 0x0001) != 0)
 			title = "SKY IS THE LIMIT";
 		std::string text_1 = "Continue The Game";
