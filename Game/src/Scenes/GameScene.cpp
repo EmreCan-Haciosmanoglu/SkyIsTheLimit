@@ -38,17 +38,21 @@ namespace Can
 		m_LightDirection = glm::normalize(m_LightDirection);
 		m_ShadowMapMasterRenderer = new ShadowMapMasterRenderer(&camera_controller);
 
+		init_game_scene(*MainApplication, *this);
 	}
 	GameScene::~GameScene()
 	{
+		deinit_game_scene(*MainApplication, *this);
 		delete m_Terrain;
 	}
 	void GameScene::OnAttach()
 	{
 		ActiveGameScene = this;
+		load_game_scene(*MainApplication, *this);
 	}
 	void GameScene::OnDetach()
 	{
+		unload_game_scene(*MainApplication, *this);
 	}
 	bool GameScene::OnUpdate(TimeStep ts)
 	{
@@ -102,7 +106,6 @@ namespace Can
 		);
 
 		Renderer3D::EndScene();
-		//m_Framebuffer->Unbind();
 
 		return false;
 	}
@@ -143,15 +146,26 @@ namespace Can
 		switch (e_ConstructionMode)
 		{
 		case ConstructionMode::Road:
+			if (m_RoadManager.m_ConstructionMode == RoadConstructionMode::None)
+				if (button == MouseCode::Button0)
+					does_select_object(*this);
 			m_RoadManager.OnMousePressed(button);
 			break;
 		case ConstructionMode::Building:
+			if (m_BuildingManager.m_ConstructionMode == BuildingConstructionMode::None)
+				if (button == MouseCode::Button0)
+					does_select_object(*this);
 			m_BuildingManager.OnMousePressed(button);
 			break;
 		case ConstructionMode::Tree:
+			if (m_TreeManager.m_ConstructionMode == TreeConstructionMode::None)
+				if (button == MouseCode::Button0)
+					does_select_object(*this);
 			m_TreeManager.OnMousePressed(button);
 			break;
 		case ConstructionMode::None:
+			if (button == MouseCode::Button0)
+				does_select_object(*this);
 			break;
 		}
 		return false;
@@ -738,7 +752,7 @@ namespace Can
 		fclose(save_file);
 		printf("Game is saved.\n");
 	}
-	v3 GameScene::GetRayCastedFromScreen()
+	v3 GameScene::GetRayCastedFromScreen() const 
 	{
 		auto [mouseX, mouseY] = Can::Input::get_mouse_pos_float();
 		Application& app = Application::Get();
@@ -768,4 +782,59 @@ namespace Can
 		return forward;
 	}
 
+	void init_game_scene(GameApp& app, GameScene& game_scene)
+	{
+		init_game_scene_ui_layer(game_scene.ui_layer, game_scene);
+	}
+	void load_game_scene(GameApp& app, GameScene& game_scene)
+	{
+		app.PushOverlay(&game_scene.ui_layer);
+	}
+
+	void unload_game_scene(GameApp& app, GameScene& game_scene)
+	{
+		app.PopOverlay(&game_scene.ui_layer);
+	}
+	void deinit_game_scene(GameApp& app, GameScene& game_scene)
+	{
+		deinit_game_scene_ui_layer(game_scene.ui_layer);
+	}
+
+	bool does_select_object(GameScene& game_scene)
+	{
+		auto& people = game_scene.m_PersonManager.m_People;
+		auto& cars = game_scene.m_CarManager.m_Cars;
+
+		v3 cameraPosition = game_scene.camera_controller.camera.position;
+		v3 forward = game_scene.GetRayCastedFromScreen();
+
+		for (auto person : people)
+		{
+			if (Helper::CheckBoundingBoxHit(
+				cameraPosition,
+				forward,
+				person->object->prefab->boundingBoxL + person->position,
+				person->object->prefab->boundingBoxM + person->position
+			))
+			{
+				game_scene.ui_layer.focus_object = person->object;
+				return true;
+			}
+		}
+
+		for (auto car : cars)
+		{
+			if (Helper::CheckBoundingBoxHit(
+				cameraPosition,
+				forward,
+				car->object->prefab->boundingBoxL + car->object->position,
+				car->object->prefab->boundingBoxM + car->object->position
+			))
+			{
+				game_scene.ui_layer.focus_object = car->object;
+				return true;
+			}
+		}
+		return false;
+	}
 }

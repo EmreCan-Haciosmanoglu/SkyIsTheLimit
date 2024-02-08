@@ -65,6 +65,7 @@
       <Filter>Types</Filter>
     </ClInclude>
     <ClInclude Include="src\UIScene.h" />
+    <ClInclude Include="src\Scenes\Game_Scene\Game_Scene_UI.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Building.cpp" />
@@ -108,5 +109,6 @@
       <Filter>Types</Filter>
     </ClCompile>
     <ClCompile Include="src\UIScene.cpp" />
+    <ClCompile Include="src\Scenes\Game_Scene\Game_Scene_UI.cpp" />
   </ItemGroup>
 </Project>

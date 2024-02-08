@@ -28,18 +28,8 @@ namespace Can
 	void Main_Menu_UI::OnEvent(Event::Event& event)
 	{
 		Event::EventDispatcher dispatcher(event);
-		dispatcher.Dispatch<Event::KeyReleasedEvent>(CAN_BIND_EVENT_FN(Main_Menu_UI::OnKeyReleased));
-		dispatcher.Dispatch<Event::KeyTypedEvent>(CAN_BIND_EVENT_FN(Main_Menu_UI::OnKeyTyped));
-	}
-
-	bool Main_Menu_UI::OnKeyReleased(Event::KeyReleasedEvent& event)
-	{
-		return on_main_menu_ui_layer_key_released(*this, event);
-	}
-	bool Main_Menu_UI::OnKeyTyped(Event::KeyTypedEvent& event)
-	{
-		on_main_menu_ui_layer_key_typed(*this, event);
-		return false;
+		dispatcher.dispatch<Event::KeyReleasedEvent>(this,CAN_BIND_EVENT_FN(on_main_menu_ui_layer_key_released));
+		dispatcher.dispatch<Event::KeyTypedEvent>(this, CAN_BIND_EVENT_FN(on_main_menu_ui_layer_key_typed));
 	}
 
 	extern Buffer_Data buffer_data;
@@ -103,8 +93,9 @@ namespace Can
 	}
 
 
-	bool on_main_menu_ui_layer_key_released(Main_Menu_UI& ui, Event::KeyReleasedEvent& event)
+	bool on_main_menu_ui_layer_key_released(void* p, Event::KeyReleasedEvent& event)
 	{
+		Main_Menu_UI& ui = *((Main_Menu_UI*)p);
 		Perspective_Camera_Controller& controller = GameApp::instance->perspective_camera_controller;
 		KeyCode keycode = event.GetKeyCode();
 		if (ui.key_bind_selection_is_openned)
@@ -170,16 +161,17 @@ namespace Can
 		return false;
 	}
 
-	void on_main_menu_ui_layer_key_typed(Main_Menu_UI& ui, Event::KeyTypedEvent& event)
+	bool on_main_menu_ui_layer_key_typed(void* p, Event::KeyTypedEvent& event)
 	{
-		if (!ui.global_focus) return;
+		Main_Menu_UI& ui = *((Main_Menu_UI*)p);
+		if (!ui.global_focus) return false;
 		KeyCode keycode = event.GetKeyCode();
 
 		if (ui.char_count >= ui.max_char)
-			return;
+			return false;
 		char key = (char)keycode;
 
-		if (!(key >= 32 && key <= 126))	return;
+		if (!(key >= 32 && key <= 126))	return false;
 
 		if (ui.char_count == ui.cursor)
 		{
@@ -197,6 +189,8 @@ namespace Can
 			ui.cursor++;
 		}
 		ui.char_is_typed = true;
+
+		return false;
 	}
 
 	void main_menu_screen(Main_Menu_UI& ui)
@@ -289,7 +283,7 @@ namespace Can
 			text_box_theme.label_theme = &label_theme;
 		}
 
-		std::string title = "Sky Is The Limit";
+		std::string title = "Sky Is The Limit Demo";
 		if ((GetKeyState(VK_CAPITAL) & 0x0001) != 0)
 			title = "SKY IS THE LIMIT";
 		std::string text_1 = "Continue The Game";
@@ -401,9 +395,6 @@ namespace Can
 					ui.save_name = ui.text_buffer.substr(0, ui.char_count);
 				}
 			}
-
-			text_box_rect.y -= text_box_rect.h + sub_region_button_margin;
-			immediate_text_box(text_box_rect, ui.text_buffer, ui.cursor, ui.char_count, ui.max_char, ui.global_focus, ui.global_focus_hash, text_box_theme, __LINE__);
 
 			button_rect.y = sub_region_rect.y - sub_region_button_margin - button_rect.h;
 			button_rect.x = sub_region_rect.x + sub_region_rect.w - button_rect.w;
@@ -997,6 +988,8 @@ namespace Can
 				"Ultra"
 			};
 			std::vector<std::string> resolutions{
+				"3840 x 2160",
+				"2560 x 1440",
 				"1920 x 1080",
 				"1600 x 900",
 				"1280 x 1024",
@@ -1048,14 +1041,18 @@ namespace Can
 				{
 					auto& window = main_application->GetWindow();
 					if (selected_ressolution_item == 0)
-						window.set_resolution(1920, 1080);
+						window.set_resolution(3840, 2160);
 					else if (selected_ressolution_item == 1)
-						window.set_resolution(1600, 900);
+						window.set_resolution(2560, 1440);
 					else if (selected_ressolution_item == 2)
-						window.set_resolution(1280, 1024);
+						window.set_resolution(1920, 1080);
 					else if (selected_ressolution_item == 3)
-						window.set_resolution(1280, 720);
+						window.set_resolution(1600, 900);
 					else if (selected_ressolution_item == 4)
+						window.set_resolution(1280, 1024);
+					else if (selected_ressolution_item == 5)
+						window.set_resolution(1280, 720);
+					else if (selected_ressolution_item == 6)
 						window.set_resolution(800, 600);
 				}
 			}
