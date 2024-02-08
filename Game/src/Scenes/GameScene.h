@@ -55,7 +55,7 @@ namespace Can
 		void save_the_game();
 		void load_the_game();
 
-		glm::vec3 GetRayCastedFromScreen();
+		glm::vec3 GetRayCastedFromScreen() const;
 
 	public:
 		GameApp* MainApplication = nullptr;
@@ -71,7 +71,7 @@ namespace Can
 
 		ConstructionMode e_ConstructionMode = ConstructionMode::None;
 
-		SpeedMode e_SpeedMode = SpeedMode::Normal;
+		SpeedMode e_SpeedMode = SpeedMode::Pause;
 
 		Perspective_Camera_Controller camera_controller;
 
@@ -90,5 +90,5 @@ namespace Can
 
 	void unload_game_scene(class GameApp& app, GameScene& game_scene);
 	void deinit_game_scene(class GameApp& app, GameScene& game_scene);
-	void does_select_object(GameScene& game_scene);
+	bool does_select_object(GameScene& game_scene);
 }

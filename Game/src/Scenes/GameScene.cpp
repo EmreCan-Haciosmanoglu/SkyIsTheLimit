@@ -106,7 +106,6 @@ namespace Can
 		);
 
 		Renderer3D::EndScene();
-		//m_Framebuffer->Unbind();
 
 		return false;
 	}
@@ -144,21 +143,29 @@ namespace Can
 		if (!inside_game_zone)
 			return false;
 
-		if (button == MouseCode::Button0)
-			does_select_object(*this);
-
 		switch (e_ConstructionMode)
 		{
 		case ConstructionMode::Road:
+			if (m_RoadManager.m_ConstructionMode == RoadConstructionMode::None)
+				if (button == MouseCode::Button0)
+					does_select_object(*this);
 			m_RoadManager.OnMousePressed(button);
 			break;
 		case ConstructionMode::Building:
+			if (m_BuildingManager.m_ConstructionMode == BuildingConstructionMode::None)
+				if (button == MouseCode::Button0)
+					does_select_object(*this);
 			m_BuildingManager.OnMousePressed(button);
 			break;
 		case ConstructionMode::Tree:
+			if (m_TreeManager.m_ConstructionMode == TreeConstructionMode::None)
+				if (button == MouseCode::Button0)
+					does_select_object(*this);
 			m_TreeManager.OnMousePressed(button);
 			break;
 		case ConstructionMode::None:
+			if (button == MouseCode::Button0)
+				does_select_object(*this);
 			break;
 		}
 		return false;
@@ -745,7 +752,7 @@ namespace Can
 		fclose(save_file);
 		printf("Game is saved.\n");
 	}
-	v3 GameScene::GetRayCastedFromScreen()
+	v3 GameScene::GetRayCastedFromScreen() const 
 	{
 		auto [mouseX, mouseY] = Can::Input::get_mouse_pos_float();
 		Application& app = Application::Get();
@@ -793,7 +800,7 @@ namespace Can
 		deinit_game_scene_ui_layer(game_scene.ui_layer);
 	}
 
-	void does_select_object(GameScene& game_scene)
+	bool does_select_object(GameScene& game_scene)
 	{
 		auto& people = game_scene.m_PersonManager.m_People;
 		auto& cars = game_scene.m_CarManager.m_Cars;
@@ -811,8 +818,23 @@ namespace Can
 			))
 			{
 				game_scene.ui_layer.focus_object = person->object;
-				break;
+				return true;
 			}
 		}
+
+		for (auto car : cars)
+		{
+			if (Helper::CheckBoundingBoxHit(
+				cameraPosition,
+				forward,
+				car->object->prefab->boundingBoxL + car->object->position,
+				car->object->prefab->boundingBoxM + car->object->position
+			))
+			{
+				game_scene.ui_layer.focus_object = car->object;
+				return true;
+			}
+		}
+		return false;
 	}
 }
