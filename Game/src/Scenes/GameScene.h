@@ -9,6 +9,8 @@
 #include "Managers/BuildingManager.h"
 #include "Managers/CarManager.h"
 
+#include "Scenes/Game_Scene/Game_Scene_UI.h"
+
 namespace Can
 {
 	class GameApp;
@@ -53,8 +55,7 @@ namespace Can
 		void save_the_game();
 		void load_the_game();
 
-	private:
-		glm::vec3 GetRayCastedFromScreen();
+		glm::vec3 GetRayCastedFromScreen() const;
 
 	public:
 		GameApp* MainApplication = nullptr;
@@ -70,15 +71,24 @@ namespace Can
 
 		ConstructionMode e_ConstructionMode = ConstructionMode::None;
 
-		SpeedMode e_SpeedMode = SpeedMode::Normal;
+		SpeedMode e_SpeedMode = SpeedMode::Pause;
 
-	private:
 		Perspective_Camera_Controller camera_controller;
 
 
+	private:
 		ShadowMapMasterRenderer* m_ShadowMapMasterRenderer = nullptr;
 		glm::vec3 m_LightPosition{ +0.0f, 0.0f, 1.0f };
 		glm::vec3 m_LightDirection{ +1.0f, -1.0f, -1.0f };
 
+	public:
+		Game_Scene_UI ui_layer{};
 	};
+
+	void init_game_scene(class GameApp& app, GameScene& game_scene);
+	void load_game_scene(class GameApp& app, GameScene& game_scene);
+
+	void unload_game_scene(class GameApp& app, GameScene& game_scene);
+	void deinit_game_scene(class GameApp& app, GameScene& game_scene);
+	bool does_select_object(GameScene& game_scene);
 }

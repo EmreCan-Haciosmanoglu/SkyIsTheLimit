@@ -38,17 +38,21 @@ namespace Can
 		m_LightDirection = glm::normalize(m_LightDirection);
 		m_ShadowMapMasterRenderer = new ShadowMapMasterRenderer(&camera_controller);
 
+		init_game_scene(*MainApplication, *this);
 	}
 	GameScene::~GameScene()
 	{
+		deinit_game_scene(*MainApplication, *this);
 		delete m_Terrain;
 	}
 	void GameScene::OnAttach()
 	{
 		ActiveGameScene = this;
+		load_game_scene(*MainApplication, *this);
 	}
 	void GameScene::OnDetach()
 	{
+		unload_game_scene(*MainApplication, *this);
 	}
 	bool GameScene::OnUpdate(TimeStep ts)
 	{
@@ -60,7 +64,7 @@ namespace Can
 		v3 camPos = camera_controller.camera.position;
 		v3 forward = GetRayCastedFromScreen();
 
-		v3 I = Helper::RayPlaneIntersection(
+		v3 I = Math::ray_plane_intersection(
 			camPos,
 			forward,
 			v3{ 0.0f, 0.0f, 0.0f },
@@ -102,7 +106,6 @@ namespace Can
 		);
 
 		Renderer3D::EndScene();
-		//m_Framebuffer->Unbind();
 
 		return false;
 	}
@@ -119,13 +122,13 @@ namespace Can
 		v3 forward = GetRayCastedFromScreen();
 
 
-		v3 bottomPlaneCollisionPoint = Helper::RayPlaneIntersection(
+		v3 bottomPlaneCollisionPoint = Math::ray_plane_intersection(
 			camPos,
 			forward,
 			v3{ 0.0f, 0.0f, 0.0f },
 			v3{ 0.0f, 0.0f, 1.0f }
 		);
-		v3 topPlaneCollisionPoint = Helper::RayPlaneIntersection(
+		v3 topPlaneCollisionPoint = Math::ray_plane_intersection(
 			camPos,
 			forward,
 			v3{ 0.0f, 0.0f, 1.0f * COLOR_COUNT },
@@ -143,15 +146,26 @@ namespace Can
 		switch (e_ConstructionMode)
 		{
 		case ConstructionMode::Road:
+			if (m_RoadManager.m_ConstructionMode == RoadConstructionMode::None)
+				if (button == MouseCode::Button0)
+					does_select_object(*this);
 			m_RoadManager.OnMousePressed(button);
 			break;
 		case ConstructionMode::Building:
+			if (m_BuildingManager.m_ConstructionMode == BuildingConstructionMode::None)
+				if (button == MouseCode::Button0)
+					does_select_object(*this);
 			m_BuildingManager.OnMousePressed(button);
 			break;
 		case ConstructionMode::Tree:
+			if (m_TreeManager.m_ConstructionMode == TreeConstructionMode::None)
+				if (button == MouseCode::Button0)
+					does_select_object(*this);
 			m_TreeManager.OnMousePressed(button);
 			break;
 		case ConstructionMode::None:
+			if (button == MouseCode::Button0)
+				does_select_object(*this);
 			break;
 		}
 		return false;
@@ -200,145 +214,141 @@ namespace Can
 		FILE* read_file = fopen(path.c_str(), "rb");
 		if (read_file == NULL) return;
 
-		auto& road_types = MainApplication->road_types;
-		//RoadManager
-		fread(&m_RoadManager.snapFlags, sizeof(u8), 1, read_file);
-		fread(&m_RoadManager.restrictionFlags, sizeof(u8), 1, read_file);
 		auto& road_nodes = m_RoadManager.road_nodes;
-		u64 capacity;
-		fread(&capacity, sizeof(u64), 1, read_file);
-		array_resize(&road_nodes, capacity);
-		for (u64 i = 0; i < capacity; i++)
-		{
-			fread(&road_nodes.values[i].valid, sizeof(bool), 1, read_file);
-			if (road_nodes.values[i].valid == false) continue;
-			auto& road_node = road_nodes[i];
-			fread(&road_node.position, sizeof(f32), 3, read_file);
-			road_node.index = i;
-			fread(&road_node.elevation_type, sizeof(s8), 1, read_file);
-			road_nodes.size++;
-		}
 		auto& road_segments = m_RoadManager.road_segments;
-		fread(&capacity, sizeof(u64), 1, read_file);
-		array_resize(&road_segments, capacity);
-		for (u64 i = 0; i < capacity; i++)
-		{
-			fread(&road_segments.values[i].valid, sizeof(bool), 1, read_file);
-			if (road_segments.values[i].valid == false) continue;
-			auto& segment = road_segments[i];
-			fread(&segment.type, sizeof(u8), 1, read_file);
-			fread(&segment.StartNode, sizeof(u64), 1, read_file);
-			fread(&segment.EndNode, sizeof(u64), 1, read_file);
-			fread(&segment.CurvePoints, sizeof(f32), 3 * 4, read_file);
-			fread(&segment.elevation_type, sizeof(s8), 1, read_file);
-			segment.CalcRotsAndDirs();
-			road_segments.size++;
-
-			road_nodes[segment.StartNode].roadSegments.push_back(i);
-			road_nodes[segment.EndNode].roadSegments.push_back(i);
-		}
-		for (u64 i = 0; i < road_nodes.capacity; i++)
-		{
-			if (road_nodes.values[i].valid == false) continue;
-			road_nodes[i].Reconstruct();
-		}
-		///////////////////////////////////////////////////
-
-		//TreeManager
-		fread(m_TreeManager.restrictions.data(), sizeof(bool), 1, read_file);
-		auto& trees = m_TreeManager.m_Trees;
-		u64 tree_count;
-		fread(&tree_count, sizeof(u64), 1, read_file);
-		m_TreeManager.m_Trees.reserve(tree_count);
-		for (u64 i = 0; i < tree_count; i++)
-		{
-			u64 type;
-			v3 pos, rot, scale;
-			fread(&type, sizeof(u64), 1, read_file);
-			fread(&pos, sizeof(f32), 3, read_file);
-
-			// If we want it to be same all the time
-			fread(&rot, sizeof(f32), 3, read_file);
-			fread(&scale, sizeof(f32), 3, read_file);
-
-			Object* tree = new Object(MainApplication->trees[type], pos, rot, scale);
-			trees.push_back(new Tree{ type, tree });
-		}
-		///////////////////////////////////////////////////
-
-		//BuildingManager
-		fread(m_BuildingManager.snapOptions.data(), sizeof(bool), 2, read_file);
-		fread(m_BuildingManager.restrictions.data(), sizeof(bool), 2, read_file);
 		auto& buildings = m_BuildingManager.m_Buildings;
-		auto& home_buildings = m_BuildingManager.m_HomeBuildings;
-		auto& work_buildings = m_BuildingManager.m_WorkBuildings;
-		u64 building_count;
-		fread(&building_count, sizeof(u64), 1, read_file);
-		buildings.reserve(building_count);
-		for (u64 i = 0; i < building_count; i++)
-		{
-			u64 type;
-			s64 connected_road_segment;
-			u64 snapped_t_index;
-			f32 snapped_t;
-			u16 capacity;
-			bool is_home = false;
-			bool snapped_to_right;
-			v3 position, rotation;// calculate it from snapped_t?
-			fread(&type, sizeof(u64), 1, read_file);
-			fread(&connected_road_segment, sizeof(s64), 1, read_file);
-			fread(&snapped_t_index, sizeof(u64), 1, read_file);
-			fread(&snapped_t, sizeof(f32), 1, read_file);
-			fread(&capacity, sizeof(u16), 1, read_file);
-			fread(&is_home, sizeof(bool), 1, read_file);
-			fread(&snapped_to_right, sizeof(bool), 1, read_file);
-			fread(&position, sizeof(f32), 3, read_file);
-			fread(&rotation, sizeof(f32), 3, read_file);
-			Building* building = new Building(
-				MainApplication->buildings[type],
-				connected_road_segment,
-				snapped_t_index,
-				snapped_t,
-				position,
-				rotation
-			);
-			building->type = type;
-			building->capacity = capacity;
-			building->is_home = is_home;
-			building->snapped_to_right = snapped_to_right;
-			buildings.push_back(building);
-			if (is_home)
-				home_buildings.push_back(building);
-			else
-				work_buildings.push_back(building);
-			road_segments[connected_road_segment].Buildings.push_back(building);
-		}
-		///////////////////////////////////////////////////
-
-		//CarManager
 		auto& cars = m_CarManager.m_Cars;
-		u64 car_count;
-		fread(&car_count, sizeof(u64), 1, read_file);
-		cars.reserve(car_count);
-		for (u64 i = 0; i < car_count; i++)
-		{
-			u64 type;
-			f32 speed_in_kmh;
-			v3 position, rotation;
-			fread(&type, sizeof(u64), 1, read_file);
-			fread(&speed_in_kmh, sizeof(f32), 1, read_file);
-			fread(&position, sizeof(f32), 3, read_file);
-			fread(&rotation, sizeof(f32), 3, read_file);
-			Car* car = new Car(
-				MainApplication->cars[type],
-				type,
-				speed_in_kmh
-			);
-			car->object->SetTransform(position, rotation);
-			cars.push_back(car);
-		}
-		///////////////////////////////////////////////////
 
+		/*RoadManager*/ {
+			fread(&m_RoadManager.snapFlags, sizeof(u8), 1, read_file);
+			fread(&m_RoadManager.restrictionFlags, sizeof(u8), 1, read_file);
+			u64 capacity;
+			fread(&capacity, sizeof(u64), 1, read_file);
+			array_resize(&road_nodes, capacity);
+			for (u64 i = 0; i < capacity; i++)
+			{
+				fread(&road_nodes.values[i].valid, sizeof(bool), 1, read_file);
+				if (road_nodes.values[i].valid == false) continue;
+				auto& road_node = road_nodes[i];
+				fread(&road_node.position, sizeof(f32), 3, read_file);
+				road_node.index = i;
+				fread(&road_node.elevation_type, sizeof(s8), 1, read_file);
+				road_nodes.size++;
+			}
+			fread(&capacity, sizeof(u64), 1, read_file);
+			array_resize(&road_segments, capacity);
+			for (u64 i = 0; i < capacity; i++)
+			{
+				fread(&road_segments.values[i].valid, sizeof(bool), 1, read_file);
+				if (road_segments.values[i].valid == false) continue;
+				auto& segment = road_segments[i];
+				fread(&segment.type, sizeof(u8), 1, read_file);
+				fread(&segment.StartNode, sizeof(u64), 1, read_file);
+				fread(&segment.EndNode, sizeof(u64), 1, read_file);
+				fread(&segment.CurvePoints, sizeof(f32), 3 * 4, read_file);
+				fread(&segment.elevation_type, sizeof(s8), 1, read_file);
+				segment.CalcRotsAndDirs();
+				road_segments.size++;
+
+				road_nodes[segment.StartNode].roadSegments.push_back(i);
+				road_nodes[segment.EndNode].roadSegments.push_back(i);
+			}
+			for (u64 i = 0; i < road_nodes.capacity; i++)
+			{
+				if (road_nodes.values[i].valid == false) continue;
+				road_nodes[i].Reconstruct();
+			}
+		}
+		/*TreeManager*/ {
+			fread(m_TreeManager.restrictions.data(), sizeof(bool), 1, read_file);
+			auto& trees = m_TreeManager.m_Trees;
+			u64 tree_count;
+			fread(&tree_count, sizeof(u64), 1, read_file);
+			m_TreeManager.m_Trees.reserve(tree_count);
+			for (u64 i = 0; i < tree_count; i++)
+			{
+				u64 type;
+				v3 pos, rot, scale;
+				fread(&type, sizeof(u64), 1, read_file);
+				fread(&pos, sizeof(f32), 3, read_file);
+
+				// If we want it to be same all the time
+				fread(&rot, sizeof(f32), 3, read_file);
+				fread(&scale, sizeof(f32), 3, read_file);
+
+				Object* tree = new Object(MainApplication->trees[type], pos, rot, scale);
+				trees.push_back(new Tree{ type, tree });
+			}
+		}
+		/*BuildingManager*/ {
+			fread(m_BuildingManager.snapOptions.data(), sizeof(bool), 2, read_file);
+			fread(m_BuildingManager.restrictions.data(), sizeof(bool), 2, read_file);
+			auto& home_buildings = m_BuildingManager.m_HomeBuildings;
+			auto& work_buildings = m_BuildingManager.m_WorkBuildings;
+			u64 building_count;
+			fread(&building_count, sizeof(u64), 1, read_file);
+			buildings.reserve(building_count);
+			for (u64 i = 0; i < building_count; i++)
+			{
+				u64 type;
+				s64 connected_road_segment;
+				u64 snapped_t_index;
+				f32 snapped_t;
+				u16 capacity;
+				bool is_home = false;
+				bool snapped_to_right;
+				v3 position, rotation;// calculate it from snapped_t?
+				fread(&type, sizeof(u64), 1, read_file);
+				fread(&connected_road_segment, sizeof(s64), 1, read_file);
+				fread(&snapped_t_index, sizeof(u64), 1, read_file);
+				fread(&snapped_t, sizeof(f32), 1, read_file);
+				fread(&capacity, sizeof(u16), 1, read_file);
+				fread(&is_home, sizeof(bool), 1, read_file);
+				fread(&snapped_to_right, sizeof(bool), 1, read_file);
+				fread(&position, sizeof(f32), 3, read_file);
+				fread(&rotation, sizeof(f32), 3, read_file);
+				Building* building = new Building(
+					MainApplication->buildings[type],
+					connected_road_segment,
+					snapped_t_index,
+					snapped_t,
+					position,
+					rotation
+				);
+				building->type = type;
+				building->capacity = capacity;
+				building->is_home = is_home;
+				building->snapped_to_right = snapped_to_right;
+				buildings.push_back(building);
+				if (is_home)
+					home_buildings.push_back(building);
+				else
+					work_buildings.push_back(building);
+				road_segments[connected_road_segment].Buildings.push_back(building);
+			}
+		}
+		/*CarManager*/ {
+			u64 car_count;
+			fread(&car_count, sizeof(u64), 1, read_file);
+			cars.reserve(car_count);
+			for (u64 i = 0; i < car_count; i++)
+			{
+				u64 type;
+				f32 speed_in_kmh;
+				v3 position, rotation;
+				fread(&type, sizeof(u64), 1, read_file);
+				fread(&speed_in_kmh, sizeof(f32), 1, read_file);
+				fread(&position, sizeof(f32), 3, read_file);
+				fread(&rotation, sizeof(f32), 3, read_file);
+				Car* car = new Car(
+					MainApplication->cars[type],
+					type,
+					speed_in_kmh
+				);
+				car->object->SetTransform(position, rotation);
+				cars.push_back(car);
+			}
+		}
 		/*PersonManager*/ {
 			auto& people = m_PersonManager.m_People;
 			u64 people_count;
@@ -473,16 +483,44 @@ namespace Can
 				people.push_back(person);
 			}
 		}
+		/*CameraController*/{
+			fread(&camera_controller.forward_key, sizeof(u16), 1, read_file);
+			fread(&camera_controller.backward_key, sizeof(u16), 1, read_file);
+			fread(&camera_controller.left_key, sizeof(u16), 1, read_file);
+			fread(&camera_controller.right_key, sizeof(u16), 1, read_file);
+			fread(&camera_controller.lower_key, sizeof(u16), 1, read_file);
+			fread(&camera_controller.raise_key, sizeof(u16), 1, read_file);
+			fread(&camera_controller.rotate_cw_key, sizeof(u16), 1, read_file);
+			fread(&camera_controller.rotate_ccw_key, sizeof(u16), 1, read_file);
+			fread(&camera_controller.pitch_down_key, sizeof(u16), 1, read_file);
+			fread(&camera_controller.pitch_up_key, sizeof(u16), 1, read_file);
+			fread(&camera_controller.increase_fov_key, sizeof(u16), 1, read_file);
+			fread(&camera_controller.decrease_fov_key, sizeof(u16), 1, read_file);
 
-		//Camera
-		auto& camera = camera_controller.camera;
-		v3 position, rotation;
-		fread(&position, sizeof(f32), 3, read_file);
-		fread(&rotation, sizeof(f32), 3, read_file);
-		camera.set_position(position);
-		camera.set_rotation(rotation);
-		///////////////////////////////////////////////////
+			fread(&camera_controller.center_pos, sizeof(f32), 3, read_file);
+			fread(&camera_controller.center_rot, sizeof(f32), 3, read_file);
 
+			fread(&camera_controller.min_pos_z, sizeof(f32), 1, read_file);
+			fread(&camera_controller.max_pos_z, sizeof(f32), 1, read_file);
+			fread(&camera_controller.min_rot_y, sizeof(f32), 1, read_file);
+			fread(&camera_controller.max_rot_y, sizeof(f32), 1, read_file);
+			fread(&camera_controller.zoom_t, sizeof(f32), 1, read_file);
+
+			fread(&camera_controller.translation_speed, sizeof(f32), 1, read_file);
+			fread(&camera_controller.rotation_speed, sizeof(f32), 1, read_file);
+			fread(&camera_controller.rotation_with_mouse_speed_multiplier_z, sizeof(f32), 1, read_file);
+			fread(&camera_controller.rotation_with_mouse_speed_multiplier_y, sizeof(f32), 1, read_file);
+			fread(&camera_controller.is_y_inverted, sizeof(bool), 1, read_file);
+			fread(&camera_controller.zoom_speed, sizeof(f32), 1, read_file);
+		}
+		/*Camera*/ {
+			auto& camera = camera_controller.camera;
+			v3 position, rotation;
+			fread(&position, sizeof(f32), 3, read_file);
+			fread(&rotation, sizeof(f32), 3, read_file);
+			camera.set_position(position);
+			camera.set_rotation(rotation);
+		}
 
 		fclose(read_file);
 	}
@@ -674,6 +712,36 @@ namespace Can
 				fwrite(&car_index, sizeof(s64), 1, save_file);
 			}
 		}
+		/*CameraController*/ {
+			fwrite(&camera_controller.forward_key, sizeof(u16), 1, save_file);
+			fwrite(&camera_controller.backward_key, sizeof(u16), 1, save_file);
+			fwrite(&camera_controller.left_key, sizeof(u16), 1, save_file);
+			fwrite(&camera_controller.right_key, sizeof(u16), 1, save_file);
+			fwrite(&camera_controller.lower_key, sizeof(u16), 1, save_file);
+			fwrite(&camera_controller.raise_key, sizeof(u16), 1, save_file);
+			fwrite(&camera_controller.rotate_cw_key, sizeof(u16), 1, save_file);
+			fwrite(&camera_controller.rotate_ccw_key, sizeof(u16), 1, save_file);
+			fwrite(&camera_controller.pitch_down_key, sizeof(u16), 1, save_file);
+			fwrite(&camera_controller.pitch_up_key, sizeof(u16), 1, save_file);
+			fwrite(&camera_controller.increase_fov_key, sizeof(u16), 1, save_file);
+			fwrite(&camera_controller.decrease_fov_key, sizeof(u16), 1, save_file);
+
+			fwrite(&camera_controller.center_pos, sizeof(f32), 3, save_file);
+			fwrite(&camera_controller.center_rot, sizeof(f32), 3, save_file);
+
+			fwrite(&camera_controller.min_pos_z, sizeof(f32), 1, save_file);
+			fwrite(&camera_controller.max_pos_z, sizeof(f32), 1, save_file);
+			fwrite(&camera_controller.min_rot_y, sizeof(f32), 1, save_file);
+			fwrite(&camera_controller.max_rot_y, sizeof(f32), 1, save_file);
+			fwrite(&camera_controller.zoom_t, sizeof(f32), 1, save_file);
+
+			fwrite(&camera_controller.translation_speed, sizeof(f32), 1, save_file);
+			fwrite(&camera_controller.rotation_speed, sizeof(f32), 1, save_file);
+			fwrite(&camera_controller.rotation_with_mouse_speed_multiplier_z, sizeof(f32), 1, save_file);
+			fwrite(&camera_controller.rotation_with_mouse_speed_multiplier_y, sizeof(f32), 1, save_file);
+			fwrite(&camera_controller.is_y_inverted, sizeof(bool), 1, save_file);
+			fwrite(&camera_controller.zoom_speed, sizeof(f32), 1, save_file);
+		}
 
 		//Camera
 		auto& camera = camera_controller.camera;
@@ -684,7 +752,7 @@ namespace Can
 		fclose(save_file);
 		printf("Game is saved.\n");
 	}
-	v3 GameScene::GetRayCastedFromScreen()
+	v3 GameScene::GetRayCastedFromScreen() const 
 	{
 		auto [mouseX, mouseY] = Can::Input::get_mouse_pos_float();
 		Application& app = Application::Get();
@@ -714,4 +782,59 @@ namespace Can
 		return forward;
 	}
 
+	void init_game_scene(GameApp& app, GameScene& game_scene)
+	{
+		init_game_scene_ui_layer(game_scene.ui_layer, game_scene);
+	}
+	void load_game_scene(GameApp& app, GameScene& game_scene)
+	{
+		app.PushOverlay(&game_scene.ui_layer);
+	}
+
+	void unload_game_scene(GameApp& app, GameScene& game_scene)
+	{
+		app.PopOverlay(&game_scene.ui_layer);
+	}
+	void deinit_game_scene(GameApp& app, GameScene& game_scene)
+	{
+		deinit_game_scene_ui_layer(game_scene.ui_layer);
+	}
+
+	bool does_select_object(GameScene& game_scene)
+	{
+		auto& people = game_scene.m_PersonManager.m_People;
+		auto& cars = game_scene.m_CarManager.m_Cars;
+
+		v3 cameraPosition = game_scene.camera_controller.camera.position;
+		v3 forward = game_scene.GetRayCastedFromScreen();
+
+		for (auto person : people)
+		{
+			if (Helper::CheckBoundingBoxHit(
+				cameraPosition,
+				forward,
+				person->object->prefab->boundingBoxL + person->position,
+				person->object->prefab->boundingBoxM + person->position
+			))
+			{
+				game_scene.ui_layer.focus_object = person->object;
+				return true;
+			}
+		}
+
+		for (auto car : cars)
+		{
+			if (Helper::CheckBoundingBoxHit(
+				cameraPosition,
+				forward,
+				car->object->prefab->boundingBoxL + car->object->position,
+				car->object->prefab->boundingBoxM + car->object->position
+			))
+			{
+				game_scene.ui_layer.focus_object = car->object;
+				return true;
+			}
+		}
+		return false;
+	}
 }

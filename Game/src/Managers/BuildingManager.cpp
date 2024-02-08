@@ -412,19 +412,19 @@ namespace Can
 					new_person->time_left = Utility::Random::Float(1.0f, 5.0f);
 					new_building->people.push_back(new_person);
 					bool have_enough_money_to_own_car = Utility::Random::Float(1.0f) > 0.5f;
-					if (have_enough_money_to_own_car || true)
+					if (have_enough_money_to_own_car)
 					{
 						u64 new_car_type = 0;
 						Car* new_car = new Car(
-							car_prefabs[new_car_type], 
+							car_prefabs[new_car_type],
 							new_car_type,
 							Utility::Random::Float(30.0f, 50.0f)
 						);
-						v3 car_pos = new_building->position + 
+						v3 car_pos = new_building->position +
 							(v3)(glm::rotate(m4(1.0f), new_building->object->rotation.z, v3{ 0.0f, 0.0f, 1.0f }) *
-							glm::rotate(m4(1.0f), new_building->object->rotation.y, v3{ 0.0f, 1.0f, 0.0f }) *
-							glm::rotate(m4(1.0f), new_building->object->rotation.x, v3{ 1.0f, 0.0f, 0.0f }) *
-							v4(new_building->car_park.offset,1.0f));
+								glm::rotate(m4(1.0f), new_building->object->rotation.y, v3{ 0.0f, 1.0f, 0.0f }) *
+								glm::rotate(m4(1.0f), new_building->object->rotation.x, v3{ 1.0f, 0.0f, 0.0f }) *
+								v4(new_building->car_park.offset, 1.0f));
 						new_car->object->SetTransform(
 							car_pos,
 							glm::rotateZ(
