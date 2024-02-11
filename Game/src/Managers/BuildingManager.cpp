@@ -414,7 +414,7 @@ namespace Can
 					bool have_enough_money_to_own_car = Utility::Random::Float(1.0f) > 0.5f;
 					if (have_enough_money_to_own_car)
 					{
-						u64 new_car_type = 0;
+						u64 new_car_type = Utility::Random::Integer(car_prefabs.size());
 						Car* new_car = new Car(
 							car_prefabs[new_car_type],
 							new_car_type,
