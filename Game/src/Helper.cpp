@@ -32,7 +32,7 @@ namespace  Can::Helper
 	}
 
 	//delete later
-	std::array<v2, 4> getAxis(const std::array<v2, 4>& c1, const std::array<v2, 4>& c2)
+	static std::array<v2, 4> getAxis(const std::array<v2, 4>& c1, const std::array<v2, 4>& c2)
 	{
 		return std::array<v2, 4>{
 			glm::normalize(c1[1] - c1[0]),
@@ -533,7 +533,7 @@ namespace  Can::Helper
 		return file.substr(0, found);
 	}
 
-	u64 find_special(const std::vector<std::pair<u64, std::vector<u64>>>& paths, u64 node) {
+	static u64 find_special(const std::vector<std::pair<u64, std::vector<u64>>>& paths, u64 node) {
 		u64 size = paths.size();
 		for (u64 i = 0; i < size; i++)
 			if (paths[i].second[paths[i].second.size() - 1] == node) return i;
