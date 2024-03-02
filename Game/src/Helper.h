@@ -51,6 +51,8 @@ namespace Can::Helper
 	std::string trim_path_and_extension(std::string& path);
 
 	std::vector<Transition*> get_path(Building* start, u8 dist);
+	std::vector<Transition*> get_path_for_a_car(Building* start, u8 dist);
+
 	std::vector<Transition*> get_path(Building* start, Building* end);
 	std::vector<Transition*> get_path_for_a_car(Building* start, Building* end);
 

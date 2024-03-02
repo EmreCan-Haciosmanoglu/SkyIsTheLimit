@@ -10,7 +10,8 @@ namespace Can
 		AtWork,
 		WalkingDead,
 		Walking,
-		Driving
+		Driving,
+		DrivingForWork
 	};
 	
 	struct Transition;
@@ -38,6 +39,7 @@ namespace Can
 
 		bool path_is_blocked = false;
 
+		bool drove_in_work = false;
 		bool from_right = false;
 		bool heading_to_a_building_or_parking = false;
 		bool heading_to_a_car = false;
@@ -48,5 +50,6 @@ namespace Can
 		Building* home = nullptr;
 		Building* work = nullptr;
 		Car* car = nullptr;
+		Car* work_car = nullptr; // currently driven work car
 	};
 }

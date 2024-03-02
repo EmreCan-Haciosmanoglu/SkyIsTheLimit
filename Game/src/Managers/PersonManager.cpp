@@ -34,28 +34,56 @@ namespace Can
 		{
 			Person* p = m_People[person_index];
 			if ((p->status == PersonStatus::AtHome) ||
-				(p->status == PersonStatus::AtWork))
+				(p->status == PersonStatus::AtWork /* if job has car go random house and come back to finish the job*/))
 			{
 				p->time_left -= ts;
 				if (p->time_left <= 0.0f)
 				{
+
 					// go to work work work work
 					Building* building_from = p->home;
 					Building* building_to = p->work;
 					bool is_buildings_connected = true;
 					if (p->status == PersonStatus::AtWork)
 					{
-						building_from = p->work;
-						building_to = p->home;
+						if (p->drove_in_work)
+						{
+							building_from = p->work;
+							building_to = p->home;
+							p->drove_in_work = false;
+						}
+						else
+						{
+							Car* work_car = retrive_work_vehicle(p->work);
+							if (work_car)
+							{
+								building_from = p->work;
+								building_to = p->work;
+								p->work_car = work_car;
+							}
+							else
+							{
+								building_from = p->work;
+								building_to = p->home;
+							}
+						}
 					}
 					if (building_to)
 					{
 						p->path_end_building = building_to;
 						p->path_start_building = building_from;
-						if (p->car)
-							p->path = Helper::get_path_for_a_car(building_from, building_to);
+						if (building_from == building_to)
+						{
+							p->path = Helper::get_path_for_a_car(building_from, 5);
+							// TODO v2: go some building and comeback e.g. Ambulance, Police, Fire, Delivery
+						}
 						else
-							p->path = Helper::get_path(building_from, building_to);
+						{
+							if (p->car)
+								p->path = Helper::get_path_for_a_car(building_from, building_to);
+							else
+								p->path = Helper::get_path(building_from, building_to);
+						}
 
 						if (p->path.size() == 0)
 						{
@@ -87,12 +115,13 @@ namespace Can
 					p->status = PersonStatus::Walking;
 					people_on_the_road.push_back(p);
 
-					if (p->car && building_to && building_from != p->path_end_building)
+					if ((p->car && building_to && building_from != p->path_end_building) || p->work_car)
 					{
 						RS_Transition_For_Driving* rs_transition = (RS_Transition_For_Driving*)p->path[0];
 						p->heading_to_a_car = true;
 
-						set_person_target(p, p->car->object->position);
+						if (p->car) set_person_target(p, p->car->object->position);
+						else set_person_target(p, p->work_car->object->position);
 					}
 					else
 					{
@@ -255,12 +284,16 @@ namespace Can
 						else
 							p->status = PersonStatus::AtWork;
 						p->time_left = Utility::Random::Float(1.0f, 5.0f);
-						p->object->enabled = false;
+						p->object->enabled = false; 
 						p->heading_to_a_building_or_parking = false;
 						RoadSegment& segment = road_segments[p->road_segment];
 						p->road_segment = -1;
 
-						delete ((RS_Transition_For_Driving*)p->path[0]);
+						if (p->car || p->work_car)
+							delete ((RS_Transition_For_Driving*)p->path[0]);
+						else
+							delete ((RS_Transition_For_Walking*)p->path[0]);
+						
 						p->path.pop_back();
 
 						assert(remove_person_from(segment, p));
@@ -271,17 +304,26 @@ namespace Can
 					}
 					else if (p->heading_to_a_car)
 					{
-						p->object->enabled = false;
-						p->status = PersonStatus::Driving;
-						p->heading_to_a_car = false;
-
 						RS_Transition_For_Driving* rs_transition = (RS_Transition_For_Driving*)p->path[0];
 						RoadSegment& road_segment = road_segments[rs_transition->road_segment_index];
 						RoadType& road_segment_type = road_types[road_segment.type];
 						v3 target_position = rs_transition->points_stack[rs_transition->points_stack.size() - 1];
 
-						p->position = p->car->object->position;
-						set_target_and_car_direction(p, target_position);
+						if (p->work_car)
+						{
+							p->status = PersonStatus::DrivingForWork;
+							p->position = p->work_car->object->position;
+							set_target_and_car_direction(p, p->work_car, target_position);
+						}
+						else
+						{
+							p->status = PersonStatus::Driving;
+							p->position = p->car->object->position;
+							set_target_and_car_direction(p, p->car, target_position);
+						}
+
+						p->heading_to_a_car = false;
+						p->object->enabled = false;
 					}
 					else
 					{
@@ -363,14 +405,14 @@ namespace Can
 					}
 				}
 			}
-			else if (p->status == PersonStatus::Driving)
+			else if (p->status == PersonStatus::Driving || (p->status == PersonStatus::DrivingForWork))
 			{
-				Car* c = p->car;
-				f32 car_legth = c->object->prefab->boundingBoxM.x - c->object->prefab->boundingBoxL.x;
-				v3 journey_left = p->target - c->object->position;
+				Car* car = p->work_car? p->work_car : p->car;
+				f32 car_legth = car->object->prefab->boundingBoxM.x - car->object->prefab->boundingBoxL.x;
+				v3 journey_left = p->target - car->object->position;
 				f32 journey_left_length = glm::length(journey_left);
 				v3 unit = journey_left / journey_left_length;
-				f32 converted_speed = (p->car->speed_in_kmh / 10.f) / 3.6f;
+				f32 converted_speed = (car->speed_in_kmh / 10.f) / 3.6f;
 				f32 journey_length = ts * converted_speed;
 				u64 path_count = p->path.size();
 				assert(path_count > 0);
@@ -386,8 +428,8 @@ namespace Can
 					f32 person_s_rotation_in_next_frame;
 					if (journey_length < journey_left_length)
 					{
-						person_s_position_in_next_frame = c->object->position + unit * journey_length;
-						person_s_rotation_in_next_frame = c->object->rotation.z;
+						person_s_position_in_next_frame = car->object->position + unit * journey_length;
+						person_s_rotation_in_next_frame = car->object->rotation.z;
 					}
 					else
 					{
@@ -431,7 +473,7 @@ namespace Can
 							if (other_person_s_transition->lane_index != rs_transition->lane_index) continue;
 							if (other_person_s_transition->points_stack.size() > rs_transition->points_stack.size()) continue;
 							Car* other_person_s_car = other_person_on_the_road->car;
-							
+
 							v3 other_person_s_journey_left = other_person_on_the_road->target - other_person_on_the_road->car->object->position;
 							f32 other_person_s_journey_left_length = glm::length(other_person_s_journey_left);
 
@@ -486,8 +528,8 @@ namespace Can
 							}
 
 							v2 mtv = Helper::CheckRotatedRectangleCollision(
-								c->object->prefab->boundingBoxL,
-								c->object->prefab->boundingBoxM,
+								car->object->prefab->boundingBoxL,
+								car->object->prefab->boundingBoxM,
 								person_s_rotation_in_next_frame,
 								person_s_position_in_next_frame,
 								other_person_s_car->object->prefab->boundingBoxL,
@@ -508,36 +550,42 @@ namespace Can
 
 				if (journey_length < journey_left_length)
 				{
-					c->object->SetTransform(c->object->position + unit * journey_length);
+					car->object->SetTransform(car->object->position + unit * journey_length);
 				}
 				else
 				{
 					if (p->heading_to_a_building_or_parking)
 					{
-						c->object->SetTransform(
+						car->object->SetTransform(
 							p->target,
 							glm::rotateZ(
 								p->path_end_building->object->rotation,
 								glm::radians(p->path_end_building->car_park.rotation_in_degrees)
 							)
 						);
-						p->position = c->object->position;
+						p->position = car->object->position;
 						p->object->SetTransform(p->position);
 						p->object->enabled = true;
 						p->status = PersonStatus::Walking;
+						if(p->work_car)
+						{
+							p->work->vehicles.push_back(p->work_car);
+							p->work_car = nullptr;
+							p->drove_in_work = true;
+						}
 
 						set_person_target(p, p->path_end_building->position);
 					}
 					else
 					{
-						c->object->SetTransform(p->target);
+						car->object->SetTransform(p->target);
 						p->position = p->target;
 						u64 points_count = rs_transition->points_stack.size();
 						if (points_count > 0)
 						{
 							v3 target = rs_transition->points_stack[points_count - 1];
 							rs_transition->points_stack.pop_back();
-							set_target_and_car_direction(p, target);
+							set_target_and_car_direction(p, car, target);
 							continue;
 						}
 						if (p->path.size() == 1)
@@ -547,7 +595,7 @@ namespace Can
 									glm::rotate(m4(1.0f), p->path_end_building->object->rotation.y, v3{ 0.0f, 1.0f, 0.0f }) *
 									glm::rotate(m4(1.0f), p->path_end_building->object->rotation.x, v3{ 1.0f, 0.0f, 0.0f }) *
 									v4(p->path_end_building->car_park.offset, 1.0f));
-							set_target_and_car_direction(p, car_park_pos);
+							set_target_and_car_direction(p, car, car_park_pos);
 							p->heading_to_a_building_or_parking = true;
 							continue;
 						}
@@ -568,7 +616,7 @@ namespace Can
 							p->road_segment = rs_transition->road_segment_index;
 							next_road_segment.people.push_back(p);
 
-							set_target_and_car_direction(p, rs_transition->points_stack[rs_transition->points_stack.size() - 1]);
+							set_target_and_car_direction(p, car, rs_transition->points_stack[rs_transition->points_stack.size() - 1]);
 						}
 					}
 				}
@@ -665,7 +713,7 @@ namespace Can
 		p->heading_to_a_car = false;
 
 		auto it = std::find(people_on_the_road.begin(), people_on_the_road.end(), p);
-		if (it == people_on_the_road.end()) assert(false);
+		assert(it != people_on_the_road.end());
 		people_on_the_road.erase(it);
 
 	}
@@ -731,7 +779,7 @@ namespace Can
 		p->heading_to_a_car = false;
 
 		auto it = std::find(people_on_the_road.begin(), people_on_the_road.end(), p);
-		if (it == people_on_the_road.end()) assert(false);
+		assert(it != people_on_the_road.end());
 		people_on_the_road.erase(it);
 
 	}
@@ -802,12 +850,22 @@ namespace Can
 		delete p;
 	}
 
-	void set_target_and_car_direction(Person* p, const v3& target)
+	void set_target_and_car_direction(Person* p, Car* car, const v3& target)
 	{
 		p->target = target;
 		v2 direction = glm::normalize((v2)(p->target - p->position));
 		f32 yaw = glm::acos(direction.x) * ((float)(direction.y > 0.0f) * 2.0f - 1.0f);
-		p->car->object->SetTransform(p->position, v3{ 0.0f, 0.0f, yaw + glm::radians(180.0f) });
+		car->object->SetTransform(p->position, v3{ 0.0f, 0.0f, yaw + glm::radians(180.0f) });
+	}
+	Car* retrive_work_vehicle(Building* work_building)
+	{
+		if (work_building->vehicles.empty()) 
+			return nullptr;
+		
+		Car* car = work_building->vehicles.back();
+		work_building->vehicles.pop_back();
+
+		return car;
 	}
 
 	void set_person_target(Person* p, const v3& target)

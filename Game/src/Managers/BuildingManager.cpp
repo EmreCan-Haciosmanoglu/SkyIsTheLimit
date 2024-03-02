@@ -452,7 +452,7 @@ namespace Can
 				m_WorkBuildings.push_back(new_building);
 				u8 worker = Utility::Random::Integer(20, 50);
 				new_building->capacity = worker;
-				for (u64 i = 0; i < worker; i++)
+				for (u64 i = 0; i < worker; ++i)
 				{
 
 					Person* p = person_manager.get_worklessPerson();
@@ -463,9 +463,37 @@ namespace Can
 					}
 				}
 
+				u8 work_vehicle_count = Utility::Random::Integer(4, 6);
+				for (u64 i = 0; i < work_vehicle_count; ++i)
+				{
+					u64 new_car_type = Utility::Random::Integer(car_prefabs.size());
+					Car* new_car = new Car(
+						car_prefabs[new_car_type],
+						new_car_type,
+						Utility::Random::Float(30.0f, 50.0f)
+					);
+					new_car->object->tintColor = v4{ 1.0f, 0.0f, 0.0f, 1.0f };
+					v3 car_pos = new_building->position +
+						(v3)(glm::rotate(m4(1.0f), new_building->object->rotation.z, v3{ 0.0f, 0.0f, 1.0f }) *
+							glm::rotate(m4(1.0f), new_building->object->rotation.y, v3{ 0.0f, 1.0f, 0.0f }) *
+							glm::rotate(m4(1.0f), new_building->object->rotation.x, v3{ 1.0f, 0.0f, 0.0f }) *
+							v4(new_building->car_park.offset, 1.0f));
+					new_car->object->SetTransform(
+						car_pos,
+						glm::rotateZ(
+							new_building->object->rotation,
+							glm::radians(new_building->car_park.rotation_in_degrees)
+						)
+					);
+					new_car->object->enabled = true;
+					new_car->building = new_building;
+					new_building->vehicles.push_back(new_car);
+					car_manager.m_Cars.push_back(new_car);
+				}
 			}
 			ResetStates();
 			m_Guideline->enabled = true;
+
 
 			if (restrictions[0] && tree_manager.restrictions[0])
 			{
@@ -600,6 +628,9 @@ namespace Can
 		auto work_it = std::find(work_buildings.begin(), work_buildings.end(), b);
 		if (work_it != work_buildings.end())
 			work_buildings.erase(work_it);
+
+		while (b->vehicles.size() > 0)
+			remove_car(b->vehicles[0]);
 
 		delete b;
 	}

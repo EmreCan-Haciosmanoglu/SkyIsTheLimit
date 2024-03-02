@@ -3,9 +3,6 @@
 
 namespace Can
 {
-	class RoadSegment;
-	class Person;
-
 	class Car
 	{
 	public:
@@ -16,6 +13,7 @@ namespace Can
 		Object* object;
 		u64 type;
 		f32 speed_in_kmh;
-		Person* owner = nullptr;
+		class Person* owner = nullptr;
+		class Building* building = nullptr;
 	};
 }

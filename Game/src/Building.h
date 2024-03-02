@@ -3,9 +3,6 @@
 
 namespace Can
 {
-	class RoadSegment;
-	class Person;
-
 	struct Car_Park
 	{
 		v3 offset{ 0.5f, 0.0f, 0.0f};
@@ -35,7 +32,8 @@ namespace Can
 		u16 capacity = 0;
 		bool snapped_to_right = true;
 		bool is_home = true;
-		std::vector<Person*> people{};
+		std::vector<class Person*> people{};
+		std::vector<class Car*> vehicles{};
 		Object* object = nullptr;
 		v3 position{};
 		Car_Park car_park{};
