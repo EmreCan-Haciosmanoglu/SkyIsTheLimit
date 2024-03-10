@@ -420,6 +420,7 @@ namespace Can
 							new_car_type,
 							Utility::Random::Float(30.0f, 50.0f)
 						);
+						new_car->car_type = Car_Type::Personal;
 						v3 car_pos = new_building->position +
 							(v3)(glm::rotate(m4(1.0f), new_building->object->rotation.z, v3{ 0.0f, 0.0f, 1.0f }) *
 								glm::rotate(m4(1.0f), new_building->object->rotation.y, v3{ 0.0f, 1.0f, 0.0f }) *
@@ -473,6 +474,7 @@ namespace Can
 						Utility::Random::Float(30.0f, 50.0f)
 					);
 					new_car->object->tintColor = v4{ 1.0f, 0.0f, 0.0f, 1.0f };
+					new_car->car_type = Car_Type::Work;
 					v3 car_pos = new_building->position +
 						(v3)(glm::rotate(m4(1.0f), new_building->object->rotation.z, v3{ 0.0f, 0.0f, 1.0f }) *
 							glm::rotate(m4(1.0f), new_building->object->rotation.y, v3{ 0.0f, 1.0f, 0.0f }) *

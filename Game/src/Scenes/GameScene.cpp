@@ -335,22 +335,35 @@ namespace Can
 			{
 				u64 type;
 				f32 speed_in_kmh;
+				u8 car_type;
 				v3 position, rotation;
+				s64 building_index;
 				fread(&type, sizeof(u64), 1, read_file);
 				fread(&speed_in_kmh, sizeof(f32), 1, read_file);
+				fread(&car_type, sizeof(u8), 1, read_file);
 				fread(&position, sizeof(f32), 3, read_file);
 				fread(&rotation, sizeof(f32), 3, read_file);
+				fread(&building_index, sizeof(u64), 1, read_file);
 				Car* car = new Car(
 					MainApplication->cars[type],
 					type,
 					speed_in_kmh
 				);
 				car->object->SetTransform(position, rotation);
+				car->car_type = (Car_Type)car_type;
+				if(building_index != -1)
+				{
+					car->building = buildings[building_index];
+					buildings[building_index]->vehicles.push_back(car);
+					// this is a work car
+					car->object->tintColor = v4{ 1.0f, 0.0f, 0.0f, 1.0f };
+				}
 				cars.push_back(car);
 			}
 		}
 		/*PersonManager*/ {
 			auto& people = m_PersonManager.m_People;
+			auto& people_on_the_road = m_PersonManager.people_on_the_road;
 			u64 people_count;
 			fread(&people_count, sizeof(u64), 1, read_file);
 			people.reserve(people_count);
@@ -362,7 +375,8 @@ namespace Can
 				u64 first_name_char_count;
 				u64 middle_name_char_count;
 				u64 last_name_char_count;
-				u64 home_index, work_index, car_index;
+				u64 home_index, work_index, car_index, work_car_index;
+				bool on_the_road;
 				Person* person = new Person();
 				fread(&type, sizeof(u64), 1, read_file);
 				person->object = new Object(MainApplication->people[type]);
@@ -379,9 +393,10 @@ namespace Can
 				fread(&person->target, sizeof(f32), 3, read_file);
 				// set direction for target-position
 				fread(&person->status, sizeof(PersonStatus), 1, read_file);
+				fread(&person->heading_to_a_car, sizeof(bool), 1, read_file); // Read this before path
 				fread(&path_count, sizeof(u64), 1, read_file);
 				person->path.reserve(path_count);
-				if (person->status == PersonStatus::Walking)
+				if (person->heading_to_a_car == false && person->status == PersonStatus::Walking)
 				{
 					u64 j = 0;
 					if (path_count % 2 == 1)
@@ -412,7 +427,7 @@ namespace Can
 						person->path.push_back(rst);
 					}
 				}
-				else if (person->status == PersonStatus::Driving)
+				else if (person->heading_to_a_car || person->status == PersonStatus::Driving || person->status == PersonStatus::DrivingForWork)
 				{
 					for (u64 j = 0; j < path_count; j++)
 					{
@@ -438,9 +453,9 @@ namespace Can
 				fread(&path_start_building_index, sizeof(s64), 1, read_file);
 				if (path_start_building_index != -1)
 					person->path_start_building = buildings[path_start_building_index];
+				fread(&person->drove_in_work, sizeof(bool), 1, read_file);
 				fread(&person->from_right, sizeof(bool), 1, read_file);
 				fread(&person->heading_to_a_building_or_parking, sizeof(bool), 1, read_file);
-				fread(&person->heading_to_a_car, sizeof(bool), 1, read_file);
 				fread(&person->time_left, sizeof(f32), 1, read_file);
 
 				fread(&first_name_char_count, sizeof(u64), 1, read_file);
@@ -479,11 +494,20 @@ namespace Can
 					person->car = cars[car_index];
 					person->car->owner = person;
 				}
-
+				fread(&work_car_index, sizeof(s64), 1, read_file);
+				if (work_car_index != -1)
+				{
+					person->work_car = cars[car_index];
+				}
 				people.push_back(person);
+
+				//@Cleanup: Put this one in better place
+				fread(&on_the_road, sizeof(bool), 1, read_file);
+				if (on_the_road)
+					people_on_the_road.push_back(person);
 			}
 		}
-		/*CameraController*/{
+		/*CameraController*/ {
 			fread(&camera_controller.forward_key, sizeof(u16), 1, read_file);
 			fread(&camera_controller.backward_key, sizeof(u16), 1, read_file);
 			fread(&camera_controller.left_key, sizeof(u16), 1, read_file);
@@ -595,14 +619,24 @@ namespace Can
 			fwrite(&car_count, sizeof(u64), 1, save_file);
 			for (u64 i = 0; i < car_count; i++)
 			{
-				fwrite(&cars[i]->type, sizeof(u64), 1, save_file);
-				fwrite(&cars[i]->speed_in_kmh, sizeof(f32), 1, save_file);
-				fwrite(&cars[i]->object->position, sizeof(f32), 3, save_file);
-				fwrite(&cars[i]->object->rotation, sizeof(f32), 3, save_file);
+				auto car = cars[i];
+				s64 building_index = -1;
+				fwrite(&car->type, sizeof(u64), 1, save_file);
+				fwrite(&car->speed_in_kmh, sizeof(f32), 1, save_file);
+				fwrite(&car->car_type, sizeof(u8), 1, save_file);
+				fwrite(&car->object->position, sizeof(f32), 3, save_file);
+				fwrite(&car->object->rotation, sizeof(f32), 3, save_file);
+				if (car->building)
+				{
+					auto building_it = std::find(buildings.begin(), buildings.end(), car->building);
+					building_index = std::distance(buildings.begin(), building_it);
+				}
+				fwrite(&building_index, sizeof(s64), 1, save_file);
 			}
 		}
 		/*PersonManager*/ {
 			auto& people = m_PersonManager.m_People;
+			auto& people_on_the_road = m_PersonManager.people_on_the_road;
 			u64 people_count = people.size();
 			fwrite(&people_count, sizeof(u64), 1, save_file);
 			for (u64 i = 0; i < people_count; i++)
@@ -615,6 +649,7 @@ namespace Can
 				s64 home_index = -1;
 				s64 work_index = -1;
 				s64 car_index = -1;
+				s64 work_car_index = -1;
 				u64 first_name_char_count = p->firstName.size();
 				u64 middle_name_char_count = p->midName.size();
 				u64 last_name_char_count = p->surName.size();
@@ -644,6 +679,11 @@ namespace Can
 					auto car_it = std::find(cars.begin(), cars.end(), p->car);
 					car_index = std::distance(cars.begin(), car_it);
 				}
+				if (p->work_car)
+				{
+					auto car_it = std::find(cars.begin(), cars.end(), p->work_car);
+					work_car_index = std::distance(cars.begin(), car_it);
+				}
 				fwrite(&p->type, sizeof(u64), 1, save_file);
 				fwrite(&p->object->enabled, sizeof(bool), 1, save_file);
 				fwrite(&p->road_segment, sizeof(s64), 1, save_file);
@@ -652,8 +692,9 @@ namespace Can
 				fwrite(&p->position, sizeof(f32), 3, save_file);
 				fwrite(&p->target, sizeof(f32), 3, save_file);
 				fwrite(&p->status, sizeof(PersonStatus), 1, save_file);
+				fwrite(&p->heading_to_a_car, sizeof(bool), 1, save_file); // Write this before path
 				fwrite(&path_count, sizeof(u64), 1, save_file);
-				if (p->status == PersonStatus::Walking)
+				if (p->heading_to_a_car == false && p->status == PersonStatus::Walking)
 				{
 					u64 j = 0;
 					if (path_count % 2 == 1)
@@ -681,7 +722,7 @@ namespace Can
 						fwrite(&rst->from_right, sizeof(bool), 1, save_file);
 					}
 				}
-				else if (p->status == PersonStatus::Driving)
+				else if (p->heading_to_a_car || p->status == PersonStatus::Driving || p->status == PersonStatus::DrivingForWork)
 				{
 					for (u64 j = 0; j < path_count; j++)
 					{
@@ -697,9 +738,9 @@ namespace Can
 				}
 				fwrite(&path_end_building_index, sizeof(s64), 1, save_file);
 				fwrite(&path_start_building_index, sizeof(s64), 1, save_file);
+				fwrite(&p->drove_in_work, sizeof(bool), 1, save_file);
 				fwrite(&p->from_right, sizeof(bool), 1, save_file);
 				fwrite(&p->heading_to_a_building_or_parking, sizeof(bool), 1, save_file);
-				fwrite(&p->heading_to_a_car, sizeof(bool), 1, save_file);
 				fwrite(&p->time_left, sizeof(f32), 1, save_file);
 				fwrite(&first_name_char_count, sizeof(u64), 1, save_file);
 				fwrite(p->firstName.data(), sizeof(char), first_name_char_count, save_file);
@@ -710,6 +751,12 @@ namespace Can
 				fwrite(&home_index, sizeof(s64), 1, save_file);
 				fwrite(&work_index, sizeof(s64), 1, save_file);
 				fwrite(&car_index, sizeof(s64), 1, save_file);
+				fwrite(&work_car_index, sizeof(s64), 1, save_file);
+				
+				//@Cleanup: Put this one in better place
+				auto on_the_road_it = std::find(people_on_the_road.begin(), people_on_the_road.end(), p);
+				bool on_the_road = on_the_road_it != people_on_the_road.end();
+				fwrite(&on_the_road, sizeof(bool), 1, save_file);
 			}
 		}
 		/*CameraController*/ {

@@ -618,59 +618,59 @@ namespace  Can::Helper
 				}
 			}
 			else
+			{
+				s64 road_end_counts = next_road_node_connected_road_segments.size();
+				end_index = (end_index + road_end_counts - start_index) % road_end_counts;
+				road_end_counts -= 2;
+				start_index = 0;
+				end_index--;
+				if (end_index < road_end_counts * 0.3f)
 				{
-					s64 road_end_counts = next_road_node_connected_road_segments.size();
-					end_index = (end_index + road_end_counts - start_index) % road_end_counts;
-					road_end_counts -= 2;
-					start_index = 0;
-					end_index--;
-					if (end_index < road_end_counts * 0.3f)
+					if (current_transition->next_road_node_index == current_road_segment.EndNode)
 					{
-						if (current_transition->next_road_node_index == current_road_segment.EndNode)
-						{
-							current_transition->lane_index = current_road_type.lanes_forward.size() - 1;
-							if (current_road_type.zoneable) current_transition->lane_index -= 1;
-							current_transition->lane_index += current_road_type.lanes_backward.size();
-						}
-						else
-						{
-							current_transition->lane_index = 0;
-							if (current_road_type.zoneable) current_transition->lane_index += 1;
-						}
-					}
-					else if (end_index > road_end_counts * 0.7f)
-					{
-						if (current_transition->next_road_node_index == current_road_segment.EndNode)
-						{
-							current_transition->lane_index = 0;
-							current_transition->lane_index += current_road_type.lanes_backward.size();
-						}
-						else
-						{
-							current_transition->lane_index = current_road_type.lanes_backward.size() - 1;
-						}
+						current_transition->lane_index = current_road_type.lanes_forward.size() - 1;
+						if (current_road_type.zoneable) current_transition->lane_index -= 1;
+						current_transition->lane_index += current_road_type.lanes_backward.size();
 					}
 					else
 					{
-						if (current_transition->next_road_node_index == current_road_segment.EndNode)
-						{
-							s64 lane_count = current_road_type.lanes_forward.size();
-							if (current_road_type.zoneable) lane_count -= 1;
-							current_transition->lane_index = lane_count * 0.5f;
-							current_transition->lane_index += current_road_type.lanes_backward.size();
-						}
-						else
-						{
-							s64 lane_count = current_road_type.lanes_backward.size();
-							if (current_road_type.zoneable)
-							{
-								lane_count -= 1;
-								current_transition->lane_index = 1;
-							}
-							current_transition->lane_index += lane_count * 0.5f;
-						}
+						current_transition->lane_index = 0;
+						if (current_road_type.zoneable) current_transition->lane_index += 1;
 					}
 				}
+				else if (end_index > road_end_counts * 0.7f)
+				{
+					if (current_transition->next_road_node_index == current_road_segment.EndNode)
+					{
+						current_transition->lane_index = 0;
+						current_transition->lane_index += current_road_type.lanes_backward.size();
+					}
+					else
+					{
+						current_transition->lane_index = current_road_type.lanes_backward.size() - 1;
+					}
+				}
+				else
+				{
+					if (current_transition->next_road_node_index == current_road_segment.EndNode)
+					{
+						s64 lane_count = current_road_type.lanes_forward.size();
+						if (current_road_type.zoneable) lane_count -= 1;
+						current_transition->lane_index = lane_count * 0.5f;
+						current_transition->lane_index += current_road_type.lanes_backward.size();
+					}
+					else
+					{
+						s64 lane_count = current_road_type.lanes_backward.size();
+						if (current_road_type.zoneable)
+						{
+							lane_count -= 1;
+							current_transition->lane_index = 1;
+						}
+						current_transition->lane_index += lane_count * 0.5f;
+					}
+				}
+			}
 
 			auto& current_road_segment_curve_samples = current_road_segment.curve_samples;
 			u64 curve_sample_count = current_road_segment_curve_samples.size();
@@ -984,14 +984,14 @@ namespace  Can::Helper
 					-1,
 					(s64)(current_road_segment.EndNode)
 				});
-			visited_road_segments.push_back({ start->connectedRoadSegment, true });
+			//visited_road_segments.push_back({ start->connectedRoadSegment, true });
 			linqs.push_back(Dijkstra_Node{
 					(s64)(start->snapped_t_index),
 					start->connectedRoadSegment,
 					-1,
 					(s64)(current_road_segment.StartNode)
 				});
-			visited_road_segments.push_back({ start->connectedRoadSegment, false });
+			//visited_road_segments.push_back({ start->connectedRoadSegment, false });
 		}
 		else
 		{
