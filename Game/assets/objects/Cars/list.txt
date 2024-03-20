@@ -1,0 +1,30 @@
+START
+Name:Tesla CyberTruck
+Object:01/car.obj
+Texture:01/car.png
+Thumbnail:01/Thumbnail.png
+Speed_Range:30-50
+Operator_Count:1
+Passenger_Limit:4
+Type:0
+END
+START
+Name:Tesla Model X
+Object:02/car.obj
+Texture:02/car.png
+Thumbnail:02/Thumbnail.png
+Speed_Range:40-55
+Operator_Count:1
+Passenger_Limit:4
+Type:0
+END
+START
+Name:Generic Passenger Vehicle
+Object:03/car.obj
+Texture:03/car.png
+Thumbnail:03/Thumbnail.png
+Speed_Range:30-40
+Operator_Count:1
+Passenger_Limit:4
+Type:0
+END

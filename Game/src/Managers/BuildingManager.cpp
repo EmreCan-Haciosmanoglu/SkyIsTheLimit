@@ -367,7 +367,7 @@ namespace Can
 	}
 	bool BuildingManager::OnMousePressed_Construction()
 	{
-		auto& car_prefabs = m_Scene->MainApplication->cars;
+		auto& vehicle_types = m_Scene->MainApplication->vehicle_types;
 		auto& person_prefabs = m_Scene->MainApplication->people;
 
 		auto& person_manager = m_Scene->m_PersonManager;
@@ -397,7 +397,7 @@ namespace Can
 			if (new_building->is_home)
 			{
 				m_HomeBuildings.push_back(new_building);
-				u8 domicilled = Utility::Random::Integer(6, 10);
+				u8 domicilled = Utility::Random::signed_32(6, 10);
 				new_building->capacity = domicilled;
 				for (u64 i = 0; i < domicilled; i++)
 				{
@@ -414,13 +414,12 @@ namespace Can
 					bool have_enough_money_to_own_car = Utility::Random::Float(1.0f) > 0.5f;
 					if (have_enough_money_to_own_car)
 					{
-						u64 new_car_type = Utility::Random::Integer(car_prefabs.size());
-						Car* new_car = new Car(
-							car_prefabs[new_car_type],
-							new_car_type,
-							Utility::Random::Float(30.0f, 50.0f)
-						);
-						new_car->car_type = Car_Type::Personal;
+						u64 new_vehicle_type_index = Utility::Random::signed_32(vehicle_types.size());
+						const Vehicle_Type& new_vehicle_type{ vehicle_types[new_vehicle_type_index] };
+						Car* new_car = new Car();
+						new_car->object = new Object(new_vehicle_type.prefab);
+						new_car->type = new_vehicle_type_index;
+						new_car->speed_in_kmh = Utility::Random::Float(new_vehicle_type.speed_range_min, new_vehicle_type.speed_range_max);
 						v3 car_pos = new_building->position +
 							(v3)(glm::rotate(m4(1.0f), new_building->object->rotation.z, v3{ 0.0f, 0.0f, 1.0f }) *
 								glm::rotate(m4(1.0f), new_building->object->rotation.y, v3{ 0.0f, 1.0f, 0.0f }) *
@@ -451,7 +450,7 @@ namespace Can
 			else
 			{
 				m_WorkBuildings.push_back(new_building);
-				u8 worker = Utility::Random::Integer(20, 50);
+				u8 worker = Utility::Random::signed_32(20, 50);
 				new_building->capacity = worker;
 				for (u64 i = 0; i < worker; ++i)
 				{
@@ -464,17 +463,16 @@ namespace Can
 					}
 				}
 
-				u8 work_vehicle_count = Utility::Random::Integer(4, 6);
+				u8 work_vehicle_count = Utility::Random::signed_32(4, 6);
 				for (u64 i = 0; i < work_vehicle_count; ++i)
 				{
-					u64 new_car_type = Utility::Random::Integer(car_prefabs.size());
-					Car* new_car = new Car(
-						car_prefabs[new_car_type],
-						new_car_type,
-						Utility::Random::Float(30.0f, 50.0f)
-					);
+					u64 new_vehicle_type_index = Utility::Random::signed_32(vehicle_types.size());
+					const Vehicle_Type& new_vehicle_type{ vehicle_types[new_vehicle_type_index] };
+					Car* new_car = new Car();
+					new_car->object = new Object(new_vehicle_type.prefab);
+					new_car->type = new_vehicle_type_index;
+					new_car->speed_in_kmh = Utility::Random::Float(new_vehicle_type.speed_range_min, new_vehicle_type.speed_range_max);
 					new_car->object->tintColor = v4{ 1.0f, 0.0f, 0.0f, 1.0f };
-					new_car->car_type = Car_Type::Work;
 					v3 car_pos = new_building->position +
 						(v3)(glm::rotate(m4(1.0f), new_building->object->rotation.z, v3{ 0.0f, 0.0f, 1.0f }) *
 							glm::rotate(m4(1.0f), new_building->object->rotation.y, v3{ 0.0f, 1.0f, 0.0f }) *

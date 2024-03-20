@@ -6,6 +6,7 @@
 #include "Debug.h"
 
 #include "Types/RoadType.h"
+#include "Types/Vehicle_Type.h"
 
 #include "Scenes/Main_Menu/Main_Menu.h"
 
@@ -52,10 +53,10 @@ namespace Can
 
 
 		std::vector<RoadType> road_types;
+		std::vector<Vehicle_Type> vehicle_types;
 
 		std::vector<Prefab*> buildings;
 		std::vector<Prefab*> trees;
-		std::vector<Prefab*> cars;
 		std::vector<Prefab*> people;
 
 		Main_Menu main_menu{};

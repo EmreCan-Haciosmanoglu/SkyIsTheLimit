@@ -78,7 +78,7 @@
     <ClCompile>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
-      <PreprocessorDefinitions>CAN_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_SILENCE_STDEXT_ARR_ITERS_DEPRICATION_WARNINGS;CAN_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(ProjectDir)src;$(SolutionDir)Can\vendor\spdlog\include;$(SolutionDir)Can\src;$(SolutionDir)Can\vendor\imgui;$(SolutionDir)Can\vendor\glm;$(SolutionDir)Can\vendor\entt\single_include;$(SolutionDir)Can\vendor\freetype;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
@@ -152,6 +152,7 @@
     <ClInclude Include="src\Scenes\Main_Menu\Main_Menu.h" />
     <ClInclude Include="src\Scenes\Main_Menu\Main_Menu_UI.h" />
     <ClInclude Include="src\Types\Car.h" />
+    <ClInclude Include="src\Types\Vehicle_Type.h" />
     <ClInclude Include="src\Types\Person.h" />
     <ClInclude Include="src\Types\RoadNode.h" />
     <ClInclude Include="src\Types\RoadSegment.h" />
@@ -174,7 +175,6 @@
     <ClCompile Include="src\Scenes\Game_Scene\Game_Scene_UI.cpp" />
     <ClCompile Include="src\Scenes\Main_Menu\Main_Menu.cpp" />
     <ClCompile Include="src\Scenes\Main_Menu\Main_Menu_UI.cpp" />
-    <ClCompile Include="src\Types\Car.cpp" />
     <ClCompile Include="src\Types\Person.cpp" />
     <ClCompile Include="src\Types\RoadNode.cpp" />
     <ClCompile Include="src\Types\RoadSegment.cpp" />
