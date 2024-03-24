@@ -15,7 +15,7 @@ namespace Can
 		//    or road, railway, route for ship|plane|helicopter|*, *
 		//    or car lane, bike lane, side walk, median, trees, parking, *
 	};
-	class RoadType
+	struct RoadType
 	{
 	public:
 		std::string name = "Unnamed Road";

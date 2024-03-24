@@ -66,6 +66,7 @@
     </ClInclude>
     <ClInclude Include="src\UIScene.h" />
     <ClInclude Include="src\Scenes\Game_Scene\Game_Scene_UI.h" />
+    <ClInclude Include="src\Types\Vehicle_Type.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Building.cpp" />
@@ -95,9 +96,6 @@
     </ClCompile>
     <ClCompile Include="src\Scenes\Main_Menu\Main_Menu_UI.cpp">
       <Filter>Scenes\Main_Menu</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Types\Car.cpp">
-      <Filter>Types</Filter>
     </ClCompile>
     <ClCompile Include="src\Types\Person.cpp">
       <Filter>Types</Filter>

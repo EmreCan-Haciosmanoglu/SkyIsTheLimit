@@ -245,7 +245,7 @@ namespace Can
 				fread(&segment.type, sizeof(u8), 1, read_file);
 				fread(&segment.StartNode, sizeof(u64), 1, read_file);
 				fread(&segment.EndNode, sizeof(u64), 1, read_file);
-				fread(&segment.CurvePoints, sizeof(f32), 3 * 4, read_file);
+				fread(&segment.CurvePoints, sizeof(f32), (3 * 4), read_file);
 				fread(&segment.elevation_type, sizeof(s8), 1, read_file);
 				segment.CalcRotsAndDirs();
 				road_segments.size++;
@@ -344,13 +344,11 @@ namespace Can
 				fread(&position, sizeof(f32), 3, read_file);
 				fread(&rotation, sizeof(f32), 3, read_file);
 				fread(&building_index, sizeof(u64), 1, read_file);
-				Car* car = new Car(
-					MainApplication->cars[type],
-					type,
-					speed_in_kmh
-				);
+				Car* car = new Car();
+				car->object = new Object(MainApplication->vehicle_types[type].prefab);
+				car->type = type;
+				car->speed_in_kmh = speed_in_kmh;
 				car->object->SetTransform(position, rotation);
-				car->car_type = (Car_Type)car_type;
 				if(building_index != -1)
 				{
 					car->building = buildings[building_index];
@@ -580,7 +578,7 @@ namespace Can
 				// an array of indices to  Car objects
 				fwrite(&road_segments[i].StartNode, sizeof(u64), 1, save_file);
 				fwrite(&road_segments[i].EndNode, sizeof(u64), 1, save_file);
-				fwrite(&road_segments[i].CurvePoints, sizeof(f32), 3 * 4, save_file);
+				fwrite(&road_segments[i].CurvePoints, sizeof(f32), (3 * 4), save_file);
 				fwrite(&road_segments[i].elevation_type, sizeof(s8), 1, save_file);
 			}
 		}
@@ -623,7 +621,6 @@ namespace Can
 				s64 building_index = -1;
 				fwrite(&car->type, sizeof(u64), 1, save_file);
 				fwrite(&car->speed_in_kmh, sizeof(f32), 1, save_file);
-				fwrite(&car->car_type, sizeof(u8), 1, save_file);
 				fwrite(&car->object->position, sizeof(f32), 3, save_file);
 				fwrite(&car->object->rotation, sizeof(f32), 3, save_file);
 				if (car->building)

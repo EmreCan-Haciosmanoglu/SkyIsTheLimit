@@ -3,21 +3,14 @@
 
 namespace Can
 {
-	enum class Car_Type: u8 {
-		Personal = 0,
-		Work
-	};
 	class Car
 	{
 	public:
-		Car(Prefab* prefab, u64 type, f32 speed_in_kmh = 100.0f);
-		~Car() { delete object; }
+		~Car() { assert(object != nullptr); delete object; }
 
-	public:
-		Object* object;
-		u64 type;
-		f32 speed_in_kmh;
-		Car_Type car_type = Car_Type::Personal;
+		Object* object{ nullptr };
+		u64 type{ 0 };
+		f32 speed_in_kmh{ 0.0f };
 		class Person* owner = nullptr;
 		class Building* building = nullptr;
 	};

@@ -7,11 +7,9 @@
 
 namespace Can
 {
-	class Car;
 	class Object;
 	class Building;
 	class Person;
-	class RoadNode;
 
 	class RoadSegment
 	{

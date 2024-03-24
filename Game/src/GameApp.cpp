@@ -105,48 +105,51 @@ namespace Can
 
 		if (file.is_open())
 		{
-			char* name_key = "Name\0";
-			char* asym_key = "Asym\0";
-			char* zone_key = "Zoneable\0";
-			char* has_median_key = "Has_Median\0";
+			const std::string start_key{ "START" };
+			const std::string end_key{ "END" };
 
-			char* road_object_key = "Road_Object\0";
-			char* road_texture_key = "Road_Texture\0";
-			char* road_junction_object_key = "Road_Junc_Object\0";
-			char* road_junction_texture_key = "Road_Junc_Texture\0";
-			char* road_junction_mirror_object_key = "Road_Junc_Mirror_Object\0";
-			char* road_junction_mirror_texture_key = "Road_Junc_Mirror_Texture\0";
-			char* road_end_object_key = "Road_End_Object\0";
-			char* road_end_texture_key = "Road_End_Texture\0";
-			char* road_end_mirror_object_key = "Road_End_Mirror_Object\0";
-			char* road_end_mirror_texture_key = "Road_End_Mirror_Texture\0";
+			constexpr const char* name_key{ "Name" };
+			constexpr const char* asym_key{ "Asym" };
+			constexpr const char* zone_key{ "Zoneable" };
+			constexpr const char* has_median_key{ "Has_Median" };
 
-			char* tunnel_object_key = "Tunnel_Object\0";
-			char* tunnel_texture_key = "Tunnel_Texture\0";
-			char* tunnel_junction_object_key = "Tunnel_Junc_Object\0";
-			char* tunnel_junction_texture_key = "Tunnel_Junc_Texture\0";
-			char* tunnel_junction_mirror_object_key = "Tunnel_Junc_Mirror_Object\0";
-			char* tunnel_junction_mirror_texture_key = "Tunnel_Junc_Mirror_Texture\0";
-			char* tunnel_end_object_key = "Tunnel_End_Object\0";
-			char* tunnel_end_texture_key = "Tunnel_End_Texture\0";
-			char* tunnel_end_mirror_object_key = "Tunnel_End_Mirror_Object\0";
-			char* tunnel_end_mirror_texture_key = "Tunnel_End_Mirror_Texture\0";
+			constexpr const char* road_object_key{ "Road_Object" };
+			constexpr const char* road_texture_key{ "Road_Texture" };
+			constexpr const char* road_junction_object_key{ "Road_Junc_Object" };
+			constexpr const char* road_junction_texture_key{ "Road_Junc_Texture" };
+			constexpr const char* road_junction_mirror_object_key{ "Road_Junc_Mirror_Object" };
+			constexpr const char* road_junction_mirror_texture_key{ "Road_Junc_Mirror_Texture" };
+			constexpr const char* road_end_object_key{ "Road_End_Object" };
+			constexpr const char* road_end_texture_key{ "Road_End_Texture" };
+			constexpr const char* road_end_mirror_object_key{ "Road_End_Mirror_Object" };
+			constexpr const char* road_end_mirror_texture_key{ "Road_End_Mirror_Texture" };
 
-			char* tunnel_entrance_object_key = "Tunnel_Entrance_Object\0";
-			char* tunnel_entrance_texture_key = "Tunnel_Entrance_Texture\0";
-			char* tunnel_entrance_mirror_object_key = "Tunnel_Entrance_Mirror_Object\0";
-			char* tunnel_entrance_mirror_texture_key = "Tunnel_Entrance_Mirror_Texture\0";
+			constexpr const char* tunnel_object_key{ "Tunnel_Object" };
+			constexpr const char* tunnel_texture_key{ "Tunnel_Texture" };
+			constexpr const char* tunnel_junction_object_key{ "Tunnel_Junc_Object" };
+			constexpr const char* tunnel_junction_texture_key{ "Tunnel_Junc_Texture" };
+			constexpr const char* tunnel_junction_mirror_object_key{ "Tunnel_Junc_Mirror_Object" };
+			constexpr const char* tunnel_junction_mirror_texture_key{ "Tunnel_Junc_Mirror_Texture" };
+			constexpr const char* tunnel_end_object_key{ "Tunnel_End_Object" };
+			constexpr const char* tunnel_end_texture_key{ "Tunnel_End_Texture" };
+			constexpr const char* tunnel_end_mirror_object_key{ "Tunnel_End_Mirror_Object" };
+			constexpr const char* tunnel_end_mirror_texture_key{ "Tunnel_End_Mirror_Texture" };
 
-			char* thumbnail_key = "Thumbnail\0";
+			constexpr const char* tunnel_entrance_object_key{ "Tunnel_Entrance_Object" };
+			constexpr const char* tunnel_entrance_texture_key{ "Tunnel_Entrance_Texture" };
+			constexpr const char* tunnel_entrance_mirror_object_key{ "Tunnel_Entrance_Mirror_Object" };
+			constexpr const char* tunnel_entrance_mirror_texture_key{ "Tunnel_Entrance_Mirror_Texture" };
 
-			char* lanes_backward_key = "Lanes_Backward\0";
-			char* lanes_forward_key = "Lanes_Forward\0";
+			constexpr const char* thumbnail_key{ "Thumbnail" };
+
+			constexpr const char* lanes_backward_key{ "Lanes_Backward" };
+			constexpr const char* lanes_forward_key{ "Lanes_Forward" };
 
 			std::string line;
 			while (std::getline(file, line))
 			{
 				// using printf() in all tests for consistency
-				if (line != "START")
+				if (line != start_key)
 					continue;
 				bool end_is_found = false;
 				bool tunnel_is_found = false;
@@ -197,7 +200,7 @@ namespace Can
 
 				while (std::getline(file, line))
 				{
-					if (line == "END")
+					if (line == end_key)
 					{
 						end_is_found = true;
 						type.name = name;
@@ -376,7 +379,7 @@ namespace Can
 							if (lanes_read >= l_backward_count)
 								break;
 						}
-						
+
 					}
 					else if (std::equal(line.begin(), seperator, lanes_forward_key))
 					{
@@ -427,7 +430,127 @@ namespace Can
 	}
 	void GameApp::LoadCars()
 	{
-		cars = LoadPrefabs("\\assets\\objects\\cars", "Car_");
+#define TEMP_SHADER_FILE_PATH "assets/shaders/3DTexturedObject.glsl"
+
+		namespace fs = std::filesystem;
+		std::string current_path = fs::current_path().string();
+		std::string path_to_cars = current_path.append("\\assets\\objects\\cars\\");
+		std::string path_to_car_identifier_list = std::string(path_to_cars).append("list.txt");
+
+		std::ifstream file(path_to_car_identifier_list);
+
+		if (file.is_open())
+		{
+			const std::string start_key{ "START" };
+			const std::string end_key{ "END" };
+
+			constexpr const char* name_key{ "Name" };
+			constexpr const char* object_key{ "Object" };
+			constexpr const char* texture_key{ "Texture" };
+			constexpr const char* thumbnail_key{ "Thumbnail" };
+			constexpr const char* speed_range_key{ "Speed_Range" };
+			constexpr const char* operator_count_key{ "Operator_Count" };
+			constexpr const char* passenger_limit_key{ "Passenger_Limit" };
+			constexpr const char* type_key{ "Type" };
+
+			std::string line;
+			while (std::getline(file, line))
+			{
+				// using printf() in all tests for consistency
+				if (line != start_key)
+					continue;
+				bool end_is_found{ false };
+
+				std::string name{ 0 };
+				std::string object{ path_to_cars };
+				std::string texture{ path_to_cars };
+				std::string thumbnail{ path_to_cars };
+				f32 speed_range_min{ 0 };
+				f32 speed_range_max{ 0 };
+				u16 operator_count{ 0 };
+				u16 passenger_limit{ 0 };
+				Car_Type type{ 0 };
+
+				// bool s for if key pair exist
+
+				Vehicle_Type& vehicle_type{ vehicle_types.emplace_back() };
+
+				while (std::getline(file, line))
+				{
+					if (line == end_key)
+					{
+						end_is_found = true;
+						vehicle_type.name = name;
+						vehicle_type.prefab = new Prefab(object, TEMP_SHADER_FILE_PATH, texture);
+						vehicle_type.thumbnail = Texture2D::Create(thumbnail);
+						vehicle_type.speed_range_min = speed_range_min;
+						vehicle_type.speed_range_max = speed_range_max;
+						vehicle_type.operator_count = operator_count;
+						vehicle_type.passenger_limit = passenger_limit;
+						vehicle_type.type = type;
+
+						vehicle_type.object_length = vehicle_type.prefab->boundingBoxM.x - vehicle_type.prefab->boundingBoxL.x;
+						vehicle_type.object_width = vehicle_type.prefab->boundingBoxM.y - vehicle_type.prefab->boundingBoxL.y;
+						/*clearing for next car*/ {
+							name = "";
+							object = path_to_cars;
+							texture = path_to_cars;
+							thumbnail = path_to_cars;
+							speed_range_min = 0;
+							speed_range_max = 0;
+							operator_count = 0;
+							passenger_limit = 0;
+							type = Car_Type::Personal;
+						}
+					}
+					std::string::iterator seperator = std::find(line.begin(), line.end(), ':');
+					if (seperator == line.end())
+						break;
+					char* print_from = seperator._Unwrapped() + 1;
+					if (std::equal(line.begin(), seperator, name_key))
+						name = std::string(print_from);
+					else if (std::equal(line.begin(), seperator, object_key))
+						object.append(print_from);
+					else if (std::equal(line.begin(), seperator, texture_key))
+						texture.append(print_from);
+					else if (std::equal(line.begin(), seperator, thumbnail_key))
+						thumbnail.append(print_from);
+					else if (std::equal(line.begin(), seperator, speed_range_key))
+					{
+						std::stringstream ss{};
+						auto dash_seperator = std::find(seperator + 1, line.end(), '-');
+						ss << std::string(seperator + 1, dash_seperator);
+						ss >> speed_range_min;
+
+						ss.clear();
+						ss.str("");
+						ss << std::string(dash_seperator + 1, line.end());
+						ss >> speed_range_max;
+					}
+					else if (std::equal(line.begin(), seperator, operator_count_key))
+					{
+						std::stringstream ss{};
+						ss << std::string(seperator + 1, line.end());
+						ss >> operator_count;
+					}
+					else if (std::equal(line.begin(), seperator, passenger_limit_key))
+					{
+						std::stringstream ss{};
+						ss << std::string(seperator + 1, line.end());
+						ss >> operator_count;
+					}
+					else if (std::equal(line.begin(), seperator, type_key))
+					{
+						std::stringstream ss{};
+						ss << std::string(seperator + 1, line.end());
+						u8 t;
+						ss >> t;
+						type = (Car_Type)t;
+					}
+				}
+			}
+			file.close();
+		}
 	}
 	void GameApp::LoadPeople()
 	{
