@@ -59,6 +59,7 @@ namespace Can
 		u64 type = 0;
 		std::vector<class Building*> Buildings{};
 		std::vector<class Person*> people{};
+		std::vector<class Car*> vehicles{};
 
 		u64 StartNode = (u64)-1;
 		u64 EndNode = (u64)-1;

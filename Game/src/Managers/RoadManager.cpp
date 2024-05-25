@@ -1575,7 +1575,7 @@ namespace Can
 		auto& currentType = road_types[rs.type];
 		auto& new_type = road_types[m_Type];
 
-		// -if no zonable 
+		// if not zoneable 
 		if (new_type.zoneable == false)
 		{
 			//	*delete houses
@@ -1591,6 +1591,8 @@ namespace Can
 			}
 		}
 
+		// TODO: if oneway?
+
 		// if asymetric -> turn sides
 		if (new_type.road == currentType.road)
 		{
@@ -1601,15 +1603,20 @@ namespace Can
 			//		start->end
 			for (Person* p : people_on_the_road)
 			{
-				for (Transition* t : p->path)
+				switch (p->status)
 				{
-					if (p->status == PersonStatus::Driving)
+				case PersonStatus::Driving:
+				case PersonStatus::DrivingForWork:
+					for (Transition* t : p->car_driving->path)
 					{
 						auto td = (RS_Transition_For_Vehicle*)t;
 						if (td->road_segment_index == selected_road_segment)
 							td->next_road_node_index = td->road_segment_index == rs.EndNode ? rs.StartNode : rs.EndNode;
 					}
-					else if (p->status == PersonStatus::Walking)
+					break;
+				case PersonStatus::Walking:
+				case PersonStatus::WalkingDead:
+					for (Transition* t : p->path)
 					{
 						auto tw = (RS_Transition_For_Walking*)t;
 						if (tw->road_segment_index == selected_road_segment)
@@ -1618,6 +1625,13 @@ namespace Can
 							tw->from_start = !tw->from_start;
 						}
 					}
+					break;
+				case PersonStatus::AtHome:
+				case PersonStatus::AtWork:
+					break;
+				default:
+					assert(false, "UnImplemented PersonStatus case!!!");
+					break;
 				}
 			}
 
@@ -2161,18 +2175,11 @@ namespace Can
 			else if (person->status == PersonStatus::Walking)
 			{
 				if (count % 2 == 0)
-				{
 					j = 1;
-					for (; j < count; j += 2)
-						if (((RS_Transition_For_Walking*)path[j])->road_segment_index == road_segment_index)
-							break;
-				}
-				else
-				{
-					for (; j < count; j += 2)
-						if (((RS_Transition_For_Walking*)path[j])->road_segment_index == road_segment_index)
-							break;
-				}
+
+				for (; j < count; j += 2)
+					if (((RS_Transition_For_Walking*)path[j])->road_segment_index == road_segment_index)
+						break;
 			}
 			else
 			{

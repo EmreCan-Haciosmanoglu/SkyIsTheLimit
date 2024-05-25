@@ -373,7 +373,7 @@ namespace Can
 				u64 first_name_char_count;
 				u64 middle_name_char_count;
 				u64 last_name_char_count;
-				u64 home_index, work_index, car_index, work_car_index;
+				u64 home_index, work_index, car_index, car_driving_index;
 				bool on_the_road;
 				Person* person = new Person();
 				fread(&type, sizeof(u64), 1, read_file);
@@ -453,7 +453,7 @@ namespace Can
 					person->path_start_building = buildings[path_start_building_index];
 				fread(&person->drove_in_work, sizeof(bool), 1, read_file);
 				fread(&person->from_right, sizeof(bool), 1, read_file);
-				fread(&person->heading_to_a_building_or_parking, sizeof(bool), 1, read_file);
+				fread(&person->heading_to_a_building, sizeof(bool), 1, read_file);
 				fread(&person->time_left, sizeof(f32), 1, read_file);
 
 				fread(&first_name_char_count, sizeof(u64), 1, read_file);
@@ -492,10 +492,10 @@ namespace Can
 					person->car = cars[car_index];
 					person->car->owner = person;
 				}
-				fread(&work_car_index, sizeof(s64), 1, read_file);
-				if (work_car_index != -1)
+				fread(&car_driving_index, sizeof(s64), 1, read_file);
+				if (car_driving_index != -1)
 				{
-					person->work_car = cars[car_index];
+					person->car_driving = cars[car_index];
 				}
 				people.push_back(person);
 
@@ -676,9 +676,9 @@ namespace Can
 					auto car_it = std::find(cars.begin(), cars.end(), p->car);
 					car_index = std::distance(cars.begin(), car_it);
 				}
-				if (p->work_car)
+				if (p->car_driving)
 				{
-					auto car_it = std::find(cars.begin(), cars.end(), p->work_car);
+					auto car_it = std::find(cars.begin(), cars.end(), p->car_driving);
 					work_car_index = std::distance(cars.begin(), car_it);
 				}
 				fwrite(&p->type, sizeof(u64), 1, save_file);
@@ -737,7 +737,7 @@ namespace Can
 				fwrite(&path_start_building_index, sizeof(s64), 1, save_file);
 				fwrite(&p->drove_in_work, sizeof(bool), 1, save_file);
 				fwrite(&p->from_right, sizeof(bool), 1, save_file);
-				fwrite(&p->heading_to_a_building_or_parking, sizeof(bool), 1, save_file);
+				fwrite(&p->heading_to_a_building, sizeof(bool), 1, save_file);
 				fwrite(&p->time_left, sizeof(f32), 1, save_file);
 				fwrite(&first_name_char_count, sizeof(u64), 1, save_file);
 				fwrite(p->firstName.data(), sizeof(char), first_name_char_count, save_file);

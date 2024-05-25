@@ -13,12 +13,11 @@ namespace Can
 
 	public:
 		CarManager(GameScene* scene);
-		~CarManager(){}
-
-		void Update(TimeStep ts);
+		~CarManager() = default;
 
 		GameScene* m_Scene = nullptr;
 		std::vector<Car*> m_Cars = {};
 	};
 	void remove_car(Car* c);
+	void update_car(Car* const c, Person* const vehicle_operator, TimeStep ts);
 }
