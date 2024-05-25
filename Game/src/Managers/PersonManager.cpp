@@ -290,7 +290,7 @@ namespace Can
 						p->road_segment = -1;
 
 						if (p->car || p->work_car)
-							delete ((RS_Transition_For_Driving*)p->path[0]);
+							delete ((RS_Transition_For_Vehicle*)p->path[0]);
 						else
 							delete ((RS_Transition_For_Walking*)p->path[0]);
 						
@@ -304,7 +304,7 @@ namespace Can
 					}
 					else if (p->heading_to_a_car)
 					{
-						RS_Transition_For_Driving* rs_transition = (RS_Transition_For_Driving*)p->path[0];
+						RS_Transition_For_Vehicle* rs_transition = (RS_Transition_For_Vehicle*)p->path[0];
 						RoadSegment& road_segment = road_segments[rs_transition->road_segment_index];
 						RoadType& road_segment_type = road_types[road_segment.type];
 						v3 target_position = rs_transition->points_stack[rs_transition->points_stack.size() - 1];

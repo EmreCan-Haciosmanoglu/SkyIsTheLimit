@@ -2,7 +2,6 @@
 #include <array>
 #include <vector>
 
-#include "RoadType.h"
 #include "Can/Unordered_Array.h"
 
 namespace Can
@@ -53,13 +52,13 @@ namespace Can
 			s8 elevation_type
 		);
 		static void move(RoadSegment* dest, RoadSegment* src);
-		static void reset_to_default (RoadSegment* dest);
+		static void reset_to_default(RoadSegment* dest);
 		static void remove(RoadSegment* obj);
 
 	public:
 		u64 type = 0;
-		std::vector<Building*> Buildings = {};
-		std::vector<Person*> people = {};
+		std::vector<class Building*> Buildings{};
+		std::vector<class Person*> people{};
 
 		u64 StartNode = (u64)-1;
 		u64 EndNode = (u64)-1;

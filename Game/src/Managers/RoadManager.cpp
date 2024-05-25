@@ -1605,7 +1605,7 @@ namespace Can
 				{
 					if (p->status == PersonStatus::Driving)
 					{
-						auto td = (RS_Transition_For_Driving*)t;
+						auto td = (RS_Transition_For_Vehicle*)t;
 						if (td->road_segment_index == selected_road_segment)
 							td->next_road_node_index = td->road_segment_index == rs.EndNode ? rs.StartNode : rs.EndNode;
 					}
@@ -1650,10 +1650,10 @@ namespace Can
 			u64 count = p->path.size();
 			for (u64 i = 0; i < count - 1; i++)
 			{
-				auto td = (RS_Transition_For_Driving*)p->path[i];
+				auto td = (RS_Transition_For_Vehicle*)p->path[i];
 				if (td->road_segment_index == selected_road_segment)
 				{
-					auto td_next = (RS_Transition_For_Driving*)p->path[i + 1];
+					auto td_next = (RS_Transition_For_Vehicle*)p->path[i + 1];
 
 					RoadSegment& current_road_segment = road_segments[td->road_segment_index];
 					RoadType& current_road_type = road_types[current_road_segment.type];
@@ -1777,8 +1777,8 @@ namespace Can
 				}
 			}
 
-			auto td_prev = (RS_Transition_For_Driving*)p->path[count - 2];
-			auto td = (RS_Transition_For_Driving*)p->path[count - 1];
+			auto td_prev = (RS_Transition_For_Vehicle*)p->path[count - 2];
+			auto td = (RS_Transition_For_Vehicle*)p->path[count - 1];
 			if (td->road_segment_index == selected_road_segment)
 			{
 				RoadSegment& current_road_segment = road_segments[td->road_segment_index];
@@ -2155,7 +2155,7 @@ namespace Can
 			if (person->status == PersonStatus::Driving)
 			{
 				for (; j < count; j++)
-					if (((RS_Transition_For_Driving*)path[j])->road_segment_index == road_segment_index)
+					if (((RS_Transition_For_Vehicle*)path[j])->road_segment_index == road_segment_index)
 						break;
 			}
 			else if (person->status == PersonStatus::Walking)
@@ -2733,26 +2733,26 @@ namespace Can
 			{
 				for (u64 index = 1; index < path.size(); index++)
 				{
-					auto rs_transition = (RS_Transition_For_Driving*)path[index];
-					if (rs_transition->road_segment_index != old_rs_index) continue;
+					auto transition = (RS_Transition_For_Vehicle*)path[index];
+					if (transition->road_segment_index != old_rs_index) continue;
 
-					if (old_road_segment.StartNode == rs_transition->next_road_node_index)
+					if (old_road_segment.StartNode == transition->next_road_node_index)
 					{
-						auto new_rs_transition = new RS_Transition_For_Driving();
-						new_rs_transition->road_segment_index = new_rs_index;
-						new_rs_transition->next_road_node_index = new_rn_index;
+						auto new_transition = new RS_Transition_For_Vehicle();
+						new_transition->road_segment_index = new_rs_index;
+						new_transition->next_road_node_index = new_rn_index;
 						assert(false); // calculate lane index for new_rs_transition and points_stack
-						path.insert(path.begin() + index, (Transition*)new_rs_transition);
+						path.insert(path.begin() + index, (Transition*)new_transition);
 					}
 					else
 					{
-						auto new_rs_transition = new RS_Transition_For_Driving();
-						new_rs_transition->road_segment_index = new_rs_index;
-						new_rs_transition->next_road_node_index = new_road_segment.EndNode;
-						new_rs_transition->lane_index = rs_transition->lane_index;
-						path.insert(path.begin() + (index + 1), (Transition*)new_rs_transition);
+						auto new_transition = new RS_Transition_For_Vehicle();
+						new_transition->road_segment_index = new_rs_index;
+						new_transition->next_road_node_index = new_road_segment.EndNode;
+						new_transition->lane_index = transition->lane_index;
+						path.insert(path.begin() + (index + 1), (Transition*)new_transition);
 
-						rs_transition->next_road_node_index = old_road_segment.EndNode;
+						transition->next_road_node_index = old_road_segment.EndNode;
 						assert(false); // calculate lane index for rs_transition and points_stack
 					}
 					index++;

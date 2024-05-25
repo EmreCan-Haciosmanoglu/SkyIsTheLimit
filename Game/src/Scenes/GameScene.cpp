@@ -429,7 +429,7 @@ namespace Can
 				{
 					for (u64 j = 0; j < path_count; j++)
 					{
-						auto td = new RS_Transition_For_Driving();
+						auto td = new RS_Transition_For_Vehicle();
 						fread(&td->road_segment_index, sizeof(u64), 1, read_file);
 						fread(&td->next_road_node_index, sizeof(s64), 1, read_file);
 						u64 points_count = 0;
@@ -723,7 +723,7 @@ namespace Can
 				{
 					for (u64 j = 0; j < path_count; j++)
 					{
-						auto td = (RS_Transition_For_Driving*)p->path[j];
+						auto td = (RS_Transition_For_Vehicle*)p->path[j];
 						fwrite(&td->road_segment_index, sizeof(u64), 1, save_file);
 						fwrite(&td->next_road_node_index, sizeof(s64), 1, save_file);
 						u64 points_count = td->points_stack.size();

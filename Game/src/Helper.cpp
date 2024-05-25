@@ -535,12 +535,12 @@ namespace  Can::Helper
 
 	static void fill_points_stack(std::vector<Transition*>& path, Building* start, Building* end)
 	{
-		auto& road_segments = GameScene::ActiveGameScene->m_RoadManager.road_segments;
-		auto& road_nodes = GameScene::ActiveGameScene->m_RoadManager.road_nodes;
-		auto& road_types = GameScene::ActiveGameScene->MainApplication->road_types;
-		u64 transition_count = path.size();
+		auto& road_segments{ GameScene::ActiveGameScene->m_RoadManager.road_segments };
+		auto& road_nodes{ GameScene::ActiveGameScene->m_RoadManager.road_nodes };
+		auto& road_types{ GameScene::ActiveGameScene->MainApplication->road_types };
+		u64 transition_count{ path.size() };
 
-		RS_Transition_For_Driving* current_transition = (RS_Transition_For_Driving*)path[0];
+		RS_Transition_For_Vehicle* current_transition{ (RS_Transition_For_Vehicle*)path[0] };
 		if (transition_count == 1)
 		{
 			RoadSegment& current_road_segment = road_segments[current_transition->road_segment_index];
@@ -578,7 +578,7 @@ namespace  Can::Helper
 		s64 prev_road_node_index = -1;
 		for (u64 i = 1; i < transition_count; i++)
 		{
-			RS_Transition_For_Driving* next_transition = (RS_Transition_For_Driving*)path[i];
+			RS_Transition_For_Vehicle* next_transition{ (RS_Transition_For_Vehicle*)path[i] };
 
 			RoadSegment& current_road_segment = road_segments[current_transition->road_segment_index];
 			RoadType& current_road_type = road_types[current_road_segment.type];
@@ -702,12 +702,13 @@ namespace  Can::Helper
 			current_transition = next_transition;
 		}
 
-		current_transition = (RS_Transition_For_Driving*)path[transition_count - 1];
+		current_transition = (RS_Transition_For_Vehicle*)path[transition_count - 1];
 		RoadSegment& current_road_segment = road_segments[current_transition->road_segment_index];
 		RoadType& current_road_type = road_types[current_road_segment.type];
 		if (transition_count > 2)
 		{
-			u64 n_index = ((RS_Transition_For_Driving*)path[transition_count - 2])->next_road_node_index;
+			RS_Transition_For_Vehicle* t{ (RS_Transition_For_Vehicle*)path[transition_count - 2] };
+			u64 n_index{ (u64)t->next_road_node_index };
 			if (end->snapped_to_right)
 			{
 				if (n_index == current_road_segment.StartNode)
@@ -738,16 +739,16 @@ namespace  Can::Helper
 			//???
 		}
 
-		auto& current_road_segment_curve_samples = current_road_segment.curve_samples;
-		f32 dist_from_center = 0.0f;
+		auto& current_road_segment_curve_samples{ current_road_segment.curve_samples };
+		f32 dist_from_center{ 0.0f };
 		if (current_transition->lane_index < current_road_type.lanes_backward.size())
 			dist_from_center = current_road_type.lanes_backward[current_transition->lane_index].distance_from_center;
 		else
 			dist_from_center = current_road_type.lanes_forward[current_transition->lane_index - current_road_type.lanes_backward.size()].distance_from_center;
-		
+
 		if (prev_road_node_index == current_road_segment.StartNode)
 		{
-			v3 p0 = current_road_segment_curve_samples[0];
+			v3 p0{ current_road_segment_curve_samples[0] };
 			for (u64 curve_sample_index = 1; curve_sample_index <= end->snapped_t_index; curve_sample_index++)
 			{
 				v3 p1 = current_road_segment_curve_samples[curve_sample_index];
@@ -777,8 +778,8 @@ namespace  Can::Helper
 			current_transition->points_stack.push_back(path_point);
 		}
 
-		auto first_path = (RS_Transition_For_Driving*)path[0];
-		RoadSegment& first_road_segment = road_segments[first_path->road_segment_index];
+		RS_Transition_For_Vehicle* first_path{ (RS_Transition_For_Vehicle*)path[0] };
+		RoadSegment& first_road_segment{ road_segments[first_path->road_segment_index] };
 		if (first_path->next_road_node_index == first_road_segment.EndNode)
 		{
 			for (u64 k = 0; k < start->snapped_t_index; k++)
@@ -960,7 +961,7 @@ namespace  Can::Helper
 		RoadSegment& current_road_segment = road_segments[current_road_segment_index];
 
 		RoadType& start_road_type = road_types[current_road_segment.type];
-		
+
 		std::vector<Dijkstra_Node> linqs{};
 		std::vector<Dijkstra_Node> fastest_road_to_these_nodes{};
 		std::vector<std::tuple<s64, bool>> visited_road_segments{};
@@ -1005,7 +1006,7 @@ namespace  Can::Helper
 			visited_road_segments.push_back({ start->connectedRoadSegment, true });
 			fastest_road_to_these_nodes.push_back(node);
 		}
-		 
+
 
 		for (u64 i = 0; i < dist; ++i)
 		{
@@ -1085,10 +1086,10 @@ namespace  Can::Helper
 				{
 					if (from_start == start->snapped_to_right || type.has_median == false)
 					{
-						u64 rs_index = connected_road_segment_index;
+						u64 rs_index{ connected_road_segment_index };
 						std::vector<Transition*> the_temp_path{};
 
-						RS_Transition_For_Driving* temp_rs_transition = new RS_Transition_For_Driving();
+						RS_Transition_For_Vehicle* temp_rs_transition{ new RS_Transition_For_Vehicle() };
 						the_temp_path.push_back(temp_rs_transition);
 						temp_rs_transition->road_segment_index = rs_index;
 
@@ -1103,7 +1104,7 @@ namespace  Can::Helper
 							assert(linq_it != fastest_road_to_these_nodes.end());
 							rs_index = linq_it->road_segment_index;
 
-							temp_rs_transition = new RS_Transition_For_Driving();
+							temp_rs_transition = new RS_Transition_For_Vehicle();
 							the_temp_path.push_back(temp_rs_transition);
 							temp_rs_transition->road_segment_index = rs_index;
 							temp_rs_transition->next_road_node_index = road_node_index;
@@ -1111,7 +1112,7 @@ namespace  Can::Helper
 							road_node_index = linq_it->prev_road_node_index;
 						}
 
-						u64 transition_count = the_temp_path.size();
+						u64 transition_count{ the_temp_path.size() };
 						std::vector<Transition*> the_path{};
 						the_path.reserve(transition_count);
 						while (the_temp_path.size() > 0)
@@ -1371,23 +1372,23 @@ namespace  Can::Helper
 	}
 	std::vector<Transition*> get_path_for_a_car(Building* start, Building* end)
 	{
-		auto& road_segments = GameScene::ActiveGameScene->m_RoadManager.road_segments;
-		auto& road_nodes = GameScene::ActiveGameScene->m_RoadManager.road_nodes;
-		auto& road_types = GameScene::ActiveGameScene->MainApplication->road_types;
+		auto& road_segments{ GameScene::ActiveGameScene->m_RoadManager.road_segments };
+		auto& road_nodes{ GameScene::ActiveGameScene->m_RoadManager.road_nodes };
+		auto& road_types{ GameScene::ActiveGameScene->MainApplication->road_types };
 
-		RoadSegment& start_road_segment = road_segments[start->connectedRoadSegment];
-		RoadSegment& end_road_segment = road_segments[end->connectedRoadSegment];
+		RoadSegment& start_road_segment{ road_segments[start->connectedRoadSegment] };
+		RoadSegment& end_road_segment{ road_segments[end->connectedRoadSegment] };
 
-		RoadType& start_road_type = road_types[start_road_segment.type];
+		RoadType& start_road_type{ road_types[start_road_segment.type] };
 
 		if (start->connectedRoadSegment == end->connectedRoadSegment)
 		{
-			auto& start_road_type = road_types[start_road_segment.type];
+			auto& start_road_type{ road_types[start_road_segment.type] };
 			if (start_road_type.two_way == false)
 			{
 				if (end->snapped_t_index >= start->snapped_t_index)
 				{
-					RS_Transition_For_Driving* rs_transition = new RS_Transition_For_Driving();
+					RS_Transition_For_Vehicle* rs_transition{ new RS_Transition_For_Vehicle() };
 					rs_transition->road_segment_index = start->connectedRoadSegment;
 					if (end->snapped_to_right)
 					{
@@ -1398,14 +1399,14 @@ namespace  Can::Helper
 					{
 						rs_transition->lane_index = 1;
 					}
-					std::vector<Transition*> the_path = { rs_transition };
+					std::vector<Transition*> the_path{ rs_transition };
 					fill_points_stack(the_path, start, end);
 					return the_path;
 				}
 			}
 			else if (start_road_type.has_median == false)
 			{
-				RS_Transition_For_Driving* rs_transition = new RS_Transition_For_Driving();
+				RS_Transition_For_Vehicle* rs_transition{ new RS_Transition_For_Vehicle() };
 				if (end->snapped_t_index >= start->snapped_t_index)
 				{
 					rs_transition->road_segment_index = start->connectedRoadSegment;
@@ -1432,7 +1433,7 @@ namespace  Can::Helper
 						rs_transition->lane_index = 1;
 					}
 				}
-				std::vector<Transition*> the_path = { rs_transition };
+				std::vector<Transition*> the_path{ rs_transition };
 				fill_points_stack(the_path, start, end);
 				return the_path;
 			}
@@ -1445,7 +1446,7 @@ namespace  Can::Helper
 					{
 						if (end->snapped_t_index >= start->snapped_t_index)
 						{
-							RS_Transition_For_Driving* rs_transition = new RS_Transition_For_Driving();
+							RS_Transition_For_Vehicle* rs_transition{ new RS_Transition_For_Vehicle() };
 							rs_transition->road_segment_index = start->connectedRoadSegment;
 							rs_transition->lane_index = start_road_type.lanes_forward.size() - 2;
 							rs_transition->lane_index += start_road_type.lanes_backward.size();
@@ -1454,16 +1455,16 @@ namespace  Can::Helper
 						}
 						else
 						{
-							RS_Transition_For_Driving* rs_transition_1 = new RS_Transition_For_Driving();
+							RS_Transition_For_Vehicle* rs_transition_1{ new RS_Transition_For_Vehicle() };
 							rs_transition_1->road_segment_index = start->connectedRoadSegment;
 							rs_transition_1->lane_index = 0;
 							rs_transition_1->lane_index += start_road_type.lanes_backward.size();
 
-							RS_Transition_For_Driving* rs_transition_2 = new RS_Transition_For_Driving();
+							RS_Transition_For_Vehicle* rs_transition_2{ new RS_Transition_For_Vehicle() };
 							rs_transition_2->road_segment_index = start->connectedRoadSegment;
 							rs_transition_2->lane_index = start_road_type.lanes_backward.size() - 1;
 
-							RS_Transition_For_Driving* rs_transition_3 = new RS_Transition_For_Driving();
+							RS_Transition_For_Vehicle* rs_transition_3{ new RS_Transition_For_Vehicle() };
 							rs_transition_3->road_segment_index = start->connectedRoadSegment;
 							rs_transition_3->lane_index = start_road_type.lanes_forward.size() - 2;
 							rs_transition_3->lane_index += start_road_type.lanes_backward.size();
@@ -1475,12 +1476,12 @@ namespace  Can::Helper
 					}
 					else
 					{
-						RS_Transition_For_Driving* rs_transition_1 = new RS_Transition_For_Driving();
+						RS_Transition_For_Vehicle* rs_transition_1{ new RS_Transition_For_Vehicle() };
 						rs_transition_1->road_segment_index = start->connectedRoadSegment;
 						rs_transition_1->lane_index = 0;
 						rs_transition_1->lane_index += start_road_type.lanes_backward.size();
 
-						RS_Transition_For_Driving* rs_transition_2 = new RS_Transition_For_Driving();
+						RS_Transition_For_Vehicle* rs_transition_2{ new RS_Transition_For_Vehicle() };
 						rs_transition_2->road_segment_index = start->connectedRoadSegment;
 						rs_transition_2->lane_index = 1;
 
@@ -1492,11 +1493,11 @@ namespace  Can::Helper
 				{
 					if (end->snapped_to_right)
 					{
-						RS_Transition_For_Driving* rs_transition_1 = new RS_Transition_For_Driving();
+						RS_Transition_For_Vehicle* rs_transition_1{ new RS_Transition_For_Vehicle() };
 						rs_transition_1->road_segment_index = start->connectedRoadSegment;
 						rs_transition_1->lane_index = start_road_type.lanes_backward.size() - 1;
 
-						RS_Transition_For_Driving* rs_transition_2 = new RS_Transition_For_Driving();
+						RS_Transition_For_Vehicle* rs_transition_2{ new RS_Transition_For_Vehicle() };
 						rs_transition_2->road_segment_index = start->connectedRoadSegment;
 						rs_transition_2->lane_index = start_road_type.lanes_forward.size() - 2;
 						rs_transition_2->lane_index += start_road_type.lanes_backward.size();
@@ -1508,16 +1509,16 @@ namespace  Can::Helper
 					{
 						if (end->snapped_t_index >= start->snapped_t_index)
 						{
-							RS_Transition_For_Driving* rs_transition_1 = new RS_Transition_For_Driving();
+							RS_Transition_For_Vehicle* rs_transition_1{ new RS_Transition_For_Vehicle() };
 							rs_transition_1->road_segment_index = start->connectedRoadSegment;
 							rs_transition_1->lane_index = start_road_type.lanes_backward.size() - 1;
 
-							RS_Transition_For_Driving* rs_transition_2 = new RS_Transition_For_Driving();
+							RS_Transition_For_Vehicle* rs_transition_2{ new RS_Transition_For_Vehicle() };
 							rs_transition_2->road_segment_index = start->connectedRoadSegment;
 							rs_transition_2->lane_index = 0;
 							rs_transition_2->lane_index += start_road_type.lanes_backward.size();
 
-							RS_Transition_For_Driving* rs_transition_3 = new RS_Transition_For_Driving();
+							RS_Transition_For_Vehicle* rs_transition_3{ new RS_Transition_For_Vehicle() };
 							rs_transition_3->road_segment_index = start->connectedRoadSegment;
 							rs_transition_3->lane_index = 1;
 
@@ -1527,7 +1528,7 @@ namespace  Can::Helper
 						}
 						else
 						{
-							RS_Transition_For_Driving* rs_transition = new RS_Transition_For_Driving();
+							RS_Transition_For_Vehicle* rs_transition{ new RS_Transition_For_Vehicle() };
 							rs_transition->road_segment_index = start->connectedRoadSegment;
 							rs_transition->lane_index = 1;
 
@@ -1619,7 +1620,7 @@ namespace  Can::Helper
 						u64 rs_index = connected_road_segment_index;
 						std::vector<Transition*> the_temp_path{};
 
-						RS_Transition_For_Driving* temp_rs_transition = new RS_Transition_For_Driving();
+						RS_Transition_For_Vehicle* temp_rs_transition{ new RS_Transition_For_Vehicle() };
 						the_temp_path.push_back(temp_rs_transition);
 						temp_rs_transition->road_segment_index = rs_index;
 
@@ -1634,7 +1635,7 @@ namespace  Can::Helper
 							assert(linq_it != fastest_road_to_these_nodes.end());
 							rs_index = linq_it->road_segment_index;
 
-							temp_rs_transition = new RS_Transition_For_Driving();
+							temp_rs_transition = new RS_Transition_For_Vehicle();
 							the_temp_path.push_back(temp_rs_transition);
 							temp_rs_transition->road_segment_index = rs_index;
 							temp_rs_transition->next_road_node_index = road_node_index;

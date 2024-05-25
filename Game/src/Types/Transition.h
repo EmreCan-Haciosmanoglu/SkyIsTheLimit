@@ -22,7 +22,7 @@ namespace Can
 		bool accending = false;
 	};
 
-	struct RS_Transition_For_Driving : Transition
+	struct RS_Transition_For_Vehicle : Transition
 	{
 		u64 road_segment_index = 0;
 		s64 next_road_node_index = -1;
