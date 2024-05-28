@@ -19,5 +19,5 @@ namespace Can
 		std::vector<Car*> m_Cars = {};
 	};
 	void remove_car(Car* c);
-	void update_car(Car* const c, Person* const vehicle_operator, TimeStep ts);
+	void update_car(Car* const c, TimeStep ts);
 }

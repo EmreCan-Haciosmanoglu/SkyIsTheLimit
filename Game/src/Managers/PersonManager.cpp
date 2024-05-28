@@ -62,11 +62,13 @@ namespace Can
 							{
 								building_to = p->work;
 								p->car_driving = work_car;
+								work_car->driver = p;
 							}
 							else
 							{
 								building_to = p->home;
 								p->car_driving = p->car;
+								p->car->driver = p;
 							}
 						}
 					}
@@ -87,7 +89,9 @@ namespace Can
 								p->path = Helper::get_path(building_from, building_to);
 						}
 
-						if (p->path.size() == 0) // if no path available
+						bool is_walking = p->status == PersonStatus::Walking || p->status == PersonStatus::WalkingDead;
+						bool is_driving = p->status == PersonStatus::Driving || p->status == PersonStatus::DrivingForWork;
+						if ((is_walking && p->path.size() == 0) || (is_driving && p->car_driving->path.size() == 0)) // if no path available
 						{
 							if (building_from == p->work) // if path to home is cut out / destroyed
 							{
@@ -293,11 +297,16 @@ namespace Can
 						p->road_segment = -1;
 
 						if (p->car_driving)
-							delete ((RS_Transition_For_Vehicle*)p->path[0]);
+						{
+							delete p->car_driving->path[0];
+							p->car_driving->path.pop_back();
+						}
 						else
-							delete ((RS_Transition_For_Walking*)p->path[0]);
+						{
+							delete p->path[0];
+							p->path.pop_back();
+						}
 
-						p->path.pop_back();
 
 						assert(remove_person_from(segment, p));
 
@@ -307,7 +316,7 @@ namespace Can
 					}
 					else if (p->heading_to_a_car)
 					{
-						RS_Transition_For_Vehicle* rs_transition = (RS_Transition_For_Vehicle*)p->path[0];
+						RS_Transition_For_Vehicle* rs_transition = p->car_driving->path[0];
 						RoadSegment& road_segment = road_segments[rs_transition->road_segment_index];
 						RoadType& road_segment_type = road_types[road_segment.type];
 						v3 target_position = rs_transition->points_stack[rs_transition->points_stack.size() - 1];
@@ -364,11 +373,11 @@ namespace Can
 						v3 dir2{};
 						if (rs_transition->from_start)
 						{
-							u64 next_index = std::min(rs_transition->at_path_array_index + 1, road_segment.curve_samples.size() - 1);
+							u64 next_index{ std::min(rs_transition->at_path_array_index + 1, road_segment.curve_samples.size() - 1) };
 							p2 = road_segment.curve_samples[next_index];
 							if (next_index < road_segment.curve_samples.size() - 1)
 							{
-								v3 p3 = road_segment.curve_samples[next_index + 1];
+								v3 p3{ road_segment.curve_samples[next_index + 1] };
 								dir2 = glm::normalize(p3 - p2);
 							}
 							else
@@ -379,11 +388,11 @@ namespace Can
 						}
 						else
 						{
-							u64 next_index = std::min(rs_transition->at_path_array_index - 1, road_segment.curve_samples.size() - 1);
+							u64 next_index{ std::min(rs_transition->at_path_array_index - 1, road_segment.curve_samples.size() - 1) };
 							p2 = road_segment.curve_samples[next_index];
 							if (next_index > 0)
 							{
-								v3 p3 = road_segment.curve_samples[next_index - 1];
+								v3 p3{ road_segment.curve_samples[next_index - 1] };
 								dir2 = glm::normalize(p3 - p2);
 							}
 							else
@@ -392,7 +401,7 @@ namespace Can
 							}
 							rs_transition->at_path_array_index = next_index;
 						}
-						v3 offset = glm::normalize(v3{ dir2.y,-dir2.x, 0.0f });
+						v3 offset{ glm::normalize(v3{ dir2.y,-dir2.x, 0.0f }) };
 						if (rs_transition->from_right)
 							offset *= road_segment_type.lanes_forward[road_segment_type.lanes_forward.size() - 1].distance_from_center;
 						else
@@ -404,8 +413,7 @@ namespace Can
 			}
 			else if (p->status == PersonStatus::Driving || (p->status == PersonStatus::DrivingForWork))
 			{
-				Car* car = p->car_driving;
-				update_car(car, p, ts);
+				update_car(p->car_driving, ts);
 			}
 			else if (p->status == PersonStatus::WalkingDead)
 			{

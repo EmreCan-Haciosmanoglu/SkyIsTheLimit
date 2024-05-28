@@ -16,10 +16,11 @@ namespace Can
 		bool heading_to_a_parking_spot{ false };
 		s64 road_segment{ -1 };
 
-		std::vector<struct Transition*> path{};
-		bool path_is_blocked = false;
+		std::vector<struct RS_Transition_For_Vehicle*> path{};
+		bool path_is_blocked{ false }; //@NoSerialize
 
-		class Person* owner = nullptr;
-		class Building* building = nullptr;
+		class Person* owner{ nullptr };
+		class Person* driver{ nullptr };
+		class Building* building{ nullptr };
 	};
 }
