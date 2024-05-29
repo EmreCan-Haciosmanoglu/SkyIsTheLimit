@@ -46,6 +46,7 @@ namespace Can
 				{
 					Building* building_from = p->home;
 					Building* building_to = p->work;
+
 					bool is_buildings_connected = true;
 					if (p->status == PersonStatus::AtWork)
 					{
@@ -67,11 +68,23 @@ namespace Can
 							else
 							{
 								building_to = p->home;
-								p->car_driving = p->car;
-								p->car->driver = p;
+								if (p->car)
+								{
+									p->car_driving = p->car;
+									p->car_driving->driver = p;
+								}
 							}
 						}
 					}
+					else
+					{
+						if (p->car)
+						{
+							p->car_driving = p->car;
+							p->car_driving->driver = p;
+						}
+					}
+
 					if (building_to)
 					{
 						p->path_end_building = building_to;
@@ -89,9 +102,7 @@ namespace Can
 								p->path = Helper::get_path(building_from, building_to);
 						}
 
-						bool is_walking = p->status == PersonStatus::Walking || p->status == PersonStatus::WalkingDead;
-						bool is_driving = p->status == PersonStatus::Driving || p->status == PersonStatus::DrivingForWork;
-						if ((is_walking && p->path.size() == 0) || (is_driving && p->car_driving->path.size() == 0)) // if no path available
+						if (p->path.size() == 0 && p->car_driving && p->car_driving->path.size() == 0) // if no path available
 						{
 							if (building_from == p->work) // if path to home is cut out / destroyed
 							{
@@ -293,22 +304,29 @@ namespace Can
 						p->time_left = Utility::Random::Float(1.0f, 5.0f);
 						p->object->enabled = false;
 						p->heading_to_a_building = false;
-						RoadSegment& segment = road_segments[p->road_segment];
 						p->road_segment = -1;
 
 						if (p->car_driving)
 						{
 							delete p->car_driving->path[0];
 							p->car_driving->path.pop_back();
+							RoadSegment& segment = road_segments[p->car_driving->road_segment];
+							auto res = remove_car_from(segment, p->car_driving);
+							assert(res);
 						}
 						else
 						{
 							delete p->path[0];
 							p->path.pop_back();
+							//// TODO: move here
+							RoadSegment& segment = road_segments[p->road_segment];
+							auto res = remove_person_from(segment, p);
+							assert(res);
 						}
 
 
-						assert(remove_person_from(segment, p));
+						//// TODO: if driving no person on road? look up!!
+						//assert(remove_person_from(segment, p));
 
 						auto it = std::find(people_on_the_road.begin(), people_on_the_road.end(), p);
 						assert(it != people_on_the_road.end());
@@ -326,10 +344,13 @@ namespace Can
 						else
 							p->status = PersonStatus::Driving;
 						p->position = p->car_driving->object->position;
-						set_target_and_car_direction(p, p->car_driving, target_position);
+						set_car_target_and_direction(p->car_driving, target_position);
 
 						p->heading_to_a_car = false;
 						p->object->enabled = false;
+
+						p->car_driving->road_segment = rs_transition->road_segment_index;
+						road_segment.vehicles.push_back(p->car_driving);
 					}
 					else
 					{
@@ -433,6 +454,7 @@ namespace Can
 		}
 		return nullptr;
 	}
+
 	void reset_person_back_to_building_from(Person* p)
 	{
 		GameScene* game = GameScene::ActiveGameScene;
@@ -644,12 +666,12 @@ namespace Can
 		delete p;
 	}
 
-	void set_target_and_car_direction(Person* p, Car* car, const v3& target)
+	void set_car_target_and_direction(Car* car, const v3& target)
 	{
-		p->target = target;
-		v2 direction = glm::normalize((v2)(p->target - p->position));
+		car->target = target;
+		v2 direction = glm::normalize((v2)(car->target - car->object->position));
 		f32 yaw = glm::acos(direction.x) * ((float)(direction.y > 0.0f) * 2.0f - 1.0f);
-		car->object->SetTransform(p->position, v3{ 0.0f, 0.0f, yaw + glm::radians(180.0f) });
+		car->object->SetTransform(car->object->position, v3{ 0.0f, 0.0f, yaw + glm::radians(180.0f) });
 	}
 	Car* retrive_work_vehicle(Building* work_building)
 	{

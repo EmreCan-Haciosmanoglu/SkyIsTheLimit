@@ -345,4 +345,14 @@ namespace Can
 		}
 		return false;
 	}
+	bool remove_car_from(RoadSegment& segment, Car* car)
+	{
+		auto it = std::find(segment.vehicles.begin(), segment.vehicles.end(), car);
+		if (it != segment.vehicles.end())
+		{
+			segment.vehicles.erase(it);
+			return true;
+		}
+		return false;
+	}
 }

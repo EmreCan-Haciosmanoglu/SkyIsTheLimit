@@ -358,8 +358,8 @@ namespace Can
 					road_segments[car->road_segment].vehicles.push_back(car);
 
 				u64 path_count;
-				car->path.reserve(path_count);
 				fread(&path_count, sizeof(u64), 1, read_file);
+				car->path.reserve(path_count);
 				for (u64 j = 0; j < path_count; j++)
 				{
 					auto td = new RS_Transition_For_Vehicle();

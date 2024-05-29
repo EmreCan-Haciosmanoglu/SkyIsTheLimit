@@ -140,7 +140,6 @@ namespace Can
 			{
 				auto driver = car_driven->driver;
 				car_driven->driver = nullptr;
-				driver->car_driving = nullptr;
 
 				auto building = driver->path_end_building;
 				car_driven->heading_to_a_parking_spot = false;
@@ -170,19 +169,20 @@ namespace Can
 				{
 					v3 target = transition->points_stack[points_count - 1];
 					transition->points_stack.pop_back();
-					set_target_and_car_direction(car_driven->driver, car_driven, target);
+					set_car_target_and_direction(car_driven, target);
 				}
 				else
 				{
 					if (car_driven->path.size() == 1)
 					{
-						// cache target car park position in car
-						//v3 car_park_pos = p->path_end_building->position +
-						//	(v3)(glm::rotate(m4(1.0f), p->path_end_building->object->rotation.z, v3{ 0.0f, 0.0f, 1.0f }) *
-						//		glm::rotate(m4(1.0f), p->path_end_building->object->rotation.y, v3{ 0.0f, 1.0f, 0.0f }) *
-						//		glm::rotate(m4(1.0f), p->path_end_building->object->rotation.x, v3{ 1.0f, 0.0f, 0.0f }) *
-						//		v4(p->path_end_building->car_park.offset, 1.0f));
-						set_target_and_car_direction(car_driven->driver, car_driven, car_driven->target_park_pos);
+						// TODO: cache target car park position in car
+						auto building = car_driven->driver->path_end_building;
+						v3 car_park_pos = building->position +
+							(v3)(glm::rotate(m4(1.0f), building->object->rotation.z, v3{ 0.0f, 0.0f, 1.0f }) *
+								glm::rotate(m4(1.0f), building->object->rotation.y, v3{ 0.0f, 1.0f, 0.0f }) *
+								glm::rotate(m4(1.0f), building->object->rotation.x, v3{ 1.0f, 0.0f, 0.0f }) *
+								v4(building->car_park.offset, 1.0f));
+						set_car_target_and_direction(car_driven, car_park_pos);
 						car_driven->heading_to_a_parking_spot = true;
 					}
 					else
@@ -193,6 +193,7 @@ namespace Can
 						delete transition;
 						transition = car_driven->path[0];
 
+						assert(car_driven->road_segment);
 						auto& vehicles_on_the_road = road_segments[car_driven->road_segment].vehicles;
 						auto it = std::find(vehicles_on_the_road.begin(), vehicles_on_the_road.end(), car_driven);
 						assert(it != vehicles_on_the_road.end());
@@ -203,7 +204,7 @@ namespace Can
 						next_road_segment.vehicles.push_back(car_driven);
 
 						v3 target{ transition->points_stack[transition->points_stack.size() - 1] };
-						set_target_and_car_direction(car_driven->driver, car_driven, target);
+						set_car_target_and_direction(car_driven, target);
 					}
 				}
 			}

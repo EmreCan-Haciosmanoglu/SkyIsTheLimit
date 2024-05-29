@@ -88,4 +88,5 @@ namespace Can
 	};
 
 	bool remove_person_from(RoadSegment& segment, Person* person);
+	bool remove_car_from(RoadSegment& segment, Car* car);
 }
