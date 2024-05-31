@@ -4,6 +4,7 @@
 #include "Types/RoadSegment.h"
 #include "Types/RoadNode.h"
 #include "Types/Transition.h"
+#include "Types/Person.h"
 #include "Building.h"
 #include "Can/Math.h"
 
@@ -46,6 +47,11 @@ namespace Can
 				{
 					Building* building_from = p->home;
 					Building* building_to = p->work;
+					if (p->car)
+					{
+						p->car_driving = p->car;
+						p->car_driving->driver = p;
+					}
 
 					bool is_buildings_connected = true;
 					if (p->status == PersonStatus::AtWork)
@@ -68,20 +74,7 @@ namespace Can
 							else
 							{
 								building_to = p->home;
-								if (p->car)
-								{
-									p->car_driving = p->car;
-									p->car_driving->driver = p;
-								}
 							}
-						}
-					}
-					else
-					{
-						if (p->car)
-						{
-							p->car_driving = p->car;
-							p->car_driving->driver = p;
 						}
 					}
 
@@ -306,28 +299,6 @@ namespace Can
 						p->heading_to_a_building = false;
 						p->road_segment = -1;
 
-						if (p->car_driving)
-						{
-							delete p->car_driving->path[0];
-							p->car_driving->path.pop_back();
-							RoadSegment& segment = road_segments[p->car_driving->road_segment];
-							auto res = remove_car_from(segment, p->car_driving);
-							assert(res);
-						}
-						else
-						{
-							delete p->path[0];
-							p->path.pop_back();
-							//// TODO: move here
-							RoadSegment& segment = road_segments[p->road_segment];
-							auto res = remove_person_from(segment, p);
-							assert(res);
-						}
-
-
-						//// TODO: if driving no person on road? look up!!
-						//assert(remove_person_from(segment, p));
-
 						auto it = std::find(people_on_the_road.begin(), people_on_the_road.end(), p);
 						assert(it != people_on_the_road.end());
 						people_on_the_road.erase(it);
@@ -372,7 +343,14 @@ namespace Can
 							if (p->path.size() == 1)
 							{
 								p->target = p->path_end_building->position;
-								p->heading_to_a_building = true;
+								p->heading_to_a_building = true; 
+
+								RoadSegment& segment = road_segments[p->road_segment];
+								auto res = remove_person_from(segment, p);
+								assert(res);
+
+								delete p->path[0];
+								p->path.pop_back();
 							}
 							else
 							{
@@ -380,7 +358,8 @@ namespace Can
 
 								RoadNode& road_node = road_nodes[p->road_node];
 								road_node.people.push_back(p);
-								assert(remove_person_from(road_segment, p));
+								auto res = remove_person_from(road_segment, p);
+								assert(res);
 								p->road_segment = -1;
 
 								auto path = p->path[0];

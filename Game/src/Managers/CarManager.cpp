@@ -51,85 +51,6 @@ namespace Can
 
 		f32 movement_length_in_next_frame{ ts * speed_in_meter_per_second };
 
-		u64 path_count{ car_driven->path.size() };
-		assert(path_count > 0);
-
-		RS_Transition_For_Vehicle* transition{ car_driven->path[0] };
-		RoadSegment& current_road_segment{ road_segments[transition->road_segment_index] };
-		const RoadType& current_road_type{ road_types[current_road_segment.type] };
-
-		if (car_driven->heading_to_a_parking_spot == false)
-		{
-			bool don_t_ingore_this_car{ true };
-			v3 car_s_position_in_the_next_frame{ 0.0f };
-			f32 car_s_rotation_in_the_next_frame{ car_driven->object->rotation.z };
-			if (movement_length_in_next_frame < journey_left)
-			{
-				car_s_position_in_the_next_frame = car_driven->object->position + journey_direction * movement_length_in_next_frame;
-			}
-			else
-			{
-				car_s_position_in_the_next_frame = car_driven->target;
-				u64 points_count{ transition->points_stack.size() };
-				v3 next_target{ 0.0f };
-				if (points_count > 0)
-				{
-					next_target = transition->points_stack.back();
-				}
-				else
-				{
-					if (path_count > 1)
-					{
-						auto next_transition{ car_driven->path[1] };
-						next_target = next_transition->points_stack.back();
-					}
-					else
-					{
-						don_t_ingore_this_car = false;
-					}
-				}
-				v2 direction{ glm::normalize((v2)(next_target - car_s_position_in_the_next_frame)) };
-				car_s_rotation_in_the_next_frame = glm::acos(direction.x) * ((f32)(direction.y > 0.0f) * 2.0f - 1.0f) + glm::radians(180.0f);
-			}
-
-			if (don_t_ingore_this_car)
-			{
-				auto& vehicles_on_the_road{ current_road_segment.vehicles };
-				u64 count{ vehicles_on_the_road.size() };
-				car_driven->path_is_blocked = false;
-				for (u64 in{ 0 }; in < count; ++in)
-				{
-					Car* car_on_the_road{ vehicles_on_the_road[in] };
-
-					if (car_on_the_road == car_driven) continue;
-
-					RS_Transition_For_Vehicle* other_transition{ car_on_the_road->path[0] };
-					if (other_transition->lane_index != transition->lane_index) continue;
-					if (other_transition->points_stack.size() > transition->points_stack.size()) continue;
-
-
-					v3 other_journey_left_vector{ car_on_the_road->target - car_on_the_road->object->position };
-					f32 other_journey_left{ glm::length(other_journey_left_vector) };
-					if (other_transition->points_stack.size() == transition->points_stack.size())
-					{
-						if (other_journey_left > journey_left) continue;
-					}
-
-					v3 other_car_s_position_in_the_next_frame{ 0.0f };
-					f32 other_car_s_rotation_in_the_next_frame{ 0.0f };
-					if (car_on_the_road->path_is_blocked)
-					{
-						other_car_s_position_in_the_next_frame = car_on_the_road->object->position;
-						other_car_s_rotation_in_the_next_frame = car_on_the_road->object->rotation.z;
-					}
-					else
-					{
-						// TODO: ???
-					}
-				}
-			}
-		}
-
 		if (movement_length_in_next_frame < journey_left)
 		{
 			car_driven->object->SetTransform(car_driven->object->position + journey_direction * movement_length_in_next_frame);
@@ -140,6 +61,7 @@ namespace Can
 			{
 				auto driver = car_driven->driver;
 				car_driven->driver = nullptr;
+				driver->car_driving = nullptr;
 
 				auto building = driver->path_end_building;
 				car_driven->heading_to_a_parking_spot = false;
@@ -162,6 +84,86 @@ namespace Can
 			}
 			else
 			{
+				u64 path_count{ car_driven->path.size() };
+				assert(path_count > 0);
+
+				RS_Transition_For_Vehicle* transition{ car_driven->path[0] };
+
+				RoadSegment& current_road_segment{ road_segments[transition->road_segment_index] };
+				const RoadType& current_road_type{ road_types[current_road_segment.type] };
+
+				if (car_driven->heading_to_a_parking_spot == false)
+				{
+					bool don_t_ingore_this_car{ true };
+					v3 car_s_position_in_the_next_frame{ 0.0f };
+					f32 car_s_rotation_in_the_next_frame{ car_driven->object->rotation.z };
+					if (movement_length_in_next_frame < journey_left)
+					{
+						car_s_position_in_the_next_frame = car_driven->object->position + journey_direction * movement_length_in_next_frame;
+					}
+					else
+					{
+						car_s_position_in_the_next_frame = car_driven->target;
+						u64 points_count{ transition->points_stack.size() };
+						v3 next_target{ 0.0f };
+						if (points_count > 0)
+						{
+							next_target = transition->points_stack.back();
+						}
+						else
+						{
+							if (path_count > 1)
+							{
+								auto next_transition{ car_driven->path[1] };
+								next_target = next_transition->points_stack.back();
+							}
+							else
+							{
+								don_t_ingore_this_car = false;
+							}
+						}
+						v2 direction{ glm::normalize((v2)(next_target - car_s_position_in_the_next_frame)) };
+						car_s_rotation_in_the_next_frame = glm::acos(direction.x) * ((f32)(direction.y > 0.0f) * 2.0f - 1.0f) + glm::radians(180.0f);
+					}
+
+					if (don_t_ingore_this_car)
+					{
+						auto& vehicles_on_the_road{ current_road_segment.vehicles };
+						u64 count{ vehicles_on_the_road.size() };
+						car_driven->path_is_blocked = false;
+						for (u64 in{ 0 }; in < count; ++in)
+						{
+							Car* car_on_the_road{ vehicles_on_the_road[in] };
+
+							if (car_on_the_road == car_driven) continue;
+
+							RS_Transition_For_Vehicle* other_transition{ car_on_the_road->path[0] };
+							if (other_transition->lane_index != transition->lane_index) continue;
+							if (other_transition->points_stack.size() > transition->points_stack.size()) continue;
+
+
+							v3 other_journey_left_vector{ car_on_the_road->target - car_on_the_road->object->position };
+							f32 other_journey_left{ glm::length(other_journey_left_vector) };
+							if (other_transition->points_stack.size() == transition->points_stack.size())
+							{
+								if (other_journey_left > journey_left) continue;
+							}
+
+							v3 other_car_s_position_in_the_next_frame{ 0.0f };
+							f32 other_car_s_rotation_in_the_next_frame{ 0.0f };
+							if (car_on_the_road->path_is_blocked)
+							{
+								other_car_s_position_in_the_next_frame = car_on_the_road->object->position;
+								other_car_s_rotation_in_the_next_frame = car_on_the_road->object->rotation.z;
+							}
+							else
+							{
+								// TODO: ???
+							}
+						}
+					}
+				}
+
 				car_driven->object->SetTransform(car_driven->target);
 				//p->position = p->target; // all people in the car
 				u64 points_count = transition->points_stack.size();
@@ -184,6 +186,13 @@ namespace Can
 								v4(building->car_park.offset, 1.0f));
 						set_car_target_and_direction(car_driven, car_park_pos);
 						car_driven->heading_to_a_parking_spot = true;
+
+						delete car_driven->path[0];
+						car_driven->path.pop_back();
+						car_driven->road_segment = -1;
+
+						auto res = remove_car_from(current_road_segment, car_driven);
+						assert(res);
 					}
 					else
 					{/*Next Path*/
@@ -193,13 +202,10 @@ namespace Can
 						delete transition;
 						transition = car_driven->path[0];
 
-						assert(car_driven->road_segment);
-						auto& vehicles_on_the_road = road_segments[car_driven->road_segment].vehicles;
-						auto it = std::find(vehicles_on_the_road.begin(), vehicles_on_the_road.end(), car_driven);
-						assert(it != vehicles_on_the_road.end());
-						vehicles_on_the_road.erase(it);
+						auto res = remove_car_from(current_road_segment, car_driven);
+						assert(res);
 
-						RoadSegment& next_road_segment = road_segments[transition->road_segment_index];
+						RoadSegment& next_road_segment{ road_segments[transition->road_segment_index] };
 						car_driven->road_segment = transition->road_segment_index;
 						next_road_segment.vehicles.push_back(car_driven);
 
