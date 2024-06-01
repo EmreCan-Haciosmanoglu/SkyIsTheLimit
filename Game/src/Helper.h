@@ -88,7 +88,7 @@ namespace Can::Helper
 			}
 			else
 				assert(false); // Why are you here
-			
+
 			roadSegmentR1 = std::fmod(roadSegmentR1 + glm::radians(360.0f), glm::radians(360.0f));
 			roadSegmentR2 = std::fmod(roadSegmentR2 + glm::radians(360.0f), glm::radians(360.0f));
 			return (roadSegmentR1 < roadSegmentR2);
@@ -103,6 +103,19 @@ namespace Can::Helper
 		inline bool operator() (Dijkstra_Node path1, Dijkstra_Node path2)
 		{
 			return path1.distance > path2.distance;
+		}
+	};
+	struct sort_by_left_journey
+	{
+		inline bool operator() (const Car* const c1, const Car* const c2)
+		{
+			u64 size1 = c1->path[0]->points_stack.size();
+			u64 size2 = c2->path[0]->points_stack.size();
+
+			if (size1 == size2)
+				return c1->path[0]->left_journey > c2->path[0]->left_journey;
+			else
+				return size1 > size2;
 		}
 	};
 }
