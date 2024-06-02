@@ -183,7 +183,7 @@ namespace Can
 					v2 bM = (v2)building->object->prefab->boundingBoxM;
 					v2 bP = (v2)building->position;
 
-					v2 mtv = Helper::CheckRotatedRectangleCollision(
+					v2 mtv = Helper::check_rotated_rectangle_collision(
 						bL,
 						bM,
 						building->object->rotation.z,
@@ -271,7 +271,7 @@ namespace Can
 				v2 treeL = (v2)tree->object->prefab->boundingBoxL;
 				v2 treeM = (v2)tree->object->prefab->boundingBoxM;
 				v2 treeP = (v2)tree->object->position;
-				v2 mtv = Helper::CheckRotatedRectangleCollision(
+				v2 mtv = Helper::check_rotated_rectangle_collision(
 					treeL,
 					treeM,
 					tree->object->rotation.z,
@@ -299,7 +299,7 @@ namespace Can
 				v2 bL = (v2)building->object->prefab->boundingBoxL;
 				v2 bM = (v2)building->object->prefab->boundingBoxM;
 				v2 bP = (v2)building->position;
-				v2 mtv = Helper::CheckRotatedRectangleCollision(
+				v2 mtv = Helper::check_rotated_rectangle_collision(
 					bL,
 					bM,
 					building->object->rotation.z,
@@ -504,7 +504,7 @@ namespace Can
 				for (size_t i = 0; i < trees.size(); i++)
 				{
 					Object* tree = trees[i]->object;
-					v2 mtv = Helper::CheckRotatedRectangleCollision(
+					v2 mtv = Helper::check_rotated_rectangle_collision(
 						buildingL,
 						buildingM,
 						new_building->object->rotation.z,

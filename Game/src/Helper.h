@@ -19,15 +19,9 @@ namespace Can::Helper
 
 	bool CheckBoundingBoxHit(const v3& rayStartPoint, const v3& ray, const v3& least, const v3& most);
 
-	v2 CheckRotatedRectangleCollision(
-		const v2& r1l,
-		const v2& r1m,
-		f32 rot1,
-		const v2& pos1,
-		const v2& r2l,
-		const v2& r2m,
-		f32 rot2,
-		const v2& pos2
+	v2 check_rotated_rectangle_collision(
+		const v2& r1l, const v2& r1m, f32 rot1, const v2& pos1,
+		const v2& r2l, const v2& r2m, f32 rot2, const v2& pos2
 	);
 
 	v3 GetRayHitPointOnTerrain(void* s, const v3& cameraPosition, const v3& cameraDirection);
@@ -36,7 +30,6 @@ namespace Can::Helper
 
 	bool RayTriangleIntersection(const v3& camPos, const v3& ray, const v3& A, const v3& B, const v3& C, const v3& normal, v3& intersection);
 
-	v2 RotateAPointAroundAPoint(const v2& p1, f32 angleInRadians, const v2& p2 = { 0.0f, 0.0f });
 
 	void UpdateTheTerrain(const std::vector < std::array<v3, 3>>& polygon, bool reset);
 	void UpdateTheTerrain(RoadSegment* rs, bool reset);

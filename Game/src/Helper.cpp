@@ -41,47 +41,47 @@ namespace  Can::Helper
 		};
 	}
 
-	v2 CheckRotatedRectangleCollision(const v2& r1l, const v2& r1m, f32 rot1, const v2& pos1, const v2& r2l, const v2& r2m, f32 rot2, const v2& pos2)
+	v2 check_rotated_rectangle_collision(const v2& r1l, const v2& r1m, f32 rot1, const v2& pos1, const v2& r2l, const v2& r2m, f32 rot2, const v2& pos2)
 	{
-		std::array<v2, 4> rotated_rect1 = {
-			RotateAPointAroundAPoint(v2{ r1l.x, r1l.y }, -rot1) + pos1,
-			RotateAPointAroundAPoint(v2{ r1l.x, r1m.y }, -rot1) + pos1,
-			RotateAPointAroundAPoint(v2{ r1m.x, r1m.y }, -rot1) + pos1,
-			RotateAPointAroundAPoint(v2{ r1m.x, r1l.y }, -rot1) + pos1
+		const std::array<v2, 4> rotated_rect1{
+			Math::rotate_point(r1l, rot1) + pos1,
+			Math::rotate_point(v2{ r1l.x, r1m.y }, rot1) + pos1,
+			Math::rotate_point(r1m, rot1) + pos1,
+			Math::rotate_point(v2{ r1m.x, r1l.y }, rot1) + pos1
 		};
-		std::array<v2, 4> rotated_rect2 = {
-			RotateAPointAroundAPoint(v2{ r2l.x, r2l.y }, -rot2) + pos2,
-			RotateAPointAroundAPoint(v2{ r2l.x, r2m.y }, -rot2) + pos2,
-			RotateAPointAroundAPoint(v2{ r2m.x, r2m.y }, -rot2) + pos2,
-			RotateAPointAroundAPoint(v2{ r2m.x, r2l.y }, -rot2) + pos2
+		const std::array<v2, 4> rotated_rect2{
+			Math::rotate_point(r2l, rot2) + pos2,
+			Math::rotate_point(v2{ r2l.x, r2m.y }, rot2) + pos2,
+			Math::rotate_point(r2m, rot2) + pos2,
+			Math::rotate_point(v2{ r2m.x, r2l.y }, rot2) + pos2
 		};
 
-		std::array<v2, 4> axis = getAxis(rotated_rect1, rotated_rect2);
-		std::array<v2, 4> mtvs;
-		for (u64 i = 0; i < 4; i++)
+		const std::array<v2, 4> axis{ getAxis(rotated_rect1, rotated_rect2) };
+		std::array<v2, 4> mtvs{};
+		for (u64 i = 0; i < 4; ++i)
 		{
-			f32 scalers1[] = {
+			const f32 scalers1[]{
 				glm::dot(axis[i], rotated_rect1[0]),
 				glm::dot(axis[i], rotated_rect1[1]),
 				glm::dot(axis[i], rotated_rect1[2]),
 				glm::dot(axis[i], rotated_rect1[3])
 			};
-			f32 scalers2[] = {
+			const f32 scalers2[]{
 				glm::dot(axis[i], rotated_rect2[0]),
 				glm::dot(axis[i], rotated_rect2[1]),
 				glm::dot(axis[i], rotated_rect2[2]),
 				glm::dot(axis[i], rotated_rect2[3])
 			};
 
-			f32 s1max = *(std::max_element(scalers1, scalers1 + 4));
-			f32 s1min = *(std::min_element(scalers1, scalers1 + 4));
+			const f32 s1max{ *(std::max_element(scalers1, scalers1 + 4)) };
+			const f32 s1min{ *(std::min_element(scalers1, scalers1 + 4)) };
 
-			f32 s2max = *(std::max_element(scalers2, scalers2 + 4));
-			f32 s2min = *(std::min_element(scalers2, scalers2 + 4));
+			const f32 s2max{ *(std::max_element(scalers2, scalers2 + 4)) };
+			const f32 s2min{ *(std::min_element(scalers2, scalers2 + 4)) };
 
 			if (s1min >= s2max || s2min >= s1max)
-				return v2(0.0f);
-			f32 overlap = s1max > s2max ? s1min - s2max : s1max - s2min;
+				return v2{ 0.0f };
+			f32 overlap{ s1max > s2max ? s1min - s2max : s1max - s2min };
 
 			mtvs[i] = axis[i] * overlap;
 		}
@@ -92,8 +92,13 @@ namespace  Can::Helper
 				return (glm::length(v1) < glm::length(v2));
 			}
 		};
-		std::sort(mtvs.begin(), mtvs.end(), less_than_key());
-		return mtvs[0];
+		return *std::min_element(
+			mtvs.begin(),
+			mtvs.end(),
+			[](const v2& a1, const v2& a2) {
+				return glm::length(a1) < glm::length(a2);
+			}
+		);
 	}
 
 	v3 GetRayHitPointOnTerrain(void* s, const v3& cameraPosition, const v3& cameraDirection)
@@ -1905,13 +1910,5 @@ namespace  Can::Helper
 			1.0f * TEMP };
 
 		return terrain;
-	}
-
-	v2 RotateAPointAroundAPoint(const v2& p1, f32 angleInRadians, const v2& p2)
-	{
-		return v2{
-			glm::cos(angleInRadians) * (p1.x - p2.x) - glm::sin(angleInRadians) * (p1.y - p2.y) + p2.x,
-			glm::sin(angleInRadians) * (p1.x - p2.x) + glm::cos(angleInRadians) * (p1.y - p2.y) + p2.y
-		};
 	}
 }

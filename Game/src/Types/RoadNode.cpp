@@ -336,7 +336,7 @@ namespace Can
 					point.x += l;
 				}
 
-				v2 rotatedPoint = Math::RotatePoint(point, angle);
+				v2 rotatedPoint = Math::rotate_point(point, angle);
 
 				TOVertices[offset + j].Position.x = rotatedPoint.x;
 				TOVertices[offset + j].Position.y = rotatedPoint.y;

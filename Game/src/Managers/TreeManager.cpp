@@ -185,7 +185,7 @@ namespace Can
 				v2 buildingL = (v2)building->object->prefab->boundingBoxL;
 				v2 buildingM = (v2)building->object->prefab->boundingBoxM;
 				v2 buildingP = (v2)building->object->position;
-				v2 mtv = Helper::CheckRotatedRectangleCollision(
+				v2 mtv = Helper::check_rotated_rectangle_collision(
 					treeL,
 					treeM,
 					0.0f,
