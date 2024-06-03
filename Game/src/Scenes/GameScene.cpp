@@ -93,6 +93,7 @@ namespace Can
 		for (uint8_t i = 0; i < (uint8_t)e_SpeedMode; i++)
 		{
 			m_PersonManager.Update(ts);
+			update_cars(ts);
 		}
 
 		Renderer3D::BeginScene(camera_controller.camera);

@@ -85,13 +85,6 @@ namespace  Can::Helper
 
 			mtvs[i] = axis[i] * overlap;
 		}
-		struct less_than_key
-		{
-			inline bool operator() (const v2& v1, const v2& v2)
-			{
-				return (glm::length(v1) < glm::length(v2));
-			}
-		};
 		return *std::min_element(
 			mtvs.begin(),
 			mtvs.end(),

@@ -28,19 +28,11 @@ namespace Can
 		for (size_t person_index = 0; person_index < m_People.size(); person_index++)
 		{
 			Person* p = m_People[person_index];
-			if (p->status == PersonStatus::Driving)
-			{
-				assert(p->car_driving);
-				p->car_driving->path_is_blocked = false;
-			}
-		}
-		for (size_t person_index = 0; person_index < m_People.size(); person_index++)
-		{
-			Person* p = m_People[person_index];
 
-			// TODO: Refactor this into switch case or state machine???
-			if ((p->status == PersonStatus::AtHome) ||
-				(p->status == PersonStatus::AtWork /* if job has car go random house and come back to finish the job*/))
+			switch (p->status)
+			{
+			case PersonStatus::AtHome:
+			case PersonStatus::AtWork:
 			{
 				p->time_left -= ts;
 				if (p->time_left <= 0.0f)
@@ -107,6 +99,7 @@ namespace Can
 							is_buildings_connected = false;
 							p->path = Helper::get_path(building_from, 5);
 							p->path_end_building = building_from;
+							p->car_driving = nullptr;
 						}
 					}
 					else // just walk around then come back to home
@@ -123,9 +116,6 @@ namespace Can
 					p->object->enabled = true;
 					p->heading_to_a_building = false;
 					p->heading_to_a_car = false;
-					p->road_segment = building_from->connectedRoadSegment;
-					RoadSegment& road_segment = road_segments[p->road_segment];
-					road_segment.people.push_back(p);
 					p->status = PersonStatus::Walking;
 					people_on_the_road.push_back(p);
 
@@ -136,6 +126,10 @@ namespace Can
 					}
 					else
 					{
+						p->road_segment = building_from->connectedRoadSegment;
+						RoadSegment& road_segment = road_segments[p->road_segment];
+						road_segment.people.push_back(p);
+
 						// TODO: Refactor this scope into a function
 						RS_Transition_For_Walking* rs_transition = (RS_Transition_For_Walking*)p->path[0];
 						RoadType& road_segment_type = road_types[road_segment.type];
@@ -159,8 +153,9 @@ namespace Can
 						set_person_target(p, offsetted + sidewalf_position_offset);
 					}
 				}
+				break;
 			}
-			else if (p->status == PersonStatus::Walking)
+			case PersonStatus::Walking:
 			{
 				v3 left = p->target - p->position;
 				f32 left_length = glm::length(left);
@@ -343,7 +338,7 @@ namespace Can
 							if (p->path.size() == 1)
 							{
 								p->target = p->path_end_building->position;
-								p->heading_to_a_building = true; 
+								p->heading_to_a_building = true;
 
 								RoadSegment& segment = road_segments[p->road_segment];
 								auto res = remove_person_from(segment, p);
@@ -410,14 +405,18 @@ namespace Can
 						set_person_target(p, p2 + offset);
 					}
 				}
+				break;
 			}
-			else if (p->status == PersonStatus::Driving || (p->status == PersonStatus::DrivingForWork))
-			{
-				update_car(p->car_driving, ts);
-			}
-			else if (p->status == PersonStatus::WalkingDead)
-			{
+			case PersonStatus::Driving:
+			case PersonStatus::DrivingForWork:
+				// Handled in CarManager
+				break;
+			case PersonStatus::WalkingDead:
 				//  slumpy A*
+				break;
+			default:
+				assert(false);
+				break;
 			}
 		}
 	}

@@ -28,5 +28,6 @@ namespace Can
 		s64 next_road_node_index = -1;
 		std::vector<v3> points_stack{};
 		u32 lane_index = 0;
+		f32 left_journey = 0.0f;
 	};
 }

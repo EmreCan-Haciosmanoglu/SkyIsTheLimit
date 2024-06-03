@@ -106,9 +106,9 @@ namespace Can::Helper
 			u64 size2 = c2->path[0]->points_stack.size();
 
 			if (size1 == size2)
-				return c1->path[0]->left_journey > c2->path[0]->left_journey;
+				return c1->path[0]->left_journey < c2->path[0]->left_journey;
 			else
-				return size1 > size2;
+				return size1 < size2;
 		}
 	};
 }

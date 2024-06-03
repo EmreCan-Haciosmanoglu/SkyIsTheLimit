@@ -16,8 +16,10 @@ namespace Can
 		bool heading_to_a_parking_spot{ false };
 		s64 road_segment{ -1 };
 
+		float t = 1.0f;
+		std::array<glm::vec3, 3> driftpoints{};
+
 		std::vector<struct RS_Transition_For_Vehicle*> path{};
-		bool path_is_blocked{ false }; //@NoSerialize
 
 		class Person* owner{ nullptr };
 		class Person* driver{ nullptr };
