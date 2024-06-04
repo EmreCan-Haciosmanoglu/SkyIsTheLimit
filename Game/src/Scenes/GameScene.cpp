@@ -392,7 +392,6 @@ namespace Can
 		}
 		/*PersonManager*/ {
 			auto& people = m_PersonManager.m_People;
-			auto& people_on_the_road = m_PersonManager.people_on_the_road;
 			u64 people_count;
 			fread(&people_count, sizeof(u64), 1, read_file);
 			people.reserve(people_count);
@@ -405,7 +404,7 @@ namespace Can
 				u64 middle_name_char_count;
 				u64 last_name_char_count;
 				u64 home_index, work_index, car_index, car_driving_index;
-				bool on_the_road;
+
 				Person* person = new Person();
 				fread(&type, sizeof(u64), 1, read_file);
 				person->object = new Object(MainApplication->people[type]);
@@ -455,10 +454,6 @@ namespace Can
 						fread(&rst->from_right, sizeof(bool), 1, read_file);
 						person->path.push_back(rst);
 					}
-				}
-				else if (person->heading_to_a_car || person->status == PersonStatus::Driving || person->status == PersonStatus::DrivingForWork)
-				{
-
 				}
 				fread(&path_end_building_index, sizeof(s64), 1, read_file);
 				if (path_end_building_index != -1)
@@ -514,11 +509,6 @@ namespace Can
 					cars[car_index]->driver = person;
 				}
 				people.push_back(person);
-
-				//@Cleanup: Put this one in better place
-				fread(&on_the_road, sizeof(bool), 1, read_file);
-				if (on_the_road)
-					people_on_the_road.push_back(person);
 			}
 		}
 		/*CameraController*/ {
@@ -672,7 +662,6 @@ namespace Can
 		}
 		/*PersonManager*/ {
 			auto& people = m_PersonManager.m_People;
-			auto& people_on_the_road = m_PersonManager.people_on_the_road;
 			u64 people_count = people.size();
 			fwrite(&people_count, sizeof(u64), 1, save_file);
 			for (u64 i = 0; i < people_count; i++)
@@ -771,11 +760,6 @@ namespace Can
 				fwrite(&work_index, sizeof(s64), 1, save_file);
 				fwrite(&car_index, sizeof(s64), 1, save_file);
 				fwrite(&work_car_index, sizeof(s64), 1, save_file);
-
-				//@Cleanup: Put this one in better place
-				auto on_the_road_it = std::find(people_on_the_road.begin(), people_on_the_road.end(), p);
-				bool on_the_road = on_the_road_it != people_on_the_road.end();
-				fwrite(&on_the_road, sizeof(bool), 1, save_file);
 			}
 		}
 		/*CameraController*/ {

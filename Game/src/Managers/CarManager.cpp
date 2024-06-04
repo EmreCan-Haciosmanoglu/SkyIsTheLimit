@@ -58,6 +58,17 @@ namespace Can
 	CarManager::CarManager(GameScene* scene)
 		: m_Scene(scene) {}
 
+	std::vector<Car*> CarManager::get_cars_on_the_road()
+	{
+		std::vector<Car*> result{};
+
+		for (Car* c : m_Cars)
+			if (c->driver)
+				result.push_back(c);
+		
+		return result;
+	}
+
 	void remove_car(Car* car)
 	{
 		auto& cars = GameScene::ActiveGameScene->m_CarManager.m_Cars;

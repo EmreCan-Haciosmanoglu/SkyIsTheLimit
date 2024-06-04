@@ -117,7 +117,6 @@ namespace Can
 					p->heading_to_a_building = false;
 					p->heading_to_a_car = false;
 					p->status = PersonStatus::Walking;
-					people_on_the_road.push_back(p);
 
 					if (p->car_driving)
 					{
@@ -293,10 +292,6 @@ namespace Can
 						p->object->enabled = false;
 						p->heading_to_a_building = false;
 						p->road_segment = -1;
-
-						auto it = std::find(people_on_the_road.begin(), people_on_the_road.end(), p);
-						assert(it != people_on_the_road.end());
-						people_on_the_road.erase(it);
 					}
 					else if (p->heading_to_a_car)
 					{
@@ -432,11 +427,36 @@ namespace Can
 		}
 		return nullptr;
 	}
+	std::vector<Person*> PersonManager::get_people_on_the_road()
+	{
+		std::vector<Person*> result{};
+		for (Person* p : m_People)
+		{
+			switch (p->status)
+			{
+			case PersonStatus::AtHome:
+			case PersonStatus::AtWork:
+				// Do nothing
+				break;
+			case PersonStatus::Walking:
+			case PersonStatus::WalkingDead:
+			case PersonStatus::Driving:
+			case PersonStatus::DrivingForWork:
+			{
+				result.push_back(p);
+				break;
+			}
+			default:
+				assert(false);
+				break;
+			}
+		}
+		return result;
+	}
 
 	void reset_person_back_to_building_from(Person* p)
 	{
 		GameScene* game = GameScene::ActiveGameScene;
-		auto& people_on_the_road = game->m_PersonManager.people_on_the_road;
 		auto& road_segments = game->m_RoadManager.road_segments;
 		auto& road_nodes = game->m_RoadManager.road_nodes;
 
@@ -505,16 +525,73 @@ namespace Can
 		p->from_right = false;
 		p->heading_to_a_building = false;
 		p->heading_to_a_car = false;
+		p->car_driving = nullptr;
+	}
+	void reset_car_back_to_building_from(Car* c)
+	{
+		GameScene* game{ GameScene::ActiveGameScene };
+		auto& road_segments{ game->m_RoadManager.road_segments };
 
-		auto it = std::find(people_on_the_road.begin(), people_on_the_road.end(), p);
-		assert(it != people_on_the_road.end());
-		people_on_the_road.erase(it);
+		if (c->road_segment != -1)
+		{
+			auto& cars_on_the_road_segment{ road_segments[c->road_segment].vehicles };
+			auto it{ std::find(cars_on_the_road_segment.begin(), cars_on_the_road_segment.end(), c) };
+			assert(it != cars_on_the_road_segment.end());
+			cars_on_the_road_segment.erase(it);
+			c->road_segment = -1;
+		}
+		Building* building_from{ c->driver->path_start_building };
+		v3 car_park_pos{ building_from->position +
+			(v3)(glm::rotate(m4(1.0f), building_from->object->rotation.z, v3{ 0.0f, 0.0f, 1.0f }) *
+				glm::rotate(m4(1.0f), building_from->object->rotation.y, v3{ 0.0f, 1.0f, 0.0f }) *
+				glm::rotate(m4(1.0f), building_from->object->rotation.x, v3{ 1.0f, 0.0f, 0.0f }) *
+				v4(building_from->car_park.offset, 1.0f)) };
+		c->object->SetTransform(
+			car_park_pos,
+			glm::rotateZ(
+				building_from->object->rotation,
+				glm::radians(building_from->car_park.rotation_in_degrees)
+			)
+		);
+		while (c->path.size())
+		{
+			u64 size{ c->path.size() };
+			delete c->path[size - 1];
+			c->path.pop_back();
+		}
+		c->t = 1.0f;
 
+		Person* p = c->driver;
+		c->driver = nullptr;
+
+		p->position = p->path_start_building->position;
+		p->object->SetTransform(p->position);
+		p->object->enabled = false;
+		if (p->path_start_building == p->home)
+		{
+			p->status = PersonStatus::AtHome;
+			p->time_left = Utility::Random::Float(1.0f, 2.0f);	// home values
+		}
+		else if (p->path_start_building == p->work)
+		{
+			p->status = PersonStatus::AtWork;
+			p->time_left = Utility::Random::Float(1.0f, 2.0f);	// work values
+		}
+		else
+		{
+			assert(false); // at some other building (for the future)
+		}
+		p->path_end_building = nullptr;
+		p->path_start_building = nullptr;
+
+		p->from_right = false;
+		p->heading_to_a_building = false;
+		p->heading_to_a_car = false;
+		p->car_driving = nullptr;
 	}
 	void reset_person_back_to_home(Person* p)
 	{
 		GameScene* game = GameScene::ActiveGameScene;
-		auto& people_on_the_road = game->m_PersonManager.people_on_the_road;
 		auto& road_segments = game->m_RoadManager.road_segments;
 		auto& road_nodes = game->m_RoadManager.road_nodes;
 
@@ -571,17 +648,13 @@ namespace Can
 		p->from_right = false;
 		p->heading_to_a_building = false;
 		p->heading_to_a_car = false;
-
-		auto it = std::find(people_on_the_road.begin(), people_on_the_road.end(), p);
-		assert(it != people_on_the_road.end());
-		people_on_the_road.erase(it);
+		p->car_driving = nullptr;
 
 	}
 	void remove_person(Person* p)
 	{
 		GameScene* game = GameScene::ActiveGameScene;
 		auto& people = game->m_PersonManager.m_People;
-		auto& people_on_the_road = game->m_PersonManager.people_on_the_road;
 		auto& road_segments = game->m_RoadManager.road_segments;
 		auto& road_nodes = game->m_RoadManager.road_nodes;
 
@@ -604,9 +677,6 @@ namespace Can
 		u64 path_count = p->path.size();
 		if (path_count > 0)
 		{
-			auto it = std::find(people_on_the_road.begin(), people_on_the_road.end(), p);
-			assert(it != people_on_the_road.end());
-			people_on_the_road.erase(it);
 			while (path_count > 0)
 			{
 				auto t = p->path[path_count - 1];
@@ -636,7 +706,10 @@ namespace Can
 			remove_car(p->car);
 			p->car = nullptr;
 		}
-
+		if (p->car_driving)
+		{
+			// TODO: reset car_driving
+		}
 		auto it = std::find(people.begin(), people.end(), p);
 		assert(it != people.end());
 		people.erase(it);
