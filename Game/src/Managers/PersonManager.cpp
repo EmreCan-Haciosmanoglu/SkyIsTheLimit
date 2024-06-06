@@ -60,8 +60,9 @@ namespace Can
 							if (work_car)
 							{
 								building_to = p->work;
+								p->car_driving->driver = nullptr;
 								p->car_driving = work_car;
-								work_car->driver = p;
+								p->car_driving->driver = p;
 							}
 							else
 							{
