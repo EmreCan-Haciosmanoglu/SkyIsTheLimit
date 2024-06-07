@@ -55,13 +55,14 @@ namespace Can
 			return result;
 		}
 
-		void set_car_target_and_direction(Car* car, const v3& target)
-		{
-			car->target = target;
-			v2 direction{ glm::normalize((v2)car->target - (v2)car->object->position) };
-			f32 yaw{ glm::acos(direction.x) * ((float)(direction.y > 0.0f) * 2.0f - 1.0f) };
-			car->object->SetTransform(car->object->position, v3{ 0.0f, 0.0f, yaw + glm::radians(180.0f) });
-		}
+	}
+
+	void set_car_target_and_direction(Car* car, const v3& target)
+	{
+		car->target = target;
+		v2 direction{ glm::normalize((v2)car->target - (v2)car->object->position) };
+		f32 yaw{ glm::acos(direction.x) * ((float)(direction.y > 0.0f) * 2.0f - 1.0f) };
+		car->object->SetTransform(car->object->position, v3{ 0.0f, 0.0f, yaw + glm::radians(180.0f) });
 	}
 
 	CarManager::CarManager(GameScene* scene)

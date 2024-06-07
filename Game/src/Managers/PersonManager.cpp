@@ -60,7 +60,8 @@ namespace Can
 							if (work_car)
 							{
 								building_to = p->work;
-								p->car_driving->driver = nullptr;
+								if (p->car_driving)
+									p->car_driving->driver = nullptr;
 								p->car_driving = work_car;
 								p->car_driving->driver = p;
 							}
@@ -306,7 +307,8 @@ namespace Can
 						else
 							p->status = PersonStatus::Driving;
 						p->position = p->car_driving->object->position;
-						p->car_driving->target = target_position;
+
+						set_car_target_and_direction(p->car_driving, target_position);
 
 						p->heading_to_a_car = false;
 						p->object->enabled = false;
@@ -349,7 +351,7 @@ namespace Can
 
 								RoadNode& road_node{ road_nodes[p->road_node] };
 								road_node.people.push_back(p);
-								auto res {remove_person_from(road_segment, p)};
+								auto res{ remove_person_from(road_segment, p) };
 								assert(res);
 								p->road_segment = -1;
 

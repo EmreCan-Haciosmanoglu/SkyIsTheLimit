@@ -21,4 +21,5 @@ namespace Can
 	};
 	void remove_car(Car* c);
 	void update_cars(TimeStep ts);
+	void set_car_target_and_direction(Car* car, const v3& target);
 }

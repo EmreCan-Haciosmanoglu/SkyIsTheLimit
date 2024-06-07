@@ -699,10 +699,10 @@ namespace  Can::Helper
 			current_transition = next_transition;
 		}
 
-		current_transition = path[transition_count - 1];
+		current_transition = path[transition_count - 1];// we should not need this
 		RoadSegment& current_road_segment = road_segments[current_transition->road_segment_index];
 		RoadType& current_road_type = road_types[current_road_segment.type];
-		if (transition_count > 2)
+		if (transition_count >= 2)
 		{
 			RS_Transition_For_Vehicle* t{ path[transition_count - 2] };
 			u64 n_index{ (u64)t->next_road_node_index };
