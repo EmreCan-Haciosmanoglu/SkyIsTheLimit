@@ -296,17 +296,17 @@ namespace Can
 					}
 					else if (p->heading_to_a_car)
 					{
-						RS_Transition_For_Vehicle* rs_transition = p->car_driving->path[0];
-						RoadSegment& road_segment = road_segments[rs_transition->road_segment_index];
-						RoadType& road_segment_type = road_types[road_segment.type];
-						v3 target_position = rs_transition->points_stack[rs_transition->points_stack.size() - 1];
+						RS_Transition_For_Vehicle* rs_transition{ p->car_driving->path[0] };
+						RoadSegment& road_segment{ road_segments[rs_transition->road_segment_index] };
+						RoadType& road_segment_type{ road_types[road_segment.type] };
+						v3 target_position{ rs_transition->points_stack[rs_transition->points_stack.size() - 1] };
 
 						if (p->car != p->car_driving) // car_driven is work car
 							p->status = PersonStatus::DrivingForWork;
 						else
 							p->status = PersonStatus::Driving;
 						p->position = p->car_driving->object->position;
-						set_car_target_and_direction(p->car_driving, target_position);
+						p->car_driving->target = target_position;
 
 						p->heading_to_a_car = false;
 						p->object->enabled = false;
@@ -316,9 +316,9 @@ namespace Can
 					}
 					else
 					{
-						RS_Transition_For_Walking* rs_transition = (RS_Transition_For_Walking*)p->path[0];
-						RoadSegment& road_segment = road_segments[p->road_segment];
-						RoadType& road_segment_type = road_types[road_segment.type];
+						RS_Transition_For_Walking* rs_transition{ (RS_Transition_For_Walking*)p->path[0] };
+						RoadSegment& road_segment{ road_segments[p->road_segment] };
+						RoadType& road_segment_type{ road_types[road_segment.type] };
 
 						u64 target_path_array_index;
 						if (p->path.size() == 1)
@@ -336,8 +336,8 @@ namespace Can
 								p->target = p->path_end_building->position;
 								p->heading_to_a_building = true;
 
-								RoadSegment& segment = road_segments[p->road_segment];
-								auto res = remove_person_from(segment, p);
+								RoadSegment& segment{ road_segments[p->road_segment] };
+								auto res{ remove_person_from(segment, p) };
 								assert(res);
 
 								delete p->path[0];
@@ -347,13 +347,13 @@ namespace Can
 							{
 								p->road_node = rs_transition->from_start ? road_segment.EndNode : road_segment.StartNode;
 
-								RoadNode& road_node = road_nodes[p->road_node];
+								RoadNode& road_node{ road_nodes[p->road_node] };
 								road_node.people.push_back(p);
-								auto res = remove_person_from(road_segment, p);
+								auto res {remove_person_from(road_segment, p)};
 								assert(res);
 								p->road_segment = -1;
 
-								auto path = p->path[0];
+								auto path{ p->path[0] };
 								p->path.erase(p->path.begin());
 								delete path;
 							}
@@ -420,12 +420,9 @@ namespace Can
 	Person* PersonManager::get_worklessPerson()
 	{
 		for (Person* p : m_People)
-		{
 			if (!p->work)
-			{
 				return p;
-			}
-		}
+
 		return nullptr;
 	}
 	std::vector<Person*> PersonManager::get_people_on_the_road()
@@ -718,13 +715,6 @@ namespace Can
 		delete p;
 	}
 
-	void set_car_target_and_direction(Car* car, const v3& target)
-	{
-		car->target = target;
-		v2 direction = glm::normalize((v2)(car->target - car->object->position));
-		f32 yaw = glm::acos(direction.x) * ((float)(direction.y > 0.0f) * 2.0f - 1.0f);
-		car->object->SetTransform(car->object->position, v3{ 0.0f, 0.0f, yaw + glm::radians(180.0f) });
-	}
 	Car* retrive_work_vehicle(Building* work_building)
 	{
 		if (work_building->vehicles.empty())

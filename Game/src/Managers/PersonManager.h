@@ -23,7 +23,6 @@ namespace Can
 	void reset_car_back_to_building_from(Car* c);
 	void reset_person_back_to_home(Person* p);
 	void remove_person(Person* p);
-	void set_car_target_and_direction(Car* car, const v3& target);
 	class Car* retrive_work_vehicle(Building* work_building);
 	void set_person_target(Person* p, const v3& target);
 }

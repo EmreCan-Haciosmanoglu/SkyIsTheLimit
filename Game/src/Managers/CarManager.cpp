@@ -25,6 +25,7 @@ namespace Can
 
 			return result;
 		}
+
 		std::vector<std::vector<Car*>> get_ordered_driven_cars()
 		{
 			auto& road_segments{ GameScene::ActiveGameScene->m_RoadManager.road_segments };
@@ -53,6 +54,14 @@ namespace Can
 			}
 			return result;
 		}
+
+		void set_car_target_and_direction(Car* car, const v3& target)
+		{
+			car->target = target;
+			v2 direction{ glm::normalize((v2)car->target - (v2)car->object->position) };
+			f32 yaw{ glm::acos(direction.x) * ((float)(direction.y > 0.0f) * 2.0f - 1.0f) };
+			car->object->SetTransform(car->object->position, v3{ 0.0f, 0.0f, yaw + glm::radians(180.0f) });
+		}
 	}
 
 	CarManager::CarManager(GameScene* scene)
@@ -65,7 +74,7 @@ namespace Can
 		for (Car* c : m_Cars)
 			if (c->driver)
 				result.push_back(c);
-		
+
 		return result;
 	}
 
@@ -99,7 +108,6 @@ namespace Can
 		for (auto& cars : ordered_driven_cars)
 		{
 			std::sort(cars.begin(), cars.end(), Helper::sort_by_left_journey());
-			auto p = cars[0]->object->position;
 			for (u64 car_index = 0; car_index < cars.size(); ++car_index)
 			{
 				Car* car{ cars[car_index] };
@@ -115,11 +123,11 @@ namespace Can
 				f32 movement_length_in_next_frame{ ts * speed_in_meter_per_second };
 
 
-				bool path_is_blocked = false;
+				bool path_is_blocked{ false };
 				if (car_index > 0)
 				{
-					v2 boundingL = (v2)car->object->prefab->boundingBoxL;
-					v2 boundingM = (v2)car->object->prefab->boundingBoxM;
+					v2 boundingL{ (v2)car->object->prefab->boundingBoxL };
+					v2 boundingM{ (v2)car->object->prefab->boundingBoxM };
 					f32 car_s_rotation_in_the_next_frame{ car->object->rotation.z };
 					v3 car_s_position_in_the_next_frame{ 0.0f };
 
@@ -127,9 +135,6 @@ namespace Can
 					{
 						f32 new_t{ car->t + ts * 0.66f };
 						car_s_position_in_the_next_frame = Math::QuadraticCurve(car->driftpoints, car->t);
-
-						//v2 direction{ glm::normalize((v2)(car_s_position_in_the_next_frame - car->object->position)) };
-						//car_s_rotation_in_the_next_frame = glm::acos(direction.x) * ((f32)(direction.y > 0.0f) * 2.0f - 1.0f) + glm::radians(180.0f);
 					}
 					else
 					{
@@ -210,7 +215,7 @@ namespace Can
 							u64 points_count = transition->points_stack.size();
 							if (points_count > 0)
 							{
-								v3 target = transition->points_stack[points_count - 1];
+								v3 target{ transition->points_stack[points_count - 1] };
 								transition->points_stack.pop_back();
 								set_car_target_and_direction(car, target);
 								transition->left_journey = glm::length(car->target - car->object->position);
@@ -220,12 +225,12 @@ namespace Can
 								if (car->path.size() == 1)
 								{
 									// TODO: cache target car park position in car
-									auto building = car->driver->path_end_building;
-									v3 car_park_pos = building->position +
+									auto building{ car->driver->path_end_building };
+									v3 car_park_pos{ building->position +
 										(v3)(glm::rotate(m4(1.0f), building->object->rotation.z, v3{ 0.0f, 0.0f, 1.0f }) *
 											glm::rotate(m4(1.0f), building->object->rotation.y, v3{ 0.0f, 1.0f, 0.0f }) *
 											glm::rotate(m4(1.0f), building->object->rotation.x, v3{ 1.0f, 0.0f, 0.0f }) *
-											v4(building->car_park.offset, 1.0f));
+											v4(building->car_park.offset, 1.0f)) };
 									set_car_target_and_direction(car, car_park_pos);
 									car->heading_to_a_parking_spot = true;
 
@@ -233,19 +238,19 @@ namespace Can
 									car->path.pop_back();
 									car->road_segment = -1;
 
-									auto res = remove_car_from(current_road_segment, car);
+									auto res{ remove_car_from(current_road_segment, car) };
 									assert(res);
 								}
 								else
 								{/*Next Path*/
-									s64 next_road_node_index = transition->next_road_node_index;
+									s64 next_road_node_index{ transition->next_road_node_index };
 									RoadNode& next_road_node{ road_nodes[next_road_node_index] };
 
 									car->path.erase(car->path.begin());
 									delete transition;
 									transition = car->path[0];
 
-									auto res = remove_car_from(current_road_segment, car);
+									auto res{ remove_car_from(current_road_segment, car) };
 									assert(res);
 
 									RoadSegment& next_road_segment{ road_segments[transition->road_segment_index] };
@@ -253,12 +258,13 @@ namespace Can
 									next_road_segment.vehicles.push_back(car);
 
 									v3 target{ transition->points_stack[transition->points_stack.size() - 1] };
-									set_car_target_and_direction(car, target);
-									transition->left_journey = glm::length(car->target - car->object->position);
+									car->target = target;
+
+									transition->left_journey = glm::length(target - car->object->position);
 
 									car->driftpoints[0] = car->object->position;
 									car->driftpoints[1] = next_road_node.position;
-									car->driftpoints[2] = car->target;
+									car->driftpoints[2] = target;
 									car->t = 0.0f;
 								}
 							}
