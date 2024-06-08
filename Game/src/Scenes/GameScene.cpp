@@ -93,6 +93,7 @@ namespace Can
 		for (uint8_t i = 0; i < (uint8_t)e_SpeedMode; i++)
 		{
 			m_PersonManager.Update(ts);
+			update_cars(ts);
 		}
 
 		Renderer3D::BeginScene(camera_controller.camera);
@@ -245,7 +246,7 @@ namespace Can
 				fread(&segment.type, sizeof(u8), 1, read_file);
 				fread(&segment.StartNode, sizeof(u64), 1, read_file);
 				fread(&segment.EndNode, sizeof(u64), 1, read_file);
-				fread(&segment.CurvePoints, sizeof(f32), 3 * 4, read_file);
+				fread(&segment.CurvePoints, sizeof(f32), (3 * 4), read_file);
 				fread(&segment.elevation_type, sizeof(s8), 1, read_file);
 				segment.CalcRotsAndDirs();
 				road_segments.size++;
@@ -333,19 +334,59 @@ namespace Can
 			cars.reserve(car_count);
 			for (u64 i = 0; i < car_count; i++)
 			{
-				u64 type;
-				f32 speed_in_kmh;
-				v3 position, rotation;
-				fread(&type, sizeof(u64), 1, read_file);
-				fread(&speed_in_kmh, sizeof(f32), 1, read_file);
+				v3 position;
+				v3 rotation;
+				s64 building_index;
+
+				Car* car{ new Car() };
+
+				//object
 				fread(&position, sizeof(f32), 3, read_file);
 				fread(&rotation, sizeof(f32), 3, read_file);
-				Car* car = new Car(
-					MainApplication->cars[type],
-					type,
-					speed_in_kmh
+				fread(&car->type, sizeof(u64), 1, read_file);
+				car->object = new Object(
+					MainApplication->vehicle_types[car->type].prefab,
+					position,
+					rotation
 				);
-				car->object->SetTransform(position, rotation);
+
+				fread(&car->speed_in_kmh, sizeof(f32), 1, read_file);
+				fread(&car->target, sizeof(f32), 3, read_file);
+				fread(&car->target_park_pos, sizeof(f32), 3, read_file);
+				fread(&car->heading_to_a_parking_spot, sizeof(bool), 1, read_file);
+				fread(&car->road_segment, sizeof(s64), 1, read_file);
+				if (car->road_segment != -1)
+					road_segments[car->road_segment].vehicles.push_back(car);
+
+				u64 path_count;
+				fread(&path_count, sizeof(u64), 1, read_file);
+				car->path.reserve(path_count);
+				for (u64 j = 0; j < path_count; j++)
+				{
+					auto td = new RS_Transition_For_Vehicle();
+					fread(&td->road_segment_index, sizeof(u64), 1, read_file);
+					fread(&td->next_road_node_index, sizeof(s64), 1, read_file);
+					u64 points_count = 0;
+					fread(&points_count, sizeof(u64), 1, read_file);
+					td->points_stack.reserve(points_count);
+					for (u64 k = 0; k < points_count; k++)
+					{
+						v3 point{};
+						fread(&point, sizeof(f32), 3, read_file);
+						td->points_stack.push_back(point);
+					}
+					fread(&td->lane_index, sizeof(u32), 1, read_file);
+					car->path.push_back(td);
+				}
+
+				fread(&building_index, sizeof(u64), 1, read_file);
+				if (building_index != -1)
+				{
+					car->building = buildings[building_index];
+					buildings[building_index]->vehicles.push_back(car);
+					// this is a work car
+					car->object->tintColor = v4{ 1.0f, 0.0f, 0.0f, 1.0f };
+				}
 				cars.push_back(car);
 			}
 		}
@@ -362,7 +403,8 @@ namespace Can
 				u64 first_name_char_count;
 				u64 middle_name_char_count;
 				u64 last_name_char_count;
-				u64 home_index, work_index, car_index;
+				u64 home_index, work_index, car_index, car_driving_index;
+
 				Person* person = new Person();
 				fread(&type, sizeof(u64), 1, read_file);
 				person->object = new Object(MainApplication->people[type]);
@@ -379,9 +421,10 @@ namespace Can
 				fread(&person->target, sizeof(f32), 3, read_file);
 				// set direction for target-position
 				fread(&person->status, sizeof(PersonStatus), 1, read_file);
+				fread(&person->heading_to_a_car, sizeof(bool), 1, read_file); // Read this before path
 				fread(&path_count, sizeof(u64), 1, read_file);
 				person->path.reserve(path_count);
-				if (person->status == PersonStatus::Walking)
+				if (person->heading_to_a_car == false && person->status == PersonStatus::Walking)
 				{
 					u64 j = 0;
 					if (path_count % 2 == 1)
@@ -412,35 +455,15 @@ namespace Can
 						person->path.push_back(rst);
 					}
 				}
-				else if (person->status == PersonStatus::Driving)
-				{
-					for (u64 j = 0; j < path_count; j++)
-					{
-						auto td = new RS_Transition_For_Driving();
-						fread(&td->road_segment_index, sizeof(u64), 1, read_file);
-						fread(&td->next_road_node_index, sizeof(s64), 1, read_file);
-						u64 points_count = 0;
-						fread(&points_count, sizeof(u64), 1, read_file);
-						td->points_stack.reserve(points_count);
-						for (u64 k = 0; k < points_count; k++)
-						{
-							v3 point{};
-							fread(&point, sizeof(f32), 3, read_file);
-							td->points_stack.push_back(point);
-						}
-						fread(&td->lane_index, sizeof(u32), 1, read_file);
-						person->path.push_back(td);
-					}
-				}
 				fread(&path_end_building_index, sizeof(s64), 1, read_file);
 				if (path_end_building_index != -1)
 					person->path_end_building = buildings[path_end_building_index];
 				fread(&path_start_building_index, sizeof(s64), 1, read_file);
 				if (path_start_building_index != -1)
 					person->path_start_building = buildings[path_start_building_index];
+				fread(&person->drove_in_work, sizeof(bool), 1, read_file);
 				fread(&person->from_right, sizeof(bool), 1, read_file);
-				fread(&person->heading_to_a_building_or_parking, sizeof(bool), 1, read_file);
-				fread(&person->heading_to_a_car, sizeof(bool), 1, read_file);
+				fread(&person->heading_to_a_building, sizeof(bool), 1, read_file);
 				fread(&person->time_left, sizeof(f32), 1, read_file);
 
 				fread(&first_name_char_count, sizeof(u64), 1, read_file);
@@ -479,11 +502,16 @@ namespace Can
 					person->car = cars[car_index];
 					person->car->owner = person;
 				}
-
+				fread(&car_driving_index, sizeof(s64), 1, read_file);
+				if (car_driving_index != -1)
+				{
+					person->car_driving = cars[car_index];
+					cars[car_index]->driver = person;
+				}
 				people.push_back(person);
 			}
 		}
-		/*CameraController*/{
+		/*CameraController*/ {
 			fread(&camera_controller.forward_key, sizeof(u16), 1, read_file);
 			fread(&camera_controller.backward_key, sizeof(u16), 1, read_file);
 			fread(&camera_controller.left_key, sizeof(u16), 1, read_file);
@@ -556,7 +584,7 @@ namespace Can
 				// an array of indices to  Car objects
 				fwrite(&road_segments[i].StartNode, sizeof(u64), 1, save_file);
 				fwrite(&road_segments[i].EndNode, sizeof(u64), 1, save_file);
-				fwrite(&road_segments[i].CurvePoints, sizeof(f32), 3 * 4, save_file);
+				fwrite(&road_segments[i].CurvePoints, sizeof(f32), (3 * 4), save_file);
 				fwrite(&road_segments[i].elevation_type, sizeof(s8), 1, save_file);
 			}
 		}
@@ -595,10 +623,41 @@ namespace Can
 			fwrite(&car_count, sizeof(u64), 1, save_file);
 			for (u64 i = 0; i < car_count; i++)
 			{
-				fwrite(&cars[i]->type, sizeof(u64), 1, save_file);
-				fwrite(&cars[i]->speed_in_kmh, sizeof(f32), 1, save_file);
-				fwrite(&cars[i]->object->position, sizeof(f32), 3, save_file);
-				fwrite(&cars[i]->object->rotation, sizeof(f32), 3, save_file);
+				auto car = cars[i];
+				s64 building_index = -1;
+
+				//object
+				fwrite(&car->object->position, sizeof(f32), 3, save_file);
+				fwrite(&car->object->rotation, sizeof(f32), 3, save_file);
+
+				fwrite(&car->type, sizeof(u64), 1, save_file);
+				fwrite(&car->speed_in_kmh, sizeof(f32), 1, save_file);
+				fwrite(&car->target, sizeof(f32), 3, save_file);
+				fwrite(&car->target_park_pos, sizeof(f32), 3, save_file);
+				fwrite(&car->heading_to_a_parking_spot, sizeof(bool), 1, save_file);
+				fwrite(&car->road_segment, sizeof(s64), 1, save_file);
+
+				//path
+				u64 path_count = car->path.size();
+				fwrite(&path_count, sizeof(u64), 1, save_file);
+				for (u64 j = 0; j < path_count; j++)
+				{
+					auto td = car->path[j];
+					fwrite(&td->road_segment_index, sizeof(u64), 1, save_file);
+					fwrite(&td->next_road_node_index, sizeof(s64), 1, save_file);
+					u64 points_count = td->points_stack.size();
+					fwrite(&points_count, sizeof(u64), 1, save_file);
+					for (v3& point : td->points_stack)
+						fwrite(&point, sizeof(f32), 3, save_file);
+					fwrite(&td->lane_index, sizeof(u32), 1, save_file);
+				}
+
+				if (car->building)
+				{
+					auto building_it = std::find(buildings.begin(), buildings.end(), car->building);
+					building_index = std::distance(buildings.begin(), building_it);
+				}
+				fwrite(&building_index, sizeof(s64), 1, save_file);
 			}
 		}
 		/*PersonManager*/ {
@@ -615,6 +674,7 @@ namespace Can
 				s64 home_index = -1;
 				s64 work_index = -1;
 				s64 car_index = -1;
+				s64 work_car_index = -1;
 				u64 first_name_char_count = p->firstName.size();
 				u64 middle_name_char_count = p->midName.size();
 				u64 last_name_char_count = p->surName.size();
@@ -644,6 +704,11 @@ namespace Can
 					auto car_it = std::find(cars.begin(), cars.end(), p->car);
 					car_index = std::distance(cars.begin(), car_it);
 				}
+				if (p->car_driving)
+				{
+					auto car_it = std::find(cars.begin(), cars.end(), p->car_driving);
+					work_car_index = std::distance(cars.begin(), car_it);
+				}
 				fwrite(&p->type, sizeof(u64), 1, save_file);
 				fwrite(&p->object->enabled, sizeof(bool), 1, save_file);
 				fwrite(&p->road_segment, sizeof(s64), 1, save_file);
@@ -652,54 +717,38 @@ namespace Can
 				fwrite(&p->position, sizeof(f32), 3, save_file);
 				fwrite(&p->target, sizeof(f32), 3, save_file);
 				fwrite(&p->status, sizeof(PersonStatus), 1, save_file);
+				fwrite(&p->heading_to_a_car, sizeof(bool), 1, save_file); // Write this before path
 				fwrite(&path_count, sizeof(u64), 1, save_file);
-				if (p->status == PersonStatus::Walking)
+				u64 j = 0;
+				if (path_count % 2 == 1)
 				{
-					u64 j = 0;
-					if (path_count % 2 == 1)
-					{
-						auto rst = (RS_Transition_For_Walking*)p->path[0];
-						fwrite(&rst->at_path_array_index, sizeof(u64), 1, save_file);
-						fwrite(&rst->road_segment_index, sizeof(u64), 1, save_file);
-						fwrite(&rst->from_start, sizeof(bool), 1, save_file);
-						fwrite(&rst->from_right, sizeof(bool), 1, save_file);
-						j = 1;
-					}
-					for (; j < path_count; j++)
-					{
-						auto rnt = (RN_Transition_For_Walking*)p->path[j];
-						fwrite(&rnt->from_road_segments_array_index, sizeof(u64), 1, save_file);
-						fwrite(&rnt->to_road_segments_array_index, sizeof(u64), 1, save_file);
-						fwrite(&rnt->sub_index, sizeof(u64), 1, save_file);
-						fwrite(&rnt->road_node_index, sizeof(u64), 1, save_file);
-						fwrite(&rnt->accending, sizeof(bool), 1, save_file);
-						j++;
-						auto rst = (RS_Transition_For_Walking*)p->path[j];
-						fwrite(&rst->at_path_array_index, sizeof(u64), 1, save_file);
-						fwrite(&rst->road_segment_index, sizeof(u64), 1, save_file);
-						fwrite(&rst->from_start, sizeof(bool), 1, save_file);
-						fwrite(&rst->from_right, sizeof(bool), 1, save_file);
-					}
+					auto rst = (RS_Transition_For_Walking*)p->path[0];
+					fwrite(&rst->at_path_array_index, sizeof(u64), 1, save_file);
+					fwrite(&rst->road_segment_index, sizeof(u64), 1, save_file);
+					fwrite(&rst->from_start, sizeof(bool), 1, save_file);
+					fwrite(&rst->from_right, sizeof(bool), 1, save_file);
+					j = 1;
 				}
-				else if (p->status == PersonStatus::Driving)
+				for (; j < path_count; j++)
 				{
-					for (u64 j = 0; j < path_count; j++)
-					{
-						auto td = (RS_Transition_For_Driving*)p->path[j];
-						fwrite(&td->road_segment_index, sizeof(u64), 1, save_file);
-						fwrite(&td->next_road_node_index, sizeof(s64), 1, save_file);
-						u64 points_count = td->points_stack.size();
-						fwrite(&points_count, sizeof(u64), 1, save_file);
-						for (v3& point : td->points_stack)
-							fwrite(&point, sizeof(f32), 3, save_file);
-						fwrite(&td->lane_index, sizeof(u32), 1, save_file);
-					}
+					auto rnt = (RN_Transition_For_Walking*)p->path[j];
+					fwrite(&rnt->from_road_segments_array_index, sizeof(u64), 1, save_file);
+					fwrite(&rnt->to_road_segments_array_index, sizeof(u64), 1, save_file);
+					fwrite(&rnt->sub_index, sizeof(u64), 1, save_file);
+					fwrite(&rnt->road_node_index, sizeof(u64), 1, save_file);
+					fwrite(&rnt->accending, sizeof(bool), 1, save_file);
+					j++;
+					auto rst = (RS_Transition_For_Walking*)p->path[j];
+					fwrite(&rst->at_path_array_index, sizeof(u64), 1, save_file);
+					fwrite(&rst->road_segment_index, sizeof(u64), 1, save_file);
+					fwrite(&rst->from_start, sizeof(bool), 1, save_file);
+					fwrite(&rst->from_right, sizeof(bool), 1, save_file);
 				}
 				fwrite(&path_end_building_index, sizeof(s64), 1, save_file);
 				fwrite(&path_start_building_index, sizeof(s64), 1, save_file);
+				fwrite(&p->drove_in_work, sizeof(bool), 1, save_file);
 				fwrite(&p->from_right, sizeof(bool), 1, save_file);
-				fwrite(&p->heading_to_a_building_or_parking, sizeof(bool), 1, save_file);
-				fwrite(&p->heading_to_a_car, sizeof(bool), 1, save_file);
+				fwrite(&p->heading_to_a_building, sizeof(bool), 1, save_file);
 				fwrite(&p->time_left, sizeof(f32), 1, save_file);
 				fwrite(&first_name_char_count, sizeof(u64), 1, save_file);
 				fwrite(p->firstName.data(), sizeof(char), first_name_char_count, save_file);
@@ -710,6 +759,7 @@ namespace Can
 				fwrite(&home_index, sizeof(s64), 1, save_file);
 				fwrite(&work_index, sizeof(s64), 1, save_file);
 				fwrite(&car_index, sizeof(s64), 1, save_file);
+				fwrite(&work_car_index, sizeof(s64), 1, save_file);
 			}
 		}
 		/*CameraController*/ {
@@ -752,7 +802,7 @@ namespace Can
 		fclose(save_file);
 		printf("Game is saved.\n");
 	}
-	v3 GameScene::GetRayCastedFromScreen() const 
+	v3 GameScene::GetRayCastedFromScreen() const
 	{
 		auto [mouseX, mouseY] = Can::Input::get_mouse_pos_float();
 		Application& app = Application::Get();

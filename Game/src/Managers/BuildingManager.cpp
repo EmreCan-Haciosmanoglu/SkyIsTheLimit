@@ -183,7 +183,7 @@ namespace Can
 					v2 bM = (v2)building->object->prefab->boundingBoxM;
 					v2 bP = (v2)building->position;
 
-					v2 mtv = Helper::CheckRotatedRectangleCollision(
+					v2 mtv = Helper::check_rotated_rectangle_collision(
 						bL,
 						bM,
 						building->object->rotation.z,
@@ -271,7 +271,7 @@ namespace Can
 				v2 treeL = (v2)tree->object->prefab->boundingBoxL;
 				v2 treeM = (v2)tree->object->prefab->boundingBoxM;
 				v2 treeP = (v2)tree->object->position;
-				v2 mtv = Helper::CheckRotatedRectangleCollision(
+				v2 mtv = Helper::check_rotated_rectangle_collision(
 					treeL,
 					treeM,
 					tree->object->rotation.z,
@@ -299,7 +299,7 @@ namespace Can
 				v2 bL = (v2)building->object->prefab->boundingBoxL;
 				v2 bM = (v2)building->object->prefab->boundingBoxM;
 				v2 bP = (v2)building->position;
-				v2 mtv = Helper::CheckRotatedRectangleCollision(
+				v2 mtv = Helper::check_rotated_rectangle_collision(
 					bL,
 					bM,
 					building->object->rotation.z,
@@ -367,7 +367,7 @@ namespace Can
 	}
 	bool BuildingManager::OnMousePressed_Construction()
 	{
-		auto& car_prefabs = m_Scene->MainApplication->cars;
+		auto& vehicle_types = m_Scene->MainApplication->vehicle_types;
 		auto& person_prefabs = m_Scene->MainApplication->people;
 
 		auto& person_manager = m_Scene->m_PersonManager;
@@ -393,11 +393,11 @@ namespace Can
 				road_segments[m_SnappedRoadSegment].Buildings.push_back(new_building);
 			m_Buildings.push_back(new_building);
 
-			new_building->is_home = Utility::Random::Float(1.0f) > 0.5f;
+			new_building->is_home = Utility::Random::Float(1.0f) > 0.4f;
 			if (new_building->is_home)
 			{
 				m_HomeBuildings.push_back(new_building);
-				u8 domicilled = Utility::Random::Integer(6, 10);
+				u8 domicilled = Utility::Random::signed_32(8, 14);
 				new_building->capacity = domicilled;
 				for (u64 i = 0; i < domicilled; i++)
 				{
@@ -411,15 +411,15 @@ namespace Can
 					new_person->status = PersonStatus::AtHome;
 					new_person->time_left = Utility::Random::Float(1.0f, 5.0f);
 					new_building->people.push_back(new_person);
-					bool have_enough_money_to_own_car = Utility::Random::Float(1.0f) > 0.5f;
+					bool have_enough_money_to_own_car = Utility::Random::Float(1.0f) > 0.4f;
 					if (have_enough_money_to_own_car)
 					{
-						u64 new_car_type = 0;
-						Car* new_car = new Car(
-							car_prefabs[new_car_type],
-							new_car_type,
-							Utility::Random::Float(30.0f, 50.0f)
-						);
+						u64 new_vehicle_type_index = Utility::Random::signed_32(vehicle_types.size());
+						const Vehicle_Type& new_vehicle_type{ vehicle_types[new_vehicle_type_index] };
+						Car* new_car = new Car();
+						new_car->object = new Object(new_vehicle_type.prefab);
+						new_car->type = new_vehicle_type_index;
+						new_car->speed_in_kmh = Utility::Random::Float(new_vehicle_type.speed_range_min, new_vehicle_type.speed_range_max);
 						v3 car_pos = new_building->position +
 							(v3)(glm::rotate(m4(1.0f), new_building->object->rotation.z, v3{ 0.0f, 0.0f, 1.0f }) *
 								glm::rotate(m4(1.0f), new_building->object->rotation.y, v3{ 0.0f, 1.0f, 0.0f }) *
@@ -450,9 +450,9 @@ namespace Can
 			else
 			{
 				m_WorkBuildings.push_back(new_building);
-				u8 worker = Utility::Random::Integer(20, 50);
+				u8 worker = Utility::Random::signed_32(20, 50);
 				new_building->capacity = worker;
-				for (u64 i = 0; i < worker; i++)
+				for (u64 i = 0; i < worker; ++i)
 				{
 
 					Person* p = person_manager.get_worklessPerson();
@@ -463,9 +463,37 @@ namespace Can
 					}
 				}
 
+				u8 work_vehicle_count = Utility::Random::signed_32(4, 6);
+				for (u64 i = 0; i < work_vehicle_count; ++i)
+				{
+					u64 new_vehicle_type_index = Utility::Random::signed_32(vehicle_types.size());
+					const Vehicle_Type& new_vehicle_type{ vehicle_types[new_vehicle_type_index] };
+					Car* new_car = new Car();
+					new_car->object = new Object(new_vehicle_type.prefab);
+					new_car->type = new_vehicle_type_index;
+					new_car->speed_in_kmh = Utility::Random::Float(new_vehicle_type.speed_range_min, new_vehicle_type.speed_range_max);
+					new_car->object->tintColor = v4{ 1.0f, 0.0f, 0.0f, 1.0f };
+					v3 car_pos = new_building->position +
+						(v3)(glm::rotate(m4(1.0f), new_building->object->rotation.z, v3{ 0.0f, 0.0f, 1.0f }) *
+							glm::rotate(m4(1.0f), new_building->object->rotation.y, v3{ 0.0f, 1.0f, 0.0f }) *
+							glm::rotate(m4(1.0f), new_building->object->rotation.x, v3{ 1.0f, 0.0f, 0.0f }) *
+							v4(new_building->car_park.offset, 1.0f));
+					new_car->object->SetTransform(
+						car_pos,
+						glm::rotateZ(
+							new_building->object->rotation,
+							glm::radians(new_building->car_park.rotation_in_degrees)
+						)
+					);
+					new_car->object->enabled = true;
+					new_car->building = new_building;
+					new_building->vehicles.push_back(new_car);
+					car_manager.m_Cars.push_back(new_car);
+				}
 			}
 			ResetStates();
 			m_Guideline->enabled = true;
+
 
 			if (restrictions[0] && tree_manager.restrictions[0])
 			{
@@ -476,7 +504,7 @@ namespace Can
 				for (size_t i = 0; i < trees.size(); i++)
 				{
 					Object* tree = trees[i]->object;
-					v2 mtv = Helper::CheckRotatedRectangleCollision(
+					v2 mtv = Helper::check_rotated_rectangle_collision(
 						buildingL,
 						buildingM,
 						new_building->object->rotation.z,
@@ -569,16 +597,24 @@ namespace Can
 		auto& home_buildings = game->m_BuildingManager.m_HomeBuildings;
 		auto& work_buildings = game->m_BuildingManager.m_WorkBuildings;
 		auto& segments = game->m_RoadManager.road_segments;
-		auto& people_on_the_road = game->m_PersonManager.people_on_the_road;
+		auto& people_on_the_road = game->m_PersonManager.get_people_on_the_road();
 
 		while (b->people.size() > 0)
 			remove_person(b->people[0]);
 
-		for (u64 i = people_on_the_road.size(); i > 0; i--)
+		for (Person* p : people_on_the_road)
 		{
-			Person* p = people_on_the_road[i - 1];
 			if (p->path_end_building == b)
-				reset_person_back_to_building_from(p);
+			{
+				if (p->car_driving)
+				{
+					reset_car_back_to_building_from(p->car_driving);
+				}
+				else
+				{
+					reset_person_back_to_building_from(p);
+				}
+			}
 		}
 
 		if (b->connectedRoadSegment != -1)
@@ -600,6 +636,9 @@ namespace Can
 		auto work_it = std::find(work_buildings.begin(), work_buildings.end(), b);
 		if (work_it != work_buildings.end())
 			work_buildings.erase(work_it);
+
+		while (b->vehicles.size() > 0)
+			remove_car(b->vehicles[0]);
 
 		delete b;
 	}

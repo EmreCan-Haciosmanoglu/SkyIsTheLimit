@@ -71,7 +71,7 @@ namespace Can
 
 		ConstructionMode e_ConstructionMode = ConstructionMode::None;
 
-		SpeedMode e_SpeedMode = SpeedMode::Pause;
+		SpeedMode e_SpeedMode = SpeedMode::Normal;
 
 		Perspective_Camera_Controller camera_controller;
 
