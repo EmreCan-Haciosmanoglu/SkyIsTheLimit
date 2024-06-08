@@ -22,11 +22,12 @@ namespace Can
 		bool accending = false;
 	};
 
-	struct RS_Transition_For_Driving : Transition
+	struct RS_Transition_For_Vehicle
 	{
 		u64 road_segment_index = 0;
 		s64 next_road_node_index = -1;
 		std::vector<v3> points_stack{};
 		u32 lane_index = 0;
+		f32 left_journey = 0.0f;
 	};
 }

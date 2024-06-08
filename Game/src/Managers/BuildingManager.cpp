@@ -183,7 +183,7 @@ namespace Can
 					v2 bM = (v2)building->object->prefab->boundingBoxM;
 					v2 bP = (v2)building->position;
 
-					v2 mtv = Helper::CheckRotatedRectangleCollision(
+					v2 mtv = Helper::check_rotated_rectangle_collision(
 						bL,
 						bM,
 						building->object->rotation.z,
@@ -271,7 +271,7 @@ namespace Can
 				v2 treeL = (v2)tree->object->prefab->boundingBoxL;
 				v2 treeM = (v2)tree->object->prefab->boundingBoxM;
 				v2 treeP = (v2)tree->object->position;
-				v2 mtv = Helper::CheckRotatedRectangleCollision(
+				v2 mtv = Helper::check_rotated_rectangle_collision(
 					treeL,
 					treeM,
 					tree->object->rotation.z,
@@ -299,7 +299,7 @@ namespace Can
 				v2 bL = (v2)building->object->prefab->boundingBoxL;
 				v2 bM = (v2)building->object->prefab->boundingBoxM;
 				v2 bP = (v2)building->position;
-				v2 mtv = Helper::CheckRotatedRectangleCollision(
+				v2 mtv = Helper::check_rotated_rectangle_collision(
 					bL,
 					bM,
 					building->object->rotation.z,
@@ -393,11 +393,11 @@ namespace Can
 				road_segments[m_SnappedRoadSegment].Buildings.push_back(new_building);
 			m_Buildings.push_back(new_building);
 
-			new_building->is_home = Utility::Random::Float(1.0f) > 0.5f;
+			new_building->is_home = Utility::Random::Float(1.0f) > 0.4f;
 			if (new_building->is_home)
 			{
 				m_HomeBuildings.push_back(new_building);
-				u8 domicilled = Utility::Random::signed_32(6, 10);
+				u8 domicilled = Utility::Random::signed_32(8, 14);
 				new_building->capacity = domicilled;
 				for (u64 i = 0; i < domicilled; i++)
 				{
@@ -411,7 +411,7 @@ namespace Can
 					new_person->status = PersonStatus::AtHome;
 					new_person->time_left = Utility::Random::Float(1.0f, 5.0f);
 					new_building->people.push_back(new_person);
-					bool have_enough_money_to_own_car = Utility::Random::Float(1.0f) > 0.5f;
+					bool have_enough_money_to_own_car = Utility::Random::Float(1.0f) > 0.4f;
 					if (have_enough_money_to_own_car)
 					{
 						u64 new_vehicle_type_index = Utility::Random::signed_32(vehicle_types.size());
@@ -504,7 +504,7 @@ namespace Can
 				for (size_t i = 0; i < trees.size(); i++)
 				{
 					Object* tree = trees[i]->object;
-					v2 mtv = Helper::CheckRotatedRectangleCollision(
+					v2 mtv = Helper::check_rotated_rectangle_collision(
 						buildingL,
 						buildingM,
 						new_building->object->rotation.z,
@@ -597,16 +597,24 @@ namespace Can
 		auto& home_buildings = game->m_BuildingManager.m_HomeBuildings;
 		auto& work_buildings = game->m_BuildingManager.m_WorkBuildings;
 		auto& segments = game->m_RoadManager.road_segments;
-		auto& people_on_the_road = game->m_PersonManager.people_on_the_road;
+		auto& people_on_the_road = game->m_PersonManager.get_people_on_the_road();
 
 		while (b->people.size() > 0)
 			remove_person(b->people[0]);
 
-		for (u64 i = people_on_the_road.size(); i > 0; i--)
+		for (Person* p : people_on_the_road)
 		{
-			Person* p = people_on_the_road[i - 1];
 			if (p->path_end_building == b)
-				reset_person_back_to_building_from(p);
+			{
+				if (p->car_driving)
+				{
+					reset_car_back_to_building_from(p->car_driving);
+				}
+				else
+				{
+					reset_person_back_to_building_from(p);
+				}
+			}
 		}
 
 		if (b->connectedRoadSegment != -1)
