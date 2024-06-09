@@ -35,7 +35,7 @@ namespace Can
 		Slider_Theme slider_theme_vertical;
 
 		Sub_Region_Theme sub_region_theme_details;
-		Rect rect_sub_region{ 
+		Rect rect_sub_region{
 			0, 		// x
 			0, 		// y
 			0, 		// z
@@ -49,6 +49,8 @@ namespace Can
 		Perspective_Camera* game_scene_camera = nullptr;
 
 		bool force_update = false;
+		bool draw_building_panel = false;
+		std::vector<Can::Ref<Can::Texture2D>> buildingtumbnailimagefiles{};
 	};
 
 	void init_game_scene_ui_layer(Game_Scene_UI& ui, GameScene& game_scene);
