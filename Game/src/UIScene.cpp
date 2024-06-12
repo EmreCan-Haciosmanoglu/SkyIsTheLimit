@@ -129,7 +129,7 @@ namespace Can
 		ButtonConstructorParameters buttonRoadsParams = ButtonConstructorParameters{
 			m_Scene->m_Registry,
 			m_Scene->entityID,
-			v3{ 1.0f, height - 6.5f, 0.0011f },
+			v3{ 1.0f, height - 6.8f, 0.0011f },
 			v2{ 3.0f, 1.0f},
 			v4{ 221.0f / 255.0f, 255.0f / 255.0f, 247.0f / 255.0f, 1.0f },
 			nullptr,
@@ -181,7 +181,7 @@ namespace Can
 		ButtonConstructorParameters buttonBuildingsParams = ButtonConstructorParameters{
 			m_Scene->m_Registry,
 			m_Scene->entityID,
-			v3{ 5.0f, height - 6.5f, 0.0011f },
+			v3{ 5.0f, height - 6.8f, 0.0011f },
 			v2{ 3.0f, 1.0f },
 			v4{ 255.0f / 255.0f, 166.0f / 255.0f, 158.0f / 255.0f, 1.0f },
 			nullptr,
@@ -236,7 +236,7 @@ namespace Can
 		ButtonConstructorParameters buttonTreesParams = ButtonConstructorParameters{
 			m_Scene->m_Registry,
 			m_Scene->entityID,
-			v3{ 9.0f, height - 6.5f, 0.0011f },
+			v3{ 9.0f, height - 6.8f, 0.0011f },
 			v2{ 3.0f, 1.0f },
 			v4{ 69.0f / 255.0f, 123.0f / 255.0f, 157.0f / 255.0f, 1.0f },
 			nullptr,

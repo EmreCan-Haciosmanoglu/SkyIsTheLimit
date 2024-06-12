@@ -24,7 +24,7 @@ namespace Can
 			u64 width_in_pixels = window.GetWidth();
 			u64 height_in_pixels = window.GetHeight();
 
-			constexpr s32 building_panel_margins{ 20 };
+			constexpr s32 building_panel_margins{ 10 };
 			constexpr s32 button_margin{ 10 };
 			constexpr s32 button_size{ 30 };
 			constexpr s32 menu_item_size{ 120 };
@@ -32,9 +32,9 @@ namespace Can
 			Button_Theme button_theme;
 			/*Button_Themes*/ {
 				button_theme.label_theme = &ui.label_theme_button;
-				button_theme.background_color = v4{ 221.0f / 255.0f, 155.0f / 255.0f, 247.0f / 255.0f, 1.0f };
-				button_theme.background_color_over = v4{ 231.0f / 255.0f, 175.0f / 255.0f, 252.0f / 255.0f, 1.0f };
-				button_theme.background_color_pressed = v4{ 241.0f / 255.0f, 195.0f / 255.0f, 255.0f / 255.0f, 1.0f };
+				button_theme.background_color = v4{ 0.9f, 0.9f, 0.9f, 1.0f };
+				button_theme.background_color_over = v4{ 0.95f, 0.95f, 0.95f, 1.0f };
+				button_theme.background_color_pressed = v4{ 1.0f, 1.0f, 1.0f, 1.0f };
 			}
 
 			Sub_Region_Theme sub_region_theme;
@@ -565,18 +565,6 @@ namespace Can
 
 	void draw_screen(Game_Scene_UI& ui)
 	{
-		auto app = GameApp::instance;
-		auto& window = main_application->GetWindow();
-		u64 width_in_pixels = window.GetWidth();
-		u64 height_in_pixels = window.GetHeight();
-
-		constexpr s32 track_width{ 20 };
-		constexpr s32 sub_region_button_margin{ 5 };
-		constexpr s32 building_panel_margins{ 20 };
-		constexpr s32 button_margin{ 10 };
-		constexpr s32 button_size{ 30 };
-
-
 		if (ui.focus_object != nullptr)
 		{
 			Rect rect_button_cross;
@@ -646,10 +634,7 @@ namespace Can
 			//immediate_end_sub_region(track_width);
 		}
 
-		if (ui.draw_building_panel)
-		{
-			draw_building_panel(ui);
-		}
+		if (ui.draw_building_panel) draw_building_panel(ui);
 	}
 
 	bool on_game_scene_ui_layer_mouse_released(void* p, Event::MouseButtonReleasedEvent& event)
