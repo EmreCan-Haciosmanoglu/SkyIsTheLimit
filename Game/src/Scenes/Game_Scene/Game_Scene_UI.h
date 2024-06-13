@@ -5,18 +5,17 @@
 
 namespace Can
 {
-	constexpr u8 draw_building_panel_home{ 0 };
-
-	constexpr u8 draw_building_panel_general{ 1 };
-	constexpr u8 draw_building_panel_special{ 2 };
-
-	constexpr u8 draw_building_panel_housing{ 3 };
-	constexpr u8 draw_building_panel_commercial{ 4 };
-	constexpr u8 draw_building_panel_industry{ 5 };
-
-	constexpr u8 draw_building_panel_hospital{ 6 };
-	constexpr u8 draw_building_panel_police{ 7 };
-	constexpr u8 draw_building_panel_fire_station{ 8 };
+	enum class Draw_Building_Panel : u8 {
+		home = 0,
+		general = 1,
+		special = 2,
+		housing = 3,
+		commercial = 4,
+		industry = 5,
+		hospital = 6,
+		police = 7,
+		fire_station = 8
+	};
 
 	class Object;
 	class GameScene;
@@ -44,18 +43,11 @@ namespace Can
 		Button_Theme button_theme_thumb;
 		Button_Theme button_theme_track;
 
+
 		Button_Theme button_theme_back;
-
-		Button_Theme button_theme_general_buildings;
-		Button_Theme button_theme_special_buildings;
-
-		Button_Theme button_theme_housing_buildings;
-		Button_Theme button_theme_commercial_buildings;
-		Button_Theme button_theme_industry_buildings;
-
-		Button_Theme button_theme_hospital_buildings;
-		Button_Theme button_theme_police_buildings;
-		Button_Theme button_theme_fire_station_buildings;
+		Button_Theme button_theme_construction_modes;
+		Button_Theme button_theme_sub_menus;
+		Button_Theme button_theme_buildings;
 
 		Slider_Theme slider_theme_horizontal;
 		Slider_Theme slider_theme_vertical;
@@ -77,7 +69,7 @@ namespace Can
 		bool force_update = false;
 		bool draw_building_panel = false;
 
-		u8 draw_building_panel_inside_type = draw_building_panel_home;
+		Draw_Building_Panel draw_building_panel_inside_type = Draw_Building_Panel::home;
 
 		std::vector<Can::Ref<Can::Texture2D>> housing_building_tumbnail_image_files{};
 		std::vector<Can::Ref<Can::Texture2D>> commercial_building_tumbnail_image_files{};

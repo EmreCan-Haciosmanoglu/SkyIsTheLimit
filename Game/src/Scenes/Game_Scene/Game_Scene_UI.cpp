@@ -29,14 +29,6 @@ namespace Can
 			constexpr s32 button_size{ 30 };
 			constexpr s32 menu_item_size{ 120 };
 
-			Button_Theme button_theme;
-			/*Button_Themes*/ {
-				button_theme.label_theme = &ui.label_theme_button;
-				button_theme.background_color = v4{ 0.9f, 0.9f, 0.9f, 1.0f };
-				button_theme.background_color_over = v4{ 0.95f, 0.95f, 0.95f, 1.0f };
-				button_theme.background_color_pressed = v4{ 1.0f, 1.0f, 1.0f, 1.0f };
-			}
-
 			Sub_Region_Theme sub_region_theme;
 			/*Sub_Region_Themes*/ {
 				sub_region_theme.background_color = v4{ 201.0f / 255.0f, 235.0f / 255.0f, 227.0f / 255.0f, 1.0f };
@@ -60,57 +52,42 @@ namespace Can
 			sub_region_rect.w = width_in_pixels * 0.75f - (building_panel_margins * 3);
 			sub_region_rect.h = building_panel_rect.h - (building_panel_margins << 1);
 
-			Rect add_rect;
-			add_rect.w = button_size;
-			add_rect.h = button_size;
-			add_rect.x = building_panel_rect.x + button_margin;
-			add_rect.y = building_panel_rect.y + building_panel_rect.h - (button_size + button_margin);
-			add_rect.z = building_panel_rect.z + 1;
+			Rect construction_mode_button_rect;
+			construction_mode_button_rect.w = button_size;
+			construction_mode_button_rect.h = button_size;
+			construction_mode_button_rect.x = building_panel_rect.x + button_margin;
+			construction_mode_button_rect.y = building_panel_rect.y + building_panel_rect.h - (button_size + button_margin);
+			construction_mode_button_rect.z = building_panel_rect.z + 1;
 
-			Rect remove_rect;
-			remove_rect.w = button_size;
-			remove_rect.h = button_size;
-			remove_rect.x = add_rect.x + button_size + button_margin;
-			remove_rect.y = add_rect.y;
-			remove_rect.z = building_panel_rect.z + 1;
 
-			Rect upgrade_rect;
-			upgrade_rect.w = button_size;
-			upgrade_rect.h = button_size;
-			upgrade_rect.x = remove_rect.x + button_size + button_margin;
-			upgrade_rect.y = remove_rect.y;
-			upgrade_rect.z = building_panel_rect.z + 1;
+			immediate_quad(building_panel_rect, v4{ 1.0f, 0.6f, 0.6f, 1.0f });
 
-			Rect cancel_rect;
-			cancel_rect.w = button_size;
-			cancel_rect.h = button_size;
-			cancel_rect.x = upgrade_rect.x + button_size + button_margin;
-			cancel_rect.y = upgrade_rect.y;
-			cancel_rect.z = building_panel_rect.z + 1;
-
-			immediate_quad(building_panel_rect, v4{ 255.0f / 255.0f, 166.0f / 255.0f, 158.0f / 255.0f, 1.0f });
-			u16 flags = immediate_image_button(add_rect, button_theme, app->addTexture, __LINE__);
+			u16 flags{ 0 };
+			flags = immediate_image_button(construction_mode_button_rect, ui.button_theme_construction_modes, app->addTexture, __LINE__);
 			if (flags & BUTTON_STATE_FLAGS_RELEASED)
 			{
 				ui.game_scene->SetConstructionMode(ConstructionMode::Building);
 				ui.game_scene->m_BuildingManager.SetConstructionMode(BuildingConstructionMode::Construct);
 			}
 
-			flags = immediate_image_button(remove_rect, button_theme, app->removeTexture, __LINE__);
+			construction_mode_button_rect.x += button_size + button_margin;
+			flags = immediate_image_button(construction_mode_button_rect, ui.button_theme_construction_modes, app->removeTexture, __LINE__);
 			if (flags & BUTTON_STATE_FLAGS_RELEASED)
 			{
 				ui.game_scene->SetConstructionMode(ConstructionMode::Building);
 				ui.game_scene->m_BuildingManager.SetConstructionMode(BuildingConstructionMode::Destruct);
 			}
 
-			flags = immediate_image_button(upgrade_rect, button_theme, app->upgradeTexture, __LINE__);
+			construction_mode_button_rect.x += button_size + button_margin;
+			flags = immediate_image_button(construction_mode_button_rect, ui.button_theme_construction_modes, app->upgradeTexture, __LINE__);
 			if (flags & BUTTON_STATE_FLAGS_RELEASED)
 			{
 				ui.game_scene->SetConstructionMode(ConstructionMode::Building);
 				ui.game_scene->m_BuildingManager.SetConstructionMode(BuildingConstructionMode::Upgrade);
 			}
 
-			flags = immediate_image_button(cancel_rect, button_theme, app->cancelTexture, __LINE__);
+			construction_mode_button_rect.x += button_size + button_margin;
+			flags = immediate_image_button(construction_mode_button_rect, ui.button_theme_construction_modes, app->cancelTexture, __LINE__);
 			if (flags & BUTTON_STATE_FLAGS_RELEASED)
 			{
 				ui.game_scene->SetConstructionMode(ConstructionMode::Building);
@@ -118,7 +95,7 @@ namespace Can
 			}
 
 			//immediate_begin_sub_region(sub_region_rect, sub_region_theme, __LINE__);
-			immediate_quad(sub_region_rect, sub_region_theme.background_color);
+			immediate_quad(sub_region_rect, v4{ 1.00f, 0.55f, 0.55f, 1.0f });
 
 			Rect menu_item_rect;
 			menu_item_rect.w = menu_item_size;
@@ -127,51 +104,51 @@ namespace Can
 			menu_item_rect.y = sub_region_rect.y + sub_region_rect.h - menu_item_rect.h - button_margin;
 			menu_item_rect.z = sub_region_rect.z + 1;
 
-			if (ui.draw_building_panel_inside_type == draw_building_panel_home)
+			if (ui.draw_building_panel_inside_type == Draw_Building_Panel::home)
 			{
-				flags = immediate_image_button(menu_item_rect, ui.button_theme_general_buildings, nullptr, __LINE__);
+				flags = immediate_image_button(menu_item_rect, ui.button_theme_sub_menus, nullptr, __LINE__);
 				menu_item_rect.z++;
 				immediate_text("G", menu_item_rect, ui.label_theme_large_text);
 				if (flags & BUTTON_STATE_FLAGS_RELEASED)
 				{
-					ui.draw_building_panel_inside_type = draw_building_panel_general;
+					ui.draw_building_panel_inside_type = Draw_Building_Panel::general;
 				}
 				menu_item_rect.x += menu_item_rect.w + button_margin;
 
-				flags = immediate_image_button(menu_item_rect, ui.button_theme_special_buildings, nullptr, __LINE__);
+				flags = immediate_image_button(menu_item_rect, ui.button_theme_sub_menus, nullptr, __LINE__);
 				menu_item_rect.z++;
 				immediate_text("S", menu_item_rect, ui.label_theme_large_text);
 				if (flags & BUTTON_STATE_FLAGS_RELEASED)
 				{
-					ui.draw_building_panel_inside_type = draw_building_panel_special;
+					ui.draw_building_panel_inside_type = Draw_Building_Panel::special;
 				}
 			}
-			else if (ui.draw_building_panel_inside_type == draw_building_panel_general)
+			else if (ui.draw_building_panel_inside_type == Draw_Building_Panel::general)
 			{
-				flags = immediate_image_button(menu_item_rect, ui.button_theme_housing_buildings, nullptr, __LINE__);
+				flags = immediate_image_button(menu_item_rect, ui.button_theme_sub_menus, nullptr, __LINE__);
 				menu_item_rect.z++;
 				immediate_text("H", menu_item_rect, ui.label_theme_large_text);
 				if (flags & BUTTON_STATE_FLAGS_RELEASED)
 				{
-					ui.draw_building_panel_inside_type = draw_building_panel_housing;
+					ui.draw_building_panel_inside_type = Draw_Building_Panel::housing;
 				}
 				menu_item_rect.x += menu_item_rect.w + button_margin;
 
-				flags = immediate_image_button(menu_item_rect, ui.button_theme_commercial_buildings, nullptr, __LINE__);
+				flags = immediate_image_button(menu_item_rect, ui.button_theme_sub_menus, nullptr, __LINE__);
 				menu_item_rect.z++;
 				immediate_text("B", menu_item_rect, ui.label_theme_large_text);
 				if (flags & BUTTON_STATE_FLAGS_RELEASED)
 				{
-					ui.draw_building_panel_inside_type = draw_building_panel_commercial;
+					ui.draw_building_panel_inside_type = Draw_Building_Panel::commercial;
 				}
 				menu_item_rect.x += menu_item_rect.w + button_margin;
 
-				flags = immediate_image_button(menu_item_rect, ui.button_theme_industry_buildings, nullptr, __LINE__);
+				flags = immediate_image_button(menu_item_rect, ui.button_theme_sub_menus, nullptr, __LINE__);
 				menu_item_rect.z++;
 				immediate_text("I", menu_item_rect, ui.label_theme_large_text);
 				if (flags & BUTTON_STATE_FLAGS_RELEASED)
 				{
-					ui.draw_building_panel_inside_type = draw_building_panel_industry;
+					ui.draw_building_panel_inside_type = Draw_Building_Panel::industry;
 				}
 				menu_item_rect.x += menu_item_rect.w + button_margin;
 
@@ -180,35 +157,35 @@ namespace Can
 				immediate_text("B", menu_item_rect, ui.label_theme_large_text);
 				if (flags & BUTTON_STATE_FLAGS_RELEASED)
 				{
-					ui.draw_building_panel_inside_type = draw_building_panel_home;
+					ui.draw_building_panel_inside_type = Draw_Building_Panel::home;
 				}
 			}
-			else if (ui.draw_building_panel_inside_type == draw_building_panel_special)
+			else if (ui.draw_building_panel_inside_type == Draw_Building_Panel::special)
 			{
-				flags = immediate_image_button(menu_item_rect, ui.button_theme_hospital_buildings, nullptr, __LINE__);
+				flags = immediate_image_button(menu_item_rect, ui.button_theme_sub_menus, nullptr, __LINE__);
 				menu_item_rect.z++;
 				immediate_text("H", menu_item_rect, ui.label_theme_large_text);
 				if (flags & BUTTON_STATE_FLAGS_RELEASED)
 				{
-					ui.draw_building_panel_inside_type = draw_building_panel_hospital;
+					ui.draw_building_panel_inside_type = Draw_Building_Panel::hospital;
 				}
 				menu_item_rect.x += menu_item_rect.w + button_margin;
 
-				flags = immediate_image_button(menu_item_rect, ui.button_theme_police_buildings, nullptr, __LINE__);
+				flags = immediate_image_button(menu_item_rect, ui.button_theme_sub_menus, nullptr, __LINE__);
 				menu_item_rect.z++;
 				immediate_text("P", menu_item_rect, ui.label_theme_large_text);
 				if (flags & BUTTON_STATE_FLAGS_RELEASED)
 				{
-					ui.draw_building_panel_inside_type = draw_building_panel_police;
+					ui.draw_building_panel_inside_type = Draw_Building_Panel::police;
 				}
 				menu_item_rect.x += menu_item_rect.w + button_margin;
 
-				flags = immediate_image_button(menu_item_rect, ui.button_theme_fire_station_buildings, nullptr, __LINE__);
+				flags = immediate_image_button(menu_item_rect, ui.button_theme_sub_menus, nullptr, __LINE__);
 				menu_item_rect.z++;
 				immediate_text("F", menu_item_rect, ui.label_theme_large_text);
 				if (flags & BUTTON_STATE_FLAGS_RELEASED)
 				{
-					ui.draw_building_panel_inside_type = draw_building_panel_fire_station;
+					ui.draw_building_panel_inside_type = Draw_Building_Panel::fire_station;
 				}
 				menu_item_rect.x += menu_item_rect.w + button_margin;
 
@@ -217,14 +194,14 @@ namespace Can
 				immediate_text("B", menu_item_rect, ui.label_theme_large_text);
 				if (flags & BUTTON_STATE_FLAGS_RELEASED)
 				{
-					ui.draw_building_panel_inside_type = draw_building_panel_home;
+					ui.draw_building_panel_inside_type = Draw_Building_Panel::home;
 				}
 			}
-			else if (ui.draw_building_panel_inside_type == draw_building_panel_housing)
+			else if (ui.draw_building_panel_inside_type == Draw_Building_Panel::housing)
 			{
 				for (u64 i = 0; i < ui.housing_building_tumbnail_image_files.size(); i++)
 				{
-					flags = immediate_image_button(menu_item_rect, button_theme, ui.housing_building_tumbnail_image_files[i], __LINE__ * 10000 + i, false);
+					flags = immediate_image_button(menu_item_rect, ui.button_theme_buildings, ui.housing_building_tumbnail_image_files[i], __LINE__ * 10000 + i, false);
 					if (flags & BUTTON_STATE_FLAGS_RELEASED)
 					{
 						ui.game_scene->SetConstructionMode(ConstructionMode::Building);
@@ -241,14 +218,14 @@ namespace Can
 				immediate_text("B", menu_item_rect, ui.label_theme_large_text);
 				if (flags & BUTTON_STATE_FLAGS_RELEASED)
 				{
-					ui.draw_building_panel_inside_type = draw_building_panel_general;
+					ui.draw_building_panel_inside_type = Draw_Building_Panel::general;
 				}
 			}
-			else if (ui.draw_building_panel_inside_type == draw_building_panel_commercial)
+			else if (ui.draw_building_panel_inside_type == Draw_Building_Panel::commercial)
 			{
 				for (u64 i = 0; i < ui.commercial_building_tumbnail_image_files.size(); i++)
 				{
-					flags = immediate_image_button(menu_item_rect, button_theme, ui.commercial_building_tumbnail_image_files[i], __LINE__ * 10000 + i, false);
+					flags = immediate_image_button(menu_item_rect, ui.button_theme_buildings, ui.commercial_building_tumbnail_image_files[i], __LINE__ * 10000 + i, false);
 					if (flags & BUTTON_STATE_FLAGS_RELEASED)
 					{
 					}
@@ -260,14 +237,14 @@ namespace Can
 				immediate_text("B", menu_item_rect, ui.label_theme_large_text);
 				if (flags & BUTTON_STATE_FLAGS_RELEASED)
 				{
-					ui.draw_building_panel_inside_type = draw_building_panel_general;
+					ui.draw_building_panel_inside_type = Draw_Building_Panel::general;
 				}
 			}
-			else if (ui.draw_building_panel_inside_type == draw_building_panel_industry)
+			else if (ui.draw_building_panel_inside_type == Draw_Building_Panel::industry)
 			{
 				for (u64 i = 0; i < ui.industry_building_tumbnail_image_files.size(); i++)
 				{
-					flags = immediate_image_button(menu_item_rect, button_theme, ui.industry_building_tumbnail_image_files[i], __LINE__ * 10000 + i, false);
+					flags = immediate_image_button(menu_item_rect, ui.button_theme_buildings, ui.industry_building_tumbnail_image_files[i], __LINE__ * 10000 + i, false);
 					if (flags & BUTTON_STATE_FLAGS_RELEASED)
 					{
 					}
@@ -279,14 +256,14 @@ namespace Can
 				immediate_text("B", menu_item_rect, ui.label_theme_large_text);
 				if (flags & BUTTON_STATE_FLAGS_RELEASED)
 				{
-					ui.draw_building_panel_inside_type = draw_building_panel_general;
+					ui.draw_building_panel_inside_type = Draw_Building_Panel::general;
 				}
 			}
-			else if (ui.draw_building_panel_inside_type == draw_building_panel_hospital)
+			else if (ui.draw_building_panel_inside_type == Draw_Building_Panel::hospital)
 			{
 				for (u64 i = 0; i < ui.hospital_building_tumbnail_image_files.size(); i++)
 				{
-					flags = immediate_image_button(menu_item_rect, button_theme, ui.hospital_building_tumbnail_image_files[i], __LINE__ * 10000 + i, false);
+					flags = immediate_image_button(menu_item_rect, ui.button_theme_buildings, ui.hospital_building_tumbnail_image_files[i], __LINE__ * 10000 + i, false);
 					if (flags & BUTTON_STATE_FLAGS_RELEASED)
 					{
 					}
@@ -298,14 +275,14 @@ namespace Can
 				immediate_text("B", menu_item_rect, ui.label_theme_large_text);
 				if (flags & BUTTON_STATE_FLAGS_RELEASED)
 				{
-					ui.draw_building_panel_inside_type = draw_building_panel_special;
+					ui.draw_building_panel_inside_type = Draw_Building_Panel::special;
 				}
 			}
-			else if (ui.draw_building_panel_inside_type == draw_building_panel_police)
+			else if (ui.draw_building_panel_inside_type == Draw_Building_Panel::police)
 			{
 				for (u64 i = 0; i < ui.police_building_tumbnail_image_files.size(); i++)
 				{
-					flags = immediate_image_button(menu_item_rect, button_theme, ui.police_building_tumbnail_image_files[i], __LINE__ * 10000 + i, false);
+					flags = immediate_image_button(menu_item_rect, ui.button_theme_buildings, ui.police_building_tumbnail_image_files[i], __LINE__ * 10000 + i, false);
 					if (flags & BUTTON_STATE_FLAGS_RELEASED)
 					{
 					}
@@ -317,14 +294,14 @@ namespace Can
 				immediate_text("B", menu_item_rect, ui.label_theme_large_text);
 				if (flags & BUTTON_STATE_FLAGS_RELEASED)
 				{
-					ui.draw_building_panel_inside_type = draw_building_panel_special;
+					ui.draw_building_panel_inside_type = Draw_Building_Panel::special;
 				}
 			}
-			else if (ui.draw_building_panel_inside_type == draw_building_panel_fire_station)
+			else if (ui.draw_building_panel_inside_type == Draw_Building_Panel::fire_station)
 			{
 				for (u64 i = 0; i < ui.fire_station_building_tumbnail_image_files.size(); i++)
 				{
-					flags = immediate_image_button(menu_item_rect, button_theme, ui.fire_station_building_tumbnail_image_files[i], __LINE__ * 10000 + i, false);
+					flags = immediate_image_button(menu_item_rect, ui.button_theme_buildings, ui.fire_station_building_tumbnail_image_files[i], __LINE__ * 10000 + i, false);
 					if (flags & BUTTON_STATE_FLAGS_RELEASED)
 					{
 					}
@@ -336,13 +313,14 @@ namespace Can
 				immediate_text("B", menu_item_rect, ui.label_theme_large_text);
 				if (flags & BUTTON_STATE_FLAGS_RELEASED)
 				{
-					ui.draw_building_panel_inside_type = draw_building_panel_special;
+					ui.draw_building_panel_inside_type = Draw_Building_Panel::special;
 				}
 			}
 
 			//immediate_end_sub_region(track_width);
 		}
 	}
+
 	void Game_Scene_UI::OnAttach()
 	{
 		on_game_scene_ui_layer_attach(*this);
@@ -416,49 +394,14 @@ namespace Can
 			ui.button_theme_track.background_color_pressed = { 0.90f, 0.85f, 0.80f, 1.0f };
 
 			ui.button_theme_back.label_theme = &ui.label_theme_button;
-			ui.button_theme_back.background_color = { 0.50f, 0.20f, 0.40f, 1.0f };
-			ui.button_theme_back.background_color_over = { 0.60f, 0.30f, 0.50f, 1.0f };
-			ui.button_theme_back.background_color_pressed = { 0.70f, 0.40f, 0.50f, 1.0f };
+			ui.button_theme_back.background_color = { 0.60f, 0.20f, 0.30f, 1.0f };
+			ui.button_theme_back.background_color_over = { 0.75f, 0.30f, 0.40f, 1.0f };
+			ui.button_theme_back.background_color_pressed = { 0.90f, 0.40f, 0.50f, 1.0f };
 
-			ui.button_theme_general_buildings.label_theme = &ui.label_theme_button;
-			ui.button_theme_general_buildings.background_color = { 0.50f, 0.70f, 0.40f, 1.0f };
-			ui.button_theme_general_buildings.background_color_over = { 0.70f, 0.80f, 0.60f, 1.0f };
-			ui.button_theme_general_buildings.background_color_pressed = { 0.85f, 0.90f, 0.80f, 1.0f };
-
-			ui.button_theme_special_buildings.label_theme = &ui.label_theme_button;
-			ui.button_theme_special_buildings.background_color = { 0.90f, 0.40f, 0.30f, 1.0f };
-			ui.button_theme_special_buildings.background_color_over = { 0.95f, 0.50f, 0.40f, 1.0f };
-			ui.button_theme_special_buildings.background_color_pressed = { 1.00f, 0.60f, 0.50f, 1.0f };
-
-			ui.button_theme_housing_buildings.label_theme = &ui.label_theme_button;
-			ui.button_theme_housing_buildings.background_color = { 0.70f, 0.50f, 0.40f, 1.0f };
-			ui.button_theme_housing_buildings.background_color_over = { 0.80f, 0.70f, 0.60f, 1.0f };
-			ui.button_theme_housing_buildings.background_color_pressed = { 0.90f, 0.85f, 0.80f, 1.0f };
-
-			ui.button_theme_commercial_buildings.label_theme = &ui.label_theme_button;
-			ui.button_theme_commercial_buildings.background_color = { 0.50f, 0.70f, 0.40f, 1.0f };
-			ui.button_theme_commercial_buildings.background_color_over = { 0.70f, 0.80f, 0.60f, 1.0f };
-			ui.button_theme_commercial_buildings.background_color_pressed = { 0.85f, 0.90f, 0.80f, 1.0f };
-
-			ui.button_theme_industry_buildings.label_theme = &ui.label_theme_button;
-			ui.button_theme_industry_buildings.background_color = { 0.90f, 0.40f, 0.30f, 1.0f };
-			ui.button_theme_industry_buildings.background_color_over = { 0.95f, 0.50f, 0.40f, 1.0f };
-			ui.button_theme_industry_buildings.background_color_pressed = { 1.00f, 0.60f, 0.50f, 1.0f };
-
-			ui.button_theme_hospital_buildings.label_theme = &ui.label_theme_button;
-			ui.button_theme_hospital_buildings.background_color = { 0.70f, 0.50f, 0.40f, 1.0f };
-			ui.button_theme_hospital_buildings.background_color_over = { 0.80f, 0.70f, 0.60f, 1.0f };
-			ui.button_theme_hospital_buildings.background_color_pressed = { 0.90f, 0.85f, 0.80f, 1.0f };
-
-			ui.button_theme_police_buildings.label_theme = &ui.label_theme_button;
-			ui.button_theme_police_buildings.background_color = { 0.50f, 0.70f, 0.40f, 1.0f };
-			ui.button_theme_police_buildings.background_color_over = { 0.70f, 0.80f, 0.60f, 1.0f };
-			ui.button_theme_police_buildings.background_color_pressed = { 0.85f, 0.90f, 0.80f, 1.0f };
-
-			ui.button_theme_fire_station_buildings.label_theme = &ui.label_theme_button;
-			ui.button_theme_fire_station_buildings.background_color = { 0.90f, 0.40f, 0.30f, 1.0f };
-			ui.button_theme_fire_station_buildings.background_color_over = { 0.95f, 0.50f, 0.40f, 1.0f };
-			ui.button_theme_fire_station_buildings.background_color_pressed = { 1.00f, 0.60f, 0.50f, 1.0f };
+			ui.button_theme_sub_menus.label_theme = &ui.label_theme_button;
+			ui.button_theme_sub_menus.background_color = v4{ 0.90f, 0.90f, 0.90f, 1.0f };
+			ui.button_theme_sub_menus.background_color_over = v4{ 0.95f, 0.95f, 0.95f, 1.0f };
+			ui.button_theme_sub_menus.background_color_pressed = v4{ 1.00f, 1.00f, 1.00f, 1.0f };
 		}
 		/*Slider_Themes*/ {
 			ui.slider_theme_horizontal.track_theme = &ui.button_theme_track;
