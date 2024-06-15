@@ -71,7 +71,7 @@ namespace Can
 		f32 snapped_t = -1.0f;
 		bool snapped_from_right = false;
 
-		std::vector<Building*>::iterator& m_SelectedBuildingToDestruct = m_Buildings.end();
+		std::vector<Building*>::const_iterator m_SelectedBuildingToDestruct = m_Buildings.end();
 
 		Object* m_Guideline = nullptr;
 

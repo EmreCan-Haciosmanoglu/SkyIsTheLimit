@@ -78,14 +78,14 @@
     <ClCompile>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
-      <PreprocessorDefinitions>_SILENCE_STDEXT_ARR_ITERS_DEPRICATION_WARNINGS;CAN_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>CAN_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(ProjectDir)src;$(SolutionDir)Can\vendor\spdlog\include;$(SolutionDir)Can\src;$(SolutionDir)Can\vendor\imgui;$(SolutionDir)Can\vendor\glm;$(SolutionDir)Can\vendor\entt\single_include;$(SolutionDir)Can\vendor\freetype;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
       <MinimalRebuild>false</MinimalRebuild>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpp20</LanguageStandard>
       <ExternalWarningLevel>Level3</ExternalWarningLevel>
     </ClCompile>
     <Link>
@@ -106,7 +106,7 @@
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpp20</LanguageStandard>
       <ExternalWarningLevel>Level3</ExternalWarningLevel>
     </ClCompile>
     <Link>
@@ -128,7 +128,7 @@
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpp20</LanguageStandard>
       <ExternalWarningLevel>Level3</ExternalWarningLevel>
     </ClCompile>
     <Link>
@@ -152,13 +152,13 @@
     <ClInclude Include="src\Scenes\Main_Menu\Main_Menu.h" />
     <ClInclude Include="src\Scenes\Main_Menu\Main_Menu_UI.h" />
     <ClInclude Include="src\Types\Car.h" />
-    <ClInclude Include="src\Types\Vehicle_Type.h" />
     <ClInclude Include="src\Types\Person.h" />
     <ClInclude Include="src\Types\RoadNode.h" />
     <ClInclude Include="src\Types\RoadSegment.h" />
     <ClInclude Include="src\Types\RoadType.h" />
     <ClInclude Include="src\Types\Transition.h" />
     <ClInclude Include="src\Types\Tree.h" />
+    <ClInclude Include="src\Types\Vehicle_Type.h" />
     <ClInclude Include="src\UIScene.h" />
   </ItemGroup>
   <ItemGroup>

@@ -28,12 +28,12 @@ namespace Can
 		GLubyte* pixels = new GLubyte[(u64)treeMap->GetWidth() * (u64)treeMap->GetHeight() * 4];
 		glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
 
-		int r, g, b, a; // or GLubyte r, g, b, a;
 		u64 elmes_per_line = (u64)treeMap->GetWidth() * 4; // elements per line = 256 * "RGBA"
 
 		u64 jump = 6;
 		f32 halfOffset = jump / (TERRAIN_SCALE_DOWN * 2.0f);
 		/*
+		int r, g, b, a; // or GLubyte r, g, b, a;
 		for (u64 y = jump / 2; y < treeMap->GeHeight(); y += jump)
 		{
 			for (u64 x = jump / 2; x < treeMap->GetWidth(); x += jump)
@@ -212,7 +212,7 @@ namespace Can
 	{
 		m_SelectedTreeToRemove = m_Trees.end();
 
-		for (auto& it = m_Trees.begin(); it != m_Trees.end(); ++it)
+		for (auto it = m_Trees.cbegin(); it != m_Trees.cend(); ++it)
 		{
 			Object* tree = (*it)->object;
 			tree->tintColor = v4(1.0f);

@@ -1472,7 +1472,7 @@ namespace Can
 		if (registry->has<IgnoreCollisionComponent>(id))
 			return false;
 
-		auto& [transform, spriteRenderer] = registry->get< TransformComponent, SpriteRendererComponent>(id);
+		auto [transform, spriteRenderer] = registry->get< TransformComponent, SpriteRendererComponent>(id);
 
 		v2 size = spriteRenderer.size * transform.Scale;
 		v2 leftTop = {
@@ -1503,7 +1503,7 @@ namespace Can
 			return;
 
 
-		auto& [transform, spriteRenderer] = registry->get< TransformComponent, SpriteRendererComponent>(id);
+		auto [transform, spriteRenderer] = registry->get< TransformComponent, SpriteRendererComponent>(id);
 		v3 pos = transform.Position;
 
 		pos.x = pos.x + offset.x + spriteRenderer.size.x / 2.0f;

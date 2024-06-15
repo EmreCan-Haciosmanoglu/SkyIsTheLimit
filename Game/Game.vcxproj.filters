@@ -7,6 +7,9 @@
     <Filter Include="Scenes">
       <UniqueIdentifier>{86EEB3D0-7290-DEA6-5B4B-F2FA478C65F7}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Scenes\Game_Scene">
+      <UniqueIdentifier>{7C0E9293-E824-9029-319C-1B4B9DF160B1}</UniqueIdentifier>
+    </Filter>
     <Filter Include="Scenes\Main_Menu">
       <UniqueIdentifier>{4E07EA71-3A00-09C4-6332-EE484F8AE8CF}</UniqueIdentifier>
     </Filter>
@@ -37,6 +40,9 @@
     <ClInclude Include="src\Scenes\GameScene.h">
       <Filter>Scenes</Filter>
     </ClInclude>
+    <ClInclude Include="src\Scenes\Game_Scene\Game_Scene_UI.h">
+      <Filter>Scenes\Game_Scene</Filter>
+    </ClInclude>
     <ClInclude Include="src\Scenes\Main_Menu\Main_Menu.h">
       <Filter>Scenes\Main_Menu</Filter>
     </ClInclude>
@@ -64,9 +70,10 @@
     <ClInclude Include="src\Types\Tree.h">
       <Filter>Types</Filter>
     </ClInclude>
+    <ClInclude Include="src\Types\Vehicle_Type.h">
+      <Filter>Types</Filter>
+    </ClInclude>
     <ClInclude Include="src\UIScene.h" />
-    <ClInclude Include="src\Scenes\Game_Scene\Game_Scene_UI.h" />
-    <ClInclude Include="src\Types\Vehicle_Type.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Building.cpp" />
@@ -91,6 +98,9 @@
     <ClCompile Include="src\Scenes\GameScene.cpp">
       <Filter>Scenes</Filter>
     </ClCompile>
+    <ClCompile Include="src\Scenes\Game_Scene\Game_Scene_UI.cpp">
+      <Filter>Scenes\Game_Scene</Filter>
+    </ClCompile>
     <ClCompile Include="src\Scenes\Main_Menu\Main_Menu.cpp">
       <Filter>Scenes\Main_Menu</Filter>
     </ClCompile>
@@ -107,6 +117,5 @@
       <Filter>Types</Filter>
     </ClCompile>
     <ClCompile Include="src\UIScene.cpp" />
-    <ClCompile Include="src\Scenes\Game_Scene\Game_Scene_UI.cpp" />
   </ItemGroup>
 </Project>
