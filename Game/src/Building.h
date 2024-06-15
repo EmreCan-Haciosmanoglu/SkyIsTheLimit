@@ -37,5 +37,7 @@ namespace Can
 		Object* object = nullptr;
 		v3 position{};
 		Car_Park car_park{};
+
+		std::string name = "Adam's House";
 	};
 }

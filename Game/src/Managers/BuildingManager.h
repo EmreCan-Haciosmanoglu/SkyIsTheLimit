@@ -59,7 +59,7 @@ namespace Can
 
 		size_t m_Type = 0;
 
-		std::vector<Building*> m_Buildings;
+		std::vector<Building*> m_Buildings{};
 		std::vector<Building*> m_HomeBuildings;
 		std::vector<Building*> m_WorkBuildings;
 

@@ -13,6 +13,7 @@
 #include "Can/Font/FontFlags.h"
 #include "GameApp.h"
 #include "Helper.h"
+#include "Building.h"
 
 namespace Can
 {
@@ -356,6 +357,21 @@ namespace Can
 
 
 		/*Label_Themes*/ {
+			ui.label_theme_title.color = { 0.05f, 0.05f, 0.05f, 1.0f };
+			ui.label_theme_title.font = buffer_data.default_font;
+			ui.label_theme_title.font_size_in_pixel = 20;
+			ui.label_theme_title.flags = FontFlags::LeftAligned;
+
+			ui.label_theme_left_alinged_small_black_text.color = { 0.1f, 0.1f, 0.1f, 1.0f };
+			ui.label_theme_left_alinged_small_black_text.font = buffer_data.default_font;
+			ui.label_theme_left_alinged_small_black_text.font_size_in_pixel = 16;
+			ui.label_theme_left_alinged_small_black_text.flags = FontFlags::LeftAligned;
+
+			ui.label_theme_left_alinged_xsmall_black_text.color = { 0.1f, 0.1f, 0.1f, 1.0f };
+			ui.label_theme_left_alinged_xsmall_black_text.font = buffer_data.default_font;
+			ui.label_theme_left_alinged_xsmall_black_text.font_size_in_pixel = 14;
+			ui.label_theme_left_alinged_xsmall_black_text.flags = FontFlags::LeftAligned;
+
 			ui.label_theme_button.color = { 0.1f, 0.1f, 0.1f, 1.0f };
 			ui.label_theme_button.font = buffer_data.default_font;
 			ui.label_theme_button.font_size_in_pixel = 30;
@@ -461,6 +477,7 @@ namespace Can
 				ui.focus_object = nullptr;
 				return true;
 			}
+			ui.selected_building = nullptr;
 		}
 		return false;
 	}
@@ -504,10 +521,27 @@ namespace Can
 				height_in_pixels - ui.rect_sub_region.h
 			);
 		}
+
+		if (ui.selected_building)
+		{
+			auto obj = ui.selected_building->object;
+			v4 position_on_screen = ui.game_scene_camera->view_projection * obj->transform * v4(0.0f, 0.0f, obj->prefab->boundingBoxM.z, 1.0f);
+			ui.rect_selected_building_detail_panel.x = glm::clamp(
+				(u32)(glm::clamp(position_on_screen.x / position_on_screen.w + 1.0f, 0.0f, 2.0f) * width_in_pixels * 0.5f),
+				0U,
+				width_in_pixels - ui.rect_selected_building_detail_panel.w
+			);
+			ui.rect_selected_building_detail_panel.y = glm::clamp(
+				(u32)(glm::clamp(position_on_screen.y / position_on_screen.w + 1.0f, 0.0f, 2.0f) * height_in_pixels * 0.5f) - ui.rect_selected_building_detail_panel.h,
+				0U,
+				height_in_pixels - ui.rect_selected_building_detail_panel.h
+			);
+		}
 	}
 
 	void draw_screen(Game_Scene_UI& ui)
 	{
+		const std::string text_x{ "X" };
 		if (ui.focus_object != nullptr)
 		{
 			Rect rect_button_cross;
@@ -532,7 +566,6 @@ namespace Can
 			rect_button_tpc.z = rect_button_fpc.z;
 
 
-			std::string text_x = "X";
 			std::string text_fpc = "FPC";
 			std::string text_tpc = "TPC";
 			//immediate_begin_sub_region(rect_sub_region, ui.sub_region_theme_details, __LINE__);
@@ -575,6 +608,99 @@ namespace Can
 			}
 
 			//immediate_end_sub_region(track_width);
+		}
+
+		if (ui.selected_building != nullptr)
+		{
+			constexpr s32 title_left_margin = 10;
+			const std::string total_occupant_key{ "Total Occupant" };
+			const std::string employment_key{ "Employment" };
+			const std::string occupants_key{ "Occupants" };
+
+			Rect rect_button_cross;
+			rect_button_cross.w = 40;
+			rect_button_cross.h = 40;
+			rect_button_cross.x = ui.rect_selected_building_detail_panel.x + ui.rect_selected_building_detail_panel.w - rect_button_cross.w;
+			rect_button_cross.y = ui.rect_selected_building_detail_panel.y + ui.rect_selected_building_detail_panel.h - rect_button_cross.h;
+			rect_button_cross.z = ui.rect_selected_building_detail_panel.z + 1;
+
+			immediate_quad(ui.rect_selected_building_detail_panel, ui.sub_region_theme_details.background_color);
+			u16 flags{ 0 };
+			flags = immediate_button(rect_button_cross, text_x, ui.button_theme_cross, __LINE__, true);
+			if (flags & BUTTON_STATE_FLAGS_PRESSED)
+				std::cout << "Close is Pressed\n";
+			if (flags & BUTTON_STATE_FLAGS_RELEASED)
+			{
+				std::cout << "Close is Released\n";
+				ui.selected_building = nullptr;
+				return;
+			}
+
+			Rect rect_building_name;
+			rect_building_name.w = ui.rect_selected_building_detail_panel.w - title_left_margin;
+			rect_building_name.h = 40;
+			rect_building_name.x = ui.rect_selected_building_detail_panel.x + title_left_margin;
+			rect_building_name.y = ui.rect_selected_building_detail_panel.y + ui.rect_selected_building_detail_panel.h - rect_building_name.h;
+			rect_building_name.z = ui.rect_selected_building_detail_panel.z + 1;
+
+			Rect rect_key;
+			rect_key.w = 150;
+			rect_key.h = 20;
+			rect_key.x = ui.rect_selected_building_detail_panel.x + title_left_margin;
+			rect_key.y = rect_building_name.y - (rect_key.h + 40);
+			rect_key.z = ui.rect_selected_building_detail_panel.z + 1;
+
+			Rect rect_value;
+			rect_value.w = 50;
+			rect_value.h = rect_key.h;
+			rect_value.x = rect_key.x + rect_key.w;
+			rect_value.y = rect_key.y;
+			rect_value.z = rect_key.z;
+
+			immediate_text(ui.selected_building->name, rect_building_name, ui.label_theme_title);
+
+			auto& occupents{ ui.selected_building->people };
+			auto total_occupant_value = std::format(": {}/{}", occupents.size(), ui.selected_building->capacity);
+			immediate_text(total_occupant_key, rect_key, ui.label_theme_left_alinged_small_black_text);
+			immediate_text(total_occupant_value, rect_value, ui.label_theme_left_alinged_small_black_text);
+
+			rect_key.y -= rect_key.h + 20;
+			rect_value.y = rect_key.y;
+			auto has_job = 0;
+			for (auto occupent : occupents)
+				if (occupent->work)
+					++has_job;
+			auto employment_value = std::format(": {}/{}", has_job, occupents.size());
+			immediate_text(employment_key, rect_key, ui.label_theme_left_alinged_small_black_text);
+			immediate_text(employment_value, rect_value, ui.label_theme_left_alinged_small_black_text);
+
+
+
+			rect_key.y -= rect_key.h + 10;
+			rect_value.y = rect_key.y;
+			immediate_text(occupants_key, rect_key, ui.label_theme_left_alinged_small_black_text);
+			
+			Rect rect_gender;
+			rect_gender.w = 20;
+			rect_gender.h = rect_gender.w;
+			rect_gender.x = rect_key.x;
+			rect_gender.y = rect_key.y - (rect_key.h + 5);
+			rect_gender.z = rect_key.z;
+
+			Rect rect_name;
+			rect_name.w = 150;
+			rect_name.h = rect_gender.h;
+			rect_name.x = rect_gender.x + rect_gender.w + 5;
+			rect_name.y = rect_gender.y;
+			rect_name.z = rect_gender.z;
+			for (auto occupent : occupents)
+			{
+				immediate_image(rect_gender, GameApp::instance->cancelTexture);
+				immediate_text(occupent->firstName, rect_name, ui.label_theme_left_alinged_xsmall_black_text);
+				rect_gender.y -= rect_gender.h + 5;
+				rect_name.y = rect_gender.y;
+			}
+
 		}
 
 		if (ui.draw_building_panel) draw_building_panel(ui);

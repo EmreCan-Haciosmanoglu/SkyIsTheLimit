@@ -217,7 +217,7 @@ namespace Can
 			Object* tree = (*it)->object;
 			tree->tintColor = v4(1.0f);
 
-			if (Helper::CheckBoundingBoxHit(
+			if (Helper::check_if_ray_intersects_with_bounding_box(
 				cameraPosition,
 				cameraDirection,
 				tree->prefab->boundingBoxL + tree->position,

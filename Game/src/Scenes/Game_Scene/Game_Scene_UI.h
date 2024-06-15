@@ -19,6 +19,7 @@ namespace Can
 
 	class Object;
 	class GameScene;
+	class Building;
 	class Perspective_Camera;
 	struct Game_Scene_UI : public Layer::Layer
 	{
@@ -33,8 +34,11 @@ namespace Can
 		void* font = nullptr;
 		Orthographic_Camera_Controller camera_controller;
 
+		Label_Theme label_theme_title;
 		Label_Theme label_theme_button;
 		Label_Theme label_theme_camera_mode_button;
+		Label_Theme label_theme_left_alinged_small_black_text;
+		Label_Theme label_theme_left_alinged_xsmall_black_text;
 		Label_Theme label_theme_text;
 		Label_Theme label_theme_large_text;
 
@@ -60,9 +64,17 @@ namespace Can
 			200, 	// w
 			100 	// h
 		};
+		Rect rect_selected_building_detail_panel{
+			0, 		// x
+			0, 		// y
+			0, 		// z
+			600, 	// w
+			800 	// h
+		};
 
 
 		Object* focus_object = nullptr;
+		Building* selected_building = nullptr;
 		GameScene* game_scene = nullptr;
 		Perspective_Camera* game_scene_camera = nullptr;
 

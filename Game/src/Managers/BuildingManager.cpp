@@ -328,7 +328,7 @@ namespace Can
 			Building* building = *it;
 			building->object->tintColor = v4(1.0f);
 
-			if (Helper::CheckBoundingBoxHit(
+			if (Helper::check_if_ray_intersects_with_bounding_box(
 				cameraPosition,
 				cameraDirection,
 				building->object->prefab->boundingBoxL + building->position,
