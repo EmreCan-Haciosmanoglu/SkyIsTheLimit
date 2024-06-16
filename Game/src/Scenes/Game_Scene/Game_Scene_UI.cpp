@@ -620,10 +620,17 @@ namespace Can
 		if (ui.selected_building != nullptr)
 		{
 			constexpr s32 title_left_margin{ 10 };
+
 			constexpr v4 color_white{ 0.9f, 0.9f, 0.9f, 1.0f };
 			constexpr v4 color_black{ 0.1f, 0.1f, 0.1f, 1.0f };
 			constexpr v4 color_red{ 1.0f, 0.1f, 0.2f, 1.0f };
 			constexpr v4 color_green{ 0.1f, 1.0f, 0.2f, 1.0f };
+
+			constexpr v4 color_very_happy{ 39.0f / 255.0f, 167.0f / 255.0f, 56.0f / 255.0f, 1.0f };
+			constexpr v4 color_happy{ 188.0f / 255.0f, 235.0f / 255.0f, 0.0f / 255.0f, 1.0f };
+			constexpr v4 color_moderately_happy{ 255.0f / 255.0f, 210.0f / 255.0f, 0.0f / 255.0f, 1.0f };
+			constexpr v4 color_unhappy{ 254.0f / 255.0f, 147.0f / 255.0f, 7.0f / 255.0f, 1.0f };
+			constexpr v4 color_angry{ 228.0f / 255.0f, 6.0f / 255.0f, 19.0f / 255.0f, 1.0f };
 
 			const std::string total_occupant_key{ "Total Occupant" };
 			const std::string employment_key{ "Employment" };
@@ -707,98 +714,185 @@ namespace Can
 
 			immediate_text(ui.selected_building->name, rect_building_name, ui.label_theme_title);
 
-			/*left panel*/ {
-				auto& occupents{ ui.selected_building->people };
-				auto total_occupant_value = std::format(": {}/{}", occupents.size(), ui.selected_building->capacity);
-				immediate_text(total_occupant_key, rect_key, ui.label_theme_left_alinged_small_black_text);
-				immediate_text(total_occupant_value, rect_value, ui.label_theme_left_alinged_small_black_text);
+			if(ui.selected_building->is_home)
+			{
+				/*left panel*/ {
+					auto& occupants{ ui.selected_building->people };
+					auto total_occupant_value = std::format(": {}/{}", occupants.size(), ui.selected_building->capacity);
+					immediate_text(total_occupant_key, rect_key, ui.label_theme_left_alinged_small_black_text);
+					immediate_text(total_occupant_value, rect_value, ui.label_theme_left_alinged_small_black_text);
 
-				rect_key.y -= rect_key.h + 20;
-				rect_value.y = rect_key.y;
-				auto has_job = 0;
-				for (auto occupent : occupents)
-					if (occupent->work)
-						++has_job;
-				auto employment_value = std::format(": {}/{}", has_job, occupents.size());
-				immediate_text(employment_key, rect_key, ui.label_theme_left_alinged_small_black_text);
-				immediate_text(employment_value, rect_value, ui.label_theme_left_alinged_small_black_text);
+					rect_key.y -= rect_key.h + 20;
+					rect_value.y = rect_key.y;
+					auto has_job = 0;
+					for (auto occupant : occupants)
+						if (occupant->work)
+							++has_job;
+					auto employment_value = std::format(": {}/{}", has_job, occupants.size());
+					immediate_text(employment_key, rect_key, ui.label_theme_left_alinged_small_black_text);
+					immediate_text(employment_value, rect_value, ui.label_theme_left_alinged_small_black_text);
 
 
 
-				rect_key.y -= rect_key.h + 10;
-				rect_value.y = rect_key.y;
-				immediate_text(occupants_key, rect_key, ui.label_theme_left_alinged_small_black_text);
+					rect_key.y -= rect_key.h + 10;
+					rect_value.y = rect_key.y;
+					immediate_text(occupants_key, rect_key, ui.label_theme_left_alinged_small_black_text);
 
-				Rect rect_gender;
-				rect_gender.w = 20;
-				rect_gender.h = rect_gender.w;
-				rect_gender.x = rect_key.x;
-				rect_gender.y = rect_key.y - (rect_key.h + 5);
-				rect_gender.z = rect_key.z;
+					Rect rect_gender;
+					rect_gender.w = 20;
+					rect_gender.h = rect_gender.w;
+					rect_gender.x = rect_key.x;
+					rect_gender.y = rect_key.y - (rect_key.h + 5);
+					rect_gender.z = rect_key.z;
 
-				Rect rect_name;
-				rect_name.w = 150;
-				rect_name.h = rect_gender.h;
-				rect_name.x = rect_gender.x + rect_gender.w + 5;
-				rect_name.y = rect_gender.y;
-				rect_name.z = rect_gender.z;
-				for (auto occupent : occupents)
-				{
-					immediate_image(rect_gender, GameApp::instance->cancelTexture);
-					immediate_text(occupent->firstName, rect_name, ui.label_theme_left_alinged_xsmall_black_text);
-					rect_gender.y -= rect_gender.h + 5;
+					Rect rect_name;
+					rect_name.w = 150;
+					rect_name.h = rect_gender.h;
+					rect_name.x = rect_gender.x + rect_gender.w + 5;
 					rect_name.y = rect_gender.y;
+					rect_name.z = rect_gender.z;
+					for (auto occupant : occupants)
+					{
+						immediate_image(rect_gender, GameApp::instance->cancelTexture);
+						immediate_text(occupant->firstName, rect_name, ui.label_theme_left_alinged_xsmall_black_text);
+						rect_gender.y -= rect_gender.h + 5;
+						rect_name.y = rect_gender.y;
+					}
 				}
-			}
-			/*right panel*/ {
-				// Health
-				f32 ratio{ ui.selected_building->curent_health / ui.selected_building->max_health };
-				v4 color_health{ Math::lerp(color_red, color_green, ratio) };
-				rect_needs_value_inside_positive.w = (s32)((f32)(rect_needs_value.w - 2) * ratio);
-				immediate_text(health_key, rect_needs_key, ui.label_theme_left_alinged_small_black_text);
-				immediate_quad(rect_needs_value, color_black);
-				immediate_quad(rect_needs_value_inside, color_white);
-				immediate_quad(rect_needs_value_inside_positive, color_health);
+				/*right panel*/ {
+					auto& occupants{ ui.selected_building->people };
 
-				// Electric
-				rect_needs_key.y -= rect_needs_key.h + 20;
-				rect_needs_value.y = rect_needs_key.y;
-				rect_needs_value_inside.y = rect_needs_key.y + 1;
-				rect_needs_value_inside_positive.y = rect_needs_key.y + 1;
+					// Health
+					f32 ratio{ ui.selected_building->curent_health / ui.selected_building->max_health };
+					v4 color_health{ Math::lerp(color_red, color_green, ratio) };
+					rect_needs_value_inside_positive.w = (s32)((f32)(rect_needs_value.w - 2) * ratio);
+					immediate_text(health_key, rect_needs_key, ui.label_theme_left_alinged_small_black_text);
+					immediate_quad(rect_needs_value, color_black);
+					immediate_quad(rect_needs_value_inside, color_white);
+					immediate_quad(rect_needs_value_inside_positive, color_health);
 
-				auto& need{ ui.selected_building->electricity_need };
-				auto& provided{ ui.selected_building->electricity_provided };
-				const auto electricity_value{ std::format("{}kwh/{}kwh", need, provided) };
-				immediate_text(electric_key, rect_needs_key, ui.label_theme_left_alinged_small_black_text);
-				if (need <= provided)
-					immediate_text(electricity_value, rect_needs_value, ui.label_theme_left_alinged_xsmall_black_text);
-				else
-					immediate_text(electricity_value, rect_needs_value, ui.label_theme_left_alinged_xsmall_red_text);
+					// Electric
+					rect_needs_key.y -= rect_needs_key.h + 20;
+					rect_needs_value.y = rect_needs_key.y;
+					rect_needs_value_inside.y = rect_needs_key.y + 1;
+					rect_needs_value_inside_positive.y = rect_needs_key.y + 1;
 
-				// Garbage
-				rect_needs_key.y -= rect_needs_key.h + 20;
-				rect_needs_value.y = rect_needs_key.y;
-				immediate_text(garbage_key, rect_needs_key, ui.label_theme_left_alinged_small_black_text);
-				// Water
-				rect_needs_key.y -= rect_needs_key.h + 20;
-				rect_needs_value.y = rect_needs_key.y;
-				immediate_text(water_key, rect_needs_key, ui.label_theme_left_alinged_small_black_text);
-				// Water Waste
-				rect_needs_key.y -= rect_needs_key.h + 20;
-				rect_needs_value.y = rect_needs_key.y;
-				immediate_text(water_waste_key, rect_needs_key, ui.label_theme_left_alinged_small_black_text);
-				// Police
-				rect_needs_key.y -= rect_needs_key.h + 20;
-				rect_needs_value.y = rect_needs_key.y;
-				immediate_text(police_key, rect_needs_key, ui.label_theme_left_alinged_small_black_text);
-				// Happiness
-				rect_needs_key.y -= rect_needs_key.h + 20;
-				rect_needs_value.y = rect_needs_key.y;
-				immediate_text(happiness_key, rect_needs_key, ui.label_theme_left_alinged_small_black_text);
+					auto& electricity_need{ ui.selected_building->electricity_need };
+					auto& electricity_provided{ ui.selected_building->electricity_provided };
+					const auto electricity_value{ std::format("{} kwh / {} kwh", electricity_need, electricity_provided) };
+					immediate_text(electric_key, rect_needs_key, ui.label_theme_left_alinged_small_black_text);
+					if (electricity_need <= electricity_provided)
+						immediate_text(electricity_value, rect_needs_value, ui.label_theme_left_alinged_xsmall_black_text);
+					else
+						immediate_text(electricity_value, rect_needs_value, ui.label_theme_left_alinged_xsmall_red_text);
+
+					// Garbage
+					rect_needs_key.y -= rect_needs_key.h + 20;
+					rect_needs_value.y = rect_needs_key.y;
+					rect_needs_value_inside.y = rect_needs_key.y + 1;
+					rect_needs_value_inside_positive.y = rect_needs_key.y + 1;
+
+					ratio = ui.selected_building->current_garbage / ui.selected_building->garbage_capacity;
+					v4 color_garbage{ Math::lerp(color_green, color_red, ratio) };
+					rect_needs_value_inside_positive.w = (s32)((f32)(rect_needs_value.w - 2) * ratio);
+					immediate_text(garbage_key, rect_needs_key, ui.label_theme_left_alinged_small_black_text);
+					immediate_quad(rect_needs_value, color_black);
+					immediate_quad(rect_needs_value_inside, color_white);
+					immediate_quad(rect_needs_value_inside_positive, color_garbage);
+
+					// Water
+					rect_needs_key.y -= rect_needs_key.h + 20;
+					rect_needs_value.y = rect_needs_key.y;
+					rect_needs_value_inside.y = rect_needs_key.y + 1;
+					rect_needs_value_inside_positive.y = rect_needs_key.y + 1;
+
+					auto& water_need{ ui.selected_building->water_need };
+					auto& water_provided{ ui.selected_building->water_provided };
+					const auto water_value{ std::format("{} lpd / {} lpd", water_need, water_provided) };
+					immediate_text(water_key, rect_needs_key, ui.label_theme_left_alinged_small_black_text);
+					if (water_need <= water_provided)
+						immediate_text(water_value, rect_needs_value, ui.label_theme_left_alinged_xsmall_black_text);
+					else
+						immediate_text(water_value, rect_needs_value, ui.label_theme_left_alinged_xsmall_red_text);
+
+					// Water Waste
+					rect_needs_key.y -= rect_needs_key.h + 20;
+					rect_needs_value.y = rect_needs_key.y;
+					rect_needs_value_inside.y = rect_needs_key.y + 1;
+					rect_needs_value_inside_positive.y = rect_needs_key.y + 1;
+
+					auto& water_waste_need{ ui.selected_building->water_waste_need };
+					auto& water_waste_provided{ ui.selected_building->water_waste_provided };
+					const auto water_waste_value{ std::format("{} lpd / {} lpd", water_waste_need, water_waste_provided) };
+					immediate_text(water_waste_key, rect_needs_key, ui.label_theme_left_alinged_small_black_text);
+					if (water_waste_need <= water_waste_provided)
+						immediate_text(water_waste_value, rect_needs_value, ui.label_theme_left_alinged_xsmall_black_text);
+					else
+						immediate_text(water_waste_value, rect_needs_value, ui.label_theme_left_alinged_xsmall_red_text);
+
+					// Police
+					rect_needs_key.y -= rect_needs_key.h + 20;
+					rect_needs_value.y = rect_needs_key.y;
+					rect_needs_value_inside.y = rect_needs_key.y + 1;
+					rect_needs_value_inside_positive.y = rect_needs_key.y + 1;
+
+					const auto police_value{ std::format("{} crime reported", ui.selected_building->crime_reported) };
+					immediate_text(police_key, rect_needs_key, ui.label_theme_left_alinged_small_black_text);
+					if (ui.selected_building->crime_reported > 0)
+						immediate_text(police_value, rect_needs_value, ui.label_theme_left_alinged_xsmall_red_text);
+					else
+						immediate_text(police_value, rect_needs_value, ui.label_theme_left_alinged_xsmall_black_text);
+
+					// Happiness
+					rect_needs_key.y -= rect_needs_key.h + 20;
+					rect_needs_value.y = rect_needs_key.y;
+					rect_needs_value_inside.y = rect_needs_key.y + 1;
+					rect_needs_value_inside_positive.y = rect_needs_key.y + 1;
+					rect_needs_value_inside_positive.x = rect_needs_value_inside.x + rect_needs_value_inside.w - rect_needs_value_inside_positive.h;
+
+					immediate_text(happiness_key, rect_needs_key, ui.label_theme_left_alinged_small_black_text);
+					f32 happiness = 0.0f;
+					for (auto occupant : occupants)
+						happiness += occupant->happiness;
+					happiness /= occupants.size() == 0 ? 1 : occupants.size();
+					if (happiness > 0.8f)
+					{
+						std::string happiness_value{ "Very happy!!" };
+						immediate_text(happiness_value, rect_needs_value_inside, ui.label_theme_left_alinged_small_black_text);
+						immediate_quad(rect_needs_value_inside_positive, color_very_happy);
+					}
+					else if (happiness > 0.6f)
+					{
+						std::string happiness_value{ "Happy!" };
+						immediate_text(happiness_value, rect_needs_value_inside, ui.label_theme_left_alinged_small_black_text);
+						immediate_quad(rect_needs_value_inside_positive, color_happy);
+					}
+					else if (happiness > 0.4f)
+					{
+						std::string happiness_value{ "Moderately happy." };
+						immediate_text(happiness_value, rect_needs_value_inside, ui.label_theme_left_alinged_small_black_text);
+						immediate_quad(rect_needs_value_inside_positive, color_moderately_happy);
+					}
+					else if (happiness > 0.2f)
+					{
+						std::string happiness_value{ "Unhappy!" };
+						immediate_text(happiness_value, rect_needs_value_inside, ui.label_theme_left_alinged_small_black_text);
+						immediate_quad(rect_needs_value_inside_positive, color_unhappy);
+					}
+					else
+					{
+						std::string happiness_value{ "Angry!!" };
+						immediate_text(happiness_value, rect_needs_value_inside, ui.label_theme_left_alinged_small_black_text);
+						immediate_quad(rect_needs_value_inside_positive, color_angry);
+					}
+				}
 			}
 		}
 
-		if (ui.draw_building_panel) draw_building_panel(ui);
+		if (ui.draw_building_panel)
+		{
+			draw_building_panel(ui);
+		}
 	}
 
 	bool on_game_scene_ui_layer_mouse_released(void* p, Event::MouseButtonReleasedEvent& event)

@@ -39,7 +39,6 @@ namespace Can
 		Label_Theme label_theme_camera_mode_button;
 		Label_Theme label_theme_left_alinged_small_black_text;
 		Label_Theme label_theme_left_alinged_xsmall_black_text;
-		Label_Theme label_theme_left_alinged_xsmall_green_text;
 		Label_Theme label_theme_left_alinged_xsmall_red_text;
 		Label_Theme label_theme_text;
 		Label_Theme label_theme_large_text;

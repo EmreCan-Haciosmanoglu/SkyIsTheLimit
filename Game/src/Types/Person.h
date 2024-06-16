@@ -49,5 +49,7 @@ namespace Can
 		Building* work = nullptr;
 		Car* car = nullptr;
 		Car* car_driving{ nullptr }; // currently driven vehicle
+
+		f32 happiness = 0.7f;
 	};
 }
