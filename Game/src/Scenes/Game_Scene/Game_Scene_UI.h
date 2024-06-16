@@ -39,6 +39,8 @@ namespace Can
 		Label_Theme label_theme_camera_mode_button;
 		Label_Theme label_theme_left_alinged_small_black_text;
 		Label_Theme label_theme_left_alinged_xsmall_black_text;
+		Label_Theme label_theme_left_alinged_xsmall_green_text;
+		Label_Theme label_theme_left_alinged_xsmall_red_text;
 		Label_Theme label_theme_text;
 		Label_Theme label_theme_large_text;
 
@@ -67,9 +69,16 @@ namespace Can
 		Rect rect_selected_building_detail_panel{
 			0, 		// x
 			0, 		// y
-			0, 		// z
+			1, 		// z
 			600, 	// w
 			800 	// h
+		};
+		Rect rect_selected_building_detail_panel_background{
+			0, 		// x
+			0, 		// y
+			0, 		// z
+			602, 	// w
+			802 	// h
 		};
 
 

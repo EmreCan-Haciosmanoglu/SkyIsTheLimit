@@ -38,6 +38,12 @@ namespace Can
 		v3 position{};
 		Car_Park car_park{};
 
+		f32 max_health = 500.0f;
+		f32 curent_health = 350.0f;
+
+		f32 electricity_need = 50.0f;
+		f32 electricity_provided = 130.0f;
+
 		std::string name = "Adam's House";
 	};
 }
