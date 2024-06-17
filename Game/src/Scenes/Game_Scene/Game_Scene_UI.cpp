@@ -619,6 +619,7 @@ namespace Can
 
 		if (ui.selected_building != nullptr)
 		{
+			auto& building{ ui.selected_building };
 			constexpr s32 title_left_margin{ 10 };
 
 			constexpr v4 color_white{ 0.9f, 0.9f, 0.9f, 1.0f };
@@ -632,9 +633,13 @@ namespace Can
 			constexpr v4 color_unhappy{ 254.0f / 255.0f, 147.0f / 255.0f, 7.0f / 255.0f, 1.0f };
 			constexpr v4 color_angry{ 228.0f / 255.0f, 6.0f / 255.0f, 19.0f / 255.0f, 1.0f };
 
-			const std::string total_occupant_key{ "Total Occupant" };
+			const std::string total_occupants_key{ "Total Occupants" };
+			const std::string total_workers_key{ "Total Workers" };
 			const std::string employment_key{ "Employment" };
+			const std::string currently_working_key{ "Currently Working" };
+			const std::string working_distribution_key{ "(Driving)/(At Building)" };
 			const std::string occupants_key{ "Occupants" };
+			const std::string workers_key{ "Workers" };
 			const std::string health_key{ "Health" };
 			const std::string electric_key{ "Electric" };
 			const std::string garbage_key{ "Garbage" };
@@ -659,7 +664,7 @@ namespace Can
 			if (flags & BUTTON_STATE_FLAGS_RELEASED)
 			{
 				std::cout << "Close is Released\n";
-				ui.selected_building = nullptr;
+				building = nullptr;
 				return;
 			}
 
@@ -712,26 +717,25 @@ namespace Can
 			rect_needs_value_inside_positive.w = rect_needs_value_inside.w;
 			rect_needs_value_inside_positive.h = rect_needs_value_inside.h;
 
-			immediate_text(ui.selected_building->name, rect_building_name, ui.label_theme_title);
+			immediate_text(building->name, rect_building_name, ui.label_theme_title);
 
-			if(ui.selected_building->is_home)
+			if (building->is_home)
 			{
+				auto& occupants{ building->people };
 				/*left panel*/ {
-					auto& occupants{ ui.selected_building->people };
-					auto total_occupant_value = std::format(": {}/{}", occupants.size(), ui.selected_building->capacity);
-					immediate_text(total_occupant_key, rect_key, ui.label_theme_left_alinged_small_black_text);
-					immediate_text(total_occupant_value, rect_value, ui.label_theme_left_alinged_small_black_text);
+					auto total_occupants_value{ std::format(": {}/{}", occupants.size(), building->capacity) };
+					immediate_text(total_occupants_key, rect_key, ui.label_theme_left_alinged_small_black_text);
+					immediate_text(total_occupants_value, rect_value, ui.label_theme_left_alinged_small_black_text);
 
 					rect_key.y -= rect_key.h + 20;
 					rect_value.y = rect_key.y;
-					auto has_job = 0;
+					auto has_job{ 0 };
 					for (auto occupant : occupants)
 						if (occupant->work)
 							++has_job;
-					auto employment_value = std::format(": {}/{}", has_job, occupants.size());
+					auto employment_value{ std::format(": {}/{}", has_job, occupants.size()) };
 					immediate_text(employment_key, rect_key, ui.label_theme_left_alinged_small_black_text);
 					immediate_text(employment_value, rect_value, ui.label_theme_left_alinged_small_black_text);
-
 
 
 					rect_key.y -= rect_key.h + 10;
@@ -760,10 +764,9 @@ namespace Can
 					}
 				}
 				/*right panel*/ {
-					auto& occupants{ ui.selected_building->people };
 
 					// Health
-					f32 ratio{ ui.selected_building->curent_health / ui.selected_building->max_health };
+					f32 ratio{ building->curent_health / building->max_health };
 					v4 color_health{ Math::lerp(color_red, color_green, ratio) };
 					rect_needs_value_inside_positive.w = (s32)((f32)(rect_needs_value.w - 2) * ratio);
 					immediate_text(health_key, rect_needs_key, ui.label_theme_left_alinged_small_black_text);
@@ -777,8 +780,8 @@ namespace Can
 					rect_needs_value_inside.y = rect_needs_key.y + 1;
 					rect_needs_value_inside_positive.y = rect_needs_key.y + 1;
 
-					auto& electricity_need{ ui.selected_building->electricity_need };
-					auto& electricity_provided{ ui.selected_building->electricity_provided };
+					auto& electricity_need{ building->electricity_need };
+					auto& electricity_provided{ building->electricity_provided };
 					const auto electricity_value{ std::format("{} kwh / {} kwh", electricity_need, electricity_provided) };
 					immediate_text(electric_key, rect_needs_key, ui.label_theme_left_alinged_small_black_text);
 					if (electricity_need <= electricity_provided)
@@ -792,7 +795,7 @@ namespace Can
 					rect_needs_value_inside.y = rect_needs_key.y + 1;
 					rect_needs_value_inside_positive.y = rect_needs_key.y + 1;
 
-					ratio = ui.selected_building->current_garbage / ui.selected_building->garbage_capacity;
+					ratio = building->current_garbage / building->garbage_capacity;
 					v4 color_garbage{ Math::lerp(color_green, color_red, ratio) };
 					rect_needs_value_inside_positive.w = (s32)((f32)(rect_needs_value.w - 2) * ratio);
 					immediate_text(garbage_key, rect_needs_key, ui.label_theme_left_alinged_small_black_text);
@@ -806,8 +809,8 @@ namespace Can
 					rect_needs_value_inside.y = rect_needs_key.y + 1;
 					rect_needs_value_inside_positive.y = rect_needs_key.y + 1;
 
-					auto& water_need{ ui.selected_building->water_need };
-					auto& water_provided{ ui.selected_building->water_provided };
+					auto& water_need{ building->water_need };
+					auto& water_provided{ building->water_provided };
 					const auto water_value{ std::format("{} lpd / {} lpd", water_need, water_provided) };
 					immediate_text(water_key, rect_needs_key, ui.label_theme_left_alinged_small_black_text);
 					if (water_need <= water_provided)
@@ -821,8 +824,8 @@ namespace Can
 					rect_needs_value_inside.y = rect_needs_key.y + 1;
 					rect_needs_value_inside_positive.y = rect_needs_key.y + 1;
 
-					auto& water_waste_need{ ui.selected_building->water_waste_need };
-					auto& water_waste_provided{ ui.selected_building->water_waste_provided };
+					auto& water_waste_need{ building->water_waste_need };
+					auto& water_waste_provided{ building->water_waste_provided };
 					const auto water_waste_value{ std::format("{} lpd / {} lpd", water_waste_need, water_waste_provided) };
 					immediate_text(water_waste_key, rect_needs_key, ui.label_theme_left_alinged_small_black_text);
 					if (water_waste_need <= water_waste_provided)
@@ -836,9 +839,9 @@ namespace Can
 					rect_needs_value_inside.y = rect_needs_key.y + 1;
 					rect_needs_value_inside_positive.y = rect_needs_key.y + 1;
 
-					const auto police_value{ std::format("{} crime reported", ui.selected_building->crime_reported) };
+					const auto police_value{ std::format("{} crime reported", building->crime_reported) };
 					immediate_text(police_key, rect_needs_key, ui.label_theme_left_alinged_small_black_text);
-					if (ui.selected_building->crime_reported > 0)
+					if (building->crime_reported > 0)
 						immediate_text(police_value, rect_needs_value, ui.label_theme_left_alinged_xsmall_red_text);
 					else
 						immediate_text(police_value, rect_needs_value, ui.label_theme_left_alinged_xsmall_black_text);
@@ -884,6 +887,94 @@ namespace Can
 						std::string happiness_value{ "Angry!!" };
 						immediate_text(happiness_value, rect_needs_value_inside, ui.label_theme_left_alinged_small_black_text);
 						immediate_quad(rect_needs_value_inside_positive, color_angry);
+					}
+				}
+			}
+			else
+			{
+				auto& workers{ building->people };
+				/*left panel*/ {
+					rect_key.w = 200;
+					rect_value.x = rect_key.x + rect_key.w;
+
+					auto total_workers_value{ std::format(": {}/{}", workers.size(), building->capacity) };
+					immediate_text(total_workers_key, rect_key, ui.label_theme_left_alinged_small_black_text);
+					immediate_text(total_workers_value, rect_value, ui.label_theme_left_alinged_small_black_text);
+
+					rect_key.y -= rect_key.h + 20;
+					rect_value.y = rect_key.y;
+
+					auto currently_at_work_building{ 0 };
+					auto currently_driving_for_work{ 0 };
+					auto currently_working{ 0 };
+					for (auto worker : workers)
+					{
+						// TODO: also walking to work car and comming back to work place from work car
+						if (worker->status == PersonStatus::AtWork)
+						{
+							++currently_at_work_building;
+							++currently_working;
+						}
+						else if (worker->status == PersonStatus::DrivingForWork)
+						{
+							++currently_driving_for_work;
+							++currently_working;
+						}
+					}
+					auto currently_working_value{ std::format(": {}/{}", currently_working, workers.size()) };
+					immediate_text(currently_working_key, rect_key, ui.label_theme_left_alinged_small_black_text);
+					immediate_text(currently_working_value, rect_value, ui.label_theme_left_alinged_small_black_text);
+
+					rect_key.y -= rect_key.h + 20;
+					rect_value.y = rect_key.y;
+
+					auto working_distribution_value{ std::format(": {}/{}", currently_at_work_building, currently_driving_for_work) };
+					immediate_text(working_distribution_key, rect_key, ui.label_theme_left_alinged_small_black_text);
+					immediate_text(working_distribution_value, rect_value, ui.label_theme_left_alinged_small_black_text);
+
+
+					rect_key.y -= rect_key.h + 10;
+					rect_value.y = rect_key.y;
+					immediate_text(workers_key, rect_key, ui.label_theme_left_alinged_small_black_text);
+
+					Rect rect_status;
+					rect_status.w = 20;
+					rect_status.h = rect_status.w;
+					rect_status.x = rect_key.x;
+					rect_status.y = rect_key.y - (rect_key.h + 5);
+					rect_status.z = rect_key.z;
+
+					Rect rect_name;
+					rect_name.w = 150;
+					rect_name.h = rect_status.h;
+					rect_name.x = rect_status.x + rect_status.w + 5;
+					rect_name.y = rect_status.y;
+					rect_name.z = rect_status.z;
+					for (auto worker : workers)
+					{
+						switch (worker->status)	
+						{
+						case PersonStatus::AtHome:
+						case PersonStatus::Walking:
+						case PersonStatus::WalkingDead:
+						case PersonStatus::Driving:
+						{
+							immediate_image(rect_status, GameApp::instance->cancelTexture);
+							break;
+						}
+						case PersonStatus::AtWork:
+						case PersonStatus::DrivingForWork:
+						{
+							immediate_tinted_image(rect_status, GameApp::instance->changeTexture, color_green);
+							break;
+						}
+						default:
+							assert(false, "Unimplemented PlayerStatus");
+							break;
+						}
+						immediate_text(worker->firstName, rect_name, ui.label_theme_left_alinged_xsmall_black_text);
+						rect_status.y -= rect_status.h + 5;
+						rect_name.y = rect_status.y;
 					}
 				}
 			}
