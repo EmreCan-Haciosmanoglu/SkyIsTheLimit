@@ -13,6 +13,16 @@ namespace Can
 		Driving,
 		DrivingForWork
 	};
+	enum class PersonEducationLevel: u8
+	{
+		Uneducated,
+		Elementary_School,
+		High_School,
+		Associate_s,
+		Bachelor_s,
+		Master,
+		Doctorate = 6
+	};
 	
 	struct Transition;
 	class Building;
@@ -32,6 +42,7 @@ namespace Can
 		v3 position{};
 		v3 target{};
 		PersonStatus status = PersonStatus::AtHome;
+		PersonEducationLevel education = PersonEducationLevel::Uneducated;
 		std::vector<Transition*> path{};
 
 		Building* path_end_building = nullptr;

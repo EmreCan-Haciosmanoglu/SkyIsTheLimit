@@ -70,14 +70,14 @@ namespace Can
 			0, 		// y
 			1, 		// z
 			600, 	// w
-			800 	// h
+			600 	// h
 		};
 		Rect rect_selected_building_detail_panel_background{
 			0, 		// x
 			0, 		// y
 			0, 		// z
 			602, 	// w
-			802 	// h
+			602 	// h
 		};
 
 

@@ -55,6 +55,14 @@ namespace Can
 
 		u16 crime_reported = 5;
 
+		u16 needed_uneducated = 4;
+		u16 needed_elementary_school = 4;
+		u16 needed_high_school = 5;
+		u16 needed_associate_s = 5;
+		u16 needed_bachelor_s = 5;
+		u16 needed_master = 4;
+		u16 needed_doctorate = 4;
+
 		std::string name = "Adam's House";
 	};
 }
