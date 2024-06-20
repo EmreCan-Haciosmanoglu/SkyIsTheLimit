@@ -647,9 +647,12 @@ namespace Can
 			const std::string employment_key{ "Employment" };
 			const std::string currently_working_key{ "Currently Working" };
 			const std::string working_distribution_key{ "(Driving)/(At Building)" };
+			const std::string work_car_used_key{ "Work Car Used" };
 			const std::string occupants_key{ "Occupants" };
 			const std::string workers_key{ "Workers" };
 			const std::string health_key{ "Health" };
+			const std::string homes_health_avg_key{ "Homes Health Avg" };
+			const std::string work_places_health_avg_key{ "Work Places Health Avg" };
 			const std::string electric_key{ "Electric" };
 			const std::string garbage_key{ "Garbage" };
 			const std::string water_key{ "Water" };
@@ -726,9 +729,38 @@ namespace Can
 			rect_needs_value_inside_positive.w = rect_needs_value_inside.w;
 			rect_needs_value_inside_positive.h = rect_needs_value_inside.h;
 
+			Rect rect_left_needs_key;
+			rect_left_needs_key.w = 200;
+			rect_left_needs_key.h = 20;
+			rect_left_needs_key.x = ui.rect_selected_building_detail_panel.x + title_left_margin;
+			rect_left_needs_key.y = rect_key.y;
+			rect_left_needs_key.z = rect_key.z;
+
+			Rect rect_left_needs_value;
+			rect_left_needs_value.x = rect_left_needs_key.x + rect_left_needs_key.w;
+			rect_left_needs_value.y = rect_left_needs_key.y;
+			rect_left_needs_value.z = rect_left_needs_key.z;
+			rect_left_needs_value.w = (s32)((f32)ui.rect_selected_building_detail_panel.w * 0.5f) - (rect_left_needs_value.x - ui.rect_selected_building_detail_panel.x) - 5;
+			rect_left_needs_value.h = rect_left_needs_key.h;
+
+			Rect rect_left_needs_value_inside;
+			rect_left_needs_value_inside.x = rect_left_needs_value.x + 1;
+			rect_left_needs_value_inside.y = rect_left_needs_value.y + 1;
+			rect_left_needs_value_inside.z = rect_left_needs_value.z + 1;
+			rect_left_needs_value_inside.w = rect_left_needs_value.w - 2;
+			rect_left_needs_value_inside.h = rect_left_needs_value.h - 2;
+
+			Rect rect_left_needs_value_inside_positive;
+			rect_left_needs_value_inside_positive.x = rect_left_needs_value_inside.x;
+			rect_left_needs_value_inside_positive.y = rect_left_needs_value_inside.y;
+			rect_left_needs_value_inside_positive.z = rect_left_needs_value_inside.z + 1;
+			rect_left_needs_value_inside_positive.w = rect_left_needs_value_inside.w;
+			rect_left_needs_value_inside_positive.h = rect_left_needs_value_inside.h;
+
 			immediate_text(building->name, rect_building_name, ui.label_theme_title);
 
 			/*left panel*/ {
+
 				if (building->is_home)
 				{
 					auto& occupants{ building->people };
@@ -771,6 +803,64 @@ namespace Can
 						rect_gender.y -= rect_gender.h + 5;
 						rect_name.y = rect_gender.y;
 					}
+				}
+				else if (building->is_hospital)
+				{
+					auto& buildings{ ui.game_scene->m_BuildingManager.m_Buildings };
+
+					u16 used_work_cars{ 5 };
+					u16 total_work_cars{ 15 };
+					auto work_car_used_value{ std::format(": {}/{}", used_work_cars, total_work_cars) };
+					immediate_text(work_car_used_key, rect_left_needs_key, ui.label_theme_left_alinged_small_black_text);
+					immediate_text(work_car_used_value, rect_left_needs_value, ui.label_theme_left_alinged_small_black_text);
+
+					rect_key.y -= rect_key.h + 5;
+					rect_value.y = rect_key.y;
+					rect_left_needs_key.y = rect_key.y;
+					rect_left_needs_value.y = rect_key.y;
+					rect_left_needs_value_inside.y = rect_key.y + 1;
+					rect_left_needs_value_inside_positive.y = rect_key.y + 1;
+
+					u32 total_homes{ 0 };
+					u32 total_work_places{ 0 };
+					f32 total_healt_homes{ 0 };
+					f32 total_healt_work_places{ 0 };
+					for (auto building : buildings)
+					{
+						if (building->is_home)
+						{
+							++total_homes;
+							total_healt_homes += building->curent_health / building->max_health;
+						}
+						else
+						{
+							++total_work_places;
+							total_healt_work_places += building->curent_health / building->max_health;
+						}
+					}
+
+					f32 ratio{ total_healt_homes / total_homes };
+					v4 color_homes_health_avg{ Math::lerp(color_red, color_green, ratio) };
+					rect_left_needs_value_inside_positive.w = (s32)((f32)(rect_left_needs_value.w - 2) * ratio);
+					immediate_text(homes_health_avg_key, rect_left_needs_key, ui.label_theme_left_alinged_small_black_text);
+					immediate_quad(rect_left_needs_value, color_black);
+					immediate_quad(rect_left_needs_value_inside, color_white);
+					immediate_quad(rect_left_needs_value_inside_positive, color_homes_health_avg);
+
+					rect_key.y -= rect_key.h + 5;
+					rect_value.y = rect_key.y;
+					rect_left_needs_key.y = rect_key.y;
+					rect_left_needs_value.y = rect_key.y;
+					rect_left_needs_value_inside.y = rect_key.y + 1;
+					rect_left_needs_value_inside_positive.y = rect_key.y + 1;
+
+					ratio = total_healt_work_places / total_work_places;
+					v4 color_work_places_health_avg{ Math::lerp(color_red, color_green, ratio) };
+					rect_left_needs_value_inside_positive.w = (s32)((f32)(rect_left_needs_value.w - 2) * ratio);
+					immediate_text(work_places_health_avg_key, rect_left_needs_key, ui.label_theme_left_alinged_small_black_text);
+					immediate_quad(rect_left_needs_value, color_black);
+					immediate_quad(rect_left_needs_value_inside, color_white);
+					immediate_quad(rect_left_needs_value_inside_positive, color_work_places_health_avg);
 				}
 				else
 				{
@@ -905,6 +995,15 @@ namespace Can
 					auto currently_working_value{ std::format(": {}/{}", currently_working, workers.size()) };
 					immediate_text(currently_working_key, rect_key, ui.label_theme_left_alinged_small_black_text);
 					immediate_text(currently_working_value, rect_value, ui.label_theme_left_alinged_small_black_text);
+
+					rect_key.y -= rect_key.h + 5;
+					rect_value.y = rect_key.y;
+
+					u16 used_work_cars = 5;
+					u16 total_work_cars = 15;
+					auto work_car_used_value{ std::format(": {}/{}", used_work_cars, total_work_cars) };
+					immediate_text(work_car_used_key, rect_key, ui.label_theme_left_alinged_small_black_text);
+					immediate_text(work_car_used_value, rect_value, ui.label_theme_left_alinged_small_black_text);
 
 					rect_key.y -= rect_key.h + 5;
 					rect_value.y = rect_key.y;

@@ -31,7 +31,12 @@ namespace Can
 		f32 snapped_t = 0.0f;
 		u16 capacity = 0;
 		bool snapped_to_right = true;
+
 		bool is_home = true;
+		bool is_hospital = true;
+		bool is_police_station = false;
+		bool is_fire_department = false;
+		
 		std::vector<class Person*> people{};
 		std::vector<class Car*> vehicles{};
 		Object* object = nullptr;
