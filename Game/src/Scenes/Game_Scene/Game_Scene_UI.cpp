@@ -9,7 +9,6 @@
 #include "Can/Camera/Perspective_Camera_Controller.h"
 #include "Can/Renderer/Object.h"
 
-
 #include "Can/Font/FontFlags.h"
 #include "GameApp.h"
 #include "Helper.h"
@@ -183,10 +182,10 @@ namespace Can
 
 				flags = immediate_image_button(menu_item_rect, ui.button_theme_sub_menus, nullptr, __LINE__);
 				menu_item_rect.z++;
-				immediate_text("F", menu_item_rect, ui.label_theme_large_text);
+				immediate_text("G", menu_item_rect, ui.label_theme_large_text);
 				if (flags & BUTTON_STATE_FLAGS_RELEASED)
 				{
-					ui.draw_building_panel_inside_type = Draw_Building_Panel::fire_station;
+					ui.draw_building_panel_inside_type = Draw_Building_Panel::garbage_collection_facility;
 				}
 				menu_item_rect.x += menu_item_rect.w + button_margin;
 
@@ -200,7 +199,7 @@ namespace Can
 			}
 			else if (ui.draw_building_panel_inside_type == Draw_Building_Panel::housing)
 			{
-				for (u64 i = 0; i < ui.housing_building_tumbnail_image_files.size(); i++)
+				for (u64 i{ 0 }; i < ui.housing_building_tumbnail_image_files.size(); ++i)
 				{
 					flags = immediate_image_button(menu_item_rect, ui.button_theme_buildings, ui.housing_building_tumbnail_image_files[i], __LINE__ * 10000 + i, false);
 					if (flags & BUTTON_STATE_FLAGS_RELEASED)
@@ -224,7 +223,7 @@ namespace Can
 			}
 			else if (ui.draw_building_panel_inside_type == Draw_Building_Panel::commercial)
 			{
-				for (u64 i = 0; i < ui.commercial_building_tumbnail_image_files.size(); i++)
+				for (u64 i{ 0 }; i < ui.commercial_building_tumbnail_image_files.size(); ++i)
 				{
 					flags = immediate_image_button(menu_item_rect, ui.button_theme_buildings, ui.commercial_building_tumbnail_image_files[i], __LINE__ * 10000 + i, false);
 					if (flags & BUTTON_STATE_FLAGS_RELEASED)
@@ -243,7 +242,7 @@ namespace Can
 			}
 			else if (ui.draw_building_panel_inside_type == Draw_Building_Panel::industry)
 			{
-				for (u64 i = 0; i < ui.industry_building_tumbnail_image_files.size(); i++)
+				for (u64 i{ 0 }; i < ui.industry_building_tumbnail_image_files.size(); ++i)
 				{
 					flags = immediate_image_button(menu_item_rect, ui.button_theme_buildings, ui.industry_building_tumbnail_image_files[i], __LINE__ * 10000 + i, false);
 					if (flags & BUTTON_STATE_FLAGS_RELEASED)
@@ -262,7 +261,7 @@ namespace Can
 			}
 			else if (ui.draw_building_panel_inside_type == Draw_Building_Panel::hospital)
 			{
-				for (u64 i = 0; i < ui.hospital_building_tumbnail_image_files.size(); i++)
+				for (u64 i{ 0 }; i < ui.hospital_building_tumbnail_image_files.size(); ++i)
 				{
 					flags = immediate_image_button(menu_item_rect, ui.button_theme_buildings, ui.hospital_building_tumbnail_image_files[i], __LINE__ * 10000 + i, false);
 					if (flags & BUTTON_STATE_FLAGS_RELEASED)
@@ -281,7 +280,7 @@ namespace Can
 			}
 			else if (ui.draw_building_panel_inside_type == Draw_Building_Panel::police)
 			{
-				for (u64 i = 0; i < ui.police_building_tumbnail_image_files.size(); i++)
+				for (u64 i{ 0 }; i < ui.police_building_tumbnail_image_files.size(); ++i)
 				{
 					flags = immediate_image_button(menu_item_rect, ui.button_theme_buildings, ui.police_building_tumbnail_image_files[i], __LINE__ * 10000 + i, false);
 					if (flags & BUTTON_STATE_FLAGS_RELEASED)
@@ -298,11 +297,11 @@ namespace Can
 					ui.draw_building_panel_inside_type = Draw_Building_Panel::special;
 				}
 			}
-			else if (ui.draw_building_panel_inside_type == Draw_Building_Panel::fire_station)
+			else if (ui.draw_building_panel_inside_type == Draw_Building_Panel::garbage_collection_facility)
 			{
-				for (u64 i = 0; i < ui.fire_station_building_tumbnail_image_files.size(); i++)
+				for (u64 i{ 0 }; i < ui.garbage_collection_facility_building_tumbnail_image_files.size(); ++i)
 				{
-					flags = immediate_image_button(menu_item_rect, ui.button_theme_buildings, ui.fire_station_building_tumbnail_image_files[i], __LINE__ * 10000 + i, false);
+					flags = immediate_image_button(menu_item_rect, ui.button_theme_buildings, ui.garbage_collection_facility_building_tumbnail_image_files[i], __LINE__ * 10000 + i, false);
 					if (flags & BUTTON_STATE_FLAGS_RELEASED)
 					{
 					}
@@ -648,17 +647,25 @@ namespace Can
 			const std::string currently_working_key{ "Currently Working" };
 			const std::string working_distribution_key{ "(Driving)/(At Building)" };
 			const std::string work_car_used_key{ "Work Car Used" };
+			const std::string total_crime_reported_key{ "Total Crime Reported" };
 			const std::string occupants_key{ "Occupants" };
 			const std::string workers_key{ "Workers" };
 			const std::string health_key{ "Health" };
 			const std::string homes_health_avg_key{ "Homes Health Avg" };
-			const std::string work_places_health_avg_key{ "Work Places Health Avg" };
-			const std::string electric_key{ "Electric" };
+			const std::string work_places_health_key{ "Work Places Health Avg" };
+			const std::string homes_garbage_key{ "Homes Garbage" };
+			const std::string work_places_garbage_avg_key{ "Work Places Garbage" };
+			const std::string electricity_key{ "Electricity" };
 			const std::string garbage_key{ "Garbage" };
+			const std::string garbage_capacity_key{ "Garbage Capacity" };
 			const std::string water_key{ "Water" };
 			const std::string water_waste_key{ "Water Waste" };
 			const std::string police_key{ "Police" };
 			const std::string happiness_key{ "Happiness" };
+			const std::string patients_key{ "Patients" };
+			const std::string inpatients_key{ "Inpatients" };
+			const std::string complainants_key{ "Complainants" };
+			const std::string prisoners_key{ "Prisoners" };
 
 			Rect rect_button_cross;
 			rect_button_cross.w = 40;
@@ -823,23 +830,23 @@ namespace Can
 
 					u32 total_homes{ 0 };
 					u32 total_work_places{ 0 };
-					f32 total_healt_homes{ 0 };
-					f32 total_healt_work_places{ 0 };
-					for (auto building : buildings)
+					f32 total_health_homes{ 0 };
+					f32 total_health_work_places{ 0 };
+					for (auto b : buildings)
 					{
-						if (building->is_home)
+						if (b->is_home)
 						{
 							++total_homes;
-							total_healt_homes += building->curent_health / building->max_health;
+							total_health_homes += b->current_health / b->max_health;
 						}
 						else
 						{
 							++total_work_places;
-							total_healt_work_places += building->curent_health / building->max_health;
+							total_health_work_places += b->current_health / b->max_health;
 						}
 					}
 
-					f32 ratio{ total_healt_homes / total_homes };
+					f32 ratio{ total_health_homes / total_homes };
 					v4 color_homes_health_avg{ Math::lerp(color_red, color_green, ratio) };
 					rect_left_needs_value_inside_positive.w = (s32)((f32)(rect_left_needs_value.w - 2) * ratio);
 					immediate_text(homes_health_avg_key, rect_left_needs_key, ui.label_theme_left_alinged_small_black_text);
@@ -854,13 +861,141 @@ namespace Can
 					rect_left_needs_value_inside.y = rect_key.y + 1;
 					rect_left_needs_value_inside_positive.y = rect_key.y + 1;
 
-					ratio = total_healt_work_places / total_work_places;
+					ratio = total_health_work_places / total_work_places;
 					v4 color_work_places_health_avg{ Math::lerp(color_red, color_green, ratio) };
 					rect_left_needs_value_inside_positive.w = (s32)((f32)(rect_left_needs_value.w - 2) * ratio);
-					immediate_text(work_places_health_avg_key, rect_left_needs_key, ui.label_theme_left_alinged_small_black_text);
+					immediate_text(work_places_health_key, rect_left_needs_key, ui.label_theme_left_alinged_small_black_text);
 					immediate_quad(rect_left_needs_value, color_black);
 					immediate_quad(rect_left_needs_value_inside, color_white);
 					immediate_quad(rect_left_needs_value_inside_positive, color_work_places_health_avg);
+
+					rect_left_needs_key.y -= rect_left_needs_key.h + 10;
+					rect_left_needs_value.y = rect_left_needs_key.y;
+
+					auto patients_value{ std::format(": {}/{}", building->visitors.size(), building->visitor_capacity) };
+					immediate_text(patients_key, rect_left_needs_key, ui.label_theme_left_alinged_small_black_text);
+					immediate_text(patients_value, rect_left_needs_value, ui.label_theme_left_alinged_small_black_text);
+
+					rect_left_needs_key.y -= rect_left_needs_key.h + 10;
+					rect_left_needs_value.y = rect_left_needs_key.y;
+
+					auto inpatients_value{ std::format(": {}/{}", building->visitors.size(), building->stay_visitor_capacity) };
+					immediate_text(inpatients_key, rect_left_needs_key, ui.label_theme_left_alinged_small_black_text);
+					immediate_text(inpatients_value, rect_left_needs_value, ui.label_theme_left_alinged_small_black_text);
+				}
+				else if (building->is_police_station)
+				{
+					auto& buildings{ ui.game_scene->m_BuildingManager.m_Buildings };
+
+					u16 used_work_cars{ 5 };
+					u16 total_work_cars{ 15 };
+					auto work_car_used_value{ std::format(": {}/{}", used_work_cars, total_work_cars) };
+					immediate_text(work_car_used_key, rect_left_needs_key, ui.label_theme_left_alinged_small_black_text);
+					immediate_text(work_car_used_value, rect_left_needs_value, ui.label_theme_left_alinged_small_black_text);
+
+					rect_left_needs_key.y -= rect_left_needs_key.h + 5;
+					rect_left_needs_value.y = rect_left_needs_key.y;
+
+					u32 total_crime_reported{ 0 };
+					for (auto b : buildings)
+						total_crime_reported += b->crime_reported;
+
+					auto total_crime_reported_value{ std::format(": {}", total_crime_reported) };
+					immediate_text(total_crime_reported_key, rect_left_needs_key, ui.label_theme_left_alinged_small_black_text);
+					immediate_text(total_crime_reported_value, rect_left_needs_value, ui.label_theme_left_alinged_small_black_text);
+
+					rect_left_needs_key.y -= rect_left_needs_key.h + 10;
+					rect_left_needs_value.y = rect_left_needs_key.y;
+
+					auto complainants_value{ std::format(": {}/{}", building->visitors.size(), building->visitor_capacity) };
+					immediate_text(complainants_key, rect_left_needs_key, ui.label_theme_left_alinged_small_black_text);
+					immediate_text(complainants_value, rect_left_needs_value, ui.label_theme_left_alinged_small_black_text);
+
+					rect_left_needs_key.y -= rect_left_needs_key.h + 10;
+					rect_left_needs_value.y = rect_left_needs_key.y;
+
+					auto prisoners_value{ std::format(": {}/{}", building->visitors.size(), building->stay_visitor_capacity) };
+					immediate_text(prisoners_key, rect_left_needs_key, ui.label_theme_left_alinged_small_black_text);
+					immediate_text(prisoners_value, rect_left_needs_value, ui.label_theme_left_alinged_small_black_text);
+				}
+				else if (building->is_gmf)
+				{
+					auto& buildings{ ui.game_scene->m_BuildingManager.m_Buildings };
+
+					u16 used_work_cars{ 5 };
+					u16 total_work_cars{ 15 };
+					auto work_car_used_value{ std::format(": {}/{}", used_work_cars, total_work_cars) };
+					immediate_text(work_car_used_key, rect_left_needs_key, ui.label_theme_left_alinged_small_black_text);
+					immediate_text(work_car_used_value, rect_left_needs_value, ui.label_theme_left_alinged_small_black_text);
+
+					rect_left_needs_key.y -= rect_left_needs_key.h + 5;
+					rect_left_needs_value.y = rect_left_needs_key.y;
+					rect_left_needs_value_inside.y = rect_left_needs_key.y + 1;
+					rect_left_needs_value_inside_positive.y = rect_left_needs_key.y + 1;
+
+					u32 total_homes{ 0 };
+					u32 total_work_places{ 0 };
+					f32 total_garbage_homes{ 0 };
+					f32 total_garbage_work_places{ 0 };
+					for (auto b : buildings)
+					{
+						if (b->is_home)
+						{
+							++total_homes;
+							total_garbage_homes += b->current_garbage / b->garbage_capacity;
+						}
+						else
+						{
+							++total_work_places;
+							total_garbage_work_places += b->current_garbage / b->garbage_capacity;
+						}
+					}
+
+					f32 ratio{ total_garbage_homes / total_homes };
+					v4 color_homes_garbage_avg{ Math::lerp(color_red, color_green, ratio) };
+					rect_left_needs_value_inside_positive.w = (s32)((f32)(rect_left_needs_value.w - 2) * ratio);
+					immediate_text(homes_garbage_key, rect_left_needs_key, ui.label_theme_left_alinged_small_black_text);
+					immediate_quad(rect_left_needs_value, color_black);
+					immediate_quad(rect_left_needs_value_inside, color_white);
+					immediate_quad(rect_left_needs_value_inside_positive, color_homes_garbage_avg);
+
+					rect_left_needs_key.y -= rect_left_needs_key.h + 5;
+					rect_left_needs_value.y = rect_left_needs_key.y;
+					rect_left_needs_value_inside.y = rect_left_needs_key.y + 1;
+					rect_left_needs_value_inside_positive.y = rect_left_needs_key.y + 1;
+
+					ratio = total_garbage_work_places / total_work_places;
+					v4 color_work_places_garbage_avg{ Math::lerp(color_red, color_green, ratio) };
+					rect_left_needs_value_inside_positive.w = (s32)((f32)(rect_left_needs_value.w - 2) * ratio);
+					immediate_text(work_places_garbage_avg_key, rect_left_needs_key, ui.label_theme_left_alinged_small_black_text);
+					immediate_quad(rect_left_needs_value, color_black);
+					immediate_quad(rect_left_needs_value_inside, color_white);
+					immediate_quad(rect_left_needs_value_inside_positive, color_work_places_garbage_avg);
+
+					rect_left_needs_key.y -= rect_left_needs_key.h + 10;
+					rect_left_needs_value.y = rect_left_needs_key.y;
+					rect_left_needs_value_inside.y = rect_left_needs_key.y + 1;
+					rect_left_needs_value_inside_positive.y = rect_left_needs_key.y + 1;
+
+					f32 used_garbage_capacity{ 5.2f };
+					f32 garbage_capacity{ 15.0f };
+					auto garbage_capacity_value{ std::format(": {} t / {} t", used_garbage_capacity, garbage_capacity) };
+					immediate_text(garbage_capacity_key, rect_left_needs_key, ui.label_theme_left_alinged_small_black_text);
+					immediate_text(garbage_capacity_value, rect_left_needs_value, ui.label_theme_left_alinged_small_black_text);
+
+
+					rect_left_needs_key.y -= rect_left_needs_key.h + 5;
+					rect_left_needs_value.y = rect_left_needs_key.y;
+					rect_left_needs_value_inside.y = rect_left_needs_key.y + 1;
+					rect_left_needs_value_inside_positive.y = rect_left_needs_key.y + 1;
+
+					ratio = used_garbage_capacity / garbage_capacity;
+					v4 color_garbage_usage{ Math::lerp(color_green, color_red, ratio) };
+					rect_left_needs_value_inside_positive.w = (s32)((f32)(rect_left_needs_value.w - 2) * ratio);
+					immediate_text(garbage_capacity_key, rect_left_needs_key, ui.label_theme_left_alinged_small_black_text);
+					immediate_quad(rect_left_needs_value, color_black);
+					immediate_quad(rect_left_needs_value_inside, color_white);
+					immediate_quad(rect_left_needs_value_inside_positive, color_garbage_usage);
 				}
 				else
 				{
@@ -1058,16 +1193,24 @@ namespace Can
 					}
 				}
 			}
-			/*right panel*/{
+			/*right panel*/ {
 				auto& occupants{ building->people };
 				// Health
-				f32 ratio{ building->curent_health / building->max_health };
-				v4 color_health{ Math::lerp(color_red, color_green, ratio) };
-				rect_needs_value_inside_positive.w = (s32)((f32)(rect_needs_value.w - 2) * ratio);
-				immediate_text(health_key, rect_needs_key, ui.label_theme_left_alinged_small_black_text);
-				immediate_quad(rect_needs_value, color_black);
-				immediate_quad(rect_needs_value_inside, color_white);
-				immediate_quad(rect_needs_value_inside_positive, color_health);
+				f32 ratio{};
+				if (!building->is_hospital)
+				{
+					ratio = building->current_health / building->max_health;
+					v4 color_health{ Math::lerp(color_red, color_green, ratio) };
+					rect_needs_value_inside_positive.w = (s32)((f32)(rect_needs_value.w - 2) * ratio);
+					immediate_text(health_key, rect_needs_key, ui.label_theme_left_alinged_small_black_text);
+					immediate_quad(rect_needs_value, color_black);
+					immediate_quad(rect_needs_value_inside, color_white);
+					immediate_quad(rect_needs_value_inside_positive, color_health);
+				}
+				else
+				{
+					rect_needs_key.y += rect_needs_key.h + 20;
+				}
 
 				// Electric
 				rect_needs_key.y -= rect_needs_key.h + 20;
@@ -1078,25 +1221,28 @@ namespace Can
 				auto& electricity_need{ building->electricity_need };
 				auto& electricity_provided{ building->electricity_provided };
 				const auto electricity_value{ std::format("{} kwh / {} kwh", electricity_need, electricity_provided) };
-				immediate_text(electric_key, rect_needs_key, ui.label_theme_left_alinged_small_black_text);
+				immediate_text(electricity_key, rect_needs_key, ui.label_theme_left_alinged_small_black_text);
 				if (electricity_need <= electricity_provided)
 					immediate_text(electricity_value, rect_needs_value, ui.label_theme_left_alinged_xsmall_black_text);
 				else
 					immediate_text(electricity_value, rect_needs_value, ui.label_theme_left_alinged_xsmall_red_text);
 
 				// Garbage
-				rect_needs_key.y -= rect_needs_key.h + 20;
-				rect_needs_value.y = rect_needs_key.y;
-				rect_needs_value_inside.y = rect_needs_key.y + 1;
-				rect_needs_value_inside_positive.y = rect_needs_key.y + 1;
+				if(!building->is_gmf)
+				{
+					rect_needs_key.y -= rect_needs_key.h + 20;
+					rect_needs_value.y = rect_needs_key.y;
+					rect_needs_value_inside.y = rect_needs_key.y + 1;
+					rect_needs_value_inside_positive.y = rect_needs_key.y + 1;
 
-				ratio = building->current_garbage / building->garbage_capacity;
-				v4 color_garbage{ Math::lerp(color_green, color_red, ratio) };
-				rect_needs_value_inside_positive.w = (s32)((f32)(rect_needs_value.w - 2) * ratio);
-				immediate_text(garbage_key, rect_needs_key, ui.label_theme_left_alinged_small_black_text);
-				immediate_quad(rect_needs_value, color_black);
-				immediate_quad(rect_needs_value_inside, color_white);
-				immediate_quad(rect_needs_value_inside_positive, color_garbage);
+					ratio = building->current_garbage / building->garbage_capacity;
+					v4 color_garbage{ Math::lerp(color_green, color_red, ratio) };
+					rect_needs_value_inside_positive.w = (s32)((f32)(rect_needs_value.w - 2) * ratio);
+					immediate_text(garbage_key, rect_needs_key, ui.label_theme_left_alinged_small_black_text);
+					immediate_quad(rect_needs_value, color_black);
+					immediate_quad(rect_needs_value_inside, color_white);
+					immediate_quad(rect_needs_value_inside_positive, color_garbage);
+				}
 
 				// Water
 				rect_needs_key.y -= rect_needs_key.h + 20;
@@ -1129,17 +1275,20 @@ namespace Can
 					immediate_text(water_waste_value, rect_needs_value, ui.label_theme_left_alinged_xsmall_red_text);
 
 				// Police
-				rect_needs_key.y -= rect_needs_key.h + 20;
-				rect_needs_value.y = rect_needs_key.y;
-				rect_needs_value_inside.y = rect_needs_key.y + 1;
-				rect_needs_value_inside_positive.y = rect_needs_key.y + 1;
+				if (!building->is_police_station)
+				{
+					rect_needs_key.y -= rect_needs_key.h + 20;
+					rect_needs_value.y = rect_needs_key.y;
+					rect_needs_value_inside.y = rect_needs_key.y + 1;
+					rect_needs_value_inside_positive.y = rect_needs_key.y + 1;
 
-				const auto police_value{ std::format("{} crime reported", building->crime_reported) };
-				immediate_text(police_key, rect_needs_key, ui.label_theme_left_alinged_small_black_text);
-				if (building->crime_reported > 0)
-					immediate_text(police_value, rect_needs_value, ui.label_theme_left_alinged_xsmall_red_text);
-				else
-					immediate_text(police_value, rect_needs_value, ui.label_theme_left_alinged_xsmall_black_text);
+					const auto police_value{ std::format("{} crime reported", building->crime_reported) };
+					immediate_text(police_key, rect_needs_key, ui.label_theme_left_alinged_small_black_text);
+					if (building->crime_reported > 0)
+						immediate_text(police_value, rect_needs_value, ui.label_theme_left_alinged_xsmall_red_text);
+					else
+						immediate_text(police_value, rect_needs_value, ui.label_theme_left_alinged_xsmall_black_text);
+				}
 
 				// Happiness
 				rect_needs_key.y -= rect_needs_key.h + 20;

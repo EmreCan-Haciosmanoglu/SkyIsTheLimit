@@ -14,7 +14,7 @@ namespace Can
 		industry = 5,
 		hospital = 6,
 		police = 7,
-		fire_station = 8
+		garbage_collection_facility = 8
 	};
 
 	class Object;
@@ -31,7 +31,7 @@ namespace Can
 		bool OnUpdate(TimeStep ts) override;
 		void OnEvent(Event::Event& event) override;
 
-		void* font = nullptr;
+		void* font{ nullptr };
 		Orthographic_Camera_Controller camera_controller;
 
 		Label_Theme label_theme_title;
@@ -81,15 +81,15 @@ namespace Can
 		};
 
 
-		Object* focus_object = nullptr;
-		Building* selected_building = nullptr;
-		GameScene* game_scene = nullptr;
-		Perspective_Camera* game_scene_camera = nullptr;
+		Object* focus_object{ nullptr };
+		Building* selected_building{ nullptr };
+		GameScene* game_scene{ nullptr };
+		Perspective_Camera* game_scene_camera{ nullptr };
 
-		bool force_update = false;
-		bool draw_building_panel = false;
+		bool force_update{ false };
+		bool draw_building_panel{ false };
 
-		Draw_Building_Panel draw_building_panel_inside_type = Draw_Building_Panel::home;
+		Draw_Building_Panel draw_building_panel_inside_type{ Draw_Building_Panel::home };
 
 		std::vector<Can::Ref<Can::Texture2D>> housing_building_tumbnail_image_files{};
 		std::vector<Can::Ref<Can::Texture2D>> commercial_building_tumbnail_image_files{};
@@ -97,7 +97,7 @@ namespace Can
 
 		std::vector<Can::Ref<Can::Texture2D>> hospital_building_tumbnail_image_files{};
 		std::vector<Can::Ref<Can::Texture2D>> police_building_tumbnail_image_files{};
-		std::vector<Can::Ref<Can::Texture2D>> fire_station_building_tumbnail_image_files{};
+		std::vector<Can::Ref<Can::Texture2D>> garbage_collection_facility_building_tumbnail_image_files{};
 	};
 
 	void init_game_scene_ui_layer(Game_Scene_UI& ui, GameScene& game_scene);
