@@ -19,10 +19,10 @@ namespace Can
 	/*Anom*/ namespace {
 		void draw_building_panel(Game_Scene_UI& ui)
 		{
-			auto app = GameApp::instance;
-			auto& window = main_application->GetWindow();
-			u64 width_in_pixels = window.GetWidth();
-			u64 height_in_pixels = window.GetHeight();
+			auto app{ GameApp::instance };
+			auto& window{ main_application->GetWindow() };
+			u64 width_in_pixels{ window.GetWidth() };
+			u64 height_in_pixels{ window.GetHeight() };
 
 			constexpr s32 building_panel_margins{ 10 };
 			constexpr s32 button_margin{ 10 };
@@ -443,9 +443,9 @@ namespace Can
 			ui.sub_region_theme_details.flags |= SUB_REGION_THEME_FLAGS_VERTICALLY_SCROLLABLE;
 		}
 		namespace fs = std::filesystem;
-		std::string s = fs::current_path().string();
-		std::string pathh = s + "\\assets\\objects\\Houses";
-		auto files = Helper::GetFiles(pathh, "Thumbnail_", ".png");
+		std::string s{ fs::current_path().string() };
+		std::string pathh{ s + "\\assets\\objects\\Houses" };
+		auto files{ Helper::GetFiles(pathh, "Thumbnail_", ".png") };
 		for (auto& f : files)
 			ui.housing_building_tumbnail_image_files.push_back(Texture2D::Create(f));
 	}
@@ -513,7 +513,7 @@ namespace Can
 
 		if (ui.focus_object)
 		{
-			v4 position_on_screen = ui.game_scene_camera->view_projection * ui.focus_object->transform * v4(0.0f, 0.0f, ui.focus_object->prefab->boundingBoxM.z, 1.0f);
+			v4 position_on_screen{ ui.game_scene_camera->view_projection * ui.focus_object->transform * v4(0.0f, 0.0f, ui.focus_object->prefab->boundingBoxM.z, 1.0f) };
 			ui.rect_sub_region.x = glm::clamp(
 				u32(glm::clamp(position_on_screen.x / position_on_screen.w + 1.0f, 0.0f, 2.0f) * width_in_pixels * 0.5f),
 				0U,
@@ -528,8 +528,8 @@ namespace Can
 
 		if (ui.selected_building)
 		{
-			auto obj = ui.selected_building->object;
-			v4 position_on_screen = ui.game_scene_camera->view_projection * obj->transform * v4(0.0f, 0.0f, obj->prefab->boundingBoxM.z, 1.0f);
+			auto obj{ ui.selected_building->object };
+			v4 position_on_screen{ ui.game_scene_camera->view_projection * obj->transform * v4(0.0f, 0.0f, obj->prefab->boundingBoxM.z, 1.0f) };
 			ui.rect_selected_building_detail_panel.x = glm::clamp(
 				(u32)(glm::clamp(position_on_screen.x / position_on_screen.w + 1.0f, 0.0f, 2.0f) * width_in_pixels * 0.5f),
 				0U,
@@ -1228,7 +1228,7 @@ namespace Can
 					immediate_text(electricity_value, rect_needs_value, ui.label_theme_left_alinged_xsmall_red_text);
 
 				// Garbage
-				if(!building->is_gmf)
+				if (!building->is_gmf)
 				{
 					rect_needs_key.y -= rect_needs_key.h + 20;
 					rect_needs_value.y = rect_needs_key.y;
