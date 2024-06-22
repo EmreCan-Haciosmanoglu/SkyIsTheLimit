@@ -135,11 +135,11 @@ namespace Can
 			v3{ 0.0f, 0.0f, 1.0f * COLOR_COUNT },
 			v3{ 0.0f, 0.0f, 1.0f }
 		);
-		bool inside_game_zone = Helper::CheckBoundingBoxHit(
+		bool inside_game_zone = Helper::check_if_ray_intersects_with_bounding_box(
 			camPos,
 			forward,
-			m_Terrain->prefab->boundingBoxL,
-			m_Terrain->prefab->boundingBoxM
+			m_Terrain->prefab->boundingBoxL + m_Terrain->position,
+			m_Terrain->prefab->boundingBoxM + m_Terrain->position
 		);
 		if (!inside_game_zone)
 			return false;
@@ -508,6 +508,8 @@ namespace Can
 					person->car_driving = cars[car_index];
 					cars[car_index]->driver = person;
 				}
+				u8 education_level = Utility::Random::unsigned_8((u8)PersonEducationLevel::Doctorate + 1);
+				person->education = (PersonEducationLevel)education_level;
 				people.push_back(person);
 			}
 		}
@@ -852,15 +854,17 @@ namespace Can
 
 	bool does_select_object(GameScene& game_scene)
 	{
-		auto& people = game_scene.m_PersonManager.m_People;
-		auto& cars = game_scene.m_CarManager.m_Cars;
+		auto& people{ game_scene.m_PersonManager.m_People };
+		auto& cars{ game_scene.m_CarManager.m_Cars };
+		auto& buildings{ game_scene.m_BuildingManager.m_Buildings};
 
-		v3 cameraPosition = game_scene.camera_controller.camera.position;
-		v3 forward = game_scene.GetRayCastedFromScreen();
+		v3 cameraPosition{ game_scene.camera_controller.camera.position };
+		v3 forward{ game_scene.GetRayCastedFromScreen() };
 
 		for (auto person : people)
 		{
-			if (Helper::CheckBoundingBoxHit(
+			//TODO: Change to rotated bounding box collision
+			if (Helper::check_if_ray_intersects_with_bounding_box(
 				cameraPosition,
 				forward,
 				person->object->prefab->boundingBoxL + person->position,
@@ -874,7 +878,8 @@ namespace Can
 
 		for (auto car : cars)
 		{
-			if (Helper::CheckBoundingBoxHit(
+			//TODO: Change to rotated bounding box collision
+			if (Helper::check_if_ray_intersects_with_bounding_box(
 				cameraPosition,
 				forward,
 				car->object->prefab->boundingBoxL + car->object->position,
@@ -885,6 +890,23 @@ namespace Can
 				return true;
 			}
 		}
+
+		for (auto building : buildings)
+		{
+			//TODO: Change to rotated bounding box collision
+			if (Helper::check_if_ray_intersects_with_bounding_box(
+				cameraPosition,
+				forward,
+				building->object->prefab->boundingBoxL + building->object->position,
+				building->object->prefab->boundingBoxM + building->object->position
+			))
+			{
+				game_scene.ui_layer.selected_building = building;
+				return true;
+			}
+		}
+
+
 		return false;
 	}
 }

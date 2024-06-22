@@ -9,25 +9,29 @@
 
 namespace  Can::Helper
 {
-	bool CheckBoundingBoxHit(const v3& rayStartPoint, const v3& ray, const v3& least, const v3& most)
+	bool check_if_ray_intersects_with_bounding_box(const v3& ray_start_point, const v3& ray, const v3& mins, const v3& maxs)
 	{
-		v3 leftPlaneCP = Math::ray_plane_intersection(rayStartPoint, ray, { least.x, 0.0f, 0.0f }, { 1.0f, 0.0f, 0.0f });
-		v3 rigthPlaneCP = Math::ray_plane_intersection(rayStartPoint, ray, { most.x, 0.0f, 0.0f }, { 1.0f, 0.0f, 0.0f });
+		v3 xxx{ 1.0f, 0.0f, 0.0f };
+		v3 yyy{ 0.0f, 1.0f, 0.0f };
+		v3 zzz{ 0.0f, 0.0f, 1.0f };
 
-		v3 bottomPlaneCP = Math::ray_plane_intersection(rayStartPoint, ray, { 0.0f, least.y, 0.0f }, { 0.0f, 1.0f, 0.0f });
-		v3 topPlaneCP = Math::ray_plane_intersection(rayStartPoint, ray, { 0.0f, most.y, 0.0f }, { 0.0f, 1.0f, 0.0f });
+		v3 leftPCP{ Math::ray_plane_intersection(ray_start_point, ray, { mins.x, 0.0f, 0.0f }, xxx) };
+		v3 rigthPCP{ Math::ray_plane_intersection(ray_start_point, ray, { maxs.x, 0.0f, 0.0f }, xxx) };
 
-		v3 nearPlaneCP = Math::ray_plane_intersection(rayStartPoint, ray, { 0.0f, 0.0f, least.z }, { 0.0f, 0.0f, 1.0f });
-		v3 farPlaneCP = Math::ray_plane_intersection(rayStartPoint, ray, { 0.0f, 0.0f, most.z }, { 0.0f, 0.0f, 1.0f });
+		v3 bottomPCP{ Math::ray_plane_intersection(ray_start_point, ray, { 0.0f, mins.y, 0.0f }, yyy) };
+		v3 topPCP{ Math::ray_plane_intersection(ray_start_point, ray, { 0.0f, maxs.y, 0.0f }, yyy) };
+
+		v3 nearPCP{ Math::ray_plane_intersection(ray_start_point, ray, { 0.0f, 0.0f, mins.z }, zzz) };
+		v3 farPCP{ Math::ray_plane_intersection(ray_start_point, ray, { 0.0f, 0.0f, maxs.z }, zzz) };
 
 
 		return
-			(bottomPlaneCP.x >= least.x && bottomPlaneCP.x <= most.x && bottomPlaneCP.z >= least.z && bottomPlaneCP.z <= most.z) ||
-			(topPlaneCP.x >= least.x && topPlaneCP.x <= most.x && topPlaneCP.z >= least.z && topPlaneCP.z <= most.z) ||
-			(leftPlaneCP.y >= least.y && leftPlaneCP.y <= most.y && leftPlaneCP.z >= least.z && leftPlaneCP.z <= most.z) ||
-			(rigthPlaneCP.y >= least.y && rigthPlaneCP.y <= most.y && rigthPlaneCP.z >= least.z && rigthPlaneCP.z <= most.z) ||
-			(nearPlaneCP.x >= least.x && nearPlaneCP.x <= most.x && nearPlaneCP.y >= least.y && nearPlaneCP.y <= most.y) ||
-			(farPlaneCP.x >= least.x && farPlaneCP.x <= most.x && farPlaneCP.y >= least.y && farPlaneCP.y <= most.y);
+			(leftPCP.y >= mins.y && leftPCP.y <= maxs.y && leftPCP.z >= mins.z && leftPCP.z <= maxs.z) ||
+			(rigthPCP.y >= mins.y && rigthPCP.y <= maxs.y && rigthPCP.z >= mins.z && rigthPCP.z <= maxs.z) ||
+			(bottomPCP.x >= mins.x && bottomPCP.x <= maxs.x && bottomPCP.z >= mins.z && bottomPCP.z <= maxs.z) ||
+			(topPCP.x >= mins.x && topPCP.x <= maxs.x && topPCP.z >= mins.z && topPCP.z <= maxs.z) ||
+			(nearPCP.x >= mins.x && nearPCP.x <= maxs.x && nearPCP.y >= mins.y && nearPCP.y <= maxs.y) ||
+			(farPCP.x >= mins.x && farPCP.x <= maxs.x && farPCP.y >= mins.y && farPCP.y <= maxs.y);
 	}
 
 	//delete later

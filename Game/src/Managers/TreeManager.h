@@ -56,7 +56,7 @@ namespace Can
 
 		v3 m_GuidelinePosition = v3(0.0f);
 
-		std::vector<Tree*>::iterator& m_SelectedTreeToRemove = m_Trees.end();
+		std::vector<Tree*>::const_iterator m_SelectedTreeToRemove = m_Trees.cend();
 
 		Object* m_Guideline = nullptr;
 

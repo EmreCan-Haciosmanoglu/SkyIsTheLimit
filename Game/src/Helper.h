@@ -17,7 +17,12 @@ namespace Can::Helper
 		s64 next_road_node_index;
 	};
 
-	bool CheckBoundingBoxHit(const v3& rayStartPoint, const v3& ray, const v3& least, const v3& most);
+	bool check_if_ray_intersects_with_bounding_box(
+		const v3& ray_start_point,
+		const v3& ray,
+		const v3& mins,
+		const v3& maxs
+	);
 
 	v2 check_rotated_rectangle_collision(
 		const v2& r1l, const v2& r1m, f32 rot1, const v2& pos1,

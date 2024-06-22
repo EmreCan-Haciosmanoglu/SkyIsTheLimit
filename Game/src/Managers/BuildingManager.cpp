@@ -323,12 +323,12 @@ namespace Can
 	void BuildingManager::OnUpdate_Destruction(v3& prevLocation, const v3& cameraPosition, const v3& cameraDirection)
 	{
 		m_SelectedBuildingToDestruct = m_Buildings.end();
-		for (auto& it = m_Buildings.begin(); it != m_Buildings.end(); ++it)
+		for (auto it = m_Buildings.cbegin(); it != m_Buildings.cend(); ++it)
 		{
 			Building* building = *it;
 			building->object->tintColor = v4(1.0f);
 
-			if (Helper::CheckBoundingBoxHit(
+			if (Helper::check_if_ray_intersects_with_bounding_box(
 				cameraPosition,
 				cameraDirection,
 				building->object->prefab->boundingBoxL + building->position,
@@ -597,7 +597,7 @@ namespace Can
 		auto& home_buildings = game->m_BuildingManager.m_HomeBuildings;
 		auto& work_buildings = game->m_BuildingManager.m_WorkBuildings;
 		auto& segments = game->m_RoadManager.road_segments;
-		auto& people_on_the_road = game->m_PersonManager.get_people_on_the_road();
+		const auto& people_on_the_road = game->m_PersonManager.get_people_on_the_road();
 
 		while (b->people.size() > 0)
 			remove_person(b->people[0]);

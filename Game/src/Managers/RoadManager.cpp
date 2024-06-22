@@ -1565,8 +1565,8 @@ namespace Can
 	bool RoadManager::OnMousePressed_Change()
 	{
 		auto& road_types = m_Scene->MainApplication->road_types;
-		auto& people_on_the_road = m_Scene->m_PersonManager.get_people_on_the_road();
-		auto& cars_on_the_road = m_Scene->m_CarManager.get_cars_on_the_road();
+		const auto& people_on_the_road = m_Scene->m_PersonManager.get_people_on_the_road();
+		const auto& cars_on_the_road = m_Scene->m_CarManager.get_cars_on_the_road();
 
 		if (selected_road_segment == -1)
 			return false;
@@ -2170,7 +2170,7 @@ namespace Can
 		auto& buildings { m_Scene->m_BuildingManager.m_Buildings};
 		auto& cars { m_Scene->m_CarManager.m_Cars};
 		auto& people { m_Scene->m_PersonManager.m_People};
-		auto& people_on_the_road{ m_Scene->m_PersonManager.get_people_on_the_road() };
+		const auto& people_on_the_road{ m_Scene->m_PersonManager.get_people_on_the_road() };
 
 		if (road_segment.elevation_type == 0)
 			Helper::UpdateTheTerrain(&road_segment, true);
@@ -2446,6 +2446,14 @@ namespace Can
 			for (u8 i = 0; i < indices.size(); i++)
 				m_ConstructionPositions[indices[i]].z = m_ConstructionPositions[index].z;
 			AB.z = 0.0f;
+		}
+	}
+	void RoadManager::SnapToHeight(const std::vector<u8>& indices, u8 index, const v3& AB)
+	{
+		if (snapFlags & (u8)RoadSnapOptions::SNAP_TO_HEIGHT)
+		{
+			for (u8 i = 0; i < indices.size(); i++)
+				m_ConstructionPositions[indices[i]].z = m_ConstructionPositions[index].z;
 		}
 	}
 	void RoadManager::SnapToAngle(v3& AB, s64 snappedNode, s64 snappedRoadSegment, u64 snapped_index)
@@ -2806,7 +2814,7 @@ namespace Can
 	void update_path_of_walking_people_if_a_node_is_changed(u64 road_node_index, u64 modified_index, bool isAdded)
 	{
 		u64 addition = isAdded ? +1 : -1;
-		auto& people_on_the_road = GameScene::ActiveGameScene->m_PersonManager.get_people_on_the_road();
+		const auto& people_on_the_road = GameScene::ActiveGameScene->m_PersonManager.get_people_on_the_road();
 		for (Person* person: people_on_the_road)
 		{
 			if (person->status != PersonStatus::Walking) continue;

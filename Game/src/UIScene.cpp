@@ -12,6 +12,7 @@ namespace Can
 		, m_Scene(new Scene())
 	{
 		init_orthographic_camera_controller(m_CameraController, m_AspectRatio, m_ZoomLevel, false);
+		auto& ui = parent->gameScene->ui_layer;
 
 		float width = m_AspectRatio * m_ZoomLevel * 2.0f;
 		float height = m_ZoomLevel * 2.0f;
@@ -128,22 +129,19 @@ namespace Can
 		ButtonConstructorParameters buttonRoadsParams = ButtonConstructorParameters{
 			m_Scene->m_Registry,
 			m_Scene->entityID,
-			v3{ 1.0f, height - 6.5f, 0.0011f },
+			v3{ 1.0f, height - 6.8f, 0.0011f },
 			v2{ 3.0f, 1.0f},
 			v4{ 221.0f / 255.0f, 255.0f / 255.0f, 247.0f / 255.0f, 1.0f },
 			nullptr,
-			[this, height]() {
+			[this, height, &ui]() {
 				if (!Input::IsMouseButtonPressed(MouseCode::Button0))
 					return;
 				entt::registry& mainRegistry = this->m_Scene->m_Registry;
 
 				entt::entity panelRoadsID = this->m_PanelRoads->entityID;
-				entt::entity panelBuildingsID = this->m_PanelBuildings->entityID;
 				entt::entity panelTreesID = this->m_PanelTrees->entityID;
 
-				if (mainRegistry.has<HiddenComponent>(panelBuildingsID) &&
-					mainRegistry.has<HiddenComponent>(panelTreesID)
-					)
+				if (!ui.draw_building_panel && mainRegistry.has<HiddenComponent>(panelTreesID))
 				{
 					entt::entity buttonRoadsID = this->m_ButtonRoads->entityID;
 					entt::entity buttonBuildingsID = this->m_ButtonBuildings->entityID;
@@ -173,9 +171,8 @@ namespace Can
 				else
 				{
 					mainRegistry.remove<HiddenComponent>(panelRoadsID);
-					mainRegistry.emplace_or_replace<HiddenComponent>(panelBuildingsID);
+					ui.draw_building_panel = false;
 					mainRegistry.emplace_or_replace<HiddenComponent>(panelTreesID);
-
 				}
 			},
 			0.3f
@@ -184,23 +181,21 @@ namespace Can
 		ButtonConstructorParameters buttonBuildingsParams = ButtonConstructorParameters{
 			m_Scene->m_Registry,
 			m_Scene->entityID,
-			v3{ 5.0f, height - 6.5f, 0.0011f },
+			v3{ 5.0f, height - 6.8f, 0.0011f },
 			v2{ 3.0f, 1.0f },
 			v4{ 255.0f / 255.0f, 166.0f / 255.0f, 158.0f / 255.0f, 1.0f },
 			nullptr,
-			[this, height]() {
+			[this, height, &ui]() {
 				if (!Input::IsMouseButtonPressed(MouseCode::Button0))
 					return;
 				entt::registry& mainRegistry = this->m_Scene->m_Registry;
 
 				entt::entity panelRoadsID = this->m_PanelRoads->entityID;
-				entt::entity panelBuildingsID = this->m_PanelBuildings->entityID;
 				entt::entity panelTreesID = this->m_PanelTrees->entityID;
 
 				if (
 					mainRegistry.has<HiddenComponent>(panelRoadsID) &&
 					mainRegistry.has<HiddenComponent>(panelTreesID)
-
 					)
 				{
 					entt::entity buttonRoadsID = this->m_ButtonRoads->entityID;
@@ -213,26 +208,26 @@ namespace Can
 
 					v3 movement = { 0.0f, 5.2f, 0.0f };
 
-					if (mainRegistry.has<HiddenComponent>(panelBuildingsID))
+					if (ui.draw_building_panel)
 					{
-						mainRegistry.remove<HiddenComponent>(panelBuildingsID);
-						transformR.Position -= movement;
-						transformB.Position -= movement;
-						transformT.Position -= movement;
-					}
-					else
-					{
-						mainRegistry.emplace<HiddenComponent>(panelBuildingsID);
+						ui.draw_building_panel = false;
 						transformR.Position += movement;
 						transformB.Position += movement;
 						transformT.Position += movement;
 					}
+					else
+					{
+						ui.draw_building_panel = true;
+						transformR.Position -= movement;
+						transformB.Position -= movement;
+						transformT.Position -= movement;
+					}
 				}
 				else
 				{
-						mainRegistry.remove<HiddenComponent>(panelBuildingsID);
-						mainRegistry.emplace_or_replace<HiddenComponent>(panelRoadsID);
-						mainRegistry.emplace_or_replace<HiddenComponent>(panelTreesID);
+					ui.draw_building_panel = true;
+					mainRegistry.emplace_or_replace<HiddenComponent>(panelRoadsID);
+					mainRegistry.emplace_or_replace<HiddenComponent>(panelTreesID);
 				}
 			},
 			0.3f
@@ -241,22 +236,19 @@ namespace Can
 		ButtonConstructorParameters buttonTreesParams = ButtonConstructorParameters{
 			m_Scene->m_Registry,
 			m_Scene->entityID,
-			v3{ 9.0f, height - 6.5f, 0.0011f },
+			v3{ 9.0f, height - 6.8f, 0.0011f },
 			v2{ 3.0f, 1.0f },
 			v4{ 69.0f / 255.0f, 123.0f / 255.0f, 157.0f / 255.0f, 1.0f },
 			nullptr,
-			[this, height]() {
+			[this, height, &ui]() {
 				if (!Input::IsMouseButtonPressed(MouseCode::Button0))
 					return;
 				entt::registry& mainRegistry = this->m_Scene->m_Registry;
 
 				entt::entity panelRoadsID = this->m_PanelRoads->entityID;
-				entt::entity panelBuildingsID = this->m_PanelBuildings->entityID;
 				entt::entity panelTreesID = this->m_PanelTrees->entityID;
 
-				if (mainRegistry.has<HiddenComponent>(panelRoadsID) &&
-					mainRegistry.has<HiddenComponent>(panelBuildingsID)
-					)
+				if (mainRegistry.has<HiddenComponent>(panelRoadsID) && !ui.draw_building_panel )
 				{
 					entt::entity buttonRoadsID = this->m_ButtonRoads->entityID;
 					entt::entity buttonBuildingsID = this->m_ButtonBuildings->entityID;
@@ -287,7 +279,7 @@ namespace Can
 				{
 					mainRegistry.remove<HiddenComponent>(panelTreesID);
 					mainRegistry.emplace_or_replace<HiddenComponent>(panelRoadsID);
-					mainRegistry.emplace_or_replace<HiddenComponent>(panelBuildingsID);
+					ui.draw_building_panel = false;
 				}
 			},
 			0.3f
@@ -378,20 +370,6 @@ namespace Can
 		m_PanelRoads = new Panel(panelRoadsParams);
 		//m_Scene->m_Registry.emplace<HiddenComponent>(m_PanelRoads->entityID);
 		m_Scene->m_Registry.emplace<ChildrenComponent>(m_ButtonRoads->entityID, std::vector<entt::entity>{ m_PanelRoads->entityID });
-
-		PanelConstructorParameters panelBuildingsParams = PanelConstructorParameters{
-					m_Scene->m_Registry,
-					m_ButtonBuildings->entityID,
-					v3{ 0.5f, height - 5.4f, 0.001f },
-					v2{ width - 1.0f, 5.2f },
-					v4{ 255.0f / 255.0f, 166.0f / 255.0f, 158.0f / 255.0f, 1.0f },
-					nullptr,
-					[]() {std::cout << "You clicked the panel that is for Buildings!" << std::endl; },
-					0.1f
-		};
-		m_PanelBuildings = new Panel(panelBuildingsParams);
-		m_Scene->m_Registry.emplace<HiddenComponent>(m_PanelBuildings->entityID);
-		m_Scene->m_Registry.emplace<ChildrenComponent>(m_ButtonBuildings->entityID, std::vector<entt::entity>{ m_PanelBuildings->entityID });
 
 		PanelConstructorParameters panelTreesParams = PanelConstructorParameters{
 					m_Scene->m_Registry,
@@ -488,60 +466,6 @@ namespace Can
 				}
 		};
 		m_ScrollViewRoads = new ScrollView(scrollViewRoadsParams, scrollBarRoadsParams);
-
-		ScrollViewConstructorParameters scrollViewBuildingsParams = ScrollViewConstructorParameters{
-				m_Scene->m_Registry,
-				m_PanelBuildings->entityID,
-				v3{ width * 0.25f - 0.6f, height - 5.3f, 0.01f },
-				v2{ width * 0.75f, 5.0f},
-				v4{ 201.0f / 255.0f, 235.0f / 255.0f, 227.0f / 255.0f, 1.0f },
-				2,
-				[]() {std::cout << "You clicked to the ScrollView for buildings!" << std::endl; }
-		};
-		ScrollBarConstructorParameters scrollBarBuildingsParams = ScrollBarConstructorParameters{
-				m_Scene->m_Registry,
-				entt::null,
-				v3(0.0f),
-				v2{ width * 0.75f - 0.5f, 0.5f},
-				v4{ 221.0f / 255.0f, 155.0f / 255.0f, 247.0f / 255.0f, 1.0f },
-				v4{ 255.0f / 255.0f, 166.0f / 255.0f, 158.0f / 255.0f, 1.0f },
-				false,
-				false,
-				0.0f,
-				4.0f,
-				0.0f,
-				[this, width, w, height, h]() {
-					if (!Input::IsMouseButtonPressed(MouseCode::Button0))
-						return;
-					entt::registry& mainRegistry = this->m_Scene->m_Registry;
-					entt::entity scrollbarID = this->m_ScrollViewBuildings->scrollbar->entityID;
-
-					auto [mouseX, mouseY] = Input::get_mouse_pos_float();
-					bool changed = this->m_ScrollViewBuildings->scrollbar->Update(v2{
-							(mouseX * width) / w,
-							(mouseY * height) / h
-						});
-					if (changed)
-						this->m_ScrollViewBuildings->Update();
-					mainRegistry.emplace_or_replace<OnDragCallbackComponent>(scrollbarID,this->m_ScrollViewBuildings->scrollbar->OnDragCallback);
-				},
-				[this, width, w, height, h]() {
-					entt::registry& mainRegistry = this->m_Scene->m_Registry;
-					entt::entity scrollbarID = this->m_ScrollViewBuildings->scrollbar->entityID;
-
-					auto [mouseX, mouseY] = Input::get_mouse_pos_float();
-					bool changed = this->m_ScrollViewBuildings->scrollbar->Update(v2{
-							(mouseX * width) / w,
-							(mouseY * height) / h
-						});
-					if (changed)
-						this->m_ScrollViewBuildings->Update();
-
-					if (!Input::IsMouseButtonPressed(MouseCode::Button0))
-						mainRegistry.remove<OnDragCallbackComponent>(scrollbarID);
-				}
-		};
-		m_ScrollViewBuildings = new ScrollView(scrollViewBuildingsParams, scrollBarBuildingsParams);
 
 		ScrollViewConstructorParameters scrollViewTreesParams = ScrollViewConstructorParameters{
 				m_Scene->m_Registry,
@@ -875,110 +799,6 @@ namespace Can
 			m_DestructRoadButton->entityID,
 			m_ChangeRoadButton->entityID,
 			m_CancelRoadButton->entityID
-			});
-
-		ButtonConstructorParameters constructBuildingButtonParams = ButtonConstructorParameters{
-			m_Scene->m_Registry,
-			m_PanelBuildings->entityID,
-			v3{2.0f, height - 5.0f, 0.01f},
-			v2(0.8f),
-			v4(1.0f),
-			m_Parent->addTexture,
-			[this]() {
-				entt::registry& mainRegistry = m_Scene->m_Registry;
-				GameScene* gameScene = m_Parent->gameScene;
-
-				mainRegistry.get<SpriteRendererComponent>(m_ConstructBuildingButton->entityID).border = true;
-				mainRegistry.get<SpriteRendererComponent>(m_DestructBuildingButton->entityID).border = false;
-				mainRegistry.get<SpriteRendererComponent>(m_UpgradeBuildingButton->entityID).border = false;
-				mainRegistry.get<SpriteRendererComponent>(m_CancelBuildingButton->entityID).border = false;
-
-				gameScene->SetConstructionMode(ConstructionMode::Building);
-				gameScene->m_BuildingManager.SetConstructionMode(BuildingConstructionMode::Construct);
-			},
-			0.1f,
-			false,
-			v4{ 69.0f / 255.0f, 123.0f / 255.0f, 157.0f / 255.0f, 1.0f },
-		};
-		m_ConstructBuildingButton = new Button(constructBuildingButtonParams);
-		ButtonConstructorParameters destructBuildingButtonParams = ButtonConstructorParameters{
-			m_Scene->m_Registry,
-			m_PanelBuildings->entityID,
-			v3{3.0f, height - 5.0f, 0.01f},
-			v2(0.8f),
-			v4(1.0f),
-			m_Parent->removeTexture,
-			[this]() {
-				entt::registry& mainRegistry = m_Scene->m_Registry;
-				GameScene* gameScene = m_Parent->gameScene;
-
-				mainRegistry.get<SpriteRendererComponent>(m_ConstructBuildingButton->entityID).border = false;
-				mainRegistry.get<SpriteRendererComponent>(m_DestructBuildingButton->entityID).border = true;
-				mainRegistry.get<SpriteRendererComponent>(m_UpgradeBuildingButton->entityID).border = false;
-				mainRegistry.get<SpriteRendererComponent>(m_CancelBuildingButton->entityID).border = false;
-
-				gameScene->SetConstructionMode(ConstructionMode::Building);
-				gameScene->m_BuildingManager.SetConstructionMode(BuildingConstructionMode::Destruct);
-			},
-			0.1f,
-			false,
-			v4{ 69.0f / 255.0f, 123.0f / 255.0f, 157.0f / 255.0f, 1.0f },
-		};
-		m_DestructBuildingButton = new Button(destructBuildingButtonParams);
-		ButtonConstructorParameters upgradeBuildingButtonParams = ButtonConstructorParameters{
-			m_Scene->m_Registry,
-			m_PanelBuildings->entityID,
-			v3{4.0f, height - 5.0f, 0.01f},
-			v2(0.8f),
-			v4(1.0f),
-			m_Parent->upgradeTexture,
-			[this]() {
-				entt::registry& mainRegistry = m_Scene->m_Registry;
-				GameScene* gameScene = m_Parent->gameScene;
-
-				mainRegistry.get<SpriteRendererComponent>(m_ConstructBuildingButton->entityID).border = false;
-				mainRegistry.get<SpriteRendererComponent>(m_DestructBuildingButton->entityID).border = false;
-				mainRegistry.get<SpriteRendererComponent>(m_UpgradeBuildingButton->entityID).border = true;
-				mainRegistry.get<SpriteRendererComponent>(m_CancelBuildingButton->entityID).border = false;
-
-				gameScene->SetConstructionMode(ConstructionMode::Building);
-				gameScene->m_BuildingManager.SetConstructionMode(BuildingConstructionMode::Upgrade);
-			},
-			0.1f,
-			false,
-			v4{ 69.0f / 255.0f, 123.0f / 255.0f, 157.0f / 255.0f, 1.0f },
-		};
-		m_UpgradeBuildingButton = new Button(upgradeBuildingButtonParams);
-		ButtonConstructorParameters cancelBuildingButtonParams = ButtonConstructorParameters{
-			m_Scene->m_Registry,
-			m_PanelBuildings->entityID,
-			v3{5.0f, height - 5.0f, 0.01f},
-			v2(0.8f),
-			v4(1.0f),
-			m_Parent->cancelTexture,
-			[this]() {
-				entt::registry& mainRegistry = m_Scene->m_Registry;
-				GameScene* gameScene = m_Parent->gameScene;
-
-				mainRegistry.get<SpriteRendererComponent>(m_ConstructBuildingButton->entityID).border = false;
-				mainRegistry.get<SpriteRendererComponent>(m_DestructBuildingButton->entityID).border = false;
-				mainRegistry.get<SpriteRendererComponent>(m_UpgradeBuildingButton->entityID).border = false;
-				mainRegistry.get<SpriteRendererComponent>(m_CancelBuildingButton->entityID).border = true;
-
-				gameScene->SetConstructionMode(ConstructionMode::Building);
-				gameScene->m_BuildingManager.SetConstructionMode(BuildingConstructionMode::None);
-			},
-			0.1f,
-			true,
-			v4{ 69.0f / 255.0f, 123.0f / 255.0f, 157.0f / 255.0f, 1.0f },
-		};
-		m_CancelBuildingButton = new Button(cancelBuildingButtonParams);
-		m_Scene->m_Registry.emplace<ChildrenComponent>(m_PanelBuildings->entityID, std::vector<entt::entity>{
-			m_ScrollViewBuildings->entityID ,
-			m_ConstructBuildingButton->entityID,
-			m_DestructBuildingButton->entityID,
-			m_UpgradeBuildingButton->entityID,
-			m_CancelBuildingButton->entityID
 			});
 
 		ButtonConstructorParameters addTreeButtonParams = ButtonConstructorParameters{
@@ -1450,36 +1270,6 @@ namespace Can
 			}
 			m_ScrollViewRoads->Update();
 		}
-		/*Buttons in the Building panel*/ {
-			size_t buildingCount = m_Parent->buildings.size();
-			ChildrenComponent& children = m_Scene->m_Registry.emplace<ChildrenComponent>(m_ScrollViewBuildings->entityID, std::vector<entt::entity>{});
-			for (size_t i = 0; i < buildingCount; i++)
-			{
-				ButtonConstructorParameters buildingPanelButtonParams = ButtonConstructorParameters{
-					m_Scene->m_Registry,
-					m_ScrollViewBuildings->entityID,
-					v3(0.0f),
-					v2(3.5f),
-					v4{ 1.0f, 1.0f, 1.0f, 1.0f },
-					Texture2D::Create(buildingtumbnailimagefiles[i]),
-					[i, this]() {
-						if (!Input::IsMouseButtonPressed(MouseCode::Button0))
-							return;
-						std::cout << "You clicked the " << (i + 1) << "th Button inside the Building panel!" << std::endl;
-						this->m_Parent->gameScene->SetConstructionMode(ConstructionMode::Building);
-						auto mode = this->m_Parent->gameScene->m_BuildingManager.GetConstructionMode();
-						if (mode == BuildingConstructionMode::None || mode == BuildingConstructionMode::Destruct)
-							this->m_Parent->gameScene->m_BuildingManager.SetConstructionMode(BuildingConstructionMode::Construct);
-						this->m_Parent->gameScene->m_BuildingManager.SetType(i);
-					},
-					0.1f
-				};
-				Button* buildingPanelButton = new Button(buildingPanelButtonParams);
-				children.Children.push_back(buildingPanelButton->entityID);
-				m_BuildingPanelButtonList.push_back(buildingPanelButton);
-			}
-			m_ScrollViewBuildings->Update();
-		}
 		/*Buttons in the Tree panel*/ {
 			size_t treeCount = m_Parent->trees.size();
 			ChildrenComponent& children = m_Scene->m_Registry.emplace<ChildrenComponent>(m_ScrollViewTrees->entityID, std::vector<entt::entity>{});
@@ -1526,7 +1316,6 @@ namespace Can
 		delete m_ButtonTools;
 
 		delete m_PanelRoads;
-		delete m_PanelBuildings;
 		delete m_PanelTrees;
 		delete m_PanelNeeds;
 		delete m_PanelTools;
@@ -1541,17 +1330,11 @@ namespace Can
 		delete m_ChangeRoadButton;
 		delete m_CancelRoadButton;
 
-		delete m_ConstructBuildingButton;
-		delete m_DestructBuildingButton;
-		delete m_UpgradeBuildingButton;
-		delete m_CancelBuildingButton;
-
 		delete m_AddTreeButton;
 		delete m_RemoveTreeButton;
 		delete m_CancelTreeButton;
 
 		delete m_ScrollViewRoads;
-		delete m_ScrollViewBuildings;
 		delete m_ScrollViewTrees;
 
 		delete m_ButtonTools_01;
@@ -1591,14 +1374,6 @@ namespace Can
 			index--;
 			Button* b = m_RoadPanelButtonList[index];
 			m_RoadPanelButtonList.pop_back();
-			delete b;
-		}
-		index = m_BuildingPanelButtonList.size();
-		while (index != 0)
-		{
-			index--;
-			Button* b = m_BuildingPanelButtonList[index];
-			m_BuildingPanelButtonList.pop_back();
 			delete b;
 		}
 		index = m_TreePanelButtonList.size();
@@ -1697,7 +1472,7 @@ namespace Can
 		if (registry->has<IgnoreCollisionComponent>(id))
 			return false;
 
-		auto& [transform, spriteRenderer] = registry->get< TransformComponent, SpriteRendererComponent>(id);
+		auto [transform, spriteRenderer] = registry->get< TransformComponent, SpriteRendererComponent>(id);
 
 		v2 size = spriteRenderer.size * transform.Scale;
 		v2 leftTop = {
@@ -1728,7 +1503,7 @@ namespace Can
 			return;
 
 
-		auto& [transform, spriteRenderer] = registry->get< TransformComponent, SpriteRendererComponent>(id);
+		auto [transform, spriteRenderer] = registry->get< TransformComponent, SpriteRendererComponent>(id);
 		v3 pos = transform.Position;
 
 		pos.x = pos.x + offset.x + spriteRenderer.size.x / 2.0f;

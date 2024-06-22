@@ -76,8 +76,8 @@ namespace Can
 		uiScene = new UIScene(this);
 		PushOverlay(uiScene);
 
-		debugScene = new Debug(this);
-		PushOverlay(debugScene);
+		//debugScene = new Debug(this);
+		//PushOverlay(debugScene);
 	}
 
 	GameApp::~GameApp()
