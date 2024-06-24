@@ -2,6 +2,7 @@
 #include "PersonManager.h"
 #include "Scenes/GameScene.h"
 #include "Types/RoadSegment.h"
+#include "Types/Road_Type.h"
 #include "Types/RoadNode.h"
 #include "Types/Transition.h"
 #include "Types/Person.h"
@@ -133,7 +134,7 @@ namespace Can
 
 						// TODO: Refactor this scope into a function
 						RS_Transition_For_Walking* rs_transition = (RS_Transition_For_Walking*)p->path[0];
-						RoadType& road_segment_type = road_types[road_segment.type];
+						Road_Type& road_segment_type = road_types[road_segment.type];
 
 						assert(building_from->snapped_t_index < (s64)road_segment.curve_samples.size() - 1);
 						v3 target_position = road_segment.curve_samples[building_from->snapped_t_index];
@@ -184,7 +185,7 @@ namespace Can
 						f32 half_crosswalk_width = 0.05f;
 
 						RoadSegment& current_road_segment = road_segments[connected_road_segments[rn_transition->from_road_segments_array_index]];
-						RoadType& current_road_segment_type = road_types[current_road_segment.type];
+						Road_Type& current_road_segment_type = road_types[current_road_segment.type];
 						f32 current_road_segment_width = current_road_segment_type.road_width * 0.5f;
 						f32 offset_from_current_road_segment_center = current_road_segment_width - half_crosswalk_width;
 
@@ -236,8 +237,8 @@ namespace Can
 							RoadSegment& prev_road_segment = road_segments[connected_road_segments[(rn_transition->from_road_segments_array_index - 1 + connected_road_segments.size()) % connected_road_segments.size()]];
 							RoadSegment& next_road_segment = road_segments[connected_road_segments[(rn_transition->from_road_segments_array_index + 1) % connected_road_segments.size()]];
 
-							RoadType& prev_road_segment_type = road_types[prev_road_segment.type];
-							RoadType& next_road_segment_type = road_types[next_road_segment.type];
+							Road_Type& prev_road_segment_type = road_types[prev_road_segment.type];
+							Road_Type& next_road_segment_type = road_types[next_road_segment.type];
 
 							f32 prev_road_segment_width = prev_road_segment_type.road_width * 0.5f;
 							f32 next_road_segment_width = next_road_segment_type.road_width * 0.5f;
@@ -299,7 +300,7 @@ namespace Can
 					{
 						RS_Transition_For_Vehicle* rs_transition{ p->car_driving->path[0] };
 						RoadSegment& road_segment{ road_segments[rs_transition->road_segment_index] };
-						RoadType& road_segment_type{ road_types[road_segment.type] };
+						Road_Type& road_segment_type{ road_types[road_segment.type] };
 						v3 target_position{ rs_transition->points_stack[rs_transition->points_stack.size() - 1] };
 
 						if (p->car != p->car_driving) // car_driven is work car
@@ -320,7 +321,7 @@ namespace Can
 					{
 						RS_Transition_For_Walking* rs_transition{ (RS_Transition_For_Walking*)p->path[0] };
 						RoadSegment& road_segment{ road_segments[p->road_segment] };
-						RoadType& road_segment_type{ road_types[road_segment.type] };
+						Road_Type& road_segment_type{ road_types[road_segment.type] };
 
 						u64 target_path_array_index;
 						if (p->path.size() == 1)

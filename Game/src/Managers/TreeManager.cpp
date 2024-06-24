@@ -2,6 +2,7 @@
 #include "TreeManager.h"
 
 #include "Types/RoadSegment.h"
+#include "Types/Road_Type.h"
 #include "Types/Tree.h"
 #include "Building.h"
 
@@ -152,7 +153,7 @@ namespace Can
 				if (value.valid == false)
 					continue;
 				RoadSegment& rs = value.value;
-				RoadType& type = app->road_types[rs.type];
+				Road_Type& type = app->road_types[rs.type];
 				if (rs.elevation_type == -1)
 					continue;
 

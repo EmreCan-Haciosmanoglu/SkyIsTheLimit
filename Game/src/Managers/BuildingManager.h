@@ -34,7 +34,7 @@ namespace Can
 		inline size_t GetType() { return m_Type; }
 
 		void SetConstructionMode(BuildingConstructionMode mode);
-		
+
 		inline const BuildingConstructionMode GetConstructionMode() const { return m_ConstructionMode; }
 		inline BuildingConstructionMode GetConstructionMode() { return m_ConstructionMode; }
 
@@ -45,17 +45,17 @@ namespace Can
 		Building* getAvailableWorkBuilding();
 	public:
 
-		std::array<bool, 2> snapOptions { true, true };
+		std::array<bool, 2> snapOptions{ true, true };
 		// 0 : Roads
 		// 1 : Buildings
 
-		std::array<bool, 2> restrictions { true, true };
+		std::array<bool, 2> restrictions{ true, true };
 		// 0 : Collision
 		// 1 : Snapping to a road
 
-		GameScene* m_Scene = nullptr;
+		GameScene* m_Scene{ nullptr };
 
-		BuildingConstructionMode m_ConstructionMode = BuildingConstructionMode::None;
+		BuildingConstructionMode m_ConstructionMode{ BuildingConstructionMode::None };
 
 		size_t m_Type = 0;
 
@@ -63,19 +63,19 @@ namespace Can
 		std::vector<Building*> m_HomeBuildings;
 		std::vector<Building*> m_WorkBuildings;
 
-		v3 m_GuidelinePosition = v3(0.0f);
-		v3 m_GuidelineRotation = v3(0.0f);
+		v3 m_GuidelinePosition{ 0.0f, 0.0f, 0.0f };
+		v3 m_GuidelineRotation{ 0.0f, 0.0f, 0.0f };
 
-		u64 m_SnappedRoadSegment = (u64)-1;
-		u64 snapped_t_index = 0;
-		f32 snapped_t = -1.0f;
-		bool snapped_from_right = false;
+		u64 m_SnappedRoadSegment{ (u64)-1 };
+		u64 snapped_t_index{ 0 };
+		f32 snapped_t{ -1.0f };
+		bool snapped_from_right{ false };
 
-		std::vector<Building*>::const_iterator m_SelectedBuildingToDestruct = m_Buildings.end();
+		std::vector<Building*>::const_iterator m_SelectedBuildingToDestruct{ m_Buildings.cend() };
 
-		Object* m_Guideline = nullptr;
+		Object* m_Guideline{ nullptr };
 
-		bool b_ConstructionRestricted = false;
+		bool b_ConstructionRestricted{ false };
 	};
 
 	void remove_building(Building* b);

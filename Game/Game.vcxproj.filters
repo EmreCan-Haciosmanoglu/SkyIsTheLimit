@@ -61,7 +61,7 @@
     <ClInclude Include="src\Types\RoadSegment.h">
       <Filter>Types</Filter>
     </ClInclude>
-    <ClInclude Include="src\Types\RoadType.h">
+    <ClInclude Include="src\Types\Road_Type.h">
       <Filter>Types</Filter>
     </ClInclude>
     <ClInclude Include="src\Types\Transition.h">

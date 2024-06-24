@@ -3,7 +3,6 @@
 
 #include "Types/Transition.h"
 #include "Types/RoadSegment.h"
-#include "Types/RoadNode.h"
 #include "Types/Person.h"
 #include "Types/Tree.h"
 #include "Building.h"
@@ -16,6 +15,14 @@
 
 #include "Can/Math.h"
 
+#include "Types/Vehicle_Type.h"
+#include "Types/RoadSegment.h"
+#include "Types/Transition.h"
+#include "Types/Road_Type.h"
+#include "Types/RoadNode.h"
+#include "Types/Person.h"
+#include "Types/Tree.h"
+
 namespace Can
 {
 	void resnapp_buildings(u64 old_rs_index, u64 new_rs_index, u64 snapped_index);
@@ -25,7 +32,7 @@ namespace Can
 	RoadManager::RoadManager(GameScene* scene)
 		: m_Scene(scene)
 	{
-		const RoadType& type = m_Scene->MainApplication->road_types[m_Type];
+		const Road_Type& type = m_Scene->MainApplication->road_types[m_Type];
 
 		m_GroundGuidelinesStart = new Object(type.asymmetric ? type.road_end_mirror : type.road_end);
 		m_GroundGuidelinesStart->enabled = false;
@@ -40,7 +47,7 @@ namespace Can
 		u64 roadTypeCount = m_Scene->MainApplication->road_types.size();
 		for (u64 i = 0; i < roadTypeCount; i++)
 		{
-			const RoadType& t = m_Scene->MainApplication->road_types[i];
+			const Road_Type& t = m_Scene->MainApplication->road_types[i];
 
 			m_GroundGuidelinesInUse.push_back(0);
 			m_GroundGuidelines.push_back({});
@@ -111,7 +118,7 @@ namespace Can
 	}
 	void RoadManager::OnUpdate_Straight(v3& prevLocation, f32 ts)
 	{
-		RoadType& type = m_Scene->MainApplication->road_types[m_Type];
+		Road_Type& type = m_Scene->MainApplication->road_types[m_Type];
 		m_Scene->m_Terrain->enabled = (m_ConstructionPhase == 0 && m_Elevationtypes[0] >= 0) || (m_ConstructionPhase != 0 && m_Elevationtypes[3] >= 0);
 
 		// HACK
@@ -253,7 +260,7 @@ namespace Can
 	}
 	void RoadManager::OnUpdate_QuadraticCurve(v3& prevLocation, f32 ts)
 	{
-		RoadType& type = m_Scene->MainApplication->road_types[m_Type];
+		Road_Type& type = m_Scene->MainApplication->road_types[m_Type];
 		m_Scene->m_Terrain->enabled =
 			(m_ConstructionPhase == 0 && m_Elevationtypes[0] >= 0) ||
 			(m_ConstructionPhase == 1 && m_Elevationtypes[1] >= 0) ||
@@ -465,7 +472,7 @@ namespace Can
 	}
 	void RoadManager::OnUpdate_CubicCurve(v3& prevLocation, f32 ts)
 	{
-		RoadType& type = m_Scene->MainApplication->road_types[m_Type];
+		Road_Type& type = m_Scene->MainApplication->road_types[m_Type];
 		m_Scene->m_Terrain->enabled = m_Elevationtypes[cubicCurveOrder[m_ConstructionPhase]] >= 0;
 
 		// HACK
@@ -805,7 +812,7 @@ namespace Can
 			if (values[rsIndex].valid == false)
 				continue;
 			RoadSegment& rs = values[rsIndex].value;
-			RoadType& type = app->road_types[rs.type];
+			Road_Type& type = app->road_types[rs.type];
 
 			f32 rsl = type.road_length;
 			f32 snapDist = type.road_width * 0.5f;
@@ -912,7 +919,7 @@ namespace Can
 
 	void RoadManager::DrawStraightGuidelines(const v3& pointA, const v3& pointB, s8 eA, s8 eB)
 	{
-		RoadType& type = m_Scene->MainApplication->road_types[m_Type];
+		Road_Type& type = m_Scene->MainApplication->road_types[m_Type];
 
 		v3 AB = pointB - pointA;
 		f32 entire_length = glm::length(AB);
@@ -1051,7 +1058,7 @@ namespace Can
 	}
 	void RoadManager::DrawCurvedGuidelines(const std::array<v3, 4>& curvePoints)
 	{
-		RoadType& type = m_Scene->MainApplication->road_types[m_Type];
+		Road_Type& type = m_Scene->MainApplication->road_types[m_Type];
 
 		f32 l = glm::length(curvePoints[3] - curvePoints[0]);
 		u64 count = 1;
@@ -1156,8 +1163,8 @@ namespace Can
 	bool RoadManager::check_road_road_collision(const std::array<v3, 2>& bounding_box, const std::vector<std::array<v3, 3>>& bounding_polygon)
 	{
 		GameApp* app = m_Scene->MainApplication;
-		RoadType& type = m_Scene->MainApplication->road_types[m_Type];
-		f32 guideline_height = m_Elevationtypes[0] == -1 ? type.tunnel_height : type.road_height;
+		Road_Type& t = m_Scene->MainApplication->road_types[m_Type];
+		f32 guideline_height = m_Elevationtypes[0] == -1 ? t.tunnel_height : t.road_height;
 
 		u64 capacity = road_segments.capacity;
 		for (u64 rsIndex = 0; rsIndex < capacity; rsIndex++)
@@ -1166,7 +1173,7 @@ namespace Can
 			if (values[rsIndex].valid == false)
 				continue;
 			RoadSegment& rs = values[rsIndex].value;
-			RoadType& type = app->road_types[rs.type];
+			Road_Type& type = app->road_types[rs.type];
 			if (rsIndex == m_StartSnappedSegment)
 				continue;
 			if (rsIndex == m_EndSnappedSegment)
@@ -1190,7 +1197,7 @@ namespace Can
 	}
 	bool RoadManager::check_road_building_collision(Building* building, const std::array<v3, 2>& bounding_box, const std::vector<std::array<v3, 3>>& bounding_polygon)
 	{
-		RoadType& type = m_Scene->MainApplication->road_types[m_Type];
+		Road_Type& type = m_Scene->MainApplication->road_types[m_Type];
 		f32 height = m_Elevationtypes[0] == -1 ? type.tunnel_height : type.road_height;
 
 		Prefab* prefab = building->object->prefab;
@@ -1225,7 +1232,7 @@ namespace Can
 	}
 	bool RoadManager::check_road_tree_collision(Object* tree, const std::array<v3, 2>& bounding_box, const std::vector<std::array<v3, 3>>& bounding_polygon)
 	{
-		RoadType& type = m_Scene->MainApplication->road_types[m_Type];
+		Road_Type& type = m_Scene->MainApplication->road_types[m_Type];
 		f32 height = m_Elevationtypes[0] == -1 ? type.tunnel_height : type.road_height;
 
 		Prefab* prefab = tree->prefab;
@@ -1346,7 +1353,7 @@ namespace Can
 			}
 			else
 			{
-				RoadType& type = m_Scene->MainApplication->road_types[m_Type];
+				Road_Type& type = m_Scene->MainApplication->road_types[m_Type];
 
 				v3 intersectionPoint = Math::ray_plane_intersection(
 					m_ConstructionPositions[0],
@@ -1423,7 +1430,7 @@ namespace Can
 			}
 			else
 			{
-				RoadType& type = m_Scene->MainApplication->road_types[m_Type];
+				Road_Type& type = m_Scene->MainApplication->road_types[m_Type];
 				std::vector<f32> ts{ 0.0f };
 				std::vector<v3> samples = Math::GetCubicCurveSamples(cps, type.road_length, ts);
 
@@ -1502,7 +1509,7 @@ namespace Can
 			}
 			else
 			{
-				RoadType& type = m_Scene->MainApplication->road_types[m_Type];
+				Road_Type& type = m_Scene->MainApplication->road_types[m_Type];
 				std::vector<f32> ts{ 0.0f };
 				std::vector<v3> samples = Math::GetCubicCurveSamples(cps, type.road_length, ts);
 
@@ -1681,7 +1688,7 @@ namespace Can
 						auto td_next = p->car_driving->path[i + 1];
 
 						RoadSegment& current_road_segment = road_segments[td->road_segment_index];
-						RoadType& current_road_type = road_types[current_road_segment.type];
+						Road_Type& current_road_type = road_types[current_road_segment.type];
 						auto& next_road_node_connected_road_segments = road_nodes[td->next_road_node_index].roadSegments;
 
 						auto curr_it = std::find(
@@ -1807,7 +1814,7 @@ namespace Can
 				if (td->road_segment_index == selected_road_segment)
 				{
 					RoadSegment& current_road_segment = road_segments[td->road_segment_index];
-					RoadType& current_road_type = road_types[current_road_segment.type];
+					Road_Type& current_road_type = road_types[current_road_segment.type];
 					if (p->path_end_building->snapped_to_right)
 					{
 						if (td->lane_index < current_road_type.lanes_backward.size())
@@ -1908,7 +1915,7 @@ namespace Can
 		delete m_TunnelGuidelinesEnd;
 		delete m_TunnelGuidelinesStart;
 
-		const RoadType& t = m_Scene->MainApplication->road_types[m_Type];
+		const Road_Type& t = m_Scene->MainApplication->road_types[m_Type];
 		m_GroundGuidelinesStart = new Object(t.asymmetric ? t.road_end_mirror : t.road_end);
 		m_GroundGuidelinesEnd = new Object(t.road_end);
 		m_TunnelGuidelinesStart = new Object(t.asymmetric ? t.tunnel_end_mirror : t.tunnel_end);
@@ -1941,7 +1948,7 @@ namespace Can
 	u64 RoadManager::AddRoadSegment(const std::array<v3, 4>& curvePoints, s8 elevation_type)
 	{
 		GameApp* app = m_Scene->MainApplication;
-		RoadType& type = app->road_types[m_Type];
+		Road_Type& type = app->road_types[m_Type];
 		f32 new_road_width = elevation_type == -1 ? type.tunnel_width : type.road_width;
 		f32 new_road_height = elevation_type == -1 ? type.tunnel_height : type.road_height;
 		f32 new_road_length = elevation_type == -1 ? type.tunnel_length : type.road_length;
@@ -2273,7 +2280,7 @@ namespace Can
 	{
 		GameApp* app = m_Scene->MainApplication;
 		SnapInformation results;
-		RoadType& type = app->road_types[m_Type];
+		Road_Type& type = app->road_types[m_Type];
 
 		f32 min_distance_to_snap = -prevLocation.y > type.tunnel_height ? type.tunnel_width : type.road_width;
 

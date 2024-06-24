@@ -3,6 +3,8 @@
 #include "GameApp.h"
 #include "Helper.h"
 
+#include "Types/Road_Type.h"
+
 namespace Can
 {
 	UIScene::UIScene(GameApp* parent)

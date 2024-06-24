@@ -4,8 +4,10 @@
 #include "Scenes/GameScene.h"
 #include "Can/Math.h"
 #include "GameApp.h"
-#include "Types/RoadNode.h"
 #include "Building.h"
+
+#include "Types/Road_Type.h"
+#include "Types/RoadNode.h"
 
 namespace  Can::Helper
 {
@@ -545,7 +547,7 @@ namespace  Can::Helper
 		if (transition_count == 1)
 		{
 			RoadSegment& current_road_segment{ road_segments[current_transition->road_segment_index] };
-			RoadType& current_road_type{ road_types[current_road_segment.type] };
+			Road_Type& current_road_type{ road_types[current_road_segment.type] };
 			auto& current_road_segment_curve_samples{ current_road_segment.curve_samples };
 			u64 curve_sample_count{ current_road_segment_curve_samples.size() };
 			f32 dist_from_center{ 0.0f };
@@ -582,7 +584,7 @@ namespace  Can::Helper
 			RS_Transition_For_Vehicle* next_transition{ path[i] };
 
 			RoadSegment& current_road_segment{ road_segments[current_transition->road_segment_index] };
-			RoadType& current_road_type{ road_types[current_road_segment.type] };
+			Road_Type& current_road_type{ road_types[current_road_segment.type] };
 
 			auto& next_road_node_connected_road_segments{ road_nodes[current_transition->next_road_node_index].roadSegments };
 
@@ -703,7 +705,7 @@ namespace  Can::Helper
 
 		current_transition = path[transition_count - 1];// we should not need this
 		RoadSegment& current_road_segment{ road_segments[current_transition->road_segment_index] };
-		RoadType& current_road_type{ road_types[current_road_segment.type] };
+		Road_Type& current_road_type{ road_types[current_road_segment.type] };
 		if (transition_count >= 2)
 		{
 			RS_Transition_For_Vehicle* t{ path[transition_count - 2] };
@@ -959,7 +961,7 @@ namespace  Can::Helper
 		u64 current_road_segment_index = start->connectedRoadSegment;
 		RoadSegment& current_road_segment = road_segments[current_road_segment_index];
 
-		RoadType& start_road_type = road_types[current_road_segment.type];
+		Road_Type& start_road_type = road_types[current_road_segment.type];
 
 		std::vector<Dijkstra_Node> linqs{};
 		std::vector<Dijkstra_Node> fastest_road_to_these_nodes{};
@@ -1034,7 +1036,7 @@ namespace  Can::Helper
 					RoadSegment& connected_road_segment = road_segments[connected_road_segment_index];
 					u64 curve_samples_count = connected_road_segment.curve_samples.size();
 					bool from_start = road_node_index == connected_road_segment.StartNode;
-					RoadType& type = road_types[connected_road_segment.type];
+					Road_Type& type = road_types[connected_road_segment.type];
 					if (type.two_way == false && connected_road_segment.EndNode == road_node_index) continue;
 
 					s64 new_distance = next_linq.distance + curve_samples_count;
@@ -1078,7 +1080,7 @@ namespace  Can::Helper
 				RoadSegment& connected_road_segment = road_segments[connected_road_segment_index];
 				u64 curve_samples_count = connected_road_segment.curve_samples.size();
 				bool from_start = road_node_index == connected_road_segment.StartNode;
-				RoadType& type = road_types[connected_road_segment.type];
+				Road_Type& type = road_types[connected_road_segment.type];
 				if (type.two_way == false && connected_road_segment.EndNode == road_node_index) continue;
 
 				if (connected_road_segment_index == start->connectedRoadSegment)
@@ -1378,7 +1380,7 @@ namespace  Can::Helper
 		RoadSegment& start_road_segment{ road_segments[start->connectedRoadSegment] };
 		RoadSegment& end_road_segment{ road_segments[end->connectedRoadSegment] };
 
-		RoadType& start_road_type{ road_types[start_road_segment.type] };
+		Road_Type& start_road_type{ road_types[start_road_segment.type] };
 
 		if (start->connectedRoadSegment == end->connectedRoadSegment)
 		{
@@ -1609,7 +1611,7 @@ namespace  Can::Helper
 				RoadSegment& connected_road_segment = road_segments[connected_road_segment_index];
 				u64 curve_samples_count = connected_road_segment.curve_samples.size();
 				bool from_start = road_node_index == connected_road_segment.StartNode;
-				RoadType& type = road_types[connected_road_segment.type];
+				Road_Type& type = road_types[connected_road_segment.type];
 				if (type.two_way == false && connected_road_segment.EndNode == road_node_index) continue;
 
 				if (connected_road_segment_index == end->connectedRoadSegment)

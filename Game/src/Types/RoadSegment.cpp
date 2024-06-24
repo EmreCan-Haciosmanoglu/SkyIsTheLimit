@@ -10,6 +10,8 @@
 #include "Scenes/GameScene.h"
 #include "GameApp.h"
 
+#include "Types/Road_Type.h"
+
 namespace Can
 {
 	RoadSegment::RoadSegment(RoadSegment&& other)
@@ -74,7 +76,7 @@ namespace Can
 	void RoadSegment::Construct()
 	{
 		GameApp* app = GameScene::ActiveGameScene->MainApplication;
-		RoadType& rtype = app->road_types[type];
+		Road_Type& rtype = app->road_types[type];
 		f32 w = elevation_type == -1 ? rtype.tunnel_width : (elevation_type == 0 ? rtype.road_width : 1.0f);
 		f32 l = elevation_type == -1 ? rtype.tunnel_length : (elevation_type == 0 ? rtype.road_length : 1.0f);
 

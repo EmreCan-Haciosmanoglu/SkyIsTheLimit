@@ -4,12 +4,14 @@
 #include "GameApp.h"
 #include "Helper.h"
 #include "Can/Math.h"
+#include "Building.h"
 
 #include "Types/RoadNode.h"
 #include "Types/Car.h"
 #include "Types/Tree.h"
 #include "Types/Person.h"
-#include "Building.h"
+#include "Types/Vehicle_Type.h"
+#include "Types/Road_Type.h"
 #include "Types/Transition.h"
 
 namespace Can
@@ -215,10 +217,11 @@ namespace Can
 		FILE* read_file = fopen(path.c_str(), "rb");
 		if (read_file == NULL) return;
 
-		auto& road_nodes = m_RoadManager.road_nodes;
-		auto& road_segments = m_RoadManager.road_segments;
-		auto& buildings = m_BuildingManager.m_Buildings;
-		auto& cars = m_CarManager.m_Cars;
+		auto& road_nodes{ m_RoadManager.road_nodes };
+		auto& road_segments{ m_RoadManager.road_segments };
+		auto& trees{ m_TreeManager.m_Trees };
+		auto& buildings{ m_BuildingManager.m_Buildings };
+		auto& cars{ m_CarManager.m_Cars };
 
 		/*RoadManager*/ {
 			fread(&m_RoadManager.snapFlags, sizeof(u8), 1, read_file);
@@ -556,12 +559,12 @@ namespace Can
 	}
 	void GameScene::save_the_game()
 	{
-		FILE* save_file = fopen(std::string(save_name).append(".csf").c_str(), "wb");
-		auto& road_nodes = m_RoadManager.road_nodes;
-		auto& road_segments = m_RoadManager.road_segments;
-		auto& trees = m_TreeManager.m_Trees;
-		auto& buildings = m_BuildingManager.m_Buildings;
-		auto& cars = m_CarManager.m_Cars;
+		FILE* save_file{ fopen(std::format("{}.csf",save_name).c_str(), "wb") };
+		auto& road_nodes{ m_RoadManager.road_nodes };
+		auto& road_segments{ m_RoadManager.road_segments };
+		auto& trees{ m_TreeManager.m_Trees };
+		auto& buildings{ m_BuildingManager.m_Buildings };
+		auto& cars{ m_CarManager.m_Cars };
 
 		/*Road Manager*/ {
 			fwrite(&m_RoadManager.snapFlags, sizeof(u8), 1, save_file);
@@ -856,7 +859,7 @@ namespace Can
 	{
 		auto& people{ game_scene.m_PersonManager.m_People };
 		auto& cars{ game_scene.m_CarManager.m_Cars };
-		auto& buildings{ game_scene.m_BuildingManager.m_Buildings};
+		auto& buildings{ game_scene.m_BuildingManager.m_Buildings };
 
 		v3 cameraPosition{ game_scene.camera_controller.camera.position };
 		v3 forward{ game_scene.GetRayCastedFromScreen() };

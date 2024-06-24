@@ -2,6 +2,8 @@
 #include "CarManager.h"
 #include "Scenes/GameScene.h"
 #include "Types/RoadSegment.h"
+#include "Types/Road_Type.h"
+#include "Types/Vehicle_Type.h"
 #include "Types/RoadNode.h"
 #include "Types/Transition.h"
 #include "Building.h"
@@ -193,7 +195,7 @@ namespace Can
 					f32 lenght{ type.object_length };
 
 					RoadSegment& current_road_segment{ road_segments[transition->road_segment_index] };
-					const RoadType& current_road_type{ road_types[current_road_segment.type] };
+					const Road_Type& current_road_type{ road_types[current_road_segment.type] };
 
 					if (car->t < 1.0f)
 					{

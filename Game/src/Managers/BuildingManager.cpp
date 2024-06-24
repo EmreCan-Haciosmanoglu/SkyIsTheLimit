@@ -2,6 +2,8 @@
 #include "BuildingManager.h"
 
 #include "Types/RoadSegment.h"
+#include "Types/Road_Type.h"
+#include "Types/Vehicle_Type.h"
 #include "Types/Tree.h"
 #include "Types/Person.h"
 #include "Building.h"
@@ -63,7 +65,7 @@ namespace Can
 				if (values[rsIndex].valid == false)
 					continue;
 				RoadSegment& rs = values[rsIndex].value;
-				RoadType& type = app->road_types[rs.type];
+				Road_Type& type = app->road_types[rs.type];
 				if (type.zoneable == false)
 					continue;
 				f32 roadWidth = type.road_width;
@@ -240,7 +242,7 @@ namespace Can
 				if (values[rsIndex].valid == false)
 					continue;
 				RoadSegment& rs = values[rsIndex].value;
-				RoadType& type = app->road_types[rs.type];
+				Road_Type& type = app->road_types[rs.type];
 				if (rsIndex == m_SnappedRoadSegment)
 					continue;
 

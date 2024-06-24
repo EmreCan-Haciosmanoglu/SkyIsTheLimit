@@ -5,9 +5,6 @@
 #include "UIScene.h"
 //#include "Debug.h"
 
-#include "Types/RoadType.h"
-#include "Types/Vehicle_Type.h"
-
 #include "Scenes/Main_Menu/Main_Menu.h"
 
 namespace Can
@@ -22,10 +19,8 @@ namespace Can
 	private:
 		std::vector<Prefab*> LoadPrefabs(const std::string& folder, const std::string& filter);
 
-		void load_road_types();
 		void LoadBuildings();
 		void LoadTrees();
-		void LoadCars();
 		void LoadPeople();
 
 	public:
@@ -51,9 +46,8 @@ namespace Can
 		Ref<Texture2D> twoTimesSpeedTexture;	// Put better name
 		Ref<Texture2D> fourTimesSpeedTexture;	// Put better name
 
-
-		std::vector<RoadType> road_types;
-		std::vector<Vehicle_Type> vehicle_types;
+		std::vector<struct Road_Type> road_types;
+		std::vector<struct Vehicle_Type> vehicle_types;
 
 		std::vector<Prefab*> buildings;
 		std::vector<Prefab*> trees;
