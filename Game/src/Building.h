@@ -12,21 +12,14 @@ namespace Can
 	class Building
 	{
 	public:
-		Building(
-			Prefab* prefab,
-			s64 connectedRoadSegment,
-			u64 snapped_t_index,
-			f32 snapped_t,
-			const glm::vec3& position,
-			const glm::vec3& rotation
-		);
-		Building() {}
+		Building() = default;
 		~Building() { delete object; }
 
 	public:
-
 		u64 type{ 0 };
-		s64 connectedRoadSegment{ -1 };
+		Object* object{ nullptr };
+
+		s64 connected_road_segment{ -1 };
 		s64 snapped_t_index{ 0 };
 		f32 snapped_t{ 0.0f };
 		u16 capacity{ 0 };
@@ -39,8 +32,6 @@ namespace Can
 
 		std::vector<class Person*> people{};
 		std::vector<class Car*> vehicles{};
-		Object* object{ nullptr };
-		v3 position{};
 		Car_Park car_park{};
 
 		f32 max_health{ 500.0f };

@@ -1,10 +1,6 @@
 #include "canpch.h"
 #include "RoadManager.h"
 
-#include "Types/Transition.h"
-#include "Types/RoadSegment.h"
-#include "Types/Person.h"
-#include "Types/Tree.h"
 #include "Building.h"
 
 #include "GameApp.h"
@@ -1209,10 +1205,10 @@ namespace Can
 		v3 C = v3{ prefab->boundingBoxM.x, prefab->boundingBoxL.y, prefab->boundingBoxL.z };
 		v3 D = v3{ prefab->boundingBoxM.x, prefab->boundingBoxM.y, prefab->boundingBoxL.z };
 
-		A = glm::rotateZ(A, rot) + building->position;
-		B = glm::rotateZ(B, rot) + building->position;
-		C = glm::rotateZ(C, rot) + building->position;
-		D = glm::rotateZ(D, rot) + building->position;
+		A = glm::rotateZ(A, rot) + building->object->position;
+		B = glm::rotateZ(B, rot) + building->object->position;
+		C = glm::rotateZ(C, rot) + building->object->position;
+		D = glm::rotateZ(D, rot) + building->object->position;
 
 		std::vector<std::array<v3, 3>> building_bounding_polygon{
 			std::array<v3,3>{A, B, D},
@@ -2615,7 +2611,7 @@ namespace Can
 				v3 p_1 = new_snapped_road_segment.curve_samples[i];
 
 				v3 dir_to_p_1 = p_1 - p_0;
-				v3 dir_to_bulding_from_road_center = building->position - p_0;
+				v3 dir_to_bulding_from_road_center = building->object->position - p_0;
 				v3 dir_to_p_2 = (i < curve_sample_count - 1) ?
 					new_snapped_road_segment.curve_samples[i + 1] - p_1 :
 					new_snapped_road_segment.GetEndDirection() * -1.0f;
@@ -2642,7 +2638,7 @@ namespace Can
 				v3 road_side_end_point_two = p_1 + rotated_2;
 
 				v3 dir_side_road = road_side_end_point_two - road_side_end_point_one;
-				v3 dir_to_building_from_side_road = building->position - road_side_end_point_one;
+				v3 dir_to_building_from_side_road = building->object->position - road_side_end_point_one;
 				f32 scaler = glm::dot(dir_side_road, dir_to_building_from_side_road) / glm::length2(dir_side_road);
 				if (scaler > 1.0f) {
 					p_0 = p_1;
@@ -2670,10 +2666,10 @@ namespace Can
 					bIndex--;
 					new_snapped_road_segment.Buildings.push_back(building);
 				}
-				building->connectedRoadSegment = new_snapped_road_segment_index;
+				building->connected_road_segment = new_snapped_road_segment_index;
 				building->snapped_t = scaler;
 				building->snapped_t_index = i;
-				building->position = new_position;
+				building->object->position = new_position;
 				building->object->SetTransform(
 					new_position,
 					v3{

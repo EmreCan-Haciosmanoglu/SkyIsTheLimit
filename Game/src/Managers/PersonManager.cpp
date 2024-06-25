@@ -113,7 +113,7 @@ namespace Can
 					}
 
 					// TODO: Combine these two line into a function
-					p->position = building_from->position;
+					p->position = building_from->object->position;
 					p->object->SetTransform(p->position);
 
 					p->object->enabled = true;
@@ -128,7 +128,7 @@ namespace Can
 					}
 					else
 					{
-						p->road_segment = building_from->connectedRoadSegment;
+						p->road_segment = building_from->connected_road_segment;
 						RoadSegment& road_segment = road_segments[p->road_segment];
 						road_segment.people.push_back(p);
 
@@ -336,7 +336,7 @@ namespace Can
 						{
 							if (p->path.size() == 1)
 							{
-								p->target = p->path_end_building->position;
+								p->target = p->path_end_building->object->position;
 								p->heading_to_a_building = true;
 
 								RoadSegment& segment{ road_segments[p->road_segment] };
@@ -479,7 +479,7 @@ namespace Can
 			people_on_the_road_node.erase(it);
 			p->road_node = -1;
 		}
-		p->position = p->path_start_building->position;
+		p->position = p->path_start_building->object->position;
 		p->object->SetTransform(p->position);
 		p->object->enabled = false;
 		if (p->path_start_building == p->home)
@@ -565,7 +565,7 @@ namespace Can
 		Person* p = c->driver;
 		c->driver = nullptr;
 
-		p->position = p->path_start_building->position;
+		p->position = p->path_start_building->object->position;
 		p->object->SetTransform(p->position);
 		p->object->enabled = false;
 		if (p->path_start_building == p->home)
@@ -614,7 +614,7 @@ namespace Can
 			people_on_the_road_node.erase(it);
 			p->road_node = -1;
 		}
-		p->position = p->path_start_building->position;
+		p->position = p->path_start_building->object->position;
 		p->object->SetTransform(p->position);
 		p->object->enabled = false;
 		p->status = PersonStatus::AtHome;

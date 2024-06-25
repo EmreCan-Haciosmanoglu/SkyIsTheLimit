@@ -183,7 +183,7 @@ namespace Can
 				{
 					v2 bL = (v2)building->object->prefab->boundingBoxL;
 					v2 bM = (v2)building->object->prefab->boundingBoxM;
-					v2 bP = (v2)building->position;
+					v2 bP = (v2)building->object->position;
 
 					v2 mtv = Helper::check_rotated_rectangle_collision(
 						bL,
@@ -300,7 +300,7 @@ namespace Can
 			{
 				v2 bL = (v2)building->object->prefab->boundingBoxL;
 				v2 bM = (v2)building->object->prefab->boundingBoxM;
-				v2 bP = (v2)building->position;
+				v2 bP = (v2)building->object->position;
 				v2 mtv = Helper::check_rotated_rectangle_collision(
 					bL,
 					bM,
@@ -333,8 +333,8 @@ namespace Can
 			if (Helper::check_if_ray_intersects_with_bounding_box(
 				cameraPosition,
 				cameraDirection,
-				building->object->prefab->boundingBoxL + building->position,
-				building->object->prefab->boundingBoxM + building->position
+				building->object->prefab->boundingBoxL + building->object->position,
+				building->object->prefab->boundingBoxM + building->object->position
 			))
 			{
 				m_SelectedBuildingToDestruct = it;
@@ -381,15 +381,17 @@ namespace Can
 
 		if (!b_ConstructionRestricted)
 		{
-			Building* new_building = new Building(
+			Building* new_building{ new Building() };
+			new_building->object = new Object(
 				m_Guideline->prefab,
-				m_SnappedRoadSegment,
-				snapped_t_index,
-				snapped_t,
 				m_GuidelinePosition,
 				m_GuidelineRotation
 			);
 			new_building->type = m_Type;
+			new_building->connected_road_segment = m_SnappedRoadSegment;
+			new_building->snapped_t_index = snapped_t_index;
+			new_building->snapped_t = snapped_t;
+			auto& building_type{ building_types[building_type_index] };
 			new_building->snapped_to_right = snapped_from_right;
 			if (m_SnappedRoadSegment != (u64)-1)
 				road_segments[m_SnappedRoadSegment].Buildings.push_back(new_building);
@@ -619,9 +621,9 @@ namespace Can
 			}
 		}
 
-		if (b->connectedRoadSegment != -1)
+		if (b->connected_road_segment != -1)
 		{
-			auto& connected_buildings = segments[b->connectedRoadSegment].Buildings;
+			auto& connected_buildings = segments[b->connected_road_segment].Buildings;
 			auto it = std::find(connected_buildings.begin(), connected_buildings.end(), b);
 			assert(it != connected_buildings.end());
 			connected_buildings.erase(it);

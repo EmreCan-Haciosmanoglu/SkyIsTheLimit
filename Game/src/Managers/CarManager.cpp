@@ -313,7 +313,7 @@ namespace Can
 					building->vehicles.push_back(car);
 					driver->drove_in_work = true;
 				}
-				set_person_target(driver, building->position);
+				set_person_target(driver, building->object->position);
 			}
 		}
 	}
