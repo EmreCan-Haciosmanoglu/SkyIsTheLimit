@@ -30,8 +30,8 @@ namespace Can
 		bool OnMousePressed_Construction();
 		bool OnMousePressed_Destruction();
 
-		void SetType(size_t type);
-		inline size_t GetType() { return m_Type; }
+		void SetType(size_t type_index);
+		inline size_t GetType() const { return building_type_index; }
 
 		void SetConstructionMode(BuildingConstructionMode mode);
 
@@ -57,11 +57,11 @@ namespace Can
 
 		BuildingConstructionMode m_ConstructionMode{ BuildingConstructionMode::None };
 
-		size_t m_Type = 0;
+		size_t building_type_index{ 0 };
 
 		std::vector<Building*> m_Buildings{};
-		std::vector<Building*> m_HomeBuildings;
-		std::vector<Building*> m_WorkBuildings;
+		std::vector<Building*> buildings_houses;
+		std::vector<Building*> buildings_commercial;
 
 		v3 m_GuidelinePosition{ 0.0f, 0.0f, 0.0f };
 		v3 m_GuidelineRotation{ 0.0f, 0.0f, 0.0f };

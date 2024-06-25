@@ -21,7 +21,7 @@ namespace Can
 	BuildingManager::BuildingManager(GameScene* scene)
 		: m_Scene(scene)
 	{
-		m_Guideline = new Object(m_Scene->MainApplication->buildings[m_Type]);
+		m_Guideline = new Object(m_Scene->MainApplication->buildings[building_type_index]);
 		m_Guideline->enabled = false;
 	}
 
@@ -400,9 +400,9 @@ namespace Can
 			new_building->is_home = Utility::Random::Float(1.0f) > 0.4f;
 			if (new_building->is_home)
 			{
-				m_HomeBuildings.push_back(new_building);
 				u8 domicilled = Utility::Random::signed_32(8, 14);
 				new_building->capacity = domicilled;
+				buildings_houses.push_back(new_building);
 				for (u64 i = 0; i < domicilled; i++)
 				{
 					u64 type = 0;
@@ -453,9 +453,9 @@ namespace Can
 			}
 			else
 			{
-				m_WorkBuildings.push_back(new_building);
 				u8 worker = Utility::Random::signed_32(20, 50);
 				new_building->capacity = worker;
+				buildings_commercial.push_back(new_building);
 				for (u64 i = 0; i < worker; ++i)
 				{
 
@@ -464,6 +464,10 @@ namespace Can
 					{
 						p->work = new_building;
 						new_building->people.push_back(p);
+					}
+					else
+					{
+						break;
 					}
 				}
 
@@ -538,11 +542,11 @@ namespace Can
 		return false;
 	}
 
-	void BuildingManager::SetType(size_t type)
+	void BuildingManager::SetType(size_t type_index)
 	{
-		m_Type = type;
+		building_type_index = type_index;
 		delete m_Guideline;
-		m_Guideline = new Object(m_Scene->MainApplication->buildings[m_Type]);
+		m_Guideline = new Object(m_Scene->MainApplication->buildings[type_index]);
 	}
 	void BuildingManager::SetConstructionMode(BuildingConstructionMode mode)
 	{
@@ -598,8 +602,8 @@ namespace Can
 	{
 		GameScene* game = GameScene::ActiveGameScene;
 		auto& buildings = game->m_BuildingManager.m_Buildings;
-		auto& home_buildings = game->m_BuildingManager.m_HomeBuildings;
-		auto& work_buildings = game->m_BuildingManager.m_WorkBuildings;
+		auto& home_buildings = game->m_BuildingManager.buildings_houses;
+		auto& work_buildings = game->m_BuildingManager.buildings_commercial;
 		auto& segments = game->m_RoadManager.road_segments;
 		const auto& people_on_the_road = game->m_PersonManager.get_people_on_the_road();
 
