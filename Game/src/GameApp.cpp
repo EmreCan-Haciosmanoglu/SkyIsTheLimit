@@ -79,10 +79,7 @@ namespace Can
 						continue;
 					bool tunnel_is_found{ false };
 
-					std::string name;
-					std::string asym;
-					std::string zone;
-					std::string has_median;
+					Road_Type& road_type{ road_types.emplace_back() };
 
 					std::string road_obj{ path_to_roads };
 					std::string road_png{ path_to_roads };
@@ -111,71 +108,53 @@ namespace Can
 					std::string tunnel_entrance_mirror_obj{ path_to_roads };
 					std::string tunnel_entrance_mirror_png{ path_to_roads };
 
-					std::string thumbnail_png{ path_to_roads };
-
-					std::vector<Lane> l_backward{};
-					u64 l_backward_count{ 0 };
-					std::vector<Lane> l_forward{};
-					u64 l_forward_count{ 0 };
-
-					Road_Type& type{ road_types.emplace_back() };
-
 					while (std::getline(file, line))
 					{
 						if (line == end_key)
 						{
-							type.name = name;
-							type.road = new Prefab(road_obj, TEMP_SHADER_FILE_PATH, road_png);
-							type.road_junction = new Prefab(road_junction_obj, TEMP_SHADER_FILE_PATH, road_junction_png);
-							type.road_end = new Prefab(road_end_obj, TEMP_SHADER_FILE_PATH, road_end_png);
-							type.thumbnail = Texture2D::Create(thumbnail_png);
-							type.zoneable = zone != "False";
-							type.has_median = has_median != "False";
-							if (asym != "False")
+							road_type.road = new Prefab(road_obj, TEMP_SHADER_FILE_PATH, road_png);
+							road_type.road_junction = new Prefab(road_junction_obj, TEMP_SHADER_FILE_PATH, road_junction_png);
+							road_type.road_end = new Prefab(road_end_obj, TEMP_SHADER_FILE_PATH, road_end_png);
+							if (road_type.asymmetric)
 							{
-								type.asymmetric = true;
-								type.road_junction_mirror = new Prefab(road_junction_mirror_obj, TEMP_SHADER_FILE_PATH, road_junction_mirror_png);
-								type.road_end_mirror = new Prefab(road_end_mirror_obj, TEMP_SHADER_FILE_PATH, road_end_mirror_png);
+								road_type.road_junction_mirror = new Prefab(road_junction_mirror_obj, TEMP_SHADER_FILE_PATH, road_junction_mirror_png);
+								road_type.road_end_mirror = new Prefab(road_end_mirror_obj, TEMP_SHADER_FILE_PATH, road_end_mirror_png);
 							}
 							if (tunnel_is_found)
 							{
-								type.tunnel = new Prefab(tunnel_obj, TEMP_SHADER_FILE_PATH, tunnel_png);
-								type.tunnel_junction = new Prefab(tunnel_junction_obj, TEMP_SHADER_FILE_PATH, tunnel_junction_png);
-								type.tunnel_end = new Prefab(tunnel_end_obj, TEMP_SHADER_FILE_PATH, tunnel_end_png);
-								type.tunnel_entrance = new Prefab(tunnel_entrance_obj, TEMP_SHADER_FILE_PATH, tunnel_entrance_png);
-								if (asym != "False")
+								road_type.tunnel = new Prefab(tunnel_obj, TEMP_SHADER_FILE_PATH, tunnel_png);
+								road_type.tunnel_junction = new Prefab(tunnel_junction_obj, TEMP_SHADER_FILE_PATH, tunnel_junction_png);
+								road_type.tunnel_end = new Prefab(tunnel_end_obj, TEMP_SHADER_FILE_PATH, tunnel_end_png);
+								road_type.tunnel_entrance = new Prefab(tunnel_entrance_obj, TEMP_SHADER_FILE_PATH, tunnel_entrance_png);
+								if (road_type.asymmetric)
 								{
-									type.tunnel_junction_mirror = new Prefab(tunnel_junction_mirror_obj, TEMP_SHADER_FILE_PATH, tunnel_junction_mirror_png);
-									type.tunnel_end_mirror = new Prefab(tunnel_end_mirror_obj, TEMP_SHADER_FILE_PATH, tunnel_end_mirror_png);
-									type.tunnel_entrance_mirror = new Prefab(tunnel_entrance_mirror_obj, TEMP_SHADER_FILE_PATH, tunnel_entrance_mirror_png);
+									road_type.tunnel_junction_mirror = new Prefab(tunnel_junction_mirror_obj, TEMP_SHADER_FILE_PATH, tunnel_junction_mirror_png);
+									road_type.tunnel_end_mirror = new Prefab(tunnel_end_mirror_obj, TEMP_SHADER_FILE_PATH, tunnel_end_mirror_png);
+									road_type.tunnel_entrance_mirror = new Prefab(tunnel_entrance_mirror_obj, TEMP_SHADER_FILE_PATH, tunnel_entrance_mirror_png);
 								}
-								type.tunnel_length = type.tunnel->boundingBoxM.x - type.tunnel->boundingBoxL.x;
-								type.tunnel_width = type.tunnel->boundingBoxM.y - type.tunnel->boundingBoxL.y;
-								type.tunnel_height = type.tunnel->boundingBoxM.z - type.tunnel->boundingBoxL.z;
-								type.tunnel_junction_length = type.tunnel_junction->boundingBoxM.x - type.tunnel_junction->boundingBoxL.x;
+								road_type.tunnel_length = road_type.tunnel->boundingBoxM.x - road_type.tunnel->boundingBoxL.x;
+								road_type.tunnel_width = road_type.tunnel->boundingBoxM.y - road_type.tunnel->boundingBoxL.y;
+								road_type.tunnel_height = road_type.tunnel->boundingBoxM.z - road_type.tunnel->boundingBoxL.z;
+								road_type.tunnel_junction_length = road_type.tunnel_junction->boundingBoxM.x - road_type.tunnel_junction->boundingBoxL.x;
 							}
-							type.road_length = type.road->boundingBoxM.x - type.road->boundingBoxL.x;
-							type.road_width = type.road->boundingBoxM.y - type.road->boundingBoxL.y;
-							type.road_height = type.road->boundingBoxM.z - type.road->boundingBoxL.z;
-							type.road_junction_length = type.road_junction->boundingBoxM.x - type.road_junction->boundingBoxL.x;
-							if (l_backward_count > 0)
-								type.lanes_backward = l_backward;
-							if (l_forward_count > 0)
-								type.lanes_forward = l_forward;
+							road_type.road_length = road_type.road->boundingBoxM.x - road_type.road->boundingBoxL.x;
+							road_type.road_width = road_type.road->boundingBoxM.y - road_type.road->boundingBoxL.y;
+							road_type.road_height = road_type.road->boundingBoxM.z - road_type.road->boundingBoxL.z;
+							road_type.road_junction_length = road_type.road_junction->boundingBoxM.x - road_type.road_junction->boundingBoxL.x;
 							break;
 						}
-						std::string::iterator seperator = std::find(line.begin(), line.end(), ':');
+						std::string::iterator seperator{ std::find(line.begin(), line.end(), ':') };
 						if (seperator == line.end())
 							break;
 						char* print_from = seperator._Unwrapped() + 1;
 						if (std::equal(line.begin(), seperator, name_key))
-							name = std::string(print_from);
+							road_type.name = std::string(print_from);
 						else if (std::equal(line.begin(), seperator, asym_key))
-							asym = std::string(print_from);
+							road_type.asymmetric = std::string(print_from) != "False";
 						else if (std::equal(line.begin(), seperator, zone_key))
-							zone = std::string(print_from);
+							road_type.zoneable = std::string(print_from) != "False";
 						else if (std::equal(line.begin(), seperator, has_median_key))
-							has_median = std::string(print_from);
+							road_type.has_median = std::string(print_from) != "False";
 						else if (std::equal(line.begin(), seperator, road_object_key))
 							road_obj.append(print_from);
 						else if (std::equal(line.begin(), seperator, road_texture_key))
@@ -228,20 +207,21 @@ namespace Can
 						else if (std::equal(line.begin(), seperator, tunnel_entrance_mirror_texture_key))
 							tunnel_entrance_mirror_png.append(print_from);
 						else if (std::equal(line.begin(), seperator, thumbnail_key))
-							thumbnail_png.append(print_from);
+							road_type.thumbnail = Texture2D::Create(std::format("{}{}", path_to_roads, print_from));
 						else if (std::equal(line.begin(), seperator, lanes_backward_key))
 						{
 							std::stringstream ss;
 							ss << std::string(print_from);
 
+							u64 l_backward_count{ 0 };
 							ss >> l_backward_count;
-							l_backward.reserve(l_backward_count);
+							road_type.lanes_backward.reserve(l_backward_count);
 							u64 lanes_read = 0;
 							while (std::getline(file, line))
 							{
 								std::string::iterator first_seperator = std::find(line.begin(), line.end(), ':');
 								std::string::iterator second_seperator = std::find(first_seperator + 1, line.end(), ':');
-								Lane lane{};
+								Lane& lane{ road_type.lanes_backward.emplace_back() };
 								ss.clear();
 								ss.str("");
 								ss << std::string(line.begin(), first_seperator);
@@ -256,7 +236,6 @@ namespace Can
 								ss.str("");
 								ss << std::string(second_seperator + 1, line.end());
 								ss >> lane.width;
-								l_backward.push_back(lane);
 								lanes_read++;
 								if (lanes_read >= l_backward_count)
 									break;
@@ -268,14 +247,15 @@ namespace Can
 							std::stringstream ss;
 							ss << std::string(print_from);
 
+							u64 l_forward_count{ 0 };
 							ss >> l_forward_count;
-							l_backward.reserve(l_forward_count);
+							road_type.lanes_forward.reserve(l_forward_count);
 							u64 lanes_read = 0;
 							while (std::getline(file, line))
 							{
 								std::string::iterator first_seperator = std::find(line.begin(), line.end(), ':');
 								std::string::iterator second_seperator = std::find(first_seperator + 1, line.end(), ':');
-								Lane lane{};
+								Lane& lane{ road_type.lanes_forward.emplace_back() };
 								ss.clear();
 								ss.str("");
 								ss << std::string(line.begin(), first_seperator);
@@ -290,7 +270,7 @@ namespace Can
 								ss.str("");
 								ss << std::string(second_seperator + 1, line.end());
 								ss >> lane.width;
-								l_forward.push_back(lane);
+
 								lanes_read++;
 								if (lanes_read >= l_forward_count)
 									break;
@@ -331,30 +311,15 @@ namespace Can
 					if (line != start_key)
 						continue;
 
-					std::string name{ 0 };
+					Vehicle_Type& vehicle_type{ vehicle_types.emplace_back() };
 					std::string object{ path_to_cars };
 					std::string texture{ path_to_cars };
-					std::string thumbnail{ path_to_cars };
-					f32 speed_range_min{ 0 };
-					f32 speed_range_max{ 0 };
-					u16 operator_count{ 0 };
-					u16 passenger_limit{ 0 };
-					Car_Type type{ 0 };
-
-					Vehicle_Type& vehicle_type{ vehicle_types.emplace_back() };
 
 					while (std::getline(file, line))
 					{
 						if (line == end_key)
 						{
-							vehicle_type.name = name;
 							vehicle_type.prefab = new Prefab(object, TEMP_SHADER_FILE_PATH, texture);
-							vehicle_type.thumbnail = Texture2D::Create(thumbnail);
-							vehicle_type.speed_range_min = speed_range_min;
-							vehicle_type.speed_range_max = speed_range_max;
-							vehicle_type.operator_count = operator_count;
-							vehicle_type.passenger_limit = passenger_limit;
-							vehicle_type.type = type;
 
 							vehicle_type.object_length = vehicle_type.prefab->boundingBoxM.x - vehicle_type.prefab->boundingBoxL.x;
 							vehicle_type.object_width = vehicle_type.prefab->boundingBoxM.y - vehicle_type.prefab->boundingBoxL.y;
@@ -365,36 +330,36 @@ namespace Can
 							break;
 						char* print_from = seperator._Unwrapped() + 1;
 						if (std::equal(line.begin(), seperator, name_key))
-							name = std::string(print_from);
+							vehicle_type.name = std::string(print_from);
 						else if (std::equal(line.begin(), seperator, object_key))
 							object.append(print_from);
 						else if (std::equal(line.begin(), seperator, texture_key))
 							texture.append(print_from);
 						else if (std::equal(line.begin(), seperator, thumbnail_key))
-							thumbnail.append(print_from);
+							vehicle_type.thumbnail = Texture2D::Create(std::format("{}{}", path_to_cars, print_from));
 						else if (std::equal(line.begin(), seperator, speed_range_key))
 						{
 							std::stringstream ss{};
 							auto dash_seperator = std::find(seperator + 1, line.end(), '-');
 							ss << std::string(seperator + 1, dash_seperator);
-							ss >> speed_range_min;
+							ss >> vehicle_type.speed_range_min;
 
 							ss.clear();
 							ss.str("");
 							ss << std::string(dash_seperator + 1, line.end());
-							ss >> speed_range_max;
+							ss >> vehicle_type.speed_range_max;
 						}
 						else if (std::equal(line.begin(), seperator, operator_count_key))
 						{
 							std::stringstream ss{};
 							ss << std::string(seperator + 1, line.end());
-							ss >> operator_count;
+							ss >> vehicle_type.operator_count;
 						}
 						else if (std::equal(line.begin(), seperator, passenger_limit_key))
 						{
 							std::stringstream ss{};
 							ss << std::string(seperator + 1, line.end());
-							ss >> operator_count;
+							ss >> vehicle_type.passenger_limit;
 						}
 						else if (std::equal(line.begin(), seperator, type_key))
 						{
@@ -402,7 +367,7 @@ namespace Can
 							ss << std::string(seperator + 1, line.end());
 							u8 t;
 							ss >> t;
-							type = (Car_Type)t;
+							vehicle_type.type = (Car_Type)t;
 						}
 					}
 				}
@@ -644,8 +609,6 @@ namespace Can
 		LoadTrees();
 		load_vehicle_types(vehicle_types);
 		LoadPeople();
-
-
 
 		init_main_menu(*this, main_menu);
 		load_main_menu(*this, main_menu);
