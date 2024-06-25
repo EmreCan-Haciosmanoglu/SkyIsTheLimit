@@ -460,6 +460,7 @@ namespace Can
 		GameScene* game = GameScene::ActiveGameScene;
 		auto& road_segments = game->m_RoadManager.road_segments;
 		auto& road_nodes = game->m_RoadManager.road_nodes;
+		auto& building_types{ game->MainApplication->building_types };
 
 		if (p->road_segment != -1)
 		{
@@ -506,16 +507,17 @@ namespace Can
 		if (p->car)
 		{
 			Building* b = p->path_start_building;
-			v3 car_pos = b->position +
+			auto& building_type{ building_types[b->type] };
+			v3 car_pos = b->object->position +
 				(v3)(glm::rotate(m4(1.0f), b->object->rotation.z, v3{ 0.0f, 0.0f, 1.0f }) *
 					glm::rotate(m4(1.0f), b->object->rotation.y, v3{ 0.0f, 1.0f, 0.0f }) *
 					glm::rotate(m4(1.0f), b->object->rotation.x, v3{ 1.0f, 0.0f, 0.0f }) *
-					v4(b->car_park.offset, 1.0f));
+					v4(building_type.vehicle_parks[0].offset, 1.0f));
 			p->car->object->SetTransform(
 				car_pos,
 				glm::rotateZ(
 					b->object->rotation,
-					glm::radians(b->car_park.rotation_in_degrees)
+					glm::radians(building_type.vehicle_parks[0].rotation_in_degrees)
 				)
 			);
 		}
@@ -532,6 +534,7 @@ namespace Can
 	{
 		GameScene* game{ GameScene::ActiveGameScene };
 		auto& road_segments{ game->m_RoadManager.road_segments };
+		auto& building_types{ game->MainApplication->building_types };
 
 		if (c->road_segment != -1)
 		{
@@ -542,16 +545,17 @@ namespace Can
 			c->road_segment = -1;
 		}
 		Building* building_from{ c->driver->path_start_building };
-		v3 car_park_pos{ building_from->position +
+		auto& building_type{ building_types[building_from->type] };
+		v3 car_park_pos{ building_from->object->position +
 			(v3)(glm::rotate(m4(1.0f), building_from->object->rotation.z, v3{ 0.0f, 0.0f, 1.0f }) *
 				glm::rotate(m4(1.0f), building_from->object->rotation.y, v3{ 0.0f, 1.0f, 0.0f }) *
 				glm::rotate(m4(1.0f), building_from->object->rotation.x, v3{ 1.0f, 0.0f, 0.0f }) *
-				v4(building_from->car_park.offset, 1.0f)) };
+				v4(building_type.vehicle_parks[0].offset, 1.0f)) };
 		c->object->SetTransform(
 			car_park_pos,
 			glm::rotateZ(
 				building_from->object->rotation,
-				glm::radians(building_from->car_park.rotation_in_degrees)
+				glm::radians(building_type.vehicle_parks[0].rotation_in_degrees)
 			)
 		);
 		while (c->path.size())
@@ -595,6 +599,7 @@ namespace Can
 		GameScene* game = GameScene::ActiveGameScene;
 		auto& road_segments = game->m_RoadManager.road_segments;
 		auto& road_nodes = game->m_RoadManager.road_nodes;
+		auto& building_types{ game->MainApplication->building_types };
 
 		if (p->road_segment != -1)
 		{
@@ -629,16 +634,17 @@ namespace Can
 		if (p->car)
 		{
 			Building* b = p->path_start_building;
-			v3 car_pos = b->position +
+			auto& building_type{ building_types[b->type] };
+			v3 car_pos = b->object->position +
 				(v3)(glm::rotate(m4(1.0f), b->object->rotation.z, v3{ 0.0f, 0.0f, 1.0f }) *
 					glm::rotate(m4(1.0f), b->object->rotation.y, v3{ 0.0f, 1.0f, 0.0f }) *
 					glm::rotate(m4(1.0f), b->object->rotation.x, v3{ 1.0f, 0.0f, 0.0f }) *
-					v4(b->car_park.offset, 1.0f));
+					v4(building_type.vehicle_parks[0].offset, 1.0f));
 			p->car->object->SetTransform(
 				car_pos,
 				glm::rotateZ(
 					b->object->rotation,
-					glm::radians(b->car_park.rotation_in_degrees)
+					glm::radians(building_type.vehicle_parks[0].rotation_in_degrees)
 				)
 			);
 		}

@@ -6,6 +6,7 @@
 
 #include "Types/Vehicle_Type.h"
 #include "Types/Road_Type.h"
+#include "Types/Building_Type.h"
 
 Can::Application* Can::CreateApplication(const Can::WindowProps& props)
 {
@@ -408,6 +409,196 @@ namespace Can
 				file.close();
 			}
 		}
+		void load_building_types(std::vector<Building_Type>& building_types)
+		{
+			namespace fs = std::filesystem;
+			const std::string current_path{ fs::current_path().string() };
+			const std::string path_to_buildings{ std::format("{}\\assets\\objects\\buildings\\", current_path) };
+			const std::string path_to_buildings_identifier_list{ std::format("{}list.txt", path_to_buildings) };
+
+			std::ifstream file{ path_to_buildings_identifier_list };
+
+			if (file.is_open())
+			{
+				const std::string start_key{ "START" };
+				const std::string end_key{ "END" };
+
+				constexpr const char* object_key{ "Object" };
+				constexpr const char* texture_key{ "Texture" };
+				constexpr const char* thumbnail_key{ "Thumbnail" };
+
+				constexpr const char* name_key{ "Name" };
+				constexpr const char* capacity_key{ "Capacity" };
+				constexpr const char* group_key{ "Group" };
+				constexpr const char* vehicle_capacity_key{ "Vehicle_Capacity" };
+
+				constexpr const char* needed_uneducated_key{ "Neded_Uneducated" };
+				constexpr const char* needed_elementary_school_key{ "Neded_Elementary_School" };
+				constexpr const char* needed_high_school_key{ "Neded_High_School" };
+				constexpr const char* needed_associate_s_key{ "Neded_Associate_s" };
+				constexpr const char* needed_bachelor_s_key{ "Neded_Bachelor_s" };
+				constexpr const char* needed_master_key{ "Neded_Master" };
+				constexpr const char* needed_doctorate_key{ "Neded_Doctorate" };
+
+				constexpr const char* visitor_capacity_key{ "Visitor_Capacity" };
+				constexpr const char* stay_visitor_capacity_key{ "Stay_Visitor_Capacity" };
+
+				constexpr const char* vehicle_parks_key{ "Vehicle_Parks" };
+
+				std::string line;
+				while (std::getline(file, line))
+				{
+					// using printf() in all tests for consistency
+					if (line != start_key)
+						continue;
+
+					Building_Type& building_type{ building_types.emplace_back() };
+
+					std::string object{ path_to_buildings };
+					std::string texture{ path_to_buildings };
+
+					while (std::getline(file, line))
+					{
+						if (line == end_key)
+						{
+							building_type.prefab = new Prefab(object, TEMP_SHADER_FILE_PATH, texture);
+
+							building_type.object_length = building_type.prefab->boundingBoxM.x - building_type.prefab->boundingBoxL.x;
+							building_type.object_width = building_type.prefab->boundingBoxM.y - building_type.prefab->boundingBoxL.y;
+							building_type.object_height = building_type.prefab->boundingBoxM.z - building_type.prefab->boundingBoxL.z;
+							break;
+						}
+						std::string::iterator seperator = std::find(line.begin(), line.end(), ':');
+						if (seperator == line.end())
+							break;
+						char* print_from = seperator._Unwrapped() + 1;
+						if (std::equal(line.begin(), seperator, name_key))
+							building_type.name = print_from;
+						else if (std::equal(line.begin(), seperator, object_key))
+							object.append(print_from);
+						else if (std::equal(line.begin(), seperator, texture_key))
+							texture.append(print_from);
+						else if (std::equal(line.begin(), seperator, thumbnail_key))
+							building_type.thumbnail = Texture2D::Create(std::format("{}{}", path_to_buildings, print_from));
+						else if (std::equal(line.begin(), seperator, capacity_key))
+						{
+							std::stringstream ss{};
+							ss << std::string(seperator + 1, line.end());
+							ss >> building_type.capacity;
+						}
+						else if (std::equal(line.begin(), seperator, group_key))
+						{
+							std::stringstream ss{};
+							ss << std::string(seperator + 1, line.end());
+							u8 group{ 0 };
+							ss >> group;
+							building_type.group = (Building_Group)group;
+						}
+						else if (std::equal(line.begin(), seperator, vehicle_capacity_key))
+						{
+							std::stringstream ss{};
+							ss << std::string(seperator + 1, line.end());
+							ss >> building_type.vehicle_capacity;
+						}
+						else if (std::equal(line.begin(), seperator, needed_uneducated_key))
+						{
+							std::stringstream ss{};
+							ss << std::string(seperator + 1, line.end());
+							ss >> building_type.needed_uneducated;
+						}
+						else if (std::equal(line.begin(), seperator, needed_elementary_school_key))
+						{
+							std::stringstream ss{};
+							ss << std::string(seperator + 1, line.end());
+							ss >> building_type.needed_elementary_school;
+						}
+						else if (std::equal(line.begin(), seperator, needed_high_school_key))
+						{
+							std::stringstream ss{};
+							ss << std::string(seperator + 1, line.end());
+							ss >> building_type.needed_high_school;
+						}
+						else if (std::equal(line.begin(), seperator, needed_associate_s_key))
+						{
+							std::stringstream ss{};
+							ss << std::string(seperator + 1, line.end());
+							ss >> building_type.needed_associate_s;
+						}
+						else if (std::equal(line.begin(), seperator, needed_bachelor_s_key))
+						{
+							std::stringstream ss{};
+							ss << std::string(seperator + 1, line.end());
+							ss >> building_type.needed_bachelor_s;
+						}
+						else if (std::equal(line.begin(), seperator, needed_master_key))
+						{
+							std::stringstream ss{};
+							ss << std::string(seperator + 1, line.end());
+							ss >> building_type.needed_master;
+						}
+						else if (std::equal(line.begin(), seperator, needed_doctorate_key))
+						{
+							std::stringstream ss{};
+							ss << std::string(seperator + 1, line.end());
+							ss >> building_type.needed_doctorate;
+						}
+						else if (std::equal(line.begin(), seperator, visitor_capacity_key))
+						{
+							std::stringstream ss{};
+							ss << std::string(seperator + 1, line.end());
+							ss >> building_type.visitor_capacity;
+						}
+						else if (std::equal(line.begin(), seperator, stay_visitor_capacity_key))
+						{
+							std::stringstream ss{};
+							ss << std::string(seperator + 1, line.end());
+							ss >> building_type.stay_visitor_capacity;
+						}
+						else if (std::equal(line.begin(), seperator, vehicle_parks_key))
+						{
+							std::stringstream ss;
+							ss << std::string(print_from);
+
+							u16 vehicle_parks_count = 0;
+							ss >> vehicle_parks_count;
+							building_type.vehicle_parks.reserve(vehicle_parks_count);
+							u64 lanes_read = 0;
+							while (std::getline(file, line))
+							{
+								std::string::iterator first_seperator = std::find(line.begin(), line.end(), ':');
+								std::string::iterator second_seperator = std::find(first_seperator + 1, line.end(), ':');
+								std::string::iterator third_seperator = std::find(second_seperator + 1, line.end(), ':');
+								Vehicle_Park vehicle_park{ building_type.vehicle_parks.emplace_back() };
+								ss.clear();
+								ss.str("");
+								ss << std::string(line.begin(), first_seperator);
+								ss >> vehicle_park.offset.x;
+
+								ss.clear();
+								ss.str("");
+								ss << std::string(first_seperator + 1, second_seperator);
+								ss >> vehicle_park.offset.y;
+
+								ss.clear();
+								ss.str("");
+								ss << std::string(second_seperator + 1, third_seperator);
+								ss >> vehicle_park.offset.z;
+
+								ss.clear();
+								ss.str("");
+								ss << std::string(third_seperator + 1, line.end());
+								ss >> vehicle_park.rotation_in_degrees;
+
+								lanes_read++;
+								if (lanes_read >= vehicle_parks_count)
+									break;
+							}
+						}
+					}
+				}
+				file.close();
+			}
+		}
 	}
 
 	GameApp::GameApp(const Can::WindowProps& props)
@@ -448,8 +639,8 @@ namespace Can
 		twoTimesSpeedTexture = Texture2D::Create("assets/textures/Buttons/TwoTimesSpeed.png");
 		fourTimesSpeedTexture = Texture2D::Create("assets/textures/Buttons/FourTimesSpeed.png");
 
-		LoadBuildings();
 		load_road_types(road_types);
+		load_building_types(building_types);
 		LoadTrees();
 		load_vehicle_types(vehicle_types);
 		LoadPeople();
@@ -489,11 +680,6 @@ namespace Can
 		//unload_main_menu(*this, main_menu);
 	}
 
-
-	void GameApp::LoadBuildings()
-	{
-		buildings = LoadPrefabs("\\assets\\objects\\houses", "House_");
-	}
 	void GameApp::LoadTrees()
 	{
 		trees = LoadPrefabs("\\assets\\objects\\trees", "Tree_");

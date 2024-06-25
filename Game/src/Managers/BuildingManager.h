@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Can/Renderer/Object.h"
+#include "Types/Building_Type.h"
 
 namespace Can
 {
@@ -56,12 +57,17 @@ namespace Can
 		GameScene* m_Scene{ nullptr };
 
 		BuildingConstructionMode m_ConstructionMode{ BuildingConstructionMode::None };
+		Building_Group building_group{ Building_Group::House };
 
 		size_t building_type_index{ 0 };
 
 		std::vector<Building*> m_Buildings{};
 		std::vector<Building*> buildings_houses;
+		std::vector<Building*> buildings_residential;
 		std::vector<Building*> buildings_commercial;
+		std::vector<Building*> buildings_industrial;
+		std::vector<Building*> buildings_office;
+		std::vector<Building*> buildings_specials; // hospitals, police stations, gcfs etc.
 
 		v3 m_GuidelinePosition{ 0.0f, 0.0f, 0.0f };
 		v3 m_GuidelineRotation{ 0.0f, 0.0f, 0.0f };

@@ -16,7 +16,8 @@
 
 namespace Can
 {
-	/*Anom*/ namespace {
+	/*Anom*/ namespace
+	{
 		void draw_building_panel(Game_Scene_UI& ui)
 		{
 			auto app{ GameApp::instance };
@@ -547,6 +548,8 @@ namespace Can
 
 	void draw_screen(Game_Scene_UI& ui)
 	{
+		auto app{ GameApp::instance };
+		auto& building_types{ app->building_types };
 		const std::string text_x{ "X" };
 		if (ui.focus_object != nullptr)
 		{
@@ -619,6 +622,8 @@ namespace Can
 		if (ui.selected_building != nullptr)
 		{
 			auto& building{ ui.selected_building };
+			auto& building_type{ building_types[building->type] };
+
 			constexpr s32 title_left_margin{ 10 };
 
 			constexpr v4 color_white{ 0.9f, 0.9f, 0.9f, 1.0f };
@@ -768,10 +773,10 @@ namespace Can
 
 			/*left panel*/ {
 
-				if (building->is_home)
+				if (building_type.group == Building_Group::House)
 				{
 					auto& occupants{ building->people };
-					auto total_occupants_value{ std::format(": {}/{}", occupants.size(), building->capacity) };
+					auto total_occupants_value{ std::format(": {}/{}", occupants.size(), building_type.capacity) };
 					immediate_text(total_occupants_key, rect_key, ui.label_theme_left_alinged_small_black_text);
 					immediate_text(total_occupants_value, rect_value, ui.label_theme_left_alinged_small_black_text);
 
@@ -811,7 +816,7 @@ namespace Can
 						rect_name.y = rect_gender.y;
 					}
 				}
-				else if (building->is_hospital)
+				else if (building_type.group == Building_Group::Hospital)
 				{
 					auto& buildings{ ui.game_scene->m_BuildingManager.m_Buildings };
 
@@ -834,7 +839,7 @@ namespace Can
 					f32 total_health_work_places{ 0 };
 					for (auto b : buildings)
 					{
-						if (b->is_home)
+						if (building_type.group == Building_Group::House || building_type.group == Building_Group::Residential)
 						{
 							++total_homes;
 							total_health_homes += b->current_health / b->max_health;
@@ -872,18 +877,18 @@ namespace Can
 					rect_left_needs_key.y -= rect_left_needs_key.h + 10;
 					rect_left_needs_value.y = rect_left_needs_key.y;
 
-					auto patients_value{ std::format(": {}/{}", building->visitors.size(), building->visitor_capacity) };
+					auto patients_value{ std::format(": {}/{}", building->visitors.size(), building_type.visitor_capacity) };
 					immediate_text(patients_key, rect_left_needs_key, ui.label_theme_left_alinged_small_black_text);
 					immediate_text(patients_value, rect_left_needs_value, ui.label_theme_left_alinged_small_black_text);
 
 					rect_left_needs_key.y -= rect_left_needs_key.h + 10;
 					rect_left_needs_value.y = rect_left_needs_key.y;
 
-					auto inpatients_value{ std::format(": {}/{}", building->visitors.size(), building->stay_visitor_capacity) };
+					auto inpatients_value{ std::format(": {}/{}", building->visitors.size(), building_type.stay_visitor_capacity) };
 					immediate_text(inpatients_key, rect_left_needs_key, ui.label_theme_left_alinged_small_black_text);
 					immediate_text(inpatients_value, rect_left_needs_value, ui.label_theme_left_alinged_small_black_text);
 				}
-				else if (building->is_police_station)
+				else if (building_type.group == Building_Group::Police_Station)
 				{
 					auto& buildings{ ui.game_scene->m_BuildingManager.m_Buildings };
 
@@ -907,18 +912,18 @@ namespace Can
 					rect_left_needs_key.y -= rect_left_needs_key.h + 10;
 					rect_left_needs_value.y = rect_left_needs_key.y;
 
-					auto complainants_value{ std::format(": {}/{}", building->visitors.size(), building->visitor_capacity) };
+					auto complainants_value{ std::format(": {}/{}", building->visitors.size(), building_type.visitor_capacity) };
 					immediate_text(complainants_key, rect_left_needs_key, ui.label_theme_left_alinged_small_black_text);
 					immediate_text(complainants_value, rect_left_needs_value, ui.label_theme_left_alinged_small_black_text);
 
 					rect_left_needs_key.y -= rect_left_needs_key.h + 10;
 					rect_left_needs_value.y = rect_left_needs_key.y;
 
-					auto prisoners_value{ std::format(": {}/{}", building->visitors.size(), building->stay_visitor_capacity) };
+					auto prisoners_value{ std::format(": {}/{}", building->visitors.size(), building_type.stay_visitor_capacity) };
 					immediate_text(prisoners_key, rect_left_needs_key, ui.label_theme_left_alinged_small_black_text);
 					immediate_text(prisoners_value, rect_left_needs_value, ui.label_theme_left_alinged_small_black_text);
 				}
-				else if (building->is_gmf)
+				else if (building_type.group == Building_Group::Garbage_Collection_Center)
 				{
 					auto& buildings{ ui.game_scene->m_BuildingManager.m_Buildings };
 
@@ -939,7 +944,7 @@ namespace Can
 					f32 total_garbage_work_places{ 0 };
 					for (auto b : buildings)
 					{
-						if (b->is_home)
+						if (building_type.group == Building_Group::House)
 						{
 							++total_homes;
 							total_garbage_homes += b->current_garbage / b->garbage_capacity;
@@ -1054,56 +1059,56 @@ namespace Can
 							break;
 						}
 					}
-					auto uneducated_value{ std::format(": {}/{}", working_uneducated, building->needed_uneducated) };
+					auto uneducated_value{ std::format(": {}/{}", working_uneducated, building_type.needed_uneducated) };
 					immediate_text(uneducated_key, rect_key, ui.label_theme_left_alinged_small_black_text);
 					immediate_text(uneducated_value, rect_value, ui.label_theme_left_alinged_small_black_text);
 
 					rect_key.y -= rect_key.h + 5;
 					rect_value.y = rect_key.y;
 
-					auto elementary_school_value{ std::format(": {}/{}", working_elementary_school, building->needed_elementary_school) };
+					auto elementary_school_value{ std::format(": {}/{}", working_elementary_school, building_type.needed_elementary_school) };
 					immediate_text(elementary_school_key, rect_key, ui.label_theme_left_alinged_small_black_text);
 					immediate_text(elementary_school_value, rect_value, ui.label_theme_left_alinged_small_black_text);
 
 					rect_key.y -= rect_key.h + 5;
 					rect_value.y = rect_key.y;
 
-					auto high_school_value{ std::format(": {}/{}", working_high_school, building->needed_high_school) };
+					auto high_school_value{ std::format(": {}/{}", working_high_school, building_type.needed_high_school) };
 					immediate_text(high_school_key, rect_key, ui.label_theme_left_alinged_small_black_text);
 					immediate_text(high_school_value, rect_value, ui.label_theme_left_alinged_small_black_text);
 
 					rect_key.y -= rect_key.h + 5;
 					rect_value.y = rect_key.y;
 
-					auto associate_s_value{ std::format(": {}/{}", working_associate_s, building->needed_associate_s) };
+					auto associate_s_value{ std::format(": {}/{}", working_associate_s, building_type.needed_associate_s) };
 					immediate_text(associate_s_key, rect_key, ui.label_theme_left_alinged_small_black_text);
 					immediate_text(associate_s_value, rect_value, ui.label_theme_left_alinged_small_black_text);
 
 					rect_key.y -= rect_key.h + 5;
 					rect_value.y = rect_key.y;
 
-					auto bachelor_s_value{ std::format(": {}/{}", working_bachelor_s, building->needed_bachelor_s) };
+					auto bachelor_s_value{ std::format(": {}/{}", working_bachelor_s, building_type.needed_bachelor_s) };
 					immediate_text(bachelor_s_key, rect_key, ui.label_theme_left_alinged_small_black_text);
 					immediate_text(bachelor_s_value, rect_value, ui.label_theme_left_alinged_small_black_text);
 
 					rect_key.y -= rect_key.h + 5;
 					rect_value.y = rect_key.y;
 
-					auto master_value{ std::format(": {}/{}", working_master, building->needed_master) };
+					auto master_value{ std::format(": {}/{}", working_master, building_type.needed_master) };
 					immediate_text(master_key, rect_key, ui.label_theme_left_alinged_small_black_text);
 					immediate_text(master_value, rect_value, ui.label_theme_left_alinged_small_black_text);
 
 					rect_key.y -= rect_key.h + 5;
 					rect_value.y = rect_key.y;
 
-					auto doctorate_value{ std::format(": {}/{}", working_doctorate, building->needed_doctorate) };
+					auto doctorate_value{ std::format(": {}/{}", working_doctorate, building_type.needed_doctorate) };
 					immediate_text(doctorate_key, rect_key, ui.label_theme_left_alinged_small_black_text);
 					immediate_text(doctorate_value, rect_value, ui.label_theme_left_alinged_small_black_text);
 
 					rect_key.y -= rect_key.h + 10;
 					rect_value.y = rect_key.y;
 
-					auto total_workers_value{ std::format(": {}/{}", workers.size(), building->capacity) };
+					auto total_workers_value{ std::format(": {}/{}", workers.size(), building_type.capacity) };
 					immediate_text(total_workers_key, rect_key, ui.label_theme_left_alinged_small_black_text);
 					immediate_text(total_workers_value, rect_value, ui.label_theme_left_alinged_small_black_text);
 
@@ -1197,7 +1202,7 @@ namespace Can
 				auto& occupants{ building->people };
 				// Health
 				f32 ratio{};
-				if (!building->is_hospital)
+				if (building_type.group != Building_Group::Hospital)
 				{
 					ratio = building->current_health / building->max_health;
 					v4 color_health{ Math::lerp(color_red, color_green, ratio) };
@@ -1228,7 +1233,7 @@ namespace Can
 					immediate_text(electricity_value, rect_needs_value, ui.label_theme_left_alinged_xsmall_red_text);
 
 				// Garbage
-				if (!building->is_gmf)
+				if (building_type.group != Building_Group::Garbage_Collection_Center)
 				{
 					rect_needs_key.y -= rect_needs_key.h + 20;
 					rect_needs_value.y = rect_needs_key.y;
@@ -1275,7 +1280,7 @@ namespace Can
 					immediate_text(water_waste_value, rect_needs_value, ui.label_theme_left_alinged_xsmall_red_text);
 
 				// Police
-				if (!building->is_police_station)
+				if (building_type.group != Building_Group::Police_Station)
 				{
 					rect_needs_key.y -= rect_needs_key.h + 20;
 					rect_needs_value.y = rect_needs_key.y;

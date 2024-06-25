@@ -19,7 +19,6 @@ namespace Can
 	private:
 		std::vector<Prefab*> LoadPrefabs(const std::string& folder, const std::string& filter);
 
-		void LoadBuildings();
 		void LoadTrees();
 		void LoadPeople();
 
@@ -48,6 +47,7 @@ namespace Can
 
 		std::vector<struct Road_Type> road_types;
 		std::vector<struct Vehicle_Type> vehicle_types;
+		std::vector<struct Building_Type> building_types;
 
 		std::vector<Prefab*> buildings;
 		std::vector<Prefab*> trees;

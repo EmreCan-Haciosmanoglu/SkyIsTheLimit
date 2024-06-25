@@ -4,6 +4,7 @@
 #include "Types/RoadSegment.h"
 #include "Types/Road_Type.h"
 #include "Types/Vehicle_Type.h"
+#include "Types/Building_Type.h"
 #include "Types/Tree.h"
 #include "Types/Person.h"
 #include "Building.h"
@@ -369,6 +370,7 @@ namespace Can
 	}
 	bool BuildingManager::OnMousePressed_Construction()
 	{
+		auto& building_types = m_Scene->MainApplication->building_types;
 		auto& vehicle_types = m_Scene->MainApplication->vehicle_types;
 		auto& person_prefabs = m_Scene->MainApplication->people;
 
@@ -387,22 +389,20 @@ namespace Can
 				m_GuidelinePosition,
 				m_GuidelineRotation
 			);
-			new_building->type = m_Type;
 			new_building->connected_road_segment = m_SnappedRoadSegment;
 			new_building->snapped_t_index = snapped_t_index;
 			new_building->snapped_t = snapped_t;
 			auto& building_type{ building_types[building_type_index] };
+			new_building->type = building_type_index;
 			new_building->snapped_to_right = snapped_from_right;
 			if (m_SnappedRoadSegment != (u64)-1)
 				road_segments[m_SnappedRoadSegment].Buildings.push_back(new_building);
 			m_Buildings.push_back(new_building);
 
-			new_building->is_home = Utility::Random::Float(1.0f) > 0.4f;
-			if (new_building->is_home)
+			if (building_group == Building_Group::House)
 			{
-				u8 domicilled = Utility::Random::signed_32(8, 14);
-				new_building->capacity = domicilled;
 				buildings_houses.push_back(new_building);
+				u8 domicilled = Utility::Random::signed_32(0, building_type.capacity);
 				for (u64 i = 0; i < domicilled; i++)
 				{
 					u64 type = 0;
@@ -424,16 +424,17 @@ namespace Can
 						new_car->object = new Object(new_vehicle_type.prefab);
 						new_car->type = new_vehicle_type_index;
 						new_car->speed_in_kmh = Utility::Random::Float(new_vehicle_type.speed_range_min, new_vehicle_type.speed_range_max);
-						v3 car_pos = new_building->position +
+						assert(building_type.vehicle_parks.size());
+						v3 car_pos = new_building->object->position +
 							(v3)(glm::rotate(m4(1.0f), new_building->object->rotation.z, v3{ 0.0f, 0.0f, 1.0f }) *
 								glm::rotate(m4(1.0f), new_building->object->rotation.y, v3{ 0.0f, 1.0f, 0.0f }) *
 								glm::rotate(m4(1.0f), new_building->object->rotation.x, v3{ 1.0f, 0.0f, 0.0f }) *
-								v4(new_building->car_park.offset, 1.0f));
+								v4(building_type.vehicle_parks[0].offset, 1.0f));
 						new_car->object->SetTransform(
 							car_pos,
 							glm::rotateZ(
 								new_building->object->rotation,
-								glm::radians(new_building->car_park.rotation_in_degrees)
+								glm::radians(building_type.vehicle_parks[0].rotation_in_degrees)
 							)
 						);
 						new_car->object->enabled = true;
@@ -453,12 +454,10 @@ namespace Can
 			}
 			else
 			{
-				u8 worker = Utility::Random::signed_32(20, 50);
-				new_building->capacity = worker;
 				buildings_commercial.push_back(new_building);
+				u8 worker = Utility::Random::signed_32(0, building_type.capacity);
 				for (u64 i = 0; i < worker; ++i)
 				{
-
 					Person* p = person_manager.get_worklessPerson();
 					if (p)
 					{
@@ -481,16 +480,17 @@ namespace Can
 					new_car->type = new_vehicle_type_index;
 					new_car->speed_in_kmh = Utility::Random::Float(new_vehicle_type.speed_range_min, new_vehicle_type.speed_range_max);
 					new_car->object->tintColor = v4{ 1.0f, 0.0f, 0.0f, 1.0f };
-					v3 car_pos = new_building->position +
+					assert(building_type.vehicle_parks.size());
+					v3 car_pos = new_building->object->position +
 						(v3)(glm::rotate(m4(1.0f), new_building->object->rotation.z, v3{ 0.0f, 0.0f, 1.0f }) *
 							glm::rotate(m4(1.0f), new_building->object->rotation.y, v3{ 0.0f, 1.0f, 0.0f }) *
 							glm::rotate(m4(1.0f), new_building->object->rotation.x, v3{ 1.0f, 0.0f, 0.0f }) *
-							v4(new_building->car_park.offset, 1.0f));
+							v4(building_type.vehicle_parks[0].offset, 1.0f));
 					new_car->object->SetTransform(
 						car_pos,
 						glm::rotateZ(
 							new_building->object->rotation,
-							glm::radians(new_building->car_park.rotation_in_degrees)
+							glm::radians(building_type.vehicle_parks[0].rotation_in_degrees)
 						)
 					);
 					new_car->object->enabled = true;
@@ -588,9 +588,11 @@ namespace Can
 	}
 	Building* BuildingManager::getAvailableWorkBuilding()
 	{
-		for (Building* b : m_WorkBuildings)
+		auto& building_types{ m_Scene->MainApplication->building_types };
+		for (Building* b : buildings_commercial)
 		{
-			if (b->capacity > b->people.size())
+			auto& building_type{ building_types[b->type] };
+			if (building_type.capacity > b->people.size())
 			{
 				return b;
 			}

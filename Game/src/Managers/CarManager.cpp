@@ -104,6 +104,7 @@ namespace Can
 		GameApp* app{ GameScene::ActiveGameScene->MainApplication };
 		auto& road_segments{ GameScene::ActiveGameScene->m_RoadManager.road_segments };
 		auto& road_nodes{ GameScene::ActiveGameScene->m_RoadManager.road_nodes };
+		const auto& building_types{ app->building_types };
 		const auto& vehicle_types{ app->vehicle_types };
 		const auto& road_types{ app->road_types };
 
@@ -229,11 +230,13 @@ namespace Can
 								{
 									// TODO: cache target car park position in car
 									auto building{ car->driver->path_end_building };
-									v3 car_park_pos{ building->position +
+									auto& building_type{ building_types[building->type] };
+									assert(building_type.vehicle_parks.size());
+									v3 car_park_pos{ building->object->position +
 										(v3)(glm::rotate(m4(1.0f), building->object->rotation.z, v3{ 0.0f, 0.0f, 1.0f }) *
 											glm::rotate(m4(1.0f), building->object->rotation.y, v3{ 0.0f, 1.0f, 0.0f }) *
 											glm::rotate(m4(1.0f), building->object->rotation.x, v3{ 1.0f, 0.0f, 0.0f }) *
-											v4(building->car_park.offset, 1.0f)) };
+											v4(building_type.vehicle_parks[0].offset, 1.0f))};
 									set_car_target_and_direction(car, car_park_pos);
 									car->heading_to_a_parking_spot = true;
 
@@ -297,10 +300,12 @@ namespace Can
 				driver->car_driving = nullptr;
 
 				auto building = driver->path_end_building;
+				auto& building_type{ building_types[building->type] };
+				assert(building_type.vehicle_parks.size());
 				car->heading_to_a_parking_spot = false;
 				car->object->SetTransform(
 					car->target,
-					glm::rotateZ(building->object->rotation, glm::radians(building->car_park.rotation_in_degrees))
+					glm::rotateZ(building->object->rotation, glm::radians(building_type.vehicle_parks[0].rotation_in_degrees))
 				);
 
 				driver->heading_to_a_building = true;

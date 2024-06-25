@@ -11,6 +11,7 @@
 
 #include "Can/Math.h"
 
+#include "Types/Building_Type.h"
 #include "Types/Vehicle_Type.h"
 #include "Types/RoadSegment.h"
 #include "Types/Transition.h"

@@ -74,6 +74,7 @@
       <Filter>Types</Filter>
     </ClInclude>
     <ClInclude Include="src\UIScene.h" />
+    <ClInclude Include="src\Types\Building_Type.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Building.cpp" />
