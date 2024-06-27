@@ -49,7 +49,6 @@ namespace Can
 		std::vector<struct Vehicle_Type> vehicle_types;
 		std::vector<struct Building_Type> building_types;
 
-		std::vector<Prefab*> buildings;
 		std::vector<Prefab*> trees;
 		std::vector<Prefab*> people;
 

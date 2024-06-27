@@ -457,7 +457,7 @@ namespace Can
 							ss << std::string(seperator + 1, line.end());
 							u8 group{ 0 };
 							ss >> group;
-							building_type.group = (Building_Group)group;
+							building_type.group = (Building_Group)(group - '0');
 						}
 						else if (std::equal(line.begin(), seperator, vehicle_capacity_key))
 						{

@@ -22,6 +22,7 @@ namespace Can
 		{
 			auto app{ GameApp::instance };
 			auto& window{ main_application->GetWindow() };
+			auto& building_types{ app->building_types };
 			u64 width_in_pixels{ window.GetWidth() };
 			u64 height_in_pixels{ window.GetHeight() };
 
@@ -200,9 +201,12 @@ namespace Can
 			}
 			else if (ui.draw_building_panel_inside_type == Draw_Building_Panel::housing)
 			{
-				for (u64 i{ 0 }; i < ui.housing_building_tumbnail_image_files.size(); ++i)
+				for (u64 i{ 0 }; i < building_types.size(); ++i)
 				{
-					flags = immediate_image_button(menu_item_rect, ui.button_theme_buildings, ui.housing_building_tumbnail_image_files[i], __LINE__ * 10000 + i, false);
+					auto& building_type{ building_types[i] };
+					if (building_type.group != Building_Group::House) continue;
+
+					flags = immediate_image_button(menu_item_rect, ui.button_theme_buildings, building_type.thumbnail, __LINE__ * 10000 + i, false);
 					if (flags & BUTTON_STATE_FLAGS_RELEASED)
 					{
 						ui.game_scene->SetConstructionMode(ConstructionMode::Building);
@@ -224,11 +228,19 @@ namespace Can
 			}
 			else if (ui.draw_building_panel_inside_type == Draw_Building_Panel::commercial)
 			{
-				for (u64 i{ 0 }; i < ui.commercial_building_tumbnail_image_files.size(); ++i)
+				for (u64 i{ 0 }; i < building_types.size(); ++i)
 				{
-					flags = immediate_image_button(menu_item_rect, ui.button_theme_buildings, ui.commercial_building_tumbnail_image_files[i], __LINE__ * 10000 + i, false);
+					auto& building_type{ building_types[i] };
+					if (building_type.group != Building_Group::Commercial) continue;
+
+					flags = immediate_image_button(menu_item_rect, ui.button_theme_buildings, building_type.thumbnail, __LINE__ * 10000 + i, false);
 					if (flags & BUTTON_STATE_FLAGS_RELEASED)
 					{
+						ui.game_scene->SetConstructionMode(ConstructionMode::Building);	
+						auto mode = ui.game_scene->m_BuildingManager.GetConstructionMode();
+						if (mode == BuildingConstructionMode::None || mode == BuildingConstructionMode::Destruct)
+							ui.game_scene->m_BuildingManager.SetConstructionMode(BuildingConstructionMode::Construct);
+						ui.game_scene->m_BuildingManager.SetType(i);
 					}
 					menu_item_rect.x += menu_item_rect.w + button_margin;
 				}
@@ -443,12 +455,6 @@ namespace Can
 			ui.sub_region_theme_details.flags |= SUB_REGION_THEME_FLAGS_HORIZONTALLY_SCROLLABLE;
 			ui.sub_region_theme_details.flags |= SUB_REGION_THEME_FLAGS_VERTICALLY_SCROLLABLE;
 		}
-		namespace fs = std::filesystem;
-		std::string s{ fs::current_path().string() };
-		std::string pathh{ s + "\\assets\\objects\\Houses" };
-		auto files{ Helper::GetFiles(pathh, "Thumbnail_", ".png") };
-		for (auto& f : files)
-			ui.housing_building_tumbnail_image_files.push_back(Texture2D::Create(f));
 	}
 	void deinit_game_scene_ui_layer(Game_Scene_UI& ui)
 	{}

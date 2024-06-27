@@ -91,8 +91,6 @@ namespace Can
 
 		Draw_Building_Panel draw_building_panel_inside_type{ Draw_Building_Panel::home };
 
-		std::vector<Can::Ref<Can::Texture2D>> housing_building_tumbnail_image_files{};
-		std::vector<Can::Ref<Can::Texture2D>> commercial_building_tumbnail_image_files{};
 		std::vector<Can::Ref<Can::Texture2D>> industry_building_tumbnail_image_files{};
 
 		std::vector<Can::Ref<Can::Texture2D>> hospital_building_tumbnail_image_files{};

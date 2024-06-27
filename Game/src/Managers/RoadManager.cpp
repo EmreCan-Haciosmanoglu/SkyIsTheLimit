@@ -2593,13 +2593,13 @@ namespace Can
 	void resnapp_buildings(u64 old_rs_index, u64 new_rs_index, u64 snapped_index)
 	{
 		auto& road_segments = GameScene::ActiveGameScene->m_RoadManager.road_segments;
-		auto& buildings = GameScene::ActiveGameScene->MainApplication->buildings;
+		auto& building_types = GameScene::ActiveGameScene->MainApplication->building_types;
 		auto& road_types = GameScene::ActiveGameScene->MainApplication->road_types;
 		auto& snapped_buildings = road_segments[old_rs_index].Buildings;
 		for (u64 bIndex = 0; bIndex < snapped_buildings.size(); bIndex++)
 		{
 			Building* building = snapped_buildings[bIndex];
-			f32 offset_from_side_road = -buildings[building->type]->boundingBoxL.x;
+			f32 offset_from_side_road = -building_types[building->type].prefab->boundingBoxL.x;
 			u64 t_index = building->snapped_t_index;
 			u64 new_snapped_road_segment_index = t_index < snapped_index ? old_rs_index : new_rs_index;
 			RoadSegment& new_snapped_road_segment = road_segments[new_snapped_road_segment_index];

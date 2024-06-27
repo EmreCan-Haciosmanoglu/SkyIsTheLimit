@@ -22,7 +22,7 @@ namespace Can
 	BuildingManager::BuildingManager(GameScene* scene)
 		: m_Scene(scene)
 	{
-		m_Guideline = new Object(m_Scene->MainApplication->buildings[building_type_index]);
+		m_Guideline = new Object(m_Scene->MainApplication->building_types[building_type_index].prefab);
 		m_Guideline->enabled = false;
 	}
 
@@ -546,7 +546,7 @@ namespace Can
 	{
 		building_type_index = type_index;
 		delete m_Guideline;
-		m_Guideline = new Object(m_Scene->MainApplication->buildings[type_index]);
+		m_Guideline = new Object(m_Scene->MainApplication->building_types[type_index].prefab);
 	}
 	void BuildingManager::SetConstructionMode(BuildingConstructionMode mode)
 	{

@@ -1236,9 +1236,6 @@ namespace Can
 		namespace fs = std::filesystem;
 		std::string s = fs::current_path().string();
 
-		std::string pathh = s + "\\assets\\objects\\Houses";
-		std::vector<std::string> buildingtumbnailimagefiles = Helper::GetFiles(pathh, "Thumbnail_", ".png");
-
 		std::string patht = s + "\\assets\\objects\\Trees";
 		std::vector<std::string> treetumbnailimagefiles = Helper::GetFiles(patht, "Thumbnail_", ".png");
 
