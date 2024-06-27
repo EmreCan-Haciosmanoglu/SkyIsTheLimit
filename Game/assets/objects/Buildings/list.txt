@@ -18,3 +18,13 @@ Group:0
 Vehicle_Parks:1
 0.5:0.0:0.0:0.0
 END
+START
+Object:03/Building.obj
+Texture:03/Building.png
+Thumbnail:03/Thumbnail.png
+Name:Grand Hospital
+Capacity:50
+Group:2
+Vehicle_Parks:1
+1.5:0.0:0.0:0.0
+END
