@@ -24,7 +24,17 @@ Texture:03/Building.png
 Thumbnail:03/Thumbnail.png
 Name:Grand Hospital
 Capacity:50
+Group:5
+Vehicle_Parks:1
+1.0:0.0:0.0:0.0
+END
+START
+Object:01/Building.obj
+Texture:01/Building.png
+Thumbnail:01/Thumbnail.png
+Name:3+1 Work Place
+Capacity:25
 Group:2
 Vehicle_Parks:1
-1.5:0.0:0.0:0.0
+0.5:0.0:0.0:0.0
 END
