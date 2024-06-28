@@ -399,7 +399,7 @@ namespace Can
 				road_segments[m_SnappedRoadSegment].Buildings.push_back(new_building);
 			m_Buildings.push_back(new_building);
 
-			if (building_group == Building_Group::House)
+			if (building_type.group == Building_Group::House)
 			{
 				buildings_houses.push_back(new_building);
 				u8 domicilled = Utility::Random::signed_32(0, building_type.capacity);

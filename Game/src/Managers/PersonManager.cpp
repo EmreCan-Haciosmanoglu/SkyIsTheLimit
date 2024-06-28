@@ -110,6 +110,11 @@ namespace Can
 						p->path = Helper::get_path(building_from, 5);
 						p->path_end_building = building_from;
 						p->path_start_building = building_from;
+						if (p->car_driving)
+						{
+							p->car_driving->driver = nullptr;
+							p->car_driving = nullptr;
+						}
 					}
 
 					// TODO: Combine these two line into a function

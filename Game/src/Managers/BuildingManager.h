@@ -57,7 +57,6 @@ namespace Can
 		GameScene* m_Scene{ nullptr };
 
 		BuildingConstructionMode m_ConstructionMode{ BuildingConstructionMode::None };
-		Building_Group building_group{ Building_Group::House };
 
 		size_t building_type_index{ 0 };
 

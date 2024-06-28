@@ -106,14 +106,14 @@ namespace Can
 			menu_item_rect.y = sub_region_rect.y + sub_region_rect.h - menu_item_rect.h - button_margin;
 			menu_item_rect.z = sub_region_rect.z + 1;
 
-			if (ui.draw_building_panel_inside_type == Draw_Building_Panel::home)
+			if (ui.draw_building_panel_inside_type == Draw_Building_Panel::Home)
 			{
 				flags = immediate_image_button(menu_item_rect, ui.button_theme_sub_menus, nullptr, __LINE__);
 				menu_item_rect.z++;
 				immediate_text("G", menu_item_rect, ui.label_theme_large_text);
 				if (flags & BUTTON_STATE_FLAGS_RELEASED)
 				{
-					ui.draw_building_panel_inside_type = Draw_Building_Panel::general;
+					ui.draw_building_panel_inside_type = Draw_Building_Panel::General;
 				}
 				menu_item_rect.x += menu_item_rect.w + button_margin;
 
@@ -122,26 +122,35 @@ namespace Can
 				immediate_text("S", menu_item_rect, ui.label_theme_large_text);
 				if (flags & BUTTON_STATE_FLAGS_RELEASED)
 				{
-					ui.draw_building_panel_inside_type = Draw_Building_Panel::special;
+					ui.draw_building_panel_inside_type = Draw_Building_Panel::Special;
 				}
 			}
-			else if (ui.draw_building_panel_inside_type == Draw_Building_Panel::general)
+			else if (ui.draw_building_panel_inside_type == Draw_Building_Panel::General)
 			{
 				flags = immediate_image_button(menu_item_rect, ui.button_theme_sub_menus, nullptr, __LINE__);
 				menu_item_rect.z++;
 				immediate_text("H", menu_item_rect, ui.label_theme_large_text);
 				if (flags & BUTTON_STATE_FLAGS_RELEASED)
 				{
-					ui.draw_building_panel_inside_type = Draw_Building_Panel::housing;
+					ui.draw_building_panel_inside_type = Draw_Building_Panel::House;
 				}
 				menu_item_rect.x += menu_item_rect.w + button_margin;
 
 				flags = immediate_image_button(menu_item_rect, ui.button_theme_sub_menus, nullptr, __LINE__);
 				menu_item_rect.z++;
-				immediate_text("B", menu_item_rect, ui.label_theme_large_text);
+				immediate_text("R", menu_item_rect, ui.label_theme_large_text);
 				if (flags & BUTTON_STATE_FLAGS_RELEASED)
 				{
-					ui.draw_building_panel_inside_type = Draw_Building_Panel::commercial;
+					ui.draw_building_panel_inside_type = Draw_Building_Panel::Residential;
+				}
+				menu_item_rect.x += menu_item_rect.w + button_margin;
+
+				flags = immediate_image_button(menu_item_rect, ui.button_theme_sub_menus, nullptr, __LINE__);
+				menu_item_rect.z++;
+				immediate_text("C", menu_item_rect, ui.label_theme_large_text);
+				if (flags & BUTTON_STATE_FLAGS_RELEASED)
+				{
+					ui.draw_building_panel_inside_type = Draw_Building_Panel::Commercial;
 				}
 				menu_item_rect.x += menu_item_rect.w + button_margin;
 
@@ -150,7 +159,16 @@ namespace Can
 				immediate_text("I", menu_item_rect, ui.label_theme_large_text);
 				if (flags & BUTTON_STATE_FLAGS_RELEASED)
 				{
-					ui.draw_building_panel_inside_type = Draw_Building_Panel::industry;
+					ui.draw_building_panel_inside_type = Draw_Building_Panel::Industrial;
+				}
+				menu_item_rect.x += menu_item_rect.w + button_margin;
+
+				flags = immediate_image_button(menu_item_rect, ui.button_theme_sub_menus, nullptr, __LINE__);
+				menu_item_rect.z++;
+				immediate_text("O", menu_item_rect, ui.label_theme_large_text);
+				if (flags & BUTTON_STATE_FLAGS_RELEASED)
+				{
+					ui.draw_building_panel_inside_type = Draw_Building_Panel::Office;
 				}
 				menu_item_rect.x += menu_item_rect.w + button_margin;
 
@@ -159,17 +177,17 @@ namespace Can
 				immediate_text("B", menu_item_rect, ui.label_theme_large_text);
 				if (flags & BUTTON_STATE_FLAGS_RELEASED)
 				{
-					ui.draw_building_panel_inside_type = Draw_Building_Panel::home;
+					ui.draw_building_panel_inside_type = Draw_Building_Panel::Home;
 				}
 			}
-			else if (ui.draw_building_panel_inside_type == Draw_Building_Panel::special)
+			else if (ui.draw_building_panel_inside_type == Draw_Building_Panel::Special)
 			{
 				flags = immediate_image_button(menu_item_rect, ui.button_theme_sub_menus, nullptr, __LINE__);
 				menu_item_rect.z++;
 				immediate_text("H", menu_item_rect, ui.label_theme_large_text);
 				if (flags & BUTTON_STATE_FLAGS_RELEASED)
 				{
-					ui.draw_building_panel_inside_type = Draw_Building_Panel::hospital;
+					ui.draw_building_panel_inside_type = Draw_Building_Panel::Hospital;
 				}
 				menu_item_rect.x += menu_item_rect.w + button_margin;
 
@@ -178,7 +196,7 @@ namespace Can
 				immediate_text("P", menu_item_rect, ui.label_theme_large_text);
 				if (flags & BUTTON_STATE_FLAGS_RELEASED)
 				{
-					ui.draw_building_panel_inside_type = Draw_Building_Panel::police;
+					ui.draw_building_panel_inside_type = Draw_Building_Panel::Police_Station;
 				}
 				menu_item_rect.x += menu_item_rect.w + button_margin;
 
@@ -187,7 +205,7 @@ namespace Can
 				immediate_text("G", menu_item_rect, ui.label_theme_large_text);
 				if (flags & BUTTON_STATE_FLAGS_RELEASED)
 				{
-					ui.draw_building_panel_inside_type = Draw_Building_Panel::garbage_collection_facility;
+					ui.draw_building_panel_inside_type = Draw_Building_Panel::Garbage_Collection_Center;
 				}
 				menu_item_rect.x += menu_item_rect.w + button_margin;
 
@@ -196,10 +214,10 @@ namespace Can
 				immediate_text("B", menu_item_rect, ui.label_theme_large_text);
 				if (flags & BUTTON_STATE_FLAGS_RELEASED)
 				{
-					ui.draw_building_panel_inside_type = Draw_Building_Panel::home;
+					ui.draw_building_panel_inside_type = Draw_Building_Panel::Home;
 				}
 			}
-			else if (ui.draw_building_panel_inside_type == Draw_Building_Panel::housing)
+			else if (ui.draw_building_panel_inside_type == Draw_Building_Panel::House)
 			{
 				for (u64 i{ 0 }; i < building_types.size(); ++i)
 				{
@@ -223,10 +241,20 @@ namespace Can
 				immediate_text("B", menu_item_rect, ui.label_theme_large_text);
 				if (flags & BUTTON_STATE_FLAGS_RELEASED)
 				{
-					ui.draw_building_panel_inside_type = Draw_Building_Panel::general;
+					ui.draw_building_panel_inside_type = Draw_Building_Panel::General;
 				}
 			}
-			else if (ui.draw_building_panel_inside_type == Draw_Building_Panel::commercial)
+			else if (ui.draw_building_panel_inside_type == Draw_Building_Panel::Residential)
+			{
+				flags = immediate_image_button(menu_item_rect, ui.button_theme_back, nullptr, __LINE__);
+				menu_item_rect.z++;
+				immediate_text("B", menu_item_rect, ui.label_theme_large_text);
+				if (flags & BUTTON_STATE_FLAGS_RELEASED)
+				{
+					ui.draw_building_panel_inside_type = Draw_Building_Panel::General;
+				}
+			}
+			else if (ui.draw_building_panel_inside_type == Draw_Building_Panel::Commercial)
 			{
 				for (u64 i{ 0 }; i < building_types.size(); ++i)
 				{
@@ -236,7 +264,7 @@ namespace Can
 					flags = immediate_image_button(menu_item_rect, ui.button_theme_buildings, building_type.thumbnail, __LINE__ * 10000 + i, false);
 					if (flags & BUTTON_STATE_FLAGS_RELEASED)
 					{
-						ui.game_scene->SetConstructionMode(ConstructionMode::Building);	
+						ui.game_scene->SetConstructionMode(ConstructionMode::Building);
 						auto mode = ui.game_scene->m_BuildingManager.GetConstructionMode();
 						if (mode == BuildingConstructionMode::None || mode == BuildingConstructionMode::Destruct)
 							ui.game_scene->m_BuildingManager.SetConstructionMode(BuildingConstructionMode::Construct);
@@ -250,16 +278,44 @@ namespace Can
 				immediate_text("B", menu_item_rect, ui.label_theme_large_text);
 				if (flags & BUTTON_STATE_FLAGS_RELEASED)
 				{
-					ui.draw_building_panel_inside_type = Draw_Building_Panel::general;
+					ui.draw_building_panel_inside_type = Draw_Building_Panel::General;
 				}
 			}
-			else if (ui.draw_building_panel_inside_type == Draw_Building_Panel::industry)
+			else if (ui.draw_building_panel_inside_type == Draw_Building_Panel::Industrial)
 			{
-				for (u64 i{ 0 }; i < ui.industry_building_tumbnail_image_files.size(); ++i)
+				flags = immediate_image_button(menu_item_rect, ui.button_theme_back, nullptr, __LINE__);
+				menu_item_rect.z++;
+				immediate_text("B", menu_item_rect, ui.label_theme_large_text);
+				if (flags & BUTTON_STATE_FLAGS_RELEASED)
 				{
-					flags = immediate_image_button(menu_item_rect, ui.button_theme_buildings, ui.industry_building_tumbnail_image_files[i], __LINE__ * 10000 + i, false);
+					ui.draw_building_panel_inside_type = Draw_Building_Panel::General;
+				}
+			}
+			else if (ui.draw_building_panel_inside_type == Draw_Building_Panel::Office)
+			{
+				flags = immediate_image_button(menu_item_rect, ui.button_theme_back, nullptr, __LINE__);
+				menu_item_rect.z++;
+				immediate_text("B", menu_item_rect, ui.label_theme_large_text);
+				if (flags & BUTTON_STATE_FLAGS_RELEASED)
+				{
+					ui.draw_building_panel_inside_type = Draw_Building_Panel::General;
+				}
+			}
+			else if (ui.draw_building_panel_inside_type == Draw_Building_Panel::Hospital)
+			{
+				for (u64 i{ 0 }; i < building_types.size(); ++i)
+				{
+					auto& building_type{ building_types[i] };
+					if (building_type.group != Building_Group::Hospital) continue;
+
+					flags = immediate_image_button(menu_item_rect, ui.button_theme_buildings, building_type.thumbnail, __LINE__ * 10000 + i, false);
 					if (flags & BUTTON_STATE_FLAGS_RELEASED)
 					{
+						ui.game_scene->SetConstructionMode(ConstructionMode::Building);
+						auto mode = ui.game_scene->m_BuildingManager.GetConstructionMode();
+						if (mode == BuildingConstructionMode::None || mode == BuildingConstructionMode::Destruct)
+							ui.game_scene->m_BuildingManager.SetConstructionMode(BuildingConstructionMode::Construct);
+						ui.game_scene->m_BuildingManager.SetType(i);
 					}
 					menu_item_rect.x += menu_item_rect.w + button_margin;
 				}
@@ -269,64 +325,27 @@ namespace Can
 				immediate_text("B", menu_item_rect, ui.label_theme_large_text);
 				if (flags & BUTTON_STATE_FLAGS_RELEASED)
 				{
-					ui.draw_building_panel_inside_type = Draw_Building_Panel::general;
+					ui.draw_building_panel_inside_type = Draw_Building_Panel::Special;
 				}
 			}
-			else if (ui.draw_building_panel_inside_type == Draw_Building_Panel::hospital)
+			else if (ui.draw_building_panel_inside_type == Draw_Building_Panel::Police_Station)
 			{
-				for (u64 i{ 0 }; i < ui.hospital_building_tumbnail_image_files.size(); ++i)
-				{
-					flags = immediate_image_button(menu_item_rect, ui.button_theme_buildings, ui.hospital_building_tumbnail_image_files[i], __LINE__ * 10000 + i, false);
-					if (flags & BUTTON_STATE_FLAGS_RELEASED)
-					{
-					}
-					menu_item_rect.x += menu_item_rect.w + button_margin;
-				}
-
 				flags = immediate_image_button(menu_item_rect, ui.button_theme_back, nullptr, __LINE__);
 				menu_item_rect.z++;
 				immediate_text("B", menu_item_rect, ui.label_theme_large_text);
 				if (flags & BUTTON_STATE_FLAGS_RELEASED)
 				{
-					ui.draw_building_panel_inside_type = Draw_Building_Panel::special;
+					ui.draw_building_panel_inside_type = Draw_Building_Panel::Special;
 				}
 			}
-			else if (ui.draw_building_panel_inside_type == Draw_Building_Panel::police)
+			else if (ui.draw_building_panel_inside_type == Draw_Building_Panel::Garbage_Collection_Center)
 			{
-				for (u64 i{ 0 }; i < ui.police_building_tumbnail_image_files.size(); ++i)
-				{
-					flags = immediate_image_button(menu_item_rect, ui.button_theme_buildings, ui.police_building_tumbnail_image_files[i], __LINE__ * 10000 + i, false);
-					if (flags & BUTTON_STATE_FLAGS_RELEASED)
-					{
-					}
-					menu_item_rect.x += menu_item_rect.w + button_margin;
-				}
-
 				flags = immediate_image_button(menu_item_rect, ui.button_theme_back, nullptr, __LINE__);
 				menu_item_rect.z++;
 				immediate_text("B", menu_item_rect, ui.label_theme_large_text);
 				if (flags & BUTTON_STATE_FLAGS_RELEASED)
 				{
-					ui.draw_building_panel_inside_type = Draw_Building_Panel::special;
-				}
-			}
-			else if (ui.draw_building_panel_inside_type == Draw_Building_Panel::garbage_collection_facility)
-			{
-				for (u64 i{ 0 }; i < ui.garbage_collection_facility_building_tumbnail_image_files.size(); ++i)
-				{
-					flags = immediate_image_button(menu_item_rect, ui.button_theme_buildings, ui.garbage_collection_facility_building_tumbnail_image_files[i], __LINE__ * 10000 + i, false);
-					if (flags & BUTTON_STATE_FLAGS_RELEASED)
-					{
-					}
-					menu_item_rect.x += menu_item_rect.w + button_margin;
-				}
-
-				flags = immediate_image_button(menu_item_rect, ui.button_theme_back, nullptr, __LINE__);
-				menu_item_rect.z++;
-				immediate_text("B", menu_item_rect, ui.label_theme_large_text);
-				if (flags & BUTTON_STATE_FLAGS_RELEASED)
-				{
-					ui.draw_building_panel_inside_type = Draw_Building_Panel::special;
+					ui.draw_building_panel_inside_type = Draw_Building_Panel::Special;
 				}
 			}
 

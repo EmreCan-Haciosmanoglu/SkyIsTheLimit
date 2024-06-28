@@ -6,15 +6,17 @@
 namespace Can
 {
 	enum class Draw_Building_Panel : u8 {
-		home = 0,
-		general = 1,
-		special = 2,
-		housing = 3,
-		commercial = 4,
-		industry = 5,
-		hospital = 6,
-		police = 7,
-		garbage_collection_facility = 8
+		Home = 0,
+		General,
+		Special,
+		House,
+		Residential,
+		Commercial,
+		Industrial,
+		Office,
+		Hospital,
+		Police_Station,
+		Garbage_Collection_Center,
 	};
 
 	class Object;
@@ -89,13 +91,7 @@ namespace Can
 		bool force_update{ false };
 		bool draw_building_panel{ false };
 
-		Draw_Building_Panel draw_building_panel_inside_type{ Draw_Building_Panel::home };
-
-		std::vector<Can::Ref<Can::Texture2D>> industry_building_tumbnail_image_files{};
-
-		std::vector<Can::Ref<Can::Texture2D>> hospital_building_tumbnail_image_files{};
-		std::vector<Can::Ref<Can::Texture2D>> police_building_tumbnail_image_files{};
-		std::vector<Can::Ref<Can::Texture2D>> garbage_collection_facility_building_tumbnail_image_files{};
+		Draw_Building_Panel draw_building_panel_inside_type{ Draw_Building_Panel::Home };
 	};
 
 	void init_game_scene_ui_layer(Game_Scene_UI& ui, GameScene& game_scene);

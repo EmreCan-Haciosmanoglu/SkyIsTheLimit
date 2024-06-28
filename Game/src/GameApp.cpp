@@ -533,7 +533,7 @@ namespace Can
 								std::string::iterator first_seperator = std::find(line.begin(), line.end(), ':');
 								std::string::iterator second_seperator = std::find(first_seperator + 1, line.end(), ':');
 								std::string::iterator third_seperator = std::find(second_seperator + 1, line.end(), ':');
-								Vehicle_Park vehicle_park{ building_type.vehicle_parks.emplace_back() };
+								Vehicle_Park& vehicle_park{ building_type.vehicle_parks.emplace_back() };
 								ss.clear();
 								ss.str("");
 								ss << std::string(line.begin(), first_seperator);
