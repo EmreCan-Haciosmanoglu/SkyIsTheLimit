@@ -29,7 +29,7 @@ namespace Can
 			constexpr s32 building_panel_margins{ 10 };
 			constexpr s32 button_margin{ 10 };
 			constexpr s32 button_size{ 30 };
-			constexpr s32 menu_item_size{ 120 };
+			constexpr s32 menu_item_size{ 128 };
 
 			Sub_Region_Theme sub_region_theme;
 			/*Sub_Region_Themes*/ {
@@ -178,9 +178,7 @@ namespace Can
 					ui.draw_building_panel_inside_type = Draw_Building_Panel::Home;
 
 				menu_item_rect.x += menu_item_rect.w + button_margin;
-				flags = immediate_image_button(menu_item_rect, ui.button_theme_sub_menus, nullptr, __LINE__);
-				menu_item_rect.z++;
-				immediate_text("H", menu_item_rect, ui.label_theme_large_text);
+				flags = immediate_image_button(menu_item_rect, ui.button_theme_sub_menus, app->hospitalsTexture, __LINE__);
 				if (flags & BUTTON_STATE_FLAGS_RELEASED)
 					ui.draw_building_panel_inside_type = Draw_Building_Panel::Hospital;
 
