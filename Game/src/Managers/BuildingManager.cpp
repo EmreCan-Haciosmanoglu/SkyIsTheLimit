@@ -430,12 +430,11 @@ namespace Can
 								glm::rotate(m4(1.0f), new_building->object->rotation.y, v3{ 0.0f, 1.0f, 0.0f }) *
 								glm::rotate(m4(1.0f), new_building->object->rotation.x, v3{ 1.0f, 0.0f, 0.0f }) *
 								v4(building_type.vehicle_parks[0].offset, 1.0f));
+						v3 car_rotation{ new_building->object->rotation };
+						car_rotation.z += glm::radians(building_type.vehicle_parks[0].rotation_in_degrees);
 						new_car->object->SetTransform(
 							car_pos,
-							glm::rotateZ(
-								new_building->object->rotation,
-								glm::radians(building_type.vehicle_parks[0].rotation_in_degrees)
-							)
+							car_rotation
 						);
 						new_car->object->enabled = true;
 						new_car->owner = new_person;
@@ -486,12 +485,11 @@ namespace Can
 							glm::rotate(m4(1.0f), new_building->object->rotation.y, v3{ 0.0f, 1.0f, 0.0f }) *
 							glm::rotate(m4(1.0f), new_building->object->rotation.x, v3{ 1.0f, 0.0f, 0.0f }) *
 							v4(building_type.vehicle_parks[0].offset, 1.0f));
+					v3 car_rotation{ new_building->object->rotation };
+					car_rotation.z += glm::radians(building_type.vehicle_parks[0].rotation_in_degrees);
 					new_car->object->SetTransform(
 						car_pos,
-						glm::rotateZ(
-							new_building->object->rotation,
-							glm::radians(building_type.vehicle_parks[0].rotation_in_degrees)
-						)
+						car_rotation
 					);
 					new_car->object->enabled = true;
 					new_car->building = new_building;
