@@ -604,6 +604,7 @@ namespace Can
 		twoTimesSpeedTexture = Texture2D::Create("assets/textures/Buttons/TwoTimesSpeed.png");
 		fourTimesSpeedTexture = Texture2D::Create("assets/textures/Buttons/FourTimesSpeed.png");
 
+		housesTexture = Texture2D::Create("assets/textures/Buttons/Houses.png");
 		hospitalsTexture = Texture2D::Create("assets/textures/Buttons/Hospitals.png");
 
 		load_road_types(road_types);
