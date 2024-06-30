@@ -606,6 +606,7 @@ namespace Can
 
 		houses_texture = Texture2D::Create("assets/textures/Buttons/Houses.png");
 		residentials_texture = Texture2D::Create("assets/textures/Buttons/Residentials.png");
+		industrials_texture = Texture2D::Create("assets/textures/Buttons/Industrials.png");
 		hospitals_texture = Texture2D::Create("assets/textures/Buttons/Hospitals.png");
 
 		load_road_types(road_types);
