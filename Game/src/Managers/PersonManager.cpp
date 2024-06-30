@@ -2,6 +2,7 @@
 #include "PersonManager.h"
 #include "Scenes/GameScene.h"
 #include "Types/RoadSegment.h"
+#include "Types/Road_Type.h"
 #include "Types/RoadNode.h"
 #include "Types/Transition.h"
 #include "Types/Person.h"
@@ -109,10 +110,15 @@ namespace Can
 						p->path = Helper::get_path(building_from, 5);
 						p->path_end_building = building_from;
 						p->path_start_building = building_from;
+						if (p->car_driving)
+						{
+							p->car_driving->driver = nullptr;
+							p->car_driving = nullptr;
+						}
 					}
 
 					// TODO: Combine these two line into a function
-					p->position = building_from->position;
+					p->position = building_from->object->position;
 					p->object->SetTransform(p->position);
 
 					p->object->enabled = true;
@@ -127,13 +133,13 @@ namespace Can
 					}
 					else
 					{
-						p->road_segment = building_from->connectedRoadSegment;
+						p->road_segment = building_from->connected_road_segment;
 						RoadSegment& road_segment = road_segments[p->road_segment];
 						road_segment.people.push_back(p);
 
 						// TODO: Refactor this scope into a function
 						RS_Transition_For_Walking* rs_transition = (RS_Transition_For_Walking*)p->path[0];
-						RoadType& road_segment_type = road_types[road_segment.type];
+						Road_Type& road_segment_type = road_types[road_segment.type];
 
 						assert(building_from->snapped_t_index < (s64)road_segment.curve_samples.size() - 1);
 						v3 target_position = road_segment.curve_samples[building_from->snapped_t_index];
@@ -184,7 +190,7 @@ namespace Can
 						f32 half_crosswalk_width = 0.05f;
 
 						RoadSegment& current_road_segment = road_segments[connected_road_segments[rn_transition->from_road_segments_array_index]];
-						RoadType& current_road_segment_type = road_types[current_road_segment.type];
+						Road_Type& current_road_segment_type = road_types[current_road_segment.type];
 						f32 current_road_segment_width = current_road_segment_type.road_width * 0.5f;
 						f32 offset_from_current_road_segment_center = current_road_segment_width - half_crosswalk_width;
 
@@ -236,8 +242,8 @@ namespace Can
 							RoadSegment& prev_road_segment = road_segments[connected_road_segments[(rn_transition->from_road_segments_array_index - 1 + connected_road_segments.size()) % connected_road_segments.size()]];
 							RoadSegment& next_road_segment = road_segments[connected_road_segments[(rn_transition->from_road_segments_array_index + 1) % connected_road_segments.size()]];
 
-							RoadType& prev_road_segment_type = road_types[prev_road_segment.type];
-							RoadType& next_road_segment_type = road_types[next_road_segment.type];
+							Road_Type& prev_road_segment_type = road_types[prev_road_segment.type];
+							Road_Type& next_road_segment_type = road_types[next_road_segment.type];
 
 							f32 prev_road_segment_width = prev_road_segment_type.road_width * 0.5f;
 							f32 next_road_segment_width = next_road_segment_type.road_width * 0.5f;
@@ -299,7 +305,7 @@ namespace Can
 					{
 						RS_Transition_For_Vehicle* rs_transition{ p->car_driving->path[0] };
 						RoadSegment& road_segment{ road_segments[rs_transition->road_segment_index] };
-						RoadType& road_segment_type{ road_types[road_segment.type] };
+						Road_Type& road_segment_type{ road_types[road_segment.type] };
 						v3 target_position{ rs_transition->points_stack[rs_transition->points_stack.size() - 1] };
 
 						if (p->car != p->car_driving) // car_driven is work car
@@ -320,7 +326,7 @@ namespace Can
 					{
 						RS_Transition_For_Walking* rs_transition{ (RS_Transition_For_Walking*)p->path[0] };
 						RoadSegment& road_segment{ road_segments[p->road_segment] };
-						RoadType& road_segment_type{ road_types[road_segment.type] };
+						Road_Type& road_segment_type{ road_types[road_segment.type] };
 
 						u64 target_path_array_index;
 						if (p->path.size() == 1)
@@ -335,7 +341,7 @@ namespace Can
 						{
 							if (p->path.size() == 1)
 							{
-								p->target = p->path_end_building->position;
+								p->target = p->path_end_building->object->position;
 								p->heading_to_a_building = true;
 
 								RoadSegment& segment{ road_segments[p->road_segment] };
@@ -459,6 +465,7 @@ namespace Can
 		GameScene* game = GameScene::ActiveGameScene;
 		auto& road_segments = game->m_RoadManager.road_segments;
 		auto& road_nodes = game->m_RoadManager.road_nodes;
+		auto& building_types{ game->MainApplication->building_types };
 
 		if (p->road_segment != -1)
 		{
@@ -478,7 +485,7 @@ namespace Can
 			people_on_the_road_node.erase(it);
 			p->road_node = -1;
 		}
-		p->position = p->path_start_building->position;
+		p->position = p->path_start_building->object->position;
 		p->object->SetTransform(p->position);
 		p->object->enabled = false;
 		if (p->path_start_building == p->home)
@@ -505,16 +512,17 @@ namespace Can
 		if (p->car)
 		{
 			Building* b = p->path_start_building;
-			v3 car_pos = b->position +
+			auto& building_type{ building_types[b->type] };
+			v3 car_pos = b->object->position +
 				(v3)(glm::rotate(m4(1.0f), b->object->rotation.z, v3{ 0.0f, 0.0f, 1.0f }) *
 					glm::rotate(m4(1.0f), b->object->rotation.y, v3{ 0.0f, 1.0f, 0.0f }) *
 					glm::rotate(m4(1.0f), b->object->rotation.x, v3{ 1.0f, 0.0f, 0.0f }) *
-					v4(b->car_park.offset, 1.0f));
+					v4(building_type.vehicle_parks[0].offset, 1.0f));
 			p->car->object->SetTransform(
 				car_pos,
 				glm::rotateZ(
 					b->object->rotation,
-					glm::radians(b->car_park.rotation_in_degrees)
+					glm::radians(building_type.vehicle_parks[0].rotation_in_degrees)
 				)
 			);
 		}
@@ -531,6 +539,7 @@ namespace Can
 	{
 		GameScene* game{ GameScene::ActiveGameScene };
 		auto& road_segments{ game->m_RoadManager.road_segments };
+		auto& building_types{ game->MainApplication->building_types };
 
 		if (c->road_segment != -1)
 		{
@@ -541,16 +550,17 @@ namespace Can
 			c->road_segment = -1;
 		}
 		Building* building_from{ c->driver->path_start_building };
-		v3 car_park_pos{ building_from->position +
+		auto& building_type{ building_types[building_from->type] };
+		v3 car_park_pos{ building_from->object->position +
 			(v3)(glm::rotate(m4(1.0f), building_from->object->rotation.z, v3{ 0.0f, 0.0f, 1.0f }) *
 				glm::rotate(m4(1.0f), building_from->object->rotation.y, v3{ 0.0f, 1.0f, 0.0f }) *
 				glm::rotate(m4(1.0f), building_from->object->rotation.x, v3{ 1.0f, 0.0f, 0.0f }) *
-				v4(building_from->car_park.offset, 1.0f)) };
+				v4(building_type.vehicle_parks[0].offset, 1.0f)) };
 		c->object->SetTransform(
 			car_park_pos,
 			glm::rotateZ(
 				building_from->object->rotation,
-				glm::radians(building_from->car_park.rotation_in_degrees)
+				glm::radians(building_type.vehicle_parks[0].rotation_in_degrees)
 			)
 		);
 		while (c->path.size())
@@ -564,7 +574,7 @@ namespace Can
 		Person* p = c->driver;
 		c->driver = nullptr;
 
-		p->position = p->path_start_building->position;
+		p->position = p->path_start_building->object->position;
 		p->object->SetTransform(p->position);
 		p->object->enabled = false;
 		if (p->path_start_building == p->home)
@@ -594,6 +604,7 @@ namespace Can
 		GameScene* game = GameScene::ActiveGameScene;
 		auto& road_segments = game->m_RoadManager.road_segments;
 		auto& road_nodes = game->m_RoadManager.road_nodes;
+		auto& building_types{ game->MainApplication->building_types };
 
 		if (p->road_segment != -1)
 		{
@@ -613,7 +624,7 @@ namespace Can
 			people_on_the_road_node.erase(it);
 			p->road_node = -1;
 		}
-		p->position = p->path_start_building->position;
+		p->position = p->path_start_building->object->position;
 		p->object->SetTransform(p->position);
 		p->object->enabled = false;
 		p->status = PersonStatus::AtHome;
@@ -628,16 +639,17 @@ namespace Can
 		if (p->car)
 		{
 			Building* b = p->path_start_building;
-			v3 car_pos = b->position +
+			auto& building_type{ building_types[b->type] };
+			v3 car_pos = b->object->position +
 				(v3)(glm::rotate(m4(1.0f), b->object->rotation.z, v3{ 0.0f, 0.0f, 1.0f }) *
 					glm::rotate(m4(1.0f), b->object->rotation.y, v3{ 0.0f, 1.0f, 0.0f }) *
 					glm::rotate(m4(1.0f), b->object->rotation.x, v3{ 1.0f, 0.0f, 0.0f }) *
-					v4(b->car_park.offset, 1.0f));
+					v4(building_type.vehicle_parks[0].offset, 1.0f));
 			p->car->object->SetTransform(
 				car_pos,
 				glm::rotateZ(
 					b->object->rotation,
-					glm::radians(b->car_park.rotation_in_degrees)
+					glm::radians(building_type.vehicle_parks[0].rotation_in_degrees)
 				)
 			);
 		}

@@ -16,18 +16,20 @@
 
 namespace Can
 {
-	/*Anom*/ namespace {
+	/*Anom*/ namespace
+	{
 		void draw_building_panel(Game_Scene_UI& ui)
 		{
 			auto app{ GameApp::instance };
 			auto& window{ main_application->GetWindow() };
+			auto& building_types{ app->building_types };
 			u64 width_in_pixels{ window.GetWidth() };
 			u64 height_in_pixels{ window.GetHeight() };
 
 			constexpr s32 building_panel_margins{ 10 };
 			constexpr s32 button_margin{ 10 };
-			constexpr s32 button_size{ 30 };
-			constexpr s32 menu_item_size{ 120 };
+			constexpr s32 button_size{ 50 };
+			constexpr s32 menu_item_size{ 128 };
 
 			Sub_Region_Theme sub_region_theme;
 			/*Sub_Region_Themes*/ {
@@ -63,7 +65,7 @@ namespace Can
 			immediate_quad(building_panel_rect, v4{ 1.0f, 0.6f, 0.6f, 1.0f });
 
 			u16 flags{ 0 };
-			flags = immediate_image_button(construction_mode_button_rect, ui.button_theme_construction_modes, app->addTexture, __LINE__);
+			flags = immediate_image_button(construction_mode_button_rect, ui.button_theme_construction_modes, app->add_texture, __LINE__);
 			if (flags & BUTTON_STATE_FLAGS_RELEASED)
 			{
 				ui.game_scene->SetConstructionMode(ConstructionMode::Building);
@@ -71,7 +73,7 @@ namespace Can
 			}
 
 			construction_mode_button_rect.x += button_size + button_margin;
-			flags = immediate_image_button(construction_mode_button_rect, ui.button_theme_construction_modes, app->removeTexture, __LINE__);
+			flags = immediate_image_button(construction_mode_button_rect, ui.button_theme_construction_modes, app->remove_texture, __LINE__);
 			if (flags & BUTTON_STATE_FLAGS_RELEASED)
 			{
 				ui.game_scene->SetConstructionMode(ConstructionMode::Building);
@@ -79,7 +81,7 @@ namespace Can
 			}
 
 			construction_mode_button_rect.x += button_size + button_margin;
-			flags = immediate_image_button(construction_mode_button_rect, ui.button_theme_construction_modes, app->upgradeTexture, __LINE__);
+			flags = immediate_image_button(construction_mode_button_rect, ui.button_theme_construction_modes, app->upgrade_texture, __LINE__);
 			if (flags & BUTTON_STATE_FLAGS_RELEASED)
 			{
 				ui.game_scene->SetConstructionMode(ConstructionMode::Building);
@@ -87,7 +89,7 @@ namespace Can
 			}
 
 			construction_mode_button_rect.x += button_size + button_margin;
-			flags = immediate_image_button(construction_mode_button_rect, ui.button_theme_construction_modes, app->cancelTexture, __LINE__);
+			flags = immediate_image_button(construction_mode_button_rect, ui.button_theme_construction_modes, app->cancel_texture, __LINE__);
 			if (flags & BUTTON_STATE_FLAGS_RELEASED)
 			{
 				ui.game_scene->SetConstructionMode(ConstructionMode::Building);
@@ -104,104 +106,101 @@ namespace Can
 			menu_item_rect.y = sub_region_rect.y + sub_region_rect.h - menu_item_rect.h - button_margin;
 			menu_item_rect.z = sub_region_rect.z + 1;
 
-			if (ui.draw_building_panel_inside_type == Draw_Building_Panel::home)
+			if (ui.draw_building_panel_inside_type == Draw_Building_Panel::Home)
 			{
+				flags = immediate_image_button(menu_item_rect, ui.button_theme_back, nullptr, __LINE__);
+				menu_item_rect.z++;
+				immediate_text("-", menu_item_rect, ui.label_theme_large_text);
+
+				menu_item_rect.x += menu_item_rect.w + button_margin;
 				flags = immediate_image_button(menu_item_rect, ui.button_theme_sub_menus, nullptr, __LINE__);
 				menu_item_rect.z++;
 				immediate_text("G", menu_item_rect, ui.label_theme_large_text);
 				if (flags & BUTTON_STATE_FLAGS_RELEASED)
-				{
-					ui.draw_building_panel_inside_type = Draw_Building_Panel::general;
-				}
-				menu_item_rect.x += menu_item_rect.w + button_margin;
+					ui.draw_building_panel_inside_type = Draw_Building_Panel::General;
 
+				menu_item_rect.x += menu_item_rect.w + button_margin;
 				flags = immediate_image_button(menu_item_rect, ui.button_theme_sub_menus, nullptr, __LINE__);
 				menu_item_rect.z++;
 				immediate_text("S", menu_item_rect, ui.label_theme_large_text);
 				if (flags & BUTTON_STATE_FLAGS_RELEASED)
-				{
-					ui.draw_building_panel_inside_type = Draw_Building_Panel::special;
-				}
+					ui.draw_building_panel_inside_type = Draw_Building_Panel::Special;
 			}
-			else if (ui.draw_building_panel_inside_type == Draw_Building_Panel::general)
+			else if (ui.draw_building_panel_inside_type == Draw_Building_Panel::General)
 			{
-				flags = immediate_image_button(menu_item_rect, ui.button_theme_sub_menus, nullptr, __LINE__);
-				menu_item_rect.z++;
-				immediate_text("H", menu_item_rect, ui.label_theme_large_text);
-				if (flags & BUTTON_STATE_FLAGS_RELEASED)
-				{
-					ui.draw_building_panel_inside_type = Draw_Building_Panel::housing;
-				}
-				menu_item_rect.x += menu_item_rect.w + button_margin;
-
-				flags = immediate_image_button(menu_item_rect, ui.button_theme_sub_menus, nullptr, __LINE__);
-				menu_item_rect.z++;
-				immediate_text("B", menu_item_rect, ui.label_theme_large_text);
-				if (flags & BUTTON_STATE_FLAGS_RELEASED)
-				{
-					ui.draw_building_panel_inside_type = Draw_Building_Panel::commercial;
-				}
-				menu_item_rect.x += menu_item_rect.w + button_margin;
-
-				flags = immediate_image_button(menu_item_rect, ui.button_theme_sub_menus, nullptr, __LINE__);
-				menu_item_rect.z++;
-				immediate_text("I", menu_item_rect, ui.label_theme_large_text);
-				if (flags & BUTTON_STATE_FLAGS_RELEASED)
-				{
-					ui.draw_building_panel_inside_type = Draw_Building_Panel::industry;
-				}
-				menu_item_rect.x += menu_item_rect.w + button_margin;
-
 				flags = immediate_image_button(menu_item_rect, ui.button_theme_back, nullptr, __LINE__);
 				menu_item_rect.z++;
 				immediate_text("B", menu_item_rect, ui.label_theme_large_text);
 				if (flags & BUTTON_STATE_FLAGS_RELEASED)
-				{
-					ui.draw_building_panel_inside_type = Draw_Building_Panel::home;
-				}
+					ui.draw_building_panel_inside_type = Draw_Building_Panel::Home;
+
+				menu_item_rect.x += menu_item_rect.w + button_margin;
+				flags = immediate_image_button(menu_item_rect, ui.button_theme_sub_menus, app->houses_texture, __LINE__);
+				if (flags & BUTTON_STATE_FLAGS_RELEASED)
+					ui.draw_building_panel_inside_type = Draw_Building_Panel::House;
+
+				menu_item_rect.x += menu_item_rect.w + button_margin;
+				flags = immediate_image_button(menu_item_rect, ui.button_theme_sub_menus, app->residentials_texture, __LINE__);
+				if (flags & BUTTON_STATE_FLAGS_RELEASED)
+					ui.draw_building_panel_inside_type = Draw_Building_Panel::Residential;
+
+				menu_item_rect.x += menu_item_rect.w + button_margin;
+				flags = immediate_image_button(menu_item_rect, ui.button_theme_sub_menus, nullptr, __LINE__);
+				menu_item_rect.z++;
+				immediate_text("C", menu_item_rect, ui.label_theme_large_text);
+				if (flags & BUTTON_STATE_FLAGS_RELEASED)
+					ui.draw_building_panel_inside_type = Draw_Building_Panel::Commercial;
+
+				menu_item_rect.x += menu_item_rect.w + button_margin;
+				flags = immediate_image_button(menu_item_rect, ui.button_theme_sub_menus, app->industrials_texture, __LINE__);
+				if (flags & BUTTON_STATE_FLAGS_RELEASED)
+					ui.draw_building_panel_inside_type = Draw_Building_Panel::Industrial;
+
+				menu_item_rect.x += menu_item_rect.w + button_margin;
+				flags = immediate_image_button(menu_item_rect, ui.button_theme_sub_menus, app->offices_texture, __LINE__);
+				if (flags & BUTTON_STATE_FLAGS_RELEASED)
+					ui.draw_building_panel_inside_type = Draw_Building_Panel::Office;
 			}
-			else if (ui.draw_building_panel_inside_type == Draw_Building_Panel::special)
+			else if (ui.draw_building_panel_inside_type == Draw_Building_Panel::Special)
 			{
-				flags = immediate_image_button(menu_item_rect, ui.button_theme_sub_menus, nullptr, __LINE__);
+				flags = immediate_image_button(menu_item_rect, ui.button_theme_back, nullptr, __LINE__);
 				menu_item_rect.z++;
-				immediate_text("H", menu_item_rect, ui.label_theme_large_text);
+				immediate_text("B", menu_item_rect, ui.label_theme_large_text);
 				if (flags & BUTTON_STATE_FLAGS_RELEASED)
-				{
-					ui.draw_building_panel_inside_type = Draw_Building_Panel::hospital;
-				}
-				menu_item_rect.x += menu_item_rect.w + button_margin;
+					ui.draw_building_panel_inside_type = Draw_Building_Panel::Home;
 
-				flags = immediate_image_button(menu_item_rect, ui.button_theme_sub_menus, nullptr, __LINE__);
-				menu_item_rect.z++;
-				immediate_text("P", menu_item_rect, ui.label_theme_large_text);
+				menu_item_rect.x += menu_item_rect.w + button_margin;
+				flags = immediate_image_button(menu_item_rect, ui.button_theme_sub_menus, app->hospitals_texture, __LINE__);
 				if (flags & BUTTON_STATE_FLAGS_RELEASED)
-				{
-					ui.draw_building_panel_inside_type = Draw_Building_Panel::police;
-				}
-				menu_item_rect.x += menu_item_rect.w + button_margin;
+					ui.draw_building_panel_inside_type = Draw_Building_Panel::Hospital;
 
+				menu_item_rect.x += menu_item_rect.w + button_margin;
+				flags = immediate_image_button(menu_item_rect, ui.button_theme_sub_menus, app->police_stations_texture, __LINE__);
+				if (flags & BUTTON_STATE_FLAGS_RELEASED)
+					ui.draw_building_panel_inside_type = Draw_Building_Panel::Police_Station;
+
+				menu_item_rect.x += menu_item_rect.w + button_margin;
 				flags = immediate_image_button(menu_item_rect, ui.button_theme_sub_menus, nullptr, __LINE__);
 				menu_item_rect.z++;
 				immediate_text("G", menu_item_rect, ui.label_theme_large_text);
 				if (flags & BUTTON_STATE_FLAGS_RELEASED)
-				{
-					ui.draw_building_panel_inside_type = Draw_Building_Panel::garbage_collection_facility;
-				}
-				menu_item_rect.x += menu_item_rect.w + button_margin;
-
+					ui.draw_building_panel_inside_type = Draw_Building_Panel::Garbage_Collection_Center;
+			}
+			else if (ui.draw_building_panel_inside_type == Draw_Building_Panel::House)
+			{
 				flags = immediate_image_button(menu_item_rect, ui.button_theme_back, nullptr, __LINE__);
 				menu_item_rect.z++;
 				immediate_text("B", menu_item_rect, ui.label_theme_large_text);
 				if (flags & BUTTON_STATE_FLAGS_RELEASED)
+					ui.draw_building_panel_inside_type = Draw_Building_Panel::General;
+
+				for (u64 i{ 0 }; i < building_types.size(); ++i)
 				{
-					ui.draw_building_panel_inside_type = Draw_Building_Panel::home;
-				}
-			}
-			else if (ui.draw_building_panel_inside_type == Draw_Building_Panel::housing)
-			{
-				for (u64 i{ 0 }; i < ui.housing_building_tumbnail_image_files.size(); ++i)
-				{
-					flags = immediate_image_button(menu_item_rect, ui.button_theme_buildings, ui.housing_building_tumbnail_image_files[i], __LINE__ * 10000 + i, false);
+					auto& building_type{ building_types[i] };
+					if (building_type.group != Building_Group::House) continue;
+
+					menu_item_rect.x += menu_item_rect.w + button_margin;
+					flags = immediate_image_button(menu_item_rect, ui.button_theme_buildings, building_type.thumbnail, __LINE__ * 10000 + i, false);
 					if (flags & BUTTON_STATE_FLAGS_RELEASED)
 					{
 						ui.game_scene->SetConstructionMode(ConstructionMode::Building);
@@ -210,111 +209,98 @@ namespace Can
 							ui.game_scene->m_BuildingManager.SetConstructionMode(BuildingConstructionMode::Construct);
 						ui.game_scene->m_BuildingManager.SetType(i);
 					}
-					menu_item_rect.x += menu_item_rect.w + button_margin;
-				}
-
-				flags = immediate_image_button(menu_item_rect, ui.button_theme_back, nullptr, __LINE__);
-				menu_item_rect.z++;
-				immediate_text("B", menu_item_rect, ui.label_theme_large_text);
-				if (flags & BUTTON_STATE_FLAGS_RELEASED)
-				{
-					ui.draw_building_panel_inside_type = Draw_Building_Panel::general;
 				}
 			}
-			else if (ui.draw_building_panel_inside_type == Draw_Building_Panel::commercial)
+			else if (ui.draw_building_panel_inside_type == Draw_Building_Panel::Residential)
 			{
-				for (u64 i{ 0 }; i < ui.commercial_building_tumbnail_image_files.size(); ++i)
-				{
-					flags = immediate_image_button(menu_item_rect, ui.button_theme_buildings, ui.commercial_building_tumbnail_image_files[i], __LINE__ * 10000 + i, false);
-					if (flags & BUTTON_STATE_FLAGS_RELEASED)
-					{
-					}
-					menu_item_rect.x += menu_item_rect.w + button_margin;
-				}
-
 				flags = immediate_image_button(menu_item_rect, ui.button_theme_back, nullptr, __LINE__);
 				menu_item_rect.z++;
 				immediate_text("B", menu_item_rect, ui.label_theme_large_text);
 				if (flags & BUTTON_STATE_FLAGS_RELEASED)
+					ui.draw_building_panel_inside_type = Draw_Building_Panel::General;
+
+			}
+			else if (ui.draw_building_panel_inside_type == Draw_Building_Panel::Commercial)
+			{
+				flags = immediate_image_button(menu_item_rect, ui.button_theme_back, nullptr, __LINE__);
+				menu_item_rect.z++;
+				immediate_text("B", menu_item_rect, ui.label_theme_large_text);
+				if (flags & BUTTON_STATE_FLAGS_RELEASED)
+					ui.draw_building_panel_inside_type = Draw_Building_Panel::General;
+
+				for (u64 i{ 0 }; i < building_types.size(); ++i)
 				{
-					ui.draw_building_panel_inside_type = Draw_Building_Panel::general;
+					auto& building_type{ building_types[i] };
+					if (building_type.group != Building_Group::Commercial) continue;
+
+					menu_item_rect.x += menu_item_rect.w + button_margin;
+					flags = immediate_image_button(menu_item_rect, ui.button_theme_buildings, building_type.thumbnail, __LINE__ * 10000 + i, false);
+					if (flags & BUTTON_STATE_FLAGS_RELEASED)
+					{
+						ui.game_scene->SetConstructionMode(ConstructionMode::Building);
+						auto mode = ui.game_scene->m_BuildingManager.GetConstructionMode();
+						if (mode == BuildingConstructionMode::None || mode == BuildingConstructionMode::Destruct)
+							ui.game_scene->m_BuildingManager.SetConstructionMode(BuildingConstructionMode::Construct);
+						ui.game_scene->m_BuildingManager.SetType(i);
+					}
 				}
 			}
-			else if (ui.draw_building_panel_inside_type == Draw_Building_Panel::industry)
+			else if (ui.draw_building_panel_inside_type == Draw_Building_Panel::Industrial)
 			{
-				for (u64 i{ 0 }; i < ui.industry_building_tumbnail_image_files.size(); ++i)
-				{
-					flags = immediate_image_button(menu_item_rect, ui.button_theme_buildings, ui.industry_building_tumbnail_image_files[i], __LINE__ * 10000 + i, false);
-					if (flags & BUTTON_STATE_FLAGS_RELEASED)
-					{
-					}
-					menu_item_rect.x += menu_item_rect.w + button_margin;
-				}
-
 				flags = immediate_image_button(menu_item_rect, ui.button_theme_back, nullptr, __LINE__);
 				menu_item_rect.z++;
 				immediate_text("B", menu_item_rect, ui.label_theme_large_text);
 				if (flags & BUTTON_STATE_FLAGS_RELEASED)
+					ui.draw_building_panel_inside_type = Draw_Building_Panel::General;
+			}
+			else if (ui.draw_building_panel_inside_type == Draw_Building_Panel::Office)
+			{
+				flags = immediate_image_button(menu_item_rect, ui.button_theme_back, nullptr, __LINE__);
+				menu_item_rect.z++;
+				immediate_text("B", menu_item_rect, ui.label_theme_large_text);
+				if (flags & BUTTON_STATE_FLAGS_RELEASED)
+					ui.draw_building_panel_inside_type = Draw_Building_Panel::General;
+			}
+			else if (ui.draw_building_panel_inside_type == Draw_Building_Panel::Hospital)
+			{
+				flags = immediate_image_button(menu_item_rect, ui.button_theme_back, nullptr, __LINE__);
+				menu_item_rect.z++;
+				immediate_text("B", menu_item_rect, ui.label_theme_large_text);
+				if (flags & BUTTON_STATE_FLAGS_RELEASED)
+					ui.draw_building_panel_inside_type = Draw_Building_Panel::Special;
+
+				for (u64 i{ 0 }; i < building_types.size(); ++i)
 				{
-					ui.draw_building_panel_inside_type = Draw_Building_Panel::general;
+					auto& building_type{ building_types[i] };
+					if (building_type.group != Building_Group::Hospital) continue;
+
+					menu_item_rect.x += menu_item_rect.w + button_margin;
+					flags = immediate_image_button(menu_item_rect, ui.button_theme_buildings, building_type.thumbnail, __LINE__ * 10000 + i, false);
+					if (flags & BUTTON_STATE_FLAGS_RELEASED)
+					{
+						ui.game_scene->SetConstructionMode(ConstructionMode::Building);
+						auto mode = ui.game_scene->m_BuildingManager.GetConstructionMode();
+						if (mode == BuildingConstructionMode::None || mode == BuildingConstructionMode::Destruct)
+							ui.game_scene->m_BuildingManager.SetConstructionMode(BuildingConstructionMode::Construct);
+						ui.game_scene->m_BuildingManager.SetType(i);
+					}
 				}
 			}
-			else if (ui.draw_building_panel_inside_type == Draw_Building_Panel::hospital)
+			else if (ui.draw_building_panel_inside_type == Draw_Building_Panel::Police_Station)
 			{
-				for (u64 i{ 0 }; i < ui.hospital_building_tumbnail_image_files.size(); ++i)
-				{
-					flags = immediate_image_button(menu_item_rect, ui.button_theme_buildings, ui.hospital_building_tumbnail_image_files[i], __LINE__ * 10000 + i, false);
-					if (flags & BUTTON_STATE_FLAGS_RELEASED)
-					{
-					}
-					menu_item_rect.x += menu_item_rect.w + button_margin;
-				}
-
 				flags = immediate_image_button(menu_item_rect, ui.button_theme_back, nullptr, __LINE__);
 				menu_item_rect.z++;
 				immediate_text("B", menu_item_rect, ui.label_theme_large_text);
 				if (flags & BUTTON_STATE_FLAGS_RELEASED)
-				{
-					ui.draw_building_panel_inside_type = Draw_Building_Panel::special;
-				}
+					ui.draw_building_panel_inside_type = Draw_Building_Panel::Special;
 			}
-			else if (ui.draw_building_panel_inside_type == Draw_Building_Panel::police)
+			else if (ui.draw_building_panel_inside_type == Draw_Building_Panel::Garbage_Collection_Center)
 			{
-				for (u64 i{ 0 }; i < ui.police_building_tumbnail_image_files.size(); ++i)
-				{
-					flags = immediate_image_button(menu_item_rect, ui.button_theme_buildings, ui.police_building_tumbnail_image_files[i], __LINE__ * 10000 + i, false);
-					if (flags & BUTTON_STATE_FLAGS_RELEASED)
-					{
-					}
-					menu_item_rect.x += menu_item_rect.w + button_margin;
-				}
-
 				flags = immediate_image_button(menu_item_rect, ui.button_theme_back, nullptr, __LINE__);
 				menu_item_rect.z++;
 				immediate_text("B", menu_item_rect, ui.label_theme_large_text);
 				if (flags & BUTTON_STATE_FLAGS_RELEASED)
-				{
-					ui.draw_building_panel_inside_type = Draw_Building_Panel::special;
-				}
-			}
-			else if (ui.draw_building_panel_inside_type == Draw_Building_Panel::garbage_collection_facility)
-			{
-				for (u64 i{ 0 }; i < ui.garbage_collection_facility_building_tumbnail_image_files.size(); ++i)
-				{
-					flags = immediate_image_button(menu_item_rect, ui.button_theme_buildings, ui.garbage_collection_facility_building_tumbnail_image_files[i], __LINE__ * 10000 + i, false);
-					if (flags & BUTTON_STATE_FLAGS_RELEASED)
-					{
-					}
-					menu_item_rect.x += menu_item_rect.w + button_margin;
-				}
-
-				flags = immediate_image_button(menu_item_rect, ui.button_theme_back, nullptr, __LINE__);
-				menu_item_rect.z++;
-				immediate_text("B", menu_item_rect, ui.label_theme_large_text);
-				if (flags & BUTTON_STATE_FLAGS_RELEASED)
-				{
-					ui.draw_building_panel_inside_type = Draw_Building_Panel::special;
-				}
+					ui.draw_building_panel_inside_type = Draw_Building_Panel::Special;
 			}
 
 			//immediate_end_sub_region(track_width);
@@ -442,12 +428,6 @@ namespace Can
 			ui.sub_region_theme_details.flags |= SUB_REGION_THEME_FLAGS_HORIZONTALLY_SCROLLABLE;
 			ui.sub_region_theme_details.flags |= SUB_REGION_THEME_FLAGS_VERTICALLY_SCROLLABLE;
 		}
-		namespace fs = std::filesystem;
-		std::string s{ fs::current_path().string() };
-		std::string pathh{ s + "\\assets\\objects\\Houses" };
-		auto files{ Helper::GetFiles(pathh, "Thumbnail_", ".png") };
-		for (auto& f : files)
-			ui.housing_building_tumbnail_image_files.push_back(Texture2D::Create(f));
 	}
 	void deinit_game_scene_ui_layer(Game_Scene_UI& ui)
 	{}
@@ -547,6 +527,8 @@ namespace Can
 
 	void draw_screen(Game_Scene_UI& ui)
 	{
+		auto app{ GameApp::instance };
+		auto& building_types{ app->building_types };
 		const std::string text_x{ "X" };
 		if (ui.focus_object != nullptr)
 		{
@@ -619,6 +601,8 @@ namespace Can
 		if (ui.selected_building != nullptr)
 		{
 			auto& building{ ui.selected_building };
+			auto& building_type{ building_types[building->type] };
+
 			constexpr s32 title_left_margin{ 10 };
 
 			constexpr v4 color_white{ 0.9f, 0.9f, 0.9f, 1.0f };
@@ -768,10 +752,10 @@ namespace Can
 
 			/*left panel*/ {
 
-				if (building->is_home)
+				if (building_type.group == Building_Group::House)
 				{
 					auto& occupants{ building->people };
-					auto total_occupants_value{ std::format(": {}/{}", occupants.size(), building->capacity) };
+					auto total_occupants_value{ std::format(": {}/{}", occupants.size(), building_type.capacity) };
 					immediate_text(total_occupants_key, rect_key, ui.label_theme_left_alinged_small_black_text);
 					immediate_text(total_occupants_value, rect_value, ui.label_theme_left_alinged_small_black_text);
 
@@ -805,13 +789,13 @@ namespace Can
 					rect_name.z = rect_gender.z;
 					for (auto occupant : occupants)
 					{
-						immediate_image(rect_gender, GameApp::instance->cancelTexture);
+						immediate_image(rect_gender, GameApp::instance->cancel_texture);
 						immediate_text(occupant->firstName, rect_name, ui.label_theme_left_alinged_xsmall_black_text);
 						rect_gender.y -= rect_gender.h + 5;
 						rect_name.y = rect_gender.y;
 					}
 				}
-				else if (building->is_hospital)
+				else if (building_type.group == Building_Group::Hospital)
 				{
 					auto& buildings{ ui.game_scene->m_BuildingManager.m_Buildings };
 
@@ -834,7 +818,7 @@ namespace Can
 					f32 total_health_work_places{ 0 };
 					for (auto b : buildings)
 					{
-						if (b->is_home)
+						if (building_type.group == Building_Group::House || building_type.group == Building_Group::Residential)
 						{
 							++total_homes;
 							total_health_homes += b->current_health / b->max_health;
@@ -872,18 +856,18 @@ namespace Can
 					rect_left_needs_key.y -= rect_left_needs_key.h + 10;
 					rect_left_needs_value.y = rect_left_needs_key.y;
 
-					auto patients_value{ std::format(": {}/{}", building->visitors.size(), building->visitor_capacity) };
+					auto patients_value{ std::format(": {}/{}", building->visitors.size(), building_type.visitor_capacity) };
 					immediate_text(patients_key, rect_left_needs_key, ui.label_theme_left_alinged_small_black_text);
 					immediate_text(patients_value, rect_left_needs_value, ui.label_theme_left_alinged_small_black_text);
 
 					rect_left_needs_key.y -= rect_left_needs_key.h + 10;
 					rect_left_needs_value.y = rect_left_needs_key.y;
 
-					auto inpatients_value{ std::format(": {}/{}", building->visitors.size(), building->stay_visitor_capacity) };
+					auto inpatients_value{ std::format(": {}/{}", building->visitors.size(), building_type.stay_visitor_capacity) };
 					immediate_text(inpatients_key, rect_left_needs_key, ui.label_theme_left_alinged_small_black_text);
 					immediate_text(inpatients_value, rect_left_needs_value, ui.label_theme_left_alinged_small_black_text);
 				}
-				else if (building->is_police_station)
+				else if (building_type.group == Building_Group::Police_Station)
 				{
 					auto& buildings{ ui.game_scene->m_BuildingManager.m_Buildings };
 
@@ -907,18 +891,18 @@ namespace Can
 					rect_left_needs_key.y -= rect_left_needs_key.h + 10;
 					rect_left_needs_value.y = rect_left_needs_key.y;
 
-					auto complainants_value{ std::format(": {}/{}", building->visitors.size(), building->visitor_capacity) };
+					auto complainants_value{ std::format(": {}/{}", building->visitors.size(), building_type.visitor_capacity) };
 					immediate_text(complainants_key, rect_left_needs_key, ui.label_theme_left_alinged_small_black_text);
 					immediate_text(complainants_value, rect_left_needs_value, ui.label_theme_left_alinged_small_black_text);
 
 					rect_left_needs_key.y -= rect_left_needs_key.h + 10;
 					rect_left_needs_value.y = rect_left_needs_key.y;
 
-					auto prisoners_value{ std::format(": {}/{}", building->visitors.size(), building->stay_visitor_capacity) };
+					auto prisoners_value{ std::format(": {}/{}", building->visitors.size(), building_type.stay_visitor_capacity) };
 					immediate_text(prisoners_key, rect_left_needs_key, ui.label_theme_left_alinged_small_black_text);
 					immediate_text(prisoners_value, rect_left_needs_value, ui.label_theme_left_alinged_small_black_text);
 				}
-				else if (building->is_gmf)
+				else if (building_type.group == Building_Group::Garbage_Collection_Center)
 				{
 					auto& buildings{ ui.game_scene->m_BuildingManager.m_Buildings };
 
@@ -939,7 +923,7 @@ namespace Can
 					f32 total_garbage_work_places{ 0 };
 					for (auto b : buildings)
 					{
-						if (b->is_home)
+						if (building_type.group == Building_Group::House)
 						{
 							++total_homes;
 							total_garbage_homes += b->current_garbage / b->garbage_capacity;
@@ -1054,56 +1038,56 @@ namespace Can
 							break;
 						}
 					}
-					auto uneducated_value{ std::format(": {}/{}", working_uneducated, building->needed_uneducated) };
+					auto uneducated_value{ std::format(": {}/{}", working_uneducated, building_type.needed_uneducated) };
 					immediate_text(uneducated_key, rect_key, ui.label_theme_left_alinged_small_black_text);
 					immediate_text(uneducated_value, rect_value, ui.label_theme_left_alinged_small_black_text);
 
 					rect_key.y -= rect_key.h + 5;
 					rect_value.y = rect_key.y;
 
-					auto elementary_school_value{ std::format(": {}/{}", working_elementary_school, building->needed_elementary_school) };
+					auto elementary_school_value{ std::format(": {}/{}", working_elementary_school, building_type.needed_elementary_school) };
 					immediate_text(elementary_school_key, rect_key, ui.label_theme_left_alinged_small_black_text);
 					immediate_text(elementary_school_value, rect_value, ui.label_theme_left_alinged_small_black_text);
 
 					rect_key.y -= rect_key.h + 5;
 					rect_value.y = rect_key.y;
 
-					auto high_school_value{ std::format(": {}/{}", working_high_school, building->needed_high_school) };
+					auto high_school_value{ std::format(": {}/{}", working_high_school, building_type.needed_high_school) };
 					immediate_text(high_school_key, rect_key, ui.label_theme_left_alinged_small_black_text);
 					immediate_text(high_school_value, rect_value, ui.label_theme_left_alinged_small_black_text);
 
 					rect_key.y -= rect_key.h + 5;
 					rect_value.y = rect_key.y;
 
-					auto associate_s_value{ std::format(": {}/{}", working_associate_s, building->needed_associate_s) };
+					auto associate_s_value{ std::format(": {}/{}", working_associate_s, building_type.needed_associate_s) };
 					immediate_text(associate_s_key, rect_key, ui.label_theme_left_alinged_small_black_text);
 					immediate_text(associate_s_value, rect_value, ui.label_theme_left_alinged_small_black_text);
 
 					rect_key.y -= rect_key.h + 5;
 					rect_value.y = rect_key.y;
 
-					auto bachelor_s_value{ std::format(": {}/{}", working_bachelor_s, building->needed_bachelor_s) };
+					auto bachelor_s_value{ std::format(": {}/{}", working_bachelor_s, building_type.needed_bachelor_s) };
 					immediate_text(bachelor_s_key, rect_key, ui.label_theme_left_alinged_small_black_text);
 					immediate_text(bachelor_s_value, rect_value, ui.label_theme_left_alinged_small_black_text);
 
 					rect_key.y -= rect_key.h + 5;
 					rect_value.y = rect_key.y;
 
-					auto master_value{ std::format(": {}/{}", working_master, building->needed_master) };
+					auto master_value{ std::format(": {}/{}", working_master, building_type.needed_master) };
 					immediate_text(master_key, rect_key, ui.label_theme_left_alinged_small_black_text);
 					immediate_text(master_value, rect_value, ui.label_theme_left_alinged_small_black_text);
 
 					rect_key.y -= rect_key.h + 5;
 					rect_value.y = rect_key.y;
 
-					auto doctorate_value{ std::format(": {}/{}", working_doctorate, building->needed_doctorate) };
+					auto doctorate_value{ std::format(": {}/{}", working_doctorate, building_type.needed_doctorate) };
 					immediate_text(doctorate_key, rect_key, ui.label_theme_left_alinged_small_black_text);
 					immediate_text(doctorate_value, rect_value, ui.label_theme_left_alinged_small_black_text);
 
 					rect_key.y -= rect_key.h + 10;
 					rect_value.y = rect_key.y;
 
-					auto total_workers_value{ std::format(": {}/{}", workers.size(), building->capacity) };
+					auto total_workers_value{ std::format(": {}/{}", workers.size(), building_type.capacity) };
 					immediate_text(total_workers_key, rect_key, ui.label_theme_left_alinged_small_black_text);
 					immediate_text(total_workers_value, rect_value, ui.label_theme_left_alinged_small_black_text);
 
@@ -1174,13 +1158,13 @@ namespace Can
 						case PersonStatus::WalkingDead:
 						case PersonStatus::Driving:
 						{
-							immediate_image(rect_status, GameApp::instance->cancelTexture);
+							immediate_image(rect_status, GameApp::instance->cancel_texture);
 							break;
 						}
 						case PersonStatus::AtWork:
 						case PersonStatus::DrivingForWork:
 						{
-							immediate_tinted_image(rect_status, GameApp::instance->changeTexture, color_green);
+							immediate_tinted_image(rect_status, GameApp::instance->change_texture, color_green);
 							break;
 						}
 						default:
@@ -1197,7 +1181,7 @@ namespace Can
 				auto& occupants{ building->people };
 				// Health
 				f32 ratio{};
-				if (!building->is_hospital)
+				if (building_type.group != Building_Group::Hospital)
 				{
 					ratio = building->current_health / building->max_health;
 					v4 color_health{ Math::lerp(color_red, color_green, ratio) };
@@ -1228,7 +1212,7 @@ namespace Can
 					immediate_text(electricity_value, rect_needs_value, ui.label_theme_left_alinged_xsmall_red_text);
 
 				// Garbage
-				if (!building->is_gmf)
+				if (building_type.group != Building_Group::Garbage_Collection_Center)
 				{
 					rect_needs_key.y -= rect_needs_key.h + 20;
 					rect_needs_value.y = rect_needs_key.y;
@@ -1275,7 +1259,7 @@ namespace Can
 					immediate_text(water_waste_value, rect_needs_value, ui.label_theme_left_alinged_xsmall_red_text);
 
 				// Police
-				if (!building->is_police_station)
+				if (building_type.group != Building_Group::Police_Station)
 				{
 					rect_needs_key.y -= rect_needs_key.h + 20;
 					rect_needs_value.y = rect_needs_key.y;

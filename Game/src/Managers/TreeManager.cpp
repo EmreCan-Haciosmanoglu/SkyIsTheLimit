@@ -2,6 +2,7 @@
 #include "TreeManager.h"
 
 #include "Types/RoadSegment.h"
+#include "Types/Road_Type.h"
 #include "Types/Tree.h"
 #include "Building.h"
 
@@ -23,7 +24,7 @@ namespace Can
 		m_Guideline = new Object(m_Scene->MainApplication->trees[m_Type]);
 		m_Guideline->enabled = false;
 
-		Ref<Texture2D> treeMap = m_Scene->MainApplication->treeMap;
+		Ref<Texture2D> treeMap = m_Scene->MainApplication->tree_map;
 		treeMap->Bind();
 		GLubyte* pixels = new GLubyte[(u64)treeMap->GetWidth() * (u64)treeMap->GetHeight() * 4];
 		glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
@@ -152,7 +153,7 @@ namespace Can
 				if (value.valid == false)
 					continue;
 				RoadSegment& rs = value.value;
-				RoadType& type = app->road_types[rs.type];
+				Road_Type& type = app->road_types[rs.type];
 				if (rs.elevation_type == -1)
 					continue;
 

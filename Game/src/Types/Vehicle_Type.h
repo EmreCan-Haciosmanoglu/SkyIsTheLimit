@@ -1,10 +1,9 @@
 #pragma once
 
-#include "Can/Renderer/Prefab.h"
-
 namespace Can
 {
-	enum class Car_Type : u8 {
+	enum class Car_Type : u8 
+	{
 		Personal = 0,
 		Work
 	};
@@ -13,8 +12,8 @@ namespace Can
 	{
 		std::string name = "Unnamed Vehicle";
 
-		Prefab* prefab{ nullptr };
-		Ref<Texture2D> thumbnail{ 0 };
+		class Prefab* prefab{ nullptr };
+		Ref<class Texture2D> thumbnail{ 0 };
 		f32 speed_range_min{ 0.f };
 		f32 speed_range_max{ 0.f };
 		u16 operator_count{ 0 };

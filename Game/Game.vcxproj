@@ -151,11 +151,12 @@
     <ClInclude Include="src\Scenes\Game_Scene\Game_Scene_UI.h" />
     <ClInclude Include="src\Scenes\Main_Menu\Main_Menu.h" />
     <ClInclude Include="src\Scenes\Main_Menu\Main_Menu_UI.h" />
+    <ClInclude Include="src\Types\Building_Type.h" />
     <ClInclude Include="src\Types\Car.h" />
     <ClInclude Include="src\Types\Person.h" />
     <ClInclude Include="src\Types\RoadNode.h" />
     <ClInclude Include="src\Types\RoadSegment.h" />
-    <ClInclude Include="src\Types\RoadType.h" />
+    <ClInclude Include="src\Types\Road_Type.h" />
     <ClInclude Include="src\Types\Transition.h" />
     <ClInclude Include="src\Types\Tree.h" />
     <ClInclude Include="src\Types\Vehicle_Type.h" />

@@ -5,9 +5,6 @@
 #include "UIScene.h"
 //#include "Debug.h"
 
-#include "Types/RoadType.h"
-#include "Types/Vehicle_Type.h"
-
 #include "Scenes/Main_Menu/Main_Menu.h"
 
 namespace Can
@@ -22,40 +19,43 @@ namespace Can
 	private:
 		std::vector<Prefab*> LoadPrefabs(const std::string& folder, const std::string& filter);
 
-		void load_road_types();
-		void LoadBuildings();
 		void LoadTrees();
-		void LoadCars();
 		void LoadPeople();
 
 	public:
 		Prefab* terrainPrefab;
 		Ref<Texture2D> terrainTexture;
 
-		Ref<Texture2D> treeMap;
-		Ref<Texture2D> addTexture;				// Put better name
-		Ref<Texture2D> saveTexture;				// Put better name
-		Ref<Texture2D> pauseTexture;			// Put better name
-		Ref<Texture2D> removeTexture;			// Put better name
-		Ref<Texture2D> cancelTexture;			// Put better name
-		Ref<Texture2D> changeTexture;			// Put better name
-		Ref<Texture2D> upgradeTexture;			// Put better name
-		Ref<Texture2D> straightTexture;			// Put better name
-		Ref<Texture2D> quadraticTexture;		// Put better name
-		Ref<Texture2D> downgradeTexture;		// Put better name
-		Ref<Texture2D> cubic1234Texture;		// Put better name
-		Ref<Texture2D> cubic1243Texture;		// Put better name
-		Ref<Texture2D> cubic1342Texture;		// Put better name
-		Ref<Texture2D> cubic1432Texture;		// Put better name
-		Ref<Texture2D> normalSpeedTexture;		// Put better name
-		Ref<Texture2D> twoTimesSpeedTexture;	// Put better name
-		Ref<Texture2D> fourTimesSpeedTexture;	// Put better name
+		Ref<Texture2D> tree_map;
+		Ref<Texture2D> add_texture;					// Put better name
+		Ref<Texture2D> save_texture;				// Put better name
+		Ref<Texture2D> pause_texture;				// Put better name
+		Ref<Texture2D> remove_texture;				// Put better name
+		Ref<Texture2D> cancel_texture;				// Put better name
+		Ref<Texture2D> change_texture;				// Put better name
+		Ref<Texture2D> upgrade_texture;				// Put better name
+		Ref<Texture2D> straight_texture;			// Put better name
+		Ref<Texture2D> quadratic_texture;			// Put better name
+		Ref<Texture2D> downgrade_texture;			// Put better name
+		Ref<Texture2D> cubic_1234_texture;			// Put better name
+		Ref<Texture2D> cubic_1243_texture;			// Put better name
+		Ref<Texture2D> cubic_1342_texture;			// Put better name
+		Ref<Texture2D> cubic_1432_texture;			// Put better name
+		Ref<Texture2D> normal_speed_texture;		// Put better name
+		Ref<Texture2D> two_times_speed_texture;		// Put better name
+		Ref<Texture2D> four_times_speed_texture;	// Put better name
 
+		Ref<Texture2D> houses_texture;				// Put better name
+		Ref<Texture2D> residentials_texture;		// Put better name
+		Ref<Texture2D> industrials_texture;			// Put better name
+		Ref<Texture2D> offices_texture;				// Put better name
+		Ref<Texture2D> hospitals_texture;			// Put better name
+		Ref<Texture2D> police_stations_texture;		// Put better name
 
-		std::vector<RoadType> road_types;
-		std::vector<Vehicle_Type> vehicle_types;
+		std::vector<struct Road_Type> road_types;
+		std::vector<struct Vehicle_Type> vehicle_types;
+		std::vector<struct Building_Type> building_types;
 
-		std::vector<Prefab*> buildings;
 		std::vector<Prefab*> trees;
 		std::vector<Prefab*> people;
 
