@@ -46,6 +46,7 @@ namespace Can
 		Ref<Texture2D> four_times_speed_texture;	// Put better name
 
 		Ref<Texture2D> houses_texture;				// Put better name
+		Ref<Texture2D> residentials_texture;		// Put better name
 		Ref<Texture2D> hospitals_texture;			// Put better name
 
 		std::vector<struct Road_Type> road_types;
