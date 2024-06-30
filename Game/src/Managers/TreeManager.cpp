@@ -24,7 +24,7 @@ namespace Can
 		m_Guideline = new Object(m_Scene->MainApplication->trees[m_Type]);
 		m_Guideline->enabled = false;
 
-		Ref<Texture2D> treeMap = m_Scene->MainApplication->treeMap;
+		Ref<Texture2D> treeMap = m_Scene->MainApplication->tree_map;
 		treeMap->Bind();
 		GLubyte* pixels = new GLubyte[(u64)treeMap->GetWidth() * (u64)treeMap->GetHeight() * 4];
 		glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);

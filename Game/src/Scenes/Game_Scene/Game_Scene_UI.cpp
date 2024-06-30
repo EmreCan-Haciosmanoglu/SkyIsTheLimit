@@ -65,7 +65,7 @@ namespace Can
 			immediate_quad(building_panel_rect, v4{ 1.0f, 0.6f, 0.6f, 1.0f });
 
 			u16 flags{ 0 };
-			flags = immediate_image_button(construction_mode_button_rect, ui.button_theme_construction_modes, app->addTexture, __LINE__);
+			flags = immediate_image_button(construction_mode_button_rect, ui.button_theme_construction_modes, app->add_texture, __LINE__);
 			if (flags & BUTTON_STATE_FLAGS_RELEASED)
 			{
 				ui.game_scene->SetConstructionMode(ConstructionMode::Building);
@@ -73,7 +73,7 @@ namespace Can
 			}
 
 			construction_mode_button_rect.x += button_size + button_margin;
-			flags = immediate_image_button(construction_mode_button_rect, ui.button_theme_construction_modes, app->removeTexture, __LINE__);
+			flags = immediate_image_button(construction_mode_button_rect, ui.button_theme_construction_modes, app->remove_texture, __LINE__);
 			if (flags & BUTTON_STATE_FLAGS_RELEASED)
 			{
 				ui.game_scene->SetConstructionMode(ConstructionMode::Building);
@@ -81,7 +81,7 @@ namespace Can
 			}
 
 			construction_mode_button_rect.x += button_size + button_margin;
-			flags = immediate_image_button(construction_mode_button_rect, ui.button_theme_construction_modes, app->upgradeTexture, __LINE__);
+			flags = immediate_image_button(construction_mode_button_rect, ui.button_theme_construction_modes, app->upgrade_texture, __LINE__);
 			if (flags & BUTTON_STATE_FLAGS_RELEASED)
 			{
 				ui.game_scene->SetConstructionMode(ConstructionMode::Building);
@@ -89,7 +89,7 @@ namespace Can
 			}
 
 			construction_mode_button_rect.x += button_size + button_margin;
-			flags = immediate_image_button(construction_mode_button_rect, ui.button_theme_construction_modes, app->cancelTexture, __LINE__);
+			flags = immediate_image_button(construction_mode_button_rect, ui.button_theme_construction_modes, app->cancel_texture, __LINE__);
 			if (flags & BUTTON_STATE_FLAGS_RELEASED)
 			{
 				ui.game_scene->SetConstructionMode(ConstructionMode::Building);
@@ -135,7 +135,7 @@ namespace Can
 					ui.draw_building_panel_inside_type = Draw_Building_Panel::Home;
 
 				menu_item_rect.x += menu_item_rect.w + button_margin;
-				flags = immediate_image_button(menu_item_rect, ui.button_theme_sub_menus, app->housesTexture, __LINE__);
+				flags = immediate_image_button(menu_item_rect, ui.button_theme_sub_menus, app->houses_texture, __LINE__);
 				if (flags & BUTTON_STATE_FLAGS_RELEASED)
 					ui.draw_building_panel_inside_type = Draw_Building_Panel::House;
 
@@ -176,7 +176,7 @@ namespace Can
 					ui.draw_building_panel_inside_type = Draw_Building_Panel::Home;
 
 				menu_item_rect.x += menu_item_rect.w + button_margin;
-				flags = immediate_image_button(menu_item_rect, ui.button_theme_sub_menus, app->hospitalsTexture, __LINE__);
+				flags = immediate_image_button(menu_item_rect, ui.button_theme_sub_menus, app->hospitals_texture, __LINE__);
 				if (flags & BUTTON_STATE_FLAGS_RELEASED)
 					ui.draw_building_panel_inside_type = Draw_Building_Panel::Hospital;
 
@@ -797,7 +797,7 @@ namespace Can
 					rect_name.z = rect_gender.z;
 					for (auto occupant : occupants)
 					{
-						immediate_image(rect_gender, GameApp::instance->cancelTexture);
+						immediate_image(rect_gender, GameApp::instance->cancel_texture);
 						immediate_text(occupant->firstName, rect_name, ui.label_theme_left_alinged_xsmall_black_text);
 						rect_gender.y -= rect_gender.h + 5;
 						rect_name.y = rect_gender.y;
@@ -1166,13 +1166,13 @@ namespace Can
 						case PersonStatus::WalkingDead:
 						case PersonStatus::Driving:
 						{
-							immediate_image(rect_status, GameApp::instance->cancelTexture);
+							immediate_image(rect_status, GameApp::instance->cancel_texture);
 							break;
 						}
 						case PersonStatus::AtWork:
 						case PersonStatus::DrivingForWork:
 						{
-							immediate_tinted_image(rect_status, GameApp::instance->changeTexture, color_green);
+							immediate_tinted_image(rect_status, GameApp::instance->change_texture, color_green);
 							break;
 						}
 						default:

@@ -26,27 +26,27 @@ namespace Can
 		Prefab* terrainPrefab;
 		Ref<Texture2D> terrainTexture;
 
-		Ref<Texture2D> treeMap;
-		Ref<Texture2D> addTexture;				// Put better name
-		Ref<Texture2D> saveTexture;				// Put better name
-		Ref<Texture2D> pauseTexture;			// Put better name
-		Ref<Texture2D> removeTexture;			// Put better name
-		Ref<Texture2D> cancelTexture;			// Put better name
-		Ref<Texture2D> changeTexture;			// Put better name
-		Ref<Texture2D> upgradeTexture;			// Put better name
-		Ref<Texture2D> straightTexture;			// Put better name
-		Ref<Texture2D> quadraticTexture;		// Put better name
-		Ref<Texture2D> downgradeTexture;		// Put better name
-		Ref<Texture2D> cubic1234Texture;		// Put better name
-		Ref<Texture2D> cubic1243Texture;		// Put better name
-		Ref<Texture2D> cubic1342Texture;		// Put better name
-		Ref<Texture2D> cubic1432Texture;		// Put better name
-		Ref<Texture2D> normalSpeedTexture;		// Put better name
-		Ref<Texture2D> twoTimesSpeedTexture;	// Put better name
-		Ref<Texture2D> fourTimesSpeedTexture;	// Put better name
+		Ref<Texture2D> tree_map;
+		Ref<Texture2D> add_texture;					// Put better name
+		Ref<Texture2D> save_texture;				// Put better name
+		Ref<Texture2D> pause_texture;				// Put better name
+		Ref<Texture2D> remove_texture;				// Put better name
+		Ref<Texture2D> cancel_texture;				// Put better name
+		Ref<Texture2D> change_texture;				// Put better name
+		Ref<Texture2D> upgrade_texture;				// Put better name
+		Ref<Texture2D> straight_texture;			// Put better name
+		Ref<Texture2D> quadratic_texture;			// Put better name
+		Ref<Texture2D> downgrade_texture;			// Put better name
+		Ref<Texture2D> cubic_1234_texture;			// Put better name
+		Ref<Texture2D> cubic_1243_texture;			// Put better name
+		Ref<Texture2D> cubic_1342_texture;			// Put better name
+		Ref<Texture2D> cubic_1432_texture;			// Put better name
+		Ref<Texture2D> normal_speed_texture;		// Put better name
+		Ref<Texture2D> two_times_speed_texture;		// Put better name
+		Ref<Texture2D> four_times_speed_texture;	// Put better name
 
-		Ref<Texture2D> housesTexture;			// Put better name
-		Ref<Texture2D> hospitalsTexture;		// Put better name
+		Ref<Texture2D> houses_texture;				// Put better name
+		Ref<Texture2D> hospitals_texture;			// Put better name
 
 		std::vector<struct Road_Type> road_types;
 		std::vector<struct Vehicle_Type> vehicle_types;

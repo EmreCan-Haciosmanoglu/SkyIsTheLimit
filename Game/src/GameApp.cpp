@@ -585,27 +585,27 @@ namespace Can
 		//terrainPrefab = Helper::GetPrefabForTerrain("assets/objects/heightmap_smallest.png");
 		//terrainPrefab = Helper::GetPrefabForTerrain("assets/objects/heightmap.png");
 
-		treeMap = Texture2D::Create("assets/textures/treeMap.png");
-		addTexture = Texture2D::Create("assets/textures/Buttons/Add.png");
-		saveTexture = Texture2D::Create("assets/textures/Buttons/Save.png");
-		pauseTexture = Texture2D::Create("assets/textures/Buttons/Pause.png");
-		removeTexture = Texture2D::Create("assets/textures/Buttons/Remove.png");
-		cancelTexture = Texture2D::Create("assets/textures/Buttons/Cancel.png");
-		changeTexture = Texture2D::Create("assets/textures/Buttons/Change.png");
-		upgradeTexture = Texture2D::Create("assets/textures/Buttons/Upgrade.png");
-		straightTexture = Texture2D::Create("assets/textures/Buttons/Straight.png");
-		quadraticTexture = Texture2D::Create("assets/textures/Buttons/Quadratic.png");
-		downgradeTexture = Texture2D::Create("assets/textures/Buttons/Downgrade.png");
-		cubic1234Texture = Texture2D::Create("assets/textures/Buttons/Cubic1234.png");
-		cubic1243Texture = Texture2D::Create("assets/textures/Buttons/Cubic1243.png");
-		cubic1342Texture = Texture2D::Create("assets/textures/Buttons/Cubic1342.png");
-		cubic1432Texture = Texture2D::Create("assets/textures/Buttons/Cubic1432.png");
-		normalSpeedTexture = Texture2D::Create("assets/textures/Buttons/NormalSpeed.png");
-		twoTimesSpeedTexture = Texture2D::Create("assets/textures/Buttons/TwoTimesSpeed.png");
-		fourTimesSpeedTexture = Texture2D::Create("assets/textures/Buttons/FourTimesSpeed.png");
+		tree_map = Texture2D::Create("assets/textures/treeMap.png");
+		add_texture = Texture2D::Create("assets/textures/Buttons/Add.png");
+		save_texture = Texture2D::Create("assets/textures/Buttons/Save.png");
+		pause_texture = Texture2D::Create("assets/textures/Buttons/Pause.png");
+		remove_texture = Texture2D::Create("assets/textures/Buttons/Remove.png");
+		cancel_texture = Texture2D::Create("assets/textures/Buttons/Cancel.png");
+		change_texture = Texture2D::Create("assets/textures/Buttons/Change.png");
+		upgrade_texture = Texture2D::Create("assets/textures/Buttons/Upgrade.png");
+		straight_texture = Texture2D::Create("assets/textures/Buttons/Straight.png");
+		quadratic_texture = Texture2D::Create("assets/textures/Buttons/Quadratic.png");
+		downgrade_texture = Texture2D::Create("assets/textures/Buttons/Downgrade.png");
+		cubic_1234_texture = Texture2D::Create("assets/textures/Buttons/Cubic1234.png");
+		cubic_1243_texture = Texture2D::Create("assets/textures/Buttons/Cubic1243.png");
+		cubic_1342_texture = Texture2D::Create("assets/textures/Buttons/Cubic1342.png");
+		cubic_1432_texture = Texture2D::Create("assets/textures/Buttons/Cubic1432.png");
+		normal_speed_texture = Texture2D::Create("assets/textures/Buttons/NormalSpeed.png");
+		two_times_speed_texture = Texture2D::Create("assets/textures/Buttons/TwoTimesSpeed.png");
+		four_times_speed_texture = Texture2D::Create("assets/textures/Buttons/FourTimesSpeed.png");
 
-		housesTexture = Texture2D::Create("assets/textures/Buttons/Houses.png");
-		hospitalsTexture = Texture2D::Create("assets/textures/Buttons/Hospitals.png");
+		houses_texture = Texture2D::Create("assets/textures/Buttons/Houses.png");
+		hospitals_texture = Texture2D::Create("assets/textures/Buttons/Hospitals.png");
 
 		load_road_types(road_types);
 		load_building_types(building_types);

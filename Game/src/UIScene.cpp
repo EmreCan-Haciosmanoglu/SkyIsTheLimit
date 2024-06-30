@@ -28,7 +28,7 @@ namespace Can
 			v3{width - 4.0f, 0.5f, 0.2f},
 			v2(0.8f),
 			v4(1.0f),
-			m_Parent->pauseTexture,
+			m_Parent->pause_texture,
 			[this]() {
 				entt::registry& mainRegistry = m_Scene->m_Registry;
 				GameScene* gameScene = m_Parent->gameScene;
@@ -50,7 +50,7 @@ namespace Can
 			v3{width - 3.0f, 0.5f, 0.2f},
 			v2(0.8f),
 			v4(1.0f),
-			m_Parent->normalSpeedTexture,
+			m_Parent->normal_speed_texture,
 			[this]() {
 				entt::registry& mainRegistry = m_Scene->m_Registry;
 				GameScene* gameScene = m_Parent->gameScene;
@@ -72,7 +72,7 @@ namespace Can
 			v3{width - 2.0f, 0.5f, 0.2f},
 			v2(0.8f),
 			v4(1.0f),
-			m_Parent->twoTimesSpeedTexture,
+			m_Parent->two_times_speed_texture,
 			[this]() {
 				entt::registry& mainRegistry = m_Scene->m_Registry;
 				GameScene* gameScene = m_Parent->gameScene;
@@ -94,7 +94,7 @@ namespace Can
 			v3{width - 1.0f, 0.5f, 0.2f},
 			v2(0.8f),
 			v4(1.0f),
-			m_Parent->fourTimesSpeedTexture,
+			m_Parent->four_times_speed_texture,
 			[this]() {
 				entt::registry& mainRegistry = m_Scene->m_Registry;
 				GameScene* gameScene = m_Parent->gameScene;
@@ -116,7 +116,7 @@ namespace Can
 			v3{width - 5.0f, 0.5f,0.2f },
 			v2(0.8f),
 			v4(1.0f),
-			m_Parent->saveTexture,
+			m_Parent->save_texture,
 			[this]() {
 				GameScene* gameScene = m_Parent->gameScene;
 
@@ -531,7 +531,7 @@ namespace Can
 					v3{1.0f, height - 5.0f, 0.01f},
 					roadConstructionModeButtonsSize,
 					v4(1.0f),
-					m_Parent->straightTexture,
+					m_Parent->straight_texture,
 					[this]() {
 						entt::registry& mainRegistry = m_Scene->m_Registry;
 						GameScene* gameScene = m_Parent->gameScene;
@@ -560,7 +560,7 @@ namespace Can
 					v3{1.0f + (roadConstructionModeButtonsSize.x + padding) * 1.0f, height - 5.0f, 0.01f},
 					roadConstructionModeButtonsSize,
 					v4(1.0f),
-					m_Parent->quadraticTexture,
+					m_Parent->quadratic_texture,
 					[this]() {
 						entt::registry& mainRegistry = m_Scene->m_Registry;
 						GameScene* gameScene = m_Parent->gameScene;
@@ -589,7 +589,7 @@ namespace Can
 					v3{1.0f + (roadConstructionModeButtonsSize.x + padding) * 2.0f, (height - 5.0f), 0.01f},
 					roadConstructionModeButtonsSize,
 					v4(1.0f),
-					m_Parent->cubic1234Texture,
+					m_Parent->cubic_1234_texture,
 					[this]() {
 						entt::registry& mainRegistry = m_Scene->m_Registry;
 						GameScene* gameScene = m_Parent->gameScene;
@@ -619,7 +619,7 @@ namespace Can
 					v3{1.0f + (roadConstructionModeButtonsSize.x + padding) * 2.0f, (height - 5.0f) + (roadConstructionModeButtonsSize.y + padding) * 1.0f, 0.01f},
 					roadConstructionModeButtonsSize,
 					v4(1.0f),
-					m_Parent->cubic1243Texture,
+					m_Parent->cubic_1243_texture,
 					[this]() {
 						entt::registry& mainRegistry = m_Scene->m_Registry;
 						GameScene* gameScene = m_Parent->gameScene;
@@ -649,7 +649,7 @@ namespace Can
 					v3{1.0f + (roadConstructionModeButtonsSize.x + padding) * 2.0f, (height - 5.0f) + (roadConstructionModeButtonsSize.y + padding) * 2.0f, 0.01f},
 					roadConstructionModeButtonsSize,
 					v4(1.0f),
-					m_Parent->cubic1342Texture,
+					m_Parent->cubic_1342_texture,
 					[this]() {
 						entt::registry& mainRegistry = m_Scene->m_Registry;
 						GameScene* gameScene = m_Parent->gameScene;
@@ -679,7 +679,7 @@ namespace Can
 					v3{1.0f + (roadConstructionModeButtonsSize.x + padding) * 2.0f, (height - 5.0f) + (roadConstructionModeButtonsSize.y + padding) * 3.0f, 0.01f},
 					roadConstructionModeButtonsSize,
 					v4(1.0f),
-					m_Parent->cubic1432Texture,
+					m_Parent->cubic_1432_texture,
 					[this]() {
 						entt::registry& mainRegistry = m_Scene->m_Registry;
 						GameScene* gameScene = m_Parent->gameScene;
@@ -709,7 +709,7 @@ namespace Can
 					v3{1.0f + (roadConstructionModeButtonsSize.x + padding) * 3.0f, height - 5.0f, 0.01f},
 					roadConstructionModeButtonsSize,
 					v4(1.0f),
-					m_Parent->removeTexture,
+					m_Parent->remove_texture,
 					[this]() {
 						entt::registry& mainRegistry = m_Scene->m_Registry;
 						GameScene* gameScene = m_Parent->gameScene;
@@ -738,7 +738,7 @@ namespace Can
 					v3{1.0f + (roadConstructionModeButtonsSize.x + padding) * 4.0f, height - 5.0f, 0.01f},
 					roadConstructionModeButtonsSize,
 					v4(1.0f),
-					m_Parent->changeTexture,
+					m_Parent->change_texture,
 					[this]() {
 						entt::registry& mainRegistry = m_Scene->m_Registry;
 						GameScene* gameScene = m_Parent->gameScene;
@@ -767,7 +767,7 @@ namespace Can
 					v3{1.0f + (roadConstructionModeButtonsSize.x + padding) * 5.0f, height - 5.0f, 0.01f},
 					roadConstructionModeButtonsSize,
 					v4(1.0f),
-					m_Parent->cancelTexture,
+					m_Parent->cancel_texture,
 					[this]() {
 						entt::registry& mainRegistry = m_Scene->m_Registry;
 						GameScene* gameScene = m_Parent->gameScene;
@@ -809,7 +809,7 @@ namespace Can
 			v3{2.0f, height - 5.0f, 0.01f},
 			v2(0.8f),
 			v4(1.0f),
-			m_Parent->addTexture,
+			m_Parent->add_texture,
 			[this]() {
 				entt::registry& mainRegistry = m_Scene->m_Registry;
 				GameScene* gameScene = m_Parent->gameScene;
@@ -832,7 +832,7 @@ namespace Can
 			v3{3.0f, height - 5.0f, 0.01f},
 			v2(0.8f),
 			v4(1.0f),
-			m_Parent->removeTexture,
+			m_Parent->remove_texture,
 			[this]() {
 				entt::registry& mainRegistry = m_Scene->m_Registry;
 				GameScene* gameScene = m_Parent->gameScene;
@@ -855,7 +855,7 @@ namespace Can
 			v3{4.0f, height - 5.0f, 0.01f},
 			v2(0.8f),
 			v4(1.0f),
-			m_Parent->cancelTexture,
+			m_Parent->cancel_texture,
 			[this]() {
 				entt::registry& mainRegistry = m_Scene->m_Registry;
 				GameScene* gameScene = m_Parent->gameScene;
