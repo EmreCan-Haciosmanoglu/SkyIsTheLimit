@@ -609,6 +609,7 @@ namespace Can
 		industrials_texture = Texture2D::Create("assets/textures/Buttons/Industrials.png");
 		offices_texture = Texture2D::Create("assets/textures/Buttons/Offices.png");
 		hospitals_texture = Texture2D::Create("assets/textures/Buttons/Hospitals.png");
+		police_stations_texture = Texture2D::Create("assets/textures/Buttons/PoliceStations.png");
 
 		load_road_types(road_types);
 		load_building_types(building_types);

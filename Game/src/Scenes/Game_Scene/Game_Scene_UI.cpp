@@ -175,9 +175,7 @@ namespace Can
 					ui.draw_building_panel_inside_type = Draw_Building_Panel::Hospital;
 
 				menu_item_rect.x += menu_item_rect.w + button_margin;
-				flags = immediate_image_button(menu_item_rect, ui.button_theme_sub_menus, nullptr, __LINE__);
-				menu_item_rect.z++;
-				immediate_text("P", menu_item_rect, ui.label_theme_large_text);
+				flags = immediate_image_button(menu_item_rect, ui.button_theme_sub_menus, app->police_stations_texture, __LINE__);
 				if (flags & BUTTON_STATE_FLAGS_RELEASED)
 					ui.draw_building_panel_inside_type = Draw_Building_Panel::Police_Station;
 
