@@ -29,6 +29,16 @@ Vehicle_Parks:1
 -0.25:1.9:0.0:90.0
 END
 START
+Object:04/Building.obj
+Texture:04/Building.png
+Thumbnail:04/Thumbnail.png
+Name:Garbage Collection Facility
+Capacity:20
+Group:7
+Vehicle_Parks:1
+0.5:0.0:0.0:0.0
+END
+START
 Object:01/Building.obj
 Texture:01/Building.png
 Thumbnail:01/Thumbnail.png
