@@ -25,6 +25,7 @@ namespace Can
 		auto& road_segments = m_Scene->m_RoadManager.road_segments;
 		auto& road_nodes = m_Scene->m_RoadManager.road_nodes;
 		auto& road_types = m_Scene->MainApplication->road_types;
+		auto& building_types = m_Scene->MainApplication->building_types;
 
 		for (size_t person_index = 0; person_index < m_People.size(); person_index++)
 		{
@@ -36,6 +37,21 @@ namespace Can
 			case PersonStatus::AtWork:
 			{
 				p->time_left -= ts;
+
+				// building currently in
+				// more educated less garbage
+				// different amount according to age
+				if (p->status == PersonStatus::AtHome)
+				{
+					p->home->current_garbage += 0.5f * ts;
+				}
+				else if (p->status == PersonStatus::AtWork)
+				{
+					assert(p->work);
+					// if (building_types[p->work->type].group != Building_Group::Garbage_Collection_Center) we don't care tbh.
+					p->work->current_garbage += 0.5f * ts;
+				}
+
 				if (p->time_left <= 0.0f)
 				{
 					Building* building_from = p->home;

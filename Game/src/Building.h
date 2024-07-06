@@ -28,8 +28,8 @@ namespace Can
 		f32 electricity_need{ 50.0f };
 		f32 electricity_provided{ 80.0f };
 
-		f32 garbage_capacity{ 100.0f };
-		f32 current_garbage{ 23.0f };
+		f32 garbage_capacity{ 10.0f };
+		f32 current_garbage{ 0.0f };
 
 		f32 water_need{ 20.0f };
 		f32 water_provided{ 10.0f };

@@ -302,6 +302,7 @@ namespace Can
 				constexpr const char* speed_range_key{ "Speed_Range" };
 				constexpr const char* operator_count_key{ "Operator_Count" };
 				constexpr const char* passenger_limit_key{ "Passenger_Limit" };
+				constexpr const char* cargo_limit_key{ "Cargo_Limit" };
 				constexpr const char* type_key{ "Type" };
 
 				std::string line;
@@ -360,6 +361,12 @@ namespace Can
 							std::stringstream ss{};
 							ss << std::string(seperator + 1, line.end());
 							ss >> vehicle_type.passenger_limit;
+						}
+						else if (std::equal(line.begin(), seperator, cargo_limit_key))
+						{
+							std::stringstream ss{};
+							ss << std::string(seperator + 1, line.end());
+							ss >> vehicle_type.cargo_limit;
 						}
 						else if (std::equal(line.begin(), seperator, type_key))
 						{

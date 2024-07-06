@@ -301,9 +301,42 @@ namespace Can
 				immediate_text("B", menu_item_rect, ui.label_theme_large_text);
 				if (flags & BUTTON_STATE_FLAGS_RELEASED)
 					ui.draw_building_panel_inside_type = Draw_Building_Panel::Special;
+
+				for (u64 i{ 0 }; i < building_types.size(); ++i)
+				{
+					auto& building_type{ building_types[i] };
+					if (building_type.group != Building_Group::Garbage_Collection_Center) continue;
+
+					menu_item_rect.x += menu_item_rect.w + button_margin;
+					flags = immediate_image_button(menu_item_rect, ui.button_theme_buildings, building_type.thumbnail, __LINE__ * 10000 + i, false);
+					if (flags & BUTTON_STATE_FLAGS_RELEASED)
+					{
+						ui.game_scene->SetConstructionMode(ConstructionMode::Building);
+						auto mode = ui.game_scene->m_BuildingManager.GetConstructionMode();
+						if (mode == BuildingConstructionMode::None || mode == BuildingConstructionMode::Destruct)
+							ui.game_scene->m_BuildingManager.SetConstructionMode(BuildingConstructionMode::Construct);
+						ui.game_scene->m_BuildingManager.SetType(i);
+					}
+				}
 			}
 
 			//immediate_end_sub_region(track_width);
+		}
+		void draw_icon_above_target_object(Game_Scene_UI& ui, Object* obj/*, Icon icon*/)
+		{
+			auto& window = main_application->GetWindow();
+			u32 width_in_pixels = window.GetWidth();
+			u32 height_in_pixels = window.GetHeight();
+
+			Rect icon_rect;
+			icon_rect.w = 50;
+			icon_rect.h = 50;
+
+			v4 position_on_screen{ ui.game_scene_camera->view_projection * obj->transform * v4(0.0f, 0.0f, obj->prefab->boundingBoxM.z, 1.0f) };
+			icon_rect.x = u32((position_on_screen.x / position_on_screen.w + 1.0f) * width_in_pixels * 0.5f);
+			icon_rect.y = u32((position_on_screen.y / position_on_screen.w + 1.0f) * height_in_pixels * 0.5f) - icon_rect.h;
+
+			immediate_quad(icon_rect, v4{ 1.0f, 0.0f, 0.0f, 1.0f });
 		}
 	}
 
@@ -528,6 +561,7 @@ namespace Can
 	void draw_screen(Game_Scene_UI& ui)
 	{
 		auto app{ GameApp::instance };
+		auto& bm{ ui.game_scene->m_BuildingManager };
 		auto& building_types{ app->building_types };
 		const std::string text_x{ "X" };
 		if (ui.focus_object != nullptr)
@@ -1219,7 +1253,7 @@ namespace Can
 					rect_needs_value_inside.y = rect_needs_key.y + 1;
 					rect_needs_value_inside_positive.y = rect_needs_key.y + 1;
 
-					ratio = building->current_garbage / building->garbage_capacity;
+					ratio = (std::min)(building->current_garbage / building->garbage_capacity, 1.0f);
 					v4 color_garbage{ Math::lerp(color_green, color_red, ratio) };
 					rect_needs_value_inside_positive.w = (s32)((f32)(rect_needs_value.w - 2) * ratio);
 					immediate_text(garbage_key, rect_needs_key, ui.label_theme_left_alinged_small_black_text);
@@ -1322,6 +1356,17 @@ namespace Can
 		if (ui.draw_building_panel)
 		{
 			draw_building_panel(ui);
+		}
+
+		if (ui.show_garbage_filled_icon)
+		{
+			for (auto& house : bm.buildings_houses)
+				if (house->current_garbage >= house->garbage_capacity)
+					draw_icon_above_target_object(ui, house->object);
+			for (auto& commercial_building : bm.buildings_commercial)
+				if (commercial_building->current_garbage >= commercial_building->garbage_capacity)
+					draw_icon_above_target_object(ui, commercial_building->object);
+
 		}
 	}
 

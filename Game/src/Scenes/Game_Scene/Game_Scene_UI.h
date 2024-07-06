@@ -90,6 +90,7 @@ namespace Can
 
 		bool force_update{ false };
 		bool draw_building_panel{ false };
+		bool show_garbage_filled_icon{ true };
 
 		Draw_Building_Panel draw_building_panel_inside_type{ Draw_Building_Panel::Home };
 	};

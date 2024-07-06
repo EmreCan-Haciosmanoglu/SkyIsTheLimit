@@ -28,3 +28,14 @@ Operator_Count:1
 Passenger_Limit:4
 Type:0
 END
+START
+Name:Tesla CyberTruck
+Object:01/car.obj
+Texture:01/car.png
+Thumbnail:01/Thumbnail.png
+Speed_Range:30-50
+Operator_Count:1
+Passenger_Limit:4
+Cargo_Limit:15.0
+Type:2
+END
