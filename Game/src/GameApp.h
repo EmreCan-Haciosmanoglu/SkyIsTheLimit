@@ -61,8 +61,8 @@ namespace Can
 
 		Main_Menu main_menu{};
 
-		GameScene* gameScene = nullptr;
-		UIScene* uiScene = nullptr;
+		GameScene* gameScene{ nullptr };
+		UIScene* uiScene{ nullptr };
 		//Debug* debugScene = nullptr;
 
 		Perspective_Camera_Controller perspective_camera_controller;

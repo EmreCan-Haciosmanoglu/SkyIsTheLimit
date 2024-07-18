@@ -180,7 +180,7 @@ namespace Can
 				v2 boundingP = (v2)prevLocation;
 				auto& segments = m_Scene->m_RoadManager.road_segments;
 
-				for (Building* building : segments[m_SnappedRoadSegment].Buildings)
+				for (Building* building : segments[m_SnappedRoadSegment].buildings)
 				{
 					v2 bL = (v2)building->object->prefab->boundingBoxL;
 					v2 bM = (v2)building->object->prefab->boundingBoxM;
@@ -396,46 +396,43 @@ namespace Can
 			new_building->type = building_type_index;
 			new_building->snapped_to_right = snapped_from_right;
 			if (m_SnappedRoadSegment != (u64)-1)
-				road_segments[m_SnappedRoadSegment].Buildings.push_back(new_building);
+				road_segments[m_SnappedRoadSegment].buildings.push_back(new_building);
 			m_Buildings.push_back(new_building);
 
 			if (building_type.group == Building_Group::House)
 			{
 				buildings_houses.push_back(new_building);
-				u8 domicilled = Utility::Random::signed_32(0, building_type.capacity);
-				for (u64 i = 0; i < domicilled; i++)
+				u16 domicilled{ Utility::Random::unsigned_16(0, building_type.capacity) };
+				for (u64 i{ 0 }; i < domicilled; i++)
 				{
-					u64 type = 0;
-					Person* new_person = new Person(
+					u64 type{ 0 };
+					Person* new_person{ new Person(
 						person_prefabs[type],
 						Utility::Random::Float(4.0f, 6.0f)
-					);
+					) };
 					new_person->type = type;
 					new_person->home = new_building;
 					new_person->status = PersonStatus::AtHome;
 					new_person->time_left = Utility::Random::Float(1.0f, 5.0f);
 					new_building->people.push_back(new_person);
-					bool have_enough_money_to_own_car = Utility::Random::Float(1.0f) > 0.4f;
+					bool have_enough_money_to_own_car{ Utility::Random::Float(1.0f) > 0.4f };
 					if (have_enough_money_to_own_car)
 					{
 						u64 new_vehicle_type_index = Utility::Random::signed_32(vehicle_types.size());
 						const Vehicle_Type& new_vehicle_type{ vehicle_types[new_vehicle_type_index] };
-						Car* new_car = new Car();
+						Car* new_car{ new Car() };
 						new_car->object = new Object(new_vehicle_type.prefab);
 						new_car->type = new_vehicle_type_index;
 						new_car->speed_in_kmh = Utility::Random::Float(new_vehicle_type.speed_range_min, new_vehicle_type.speed_range_max);
 						assert(building_type.vehicle_parks.size());
-						v3 car_pos = new_building->object->position +
+						v3 car_pos{ new_building->object->position +
 							(v3)(glm::rotate(m4(1.0f), new_building->object->rotation.z, v3{ 0.0f, 0.0f, 1.0f }) *
 								glm::rotate(m4(1.0f), new_building->object->rotation.y, v3{ 0.0f, 1.0f, 0.0f }) *
 								glm::rotate(m4(1.0f), new_building->object->rotation.x, v3{ 1.0f, 0.0f, 0.0f }) *
-								v4(building_type.vehicle_parks[0].offset, 1.0f));
+								v4(building_type.vehicle_parks[0].offset, 1.0f)) };
 						v3 car_rotation{ new_building->object->rotation };
 						car_rotation.z += glm::radians(building_type.vehicle_parks[0].rotation_in_degrees);
-						new_car->object->SetTransform(
-							car_pos,
-							car_rotation
-						);
+						new_car->object->SetTransform(car_pos, car_rotation);
 						new_car->object->enabled = true;
 						new_car->owner = new_person;
 						new_person->car = new_car;
@@ -443,7 +440,7 @@ namespace Can
 					}
 
 					person_manager.m_People.push_back(new_person);
-					Building* work = getAvailableWorkBuilding();
+					Building* work{ getAvailableWorkBuilding() };
 					if (work)
 					{
 						work->people.push_back(new_person);
@@ -454,10 +451,10 @@ namespace Can
 			else
 			{
 				buildings_commercial.push_back(new_building);
-				u8 worker = Utility::Random::signed_32(0, building_type.capacity);
-				for (u64 i = 0; i < worker; ++i)
+				u16 worker{ Utility::Random::unsigned_16(0, building_type.capacity) };
+				for (u64 i{ 0 }; i < worker; ++i)
 				{
-					Person* p = person_manager.get_worklessPerson();
+					Person* p{ person_manager.get_worklessPerson() };
 					if (p)
 					{
 						p->work = new_building;
@@ -469,28 +466,25 @@ namespace Can
 					}
 				}
 
-				u8 work_vehicle_count = Utility::Random::signed_32(4, 6);
-				for (u64 i = 0; i < work_vehicle_count; ++i)
+				u8 work_vehicle_count{ Utility::Random::unsigned_8(4, 6) };
+				for (u64 i{ 0 }; i < work_vehicle_count; ++i)
 				{
-					u64 new_vehicle_type_index = Utility::Random::signed_32(vehicle_types.size());
+					u64 new_vehicle_type_index{ Utility::Random::unsigned_64(vehicle_types.size()) };
 					const Vehicle_Type& new_vehicle_type{ vehicle_types[new_vehicle_type_index] };
-					Car* new_car = new Car();
+					Car* new_car{ new Car() };
 					new_car->object = new Object(new_vehicle_type.prefab);
 					new_car->type = new_vehicle_type_index;
 					new_car->speed_in_kmh = Utility::Random::Float(new_vehicle_type.speed_range_min, new_vehicle_type.speed_range_max);
 					new_car->object->tintColor = v4{ 1.0f, 0.0f, 0.0f, 1.0f };
 					assert(building_type.vehicle_parks.size());
-					v3 car_pos = new_building->object->position +
+					v3 car_pos{ new_building->object->position +
 						(v3)(glm::rotate(m4(1.0f), new_building->object->rotation.z, v3{ 0.0f, 0.0f, 1.0f }) *
 							glm::rotate(m4(1.0f), new_building->object->rotation.y, v3{ 0.0f, 1.0f, 0.0f }) *
 							glm::rotate(m4(1.0f), new_building->object->rotation.x, v3{ 1.0f, 0.0f, 0.0f }) *
-							v4(building_type.vehicle_parks[0].offset, 1.0f));
+							v4(building_type.vehicle_parks[0].offset, 1.0f)) };
 					v3 car_rotation{ new_building->object->rotation };
 					car_rotation.z += glm::radians(building_type.vehicle_parks[0].rotation_in_degrees);
-					new_car->object->SetTransform(
-						car_pos,
-						car_rotation
-					);
+					new_car->object->SetTransform(car_pos, car_rotation);
 					new_car->object->enabled = true;
 					new_car->building = new_building;
 					new_building->vehicles.push_back(new_car);
@@ -591,9 +585,7 @@ namespace Can
 		{
 			auto& building_type{ building_types[b->type] };
 			if (building_type.capacity > b->people.size())
-			{
 				return b;
-			}
 		}
 		return nullptr;
 	}
@@ -627,7 +619,7 @@ namespace Can
 
 		if (b->connected_road_segment != -1)
 		{
-			auto& connected_buildings = segments[b->connected_road_segment].Buildings;
+			auto& connected_buildings = segments[b->connected_road_segment].buildings;
 			auto it = std::find(connected_buildings.begin(), connected_buildings.end(), b);
 			assert(it != connected_buildings.end());
 			connected_buildings.erase(it);

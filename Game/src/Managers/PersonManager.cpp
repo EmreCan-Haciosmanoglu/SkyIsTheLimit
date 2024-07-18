@@ -29,7 +29,7 @@ namespace Can
 
 		for (size_t person_index = 0; person_index < m_People.size(); person_index++)
 		{
-			Person* p = m_People[person_index];
+			Person* p{ m_People[person_index] };
 
 			switch (p->status)
 			{

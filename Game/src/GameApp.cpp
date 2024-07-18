@@ -374,7 +374,7 @@ namespace Can
 							ss << std::string(seperator + 1, line.end());
 							u8 t;
 							ss >> t;
-							vehicle_type.type = (Car_Type)t;
+							vehicle_type.type = (Car_Type)(t - '0');
 						}
 					}
 				}
@@ -416,6 +416,7 @@ namespace Can
 				constexpr const char* stay_visitor_capacity_key{ "Stay_Visitor_Capacity" };
 
 				constexpr const char* vehicle_parks_key{ "Vehicle_Parks" };
+				constexpr const char* visiting_spot_key{ "Visiting_Spot" };
 
 				std::string line;
 				while (std::getline(file, line))
@@ -565,6 +566,25 @@ namespace Can
 								if (lanes_read >= vehicle_parks_count)
 									break;
 							}
+						}
+						else if (std::equal(line.begin(), seperator, visiting_spot_key))
+						{
+							std::stringstream ss;
+							std::string::iterator first_seperator = std::find(seperator + 1, line.end(), ':');
+							std::string::iterator second_seperator = std::find(first_seperator + 1, line.end(), ':');
+
+							ss << std::string(seperator + 1, first_seperator);
+							ss >> building_type.visiting_spot.x;
+
+							ss.clear();
+							ss.str("");
+							ss << std::string(first_seperator + 1, second_seperator);
+							ss >> building_type.visiting_spot.y;
+
+							ss.clear();
+							ss.str("");
+							ss << std::string(second_seperator + 1, line.end());
+							ss >> building_type.visiting_spot.z;
 						}
 					}
 				}

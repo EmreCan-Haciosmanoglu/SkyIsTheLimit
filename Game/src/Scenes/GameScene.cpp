@@ -378,7 +378,7 @@ namespace Can
 					break;
 				}
 
-				road_segments[building->connected_road_segment].Buildings.push_back(building);
+				road_segments[building->connected_road_segment].buildings.push_back(building);
 			}
 		}
 		/*CarManager*/ {

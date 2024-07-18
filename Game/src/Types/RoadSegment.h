@@ -57,7 +57,7 @@ namespace Can
 
 	public:
 		u64 type = 0;
-		std::vector<class Building*> Buildings{};
+		std::vector<class Building*> buildings{}; // TODO: sort from one end to other
 		std::vector<class Person*> people{};
 		std::vector<class Car*> vehicles{};
 
