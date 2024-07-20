@@ -17,6 +17,11 @@ namespace Can::Helper
 		s64 next_road_node_index;
 	};
 
+	struct Visited_Dijkstra_Node {
+		s64 road_segment_index;
+		bool to_end;
+	};
+
 	bool check_if_ray_intersects_with_bounding_box(
 		const v3& ray_start_point,
 		const v3& ray,
@@ -52,8 +57,14 @@ namespace Can::Helper
 	std::vector<Transition*> get_path(Building* start, u8 dist);
 	std::vector<RS_Transition_For_Vehicle*> get_path_for_a_car(Building* start, u8 dist);
 
-	std::vector<Transition*> get_path(Building* start, Building* end);
-	std::vector<RS_Transition_For_Vehicle*> get_path_for_a_car(Building* start, Building* end);
+	std::vector<Transition*> get_path(
+		const Building* const start,
+		const Building* const end
+	);
+	std::vector<RS_Transition_For_Vehicle*> get_path_for_a_car(
+		const Building* const start,
+		const Building* const end
+	);
 
 	struct sort_by_angle
 	{

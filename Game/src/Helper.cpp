@@ -11,6 +11,18 @@
 
 namespace  Can::Helper
 {
+	/*Anom*/ namespace
+	{
+		std::array<v2, 4> getAxis(const std::array<v2, 4>& c1, const std::array<v2, 4>& c2)
+		{
+			return std::array<v2, 4>{
+				glm::normalize(c1[1] - c1[0]),
+					glm::normalize(c1[3] - c1[0]),
+					glm::normalize(c2[1] - c2[0]),
+					glm::normalize(c2[3] - c2[0])
+			};
+		}
+	}
 	bool check_if_ray_intersects_with_bounding_box(const v3& ray_start_point, const v3& ray, const v3& mins, const v3& maxs)
 	{
 		v3 xxx{ 1.0f, 0.0f, 0.0f };
@@ -36,15 +48,19 @@ namespace  Can::Helper
 			(farPCP.x >= mins.x && farPCP.x <= maxs.x && farPCP.y >= mins.y && farPCP.y <= maxs.y);
 	}
 
-	//delete later
-	static std::array<v2, 4> getAxis(const std::array<v2, 4>& c1, const std::array<v2, 4>& c2)
+
+	v2 check_rotated_rectangle_collision(const Object* const obj1, const Object* const obj2)
 	{
-		return std::array<v2, 4>{
-			glm::normalize(c1[1] - c1[0]),
-				glm::normalize(c1[3] - c1[0]),
-				glm::normalize(c2[1] - c2[0]),
-				glm::normalize(c2[3] - c2[0])
-		};
+		return Helper::check_rotated_rectangle_collision(
+			(v2)obj1->prefab->boundingBoxL,
+			(v2)obj1->prefab->boundingBoxM,
+			obj1->rotation.z,
+			(v2)obj1->position,
+			(v2)obj2->prefab->boundingBoxL,
+			(v2)obj2->prefab->boundingBoxM,
+			obj2->rotation.z,
+			(v2)obj2->position
+		);
 	}
 
 	v2 check_rotated_rectangle_collision(const v2& r1l, const v2& r1m, f32 rot1, const v2& pos1, const v2& r2l, const v2& r2m, f32 rot2, const v2& pos2)
@@ -1154,7 +1170,10 @@ namespace  Can::Helper
 	}
 
 	//TODO memory leak possible
-	std::vector<Transition*> get_path(Building* start, Building* end)
+	std::vector<Transition*> get_path(
+		const Building* const start,
+		const Building* const end
+	)
 	{
 		auto& road_segments = GameScene::ActiveGameScene->m_RoadManager.road_segments;
 		auto& road_nodes = GameScene::ActiveGameScene->m_RoadManager.road_nodes;
@@ -1241,7 +1260,6 @@ namespace  Can::Helper
 			(s64)(start_road_segment.EndNode)
 			});
 		visited_road_segments.push_back(start->connected_road_segment);
-
 
 		while (linqs.empty() == false)
 		{
@@ -1371,7 +1389,10 @@ namespace  Can::Helper
 		}
 		return {};
 	}
-	std::vector<RS_Transition_For_Vehicle*> get_path_for_a_car(Building* start, Building* end)
+	std::vector<RS_Transition_For_Vehicle*> get_path_for_a_car(
+		const Building* const start,
+		const Building* const end
+	)
 	{
 		auto& road_segments{ GameScene::ActiveGameScene->m_RoadManager.road_segments };
 		auto& road_nodes{ GameScene::ActiveGameScene->m_RoadManager.road_nodes };
@@ -1545,51 +1566,51 @@ namespace  Can::Helper
 
 		std::vector<Dijkstra_Node> linqs{};
 		std::vector<Dijkstra_Node> fastest_road_to_these_nodes{};
-		std::vector<std::tuple<s64, bool>> visited_road_segments{};
+		std::vector<Visited_Dijkstra_Node> visited_road_segments{};
 		if (start_road_type.has_median)
 		{
-			linqs.push_back(Dijkstra_Node{
+			linqs.emplace_back(
 				(s64)(start->snapped_to_right ? start_road_segment.curve_samples.size() - start->snapped_t_index : start->snapped_t_index),
 				start->connected_road_segment,
 				-1,
 				(s64)(start->snapped_to_right ? start_road_segment.EndNode : start_road_segment.StartNode)
-				});
-			visited_road_segments.push_back({ start->connected_road_segment, start->snapped_to_right });
+			);
+			visited_road_segments.emplace_back(start->connected_road_segment, start->snapped_to_right);
 		}
 		else if (start_road_type.two_way)
 		{
-			linqs.push_back(Dijkstra_Node{
-					(s64)(start_road_segment.curve_samples.size() - start->snapped_t_index),
-					start->connected_road_segment,
-					-1,
-					(s64)(start_road_segment.EndNode)
-				});
-			visited_road_segments.push_back({ start->connected_road_segment, true });
-			linqs.push_back(Dijkstra_Node{
-					(s64)(start->snapped_t_index),
-					start->connected_road_segment,
-					-1,
-					(s64)(start_road_segment.StartNode)
-				});
-			visited_road_segments.push_back({ start->connected_road_segment, false });
+			linqs.emplace_back(
+				(s64)(start_road_segment.curve_samples.size() - start->snapped_t_index),
+				start->connected_road_segment,
+				-1,
+				(s64)(start_road_segment.EndNode)
+			);
+			visited_road_segments.emplace_back(start->connected_road_segment, true);
+			linqs.emplace_back(
+				(s64)(start->snapped_t_index),
+				start->connected_road_segment,
+				-1,
+				(s64)(start_road_segment.StartNode)
+			);
+			visited_road_segments.emplace_back(start->connected_road_segment, false);
 		}
 		else
 		{
-			linqs.push_back(Dijkstra_Node{
-					(s64)(start_road_segment.curve_samples.size() - start->snapped_t_index),
-					start->connected_road_segment,
-					-1,
-					(s64)(start_road_segment.EndNode)
-				});
-			visited_road_segments.push_back({ start->connected_road_segment, true });
+			linqs.emplace_back(
+				(s64)(start_road_segment.curve_samples.size() - start->snapped_t_index),
+				start->connected_road_segment,
+				-1,
+				(s64)(start_road_segment.EndNode)
+			);
+			visited_road_segments.emplace_back(start->connected_road_segment, true);
 		}
 
 
 		while (linqs.empty() == false)
 		{
 			std::sort(linqs.begin(), linqs.end(), Helper::sort_by_distance());
-			auto closest = linqs[linqs.size() - 1];
-			s64 road_node_index = closest.next_road_node_index;
+			Dijkstra_Node closest{ linqs[linqs.size() - 1] };
+			s64 road_node_index{ closest.next_road_node_index };
 			linqs.pop_back();
 
 			auto fastest_it = std::find_if(
@@ -1603,22 +1624,22 @@ namespace  Can::Helper
 				fastest_road_to_these_nodes.push_back(closest);
 			}
 
-			RoadNode& road_node = road_nodes[road_node_index];
-			auto& connected_road_segments = road_node.roadSegments;
-			for (u64 i = 0; i < connected_road_segments.size(); i++)
+			RoadNode& road_node{ road_nodes[road_node_index] };
+			auto& connected_road_segments{ road_node.roadSegments };
+			for (u64 i{ 0 }; i < connected_road_segments.size(); i++)
 			{
-				u64 connected_road_segment_index = connected_road_segments[i];
-				RoadSegment& connected_road_segment = road_segments[connected_road_segment_index];
-				u64 curve_samples_count = connected_road_segment.curve_samples.size();
-				bool from_start = road_node_index == connected_road_segment.StartNode;
-				Road_Type& type = road_types[connected_road_segment.type];
+				u64 connected_road_segment_index{ connected_road_segments[i] };
+				RoadSegment& connected_road_segment{ road_segments[connected_road_segment_index] };
+				u64 curve_samples_count{ connected_road_segment.curve_samples.size() };
+				bool from_start{ road_node_index == connected_road_segment.StartNode };
+				Road_Type& type{ road_types[connected_road_segment.type] };
 				if (type.two_way == false && connected_road_segment.EndNode == road_node_index) continue;
 
 				if (connected_road_segment_index == end->connected_road_segment)
 				{
 					if (from_start == end->snapped_to_right || type.has_median == false)
 					{
-						u64 rs_index = connected_road_segment_index;
+						u64 rs_index{ connected_road_segment_index };
 						std::vector<RS_Transition_For_Vehicle*> the_temp_path{};
 
 						RS_Transition_For_Vehicle* temp_rs_transition{ new RS_Transition_For_Vehicle() };
@@ -1660,24 +1681,23 @@ namespace  Can::Helper
 				auto v_it = std::find_if(
 					visited_road_segments.begin(),
 					visited_road_segments.end(),
-					[connected_road_segment_index, from_start](const std::tuple<s64, bool>& el) {
-						return std::get<0>(el) == connected_road_segment_index && std::get<1>(el) == from_start;
+					[connected_road_segment_index, from_start](const Visited_Dijkstra_Node& el) {
+						return el.road_segment_index == connected_road_segment_index && el.to_end == from_start;
 					});
 				if (v_it != visited_road_segments.end())
 					continue;
 
-				visited_road_segments.push_back({ connected_road_segment_index, from_start });
+				visited_road_segments.emplace_back((s64)connected_road_segment_index, from_start);
 
 
-				s64 new_distance = closest.distance + curve_samples_count;
-				s64 next_road_node_index = connected_road_segment.StartNode == road_node_index ? connected_road_segment.EndNode : connected_road_segment.StartNode;
-				s64 prev_road_node_index = road_node_index;
-				linqs.push_back(Dijkstra_Node{
-					(s64)new_distance,
+				s64 new_distance{ closest.distance + (s64)curve_samples_count };
+				s64 next_road_node_index{ (s64)(connected_road_segment.StartNode == road_node_index ? connected_road_segment.EndNode : connected_road_segment.StartNode) };
+				linqs.emplace_back(
+					new_distance,
 					(s64)connected_road_segment_index,
-					(s64)prev_road_node_index,
-					(s64)next_road_node_index
-					});
+					road_node_index,
+					next_road_node_index
+				);
 			}
 		}
 

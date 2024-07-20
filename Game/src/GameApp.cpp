@@ -638,6 +638,8 @@ namespace Can
 		hospitals_texture = Texture2D::Create("assets/textures/Buttons/Hospitals.png");
 		police_stations_texture = Texture2D::Create("assets/textures/Buttons/PoliceStations.png");
 
+		garbage_filled_icon = Texture2D::Create("assets/textures/Icons/Garbage.png");
+
 		load_road_types(road_types);
 		load_building_types(building_types);
 		LoadTrees();

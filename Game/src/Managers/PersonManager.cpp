@@ -34,6 +34,91 @@ namespace Can
 			switch (p->status)
 			{
 			case PersonStatus::AtHome:
+			{
+				p->time_left -= ts;
+
+				// building currently in
+				// more educated less garbage
+				// different amount according to age
+				p->home->current_garbage += 0.1f * ts;
+				if (p->time_left <= 0.0f)
+				{
+					if (p->work)
+					{
+						p->path_end_building = p->work;
+						p->path_start_building = p->home;
+
+						if (p->car)
+						{
+							p->car_driving = p->car;
+							p->car_driving->driver = p;
+							p->car_driving->path = Helper::get_path_for_a_car(p->home, p->work);
+						}
+						else
+						{
+							p->path = Helper::get_path(p->home, p->work);
+						}
+
+						if (p->path.size() == 0 && p->car_driving && p->car_driving->path.size() == 0) // if no path available
+						{
+							// just walk around then come back to home
+							p->path = Helper::get_path(p->home, 5);
+							p->path_end_building = p->home;
+							p->car_driving = nullptr;
+						}
+					}
+					else // just walk around then come back to home
+					{
+						p->path = Helper::get_path(p->home, 5);
+						p->path_end_building = p->home;
+						p->path_start_building = p->home;
+					}
+
+					// TODO: Combine these two line into a function
+					p->position = p->home->object->position;
+					p->object->SetTransform(p->position);
+
+					p->object->enabled = true;
+					p->heading_to_a_building = false;
+					p->heading_to_a_car = false;
+					p->status = PersonStatus::Walking;
+					
+					if (p->car_driving)
+					{
+						p->heading_to_a_car = true;
+						set_person_target(p, p->car_driving->object->position);
+					}
+					else
+					{
+						p->road_segment = p->home->connected_road_segment;
+						RoadSegment& road_segment = road_segments[p->road_segment];
+						road_segment.people.push_back(p);
+
+						// TODO: Refactor this scope into a function
+						RS_Transition_For_Walking* rs_transition = (RS_Transition_For_Walking*)p->path[0];
+						Road_Type& road_segment_type = road_types[road_segment.type];
+
+						assert(p->home->snapped_t_index < (s64)road_segment.curve_samples.size() - 1);
+						v3 target_position = road_segment.curve_samples[p->home->snapped_t_index];
+						assert(road_segment.curve_samples.size() - 1 >= p->home->snapped_t_index + 1);
+						v3 target_position_plus_one = road_segment.curve_samples[p->home->snapped_t_index + 1];
+
+						v3 dir = target_position_plus_one - target_position;
+						v3 offsetted = target_position + dir * p->home->snapped_t;
+
+						v3 sidewalf_position_offset = glm::normalize(v3{ dir.y, -dir.x, 0.0f });
+						if (p->home->snapped_to_right)
+							sidewalf_position_offset *= road_segment_type.lanes_forward[road_segment_type.lanes_forward.size() - 1].distance_from_center;
+						else
+							sidewalf_position_offset *= road_segment_type.lanes_backward[0].distance_from_center;
+
+						((RS_Transition_For_Walking*)p->path[0])->at_path_array_index = p->home->snapped_t_index;
+
+						set_person_target(p, offsetted + sidewalf_position_offset);
+					}
+				}
+				break;
+			}
 			case PersonStatus::AtWork:
 			{
 				p->time_left -= ts;
@@ -41,101 +126,67 @@ namespace Can
 				// building currently in
 				// more educated less garbage
 				// different amount according to age
-				if (p->status == PersonStatus::AtHome)
-				{
-					p->home->current_garbage += 0.5f * ts;
-				}
-				else if (p->status == PersonStatus::AtWork)
-				{
-					assert(p->work);
-					// if (building_types[p->work->type].group != Building_Group::Garbage_Collection_Center) we don't care tbh.
-					p->work->current_garbage += 0.5f * ts;
-				}
+				// if (building_types[p->work->type].group != Building_Group::Garbage_Collection_Center) we don't care tbh.
+				p->work->current_garbage += 0.1f * ts;
 
 				if (p->time_left <= 0.0f)
 				{
-					Building* building_from = p->home;
 					Building* building_to = p->work;
-					if (p->car)
-					{
-						p->car_driving = p->car;
-						p->car_driving->driver = p;
-					}
 
-					bool is_buildings_connected = true;
-					if (p->status == PersonStatus::AtWork)
+					if (p->drove_in_work)
 					{
-						building_from = p->work;
-						if (p->drove_in_work)
+						building_to = p->home;
+						p->drove_in_work = false;
+						if (p->car)
+						{
+							p->car_driving = p->car;
+							p->car_driving->driver = p;
+						}
+					}
+					else
+					{
+						Car* work_car = retrive_work_vehicle(p->work);
+						if (work_car)
+						{
+							p->car_driving = work_car;
+							p->car_driving->driver = p;
+						}
+						else
 						{
 							building_to = p->home;
-							p->drove_in_work = false;
-						}
-						else
-						{
-							Car* work_car = retrive_work_vehicle(p->work);
-							if (work_car)
+							if (p->car)
 							{
-								building_to = p->work;
-								if (p->car_driving)
-									p->car_driving->driver = nullptr;
-								p->car_driving = work_car;
+								p->car_driving = p->car;
 								p->car_driving->driver = p;
 							}
-							else
-							{
-								building_to = p->home;
-							}
 						}
 					}
 
-					if (building_to)
+					if (building_to == p->work) // driving while working / driving work vehicle
 					{
-						p->path_end_building = building_to;
-						p->path_start_building = building_from;
-						if (building_from == building_to) // driving while working / driving work vehicle
-						{
-							p->car_driving->path = Helper::get_path_for_a_car(building_from, 5);
-							// TODO v2: go some building and comeback e.g. Ambulance, Police, Fire, Delivery
-						}
-						else
-						{
-							if (p->car_driving)
-								p->car_driving->path = Helper::get_path_for_a_car(building_from, building_to);
-							else
-								p->path = Helper::get_path(building_from, building_to);
-						}
-
-						if (p->path.size() == 0 && p->car_driving && p->car_driving->path.size() == 0) // if no path available
-						{
-							if (building_from == p->work) // if path to home is cut out / destroyed
-							{
-								reset_person_back_to_home(p);
-								continue;
-							}
-
-							// just walk around then come back to home
-							is_buildings_connected = false;
-							p->path = Helper::get_path(building_from, 5);
-							p->path_end_building = building_from;
-							p->car_driving = nullptr;
-						}
+						p->car_driving->path = Helper::get_path_for_a_car(p->work, 5);
 					}
-					else // just walk around then come back to home
+					else
 					{
-						p->path = Helper::get_path(building_from, 5);
-						p->path_end_building = building_from;
-						p->path_start_building = building_from;
 						if (p->car_driving)
-						{
-							p->car_driving->driver = nullptr;
-							p->car_driving = nullptr;
-						}
+							p->car_driving->path = Helper::get_path_for_a_car(p->work, building_to);
+						else
+							p->path = Helper::get_path(p->work, building_to);
+					}
+
+					if (p->path.size() == 0 && p->car_driving && p->car_driving->path.size() == 0) // if no path available
+					{
+						// path to home is cut out / destroyed
+						reset_person_back_to_home(p);
+						continue;
 					}
 
 					// TODO: Combine these two line into a function
-					p->position = building_from->object->position;
+					p->position = p->work->object->position;
 					p->object->SetTransform(p->position);
+
+					p->path_end_building = building_to;
+					p->path_start_building = p->work;
 
 					p->object->enabled = true;
 					p->heading_to_a_building = false;
@@ -149,7 +200,7 @@ namespace Can
 					}
 					else
 					{
-						p->road_segment = building_from->connected_road_segment;
+						p->road_segment = p->work->connected_road_segment;
 						RoadSegment& road_segment = road_segments[p->road_segment];
 						road_segment.people.push_back(p);
 
@@ -157,21 +208,21 @@ namespace Can
 						RS_Transition_For_Walking* rs_transition = (RS_Transition_For_Walking*)p->path[0];
 						Road_Type& road_segment_type = road_types[road_segment.type];
 
-						assert(building_from->snapped_t_index < (s64)road_segment.curve_samples.size() - 1);
-						v3 target_position = road_segment.curve_samples[building_from->snapped_t_index];
-						assert(road_segment.curve_samples.size() - 1 >= building_from->snapped_t_index + 1);
-						v3 target_position_plus_one = road_segment.curve_samples[building_from->snapped_t_index + 1];
+						assert(p->work->snapped_t_index < (s64)road_segment.curve_samples.size() - 1);
+						v3 target_position = road_segment.curve_samples[p->work->snapped_t_index];
+						assert(road_segment.curve_samples.size() - 1 >= p->work->snapped_t_index + 1);
+						v3 target_position_plus_one = road_segment.curve_samples[p->work->snapped_t_index + 1];
 
 						v3 dir = target_position_plus_one - target_position;
-						v3 offsetted = target_position + dir * building_from->snapped_t;
+						v3 offsetted = target_position + dir * p->work->snapped_t;
 
 						v3 sidewalf_position_offset = glm::normalize(v3{ dir.y, -dir.x, 0.0f });
-						if (building_from->snapped_to_right)
+						if (p->work->snapped_to_right)
 							sidewalf_position_offset *= road_segment_type.lanes_forward[road_segment_type.lanes_forward.size() - 1].distance_from_center;
 						else
 							sidewalf_position_offset *= road_segment_type.lanes_backward[0].distance_from_center;
 
-						((RS_Transition_For_Walking*)p->path[0])->at_path_array_index = building_from->snapped_t_index;
+						((RS_Transition_For_Walking*)p->path[0])->at_path_array_index = p->work->snapped_t_index;
 
 						set_person_target(p, offsetted + sidewalf_position_offset);
 					}

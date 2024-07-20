@@ -59,6 +59,9 @@ namespace Can
 
 	}
 
+	CarManager::CarManager(GameScene* scene)
+		: m_Scene(scene) {}
+
 	void set_car_target_and_direction(Car* car, const v3& target)
 	{
 		car->target = target;
@@ -66,10 +69,6 @@ namespace Can
 		f32 yaw{ glm::acos(direction.x) * ((float)(direction.y > 0.0f) * 2.0f - 1.0f) };
 		car->object->SetTransform(car->object->position, v3{ 0.0f, 0.0f, yaw + glm::radians(180.0f) });
 	}
-
-	CarManager::CarManager(GameScene* scene)
-		: m_Scene(scene) {}
-
 	std::vector<Car*> CarManager::get_cars_on_the_road()
 	{
 		std::vector<Car*> result{};
@@ -80,7 +79,6 @@ namespace Can
 
 		return result;
 	}
-
 	void remove_car(Car* car)
 	{
 		auto& cars = GameScene::ActiveGameScene->m_CarManager.m_Cars;

@@ -322,7 +322,7 @@ namespace Can
 
 			//immediate_end_sub_region(track_width);
 		}
-		void draw_icon_above_target_object(Game_Scene_UI& ui, Object* obj/*, Icon icon*/)
+		void draw_icon_above_target_object(Game_Scene_UI& ui, Object* obj, const Ref<Texture2D>& icon)
 		{
 			auto& window = main_application->GetWindow();
 			u32 width_in_pixels = window.GetWidth();
@@ -336,7 +336,7 @@ namespace Can
 			icon_rect.x = u32((position_on_screen.x / position_on_screen.w + 1.0f) * width_in_pixels * 0.5f);
 			icon_rect.y = u32((position_on_screen.y / position_on_screen.w + 1.0f) * height_in_pixels * 0.5f) - icon_rect.h;
 
-			immediate_quad(icon_rect, v4{ 1.0f, 0.0f, 0.0f, 1.0f });
+			immediate_image(icon_rect, icon);
 		}
 	}
 
@@ -1362,10 +1362,10 @@ namespace Can
 		{
 			for (auto& house : bm.buildings_houses)
 				if (house->current_garbage >= house->garbage_capacity)
-					draw_icon_above_target_object(ui, house->object);
+					draw_icon_above_target_object(ui, house->object, app->garbage_filled_icon);
 			for (auto& commercial_building : bm.buildings_commercial)
 				if (commercial_building->current_garbage >= commercial_building->garbage_capacity)
-					draw_icon_above_target_object(ui, commercial_building->object);
+					draw_icon_above_target_object(ui, commercial_building->object, app->garbage_filled_icon);
 
 		}
 	}
