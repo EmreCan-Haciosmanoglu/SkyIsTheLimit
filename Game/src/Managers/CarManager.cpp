@@ -97,6 +97,7 @@ namespace Can
 
 		delete car;
 	}
+
 	void update_cars(TimeStep ts)
 	{
 		GameApp* app{ GameScene::ActiveGameScene->MainApplication };

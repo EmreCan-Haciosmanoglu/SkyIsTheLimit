@@ -942,7 +942,7 @@ namespace Can
 				person->object->prefab->boundingBoxM + person->position
 			))
 			{
-				game_scene.ui_layer.focus_object = person->object;
+				game_scene.ui_layer.focused_person = person;
 				return true;
 			}
 		}
@@ -957,7 +957,7 @@ namespace Can
 				car->object->prefab->boundingBoxM + car->object->position
 			))
 			{
-				game_scene.ui_layer.focus_object = car->object;
+				game_scene.ui_layer.focused_car = car;
 				return true;
 			}
 		}

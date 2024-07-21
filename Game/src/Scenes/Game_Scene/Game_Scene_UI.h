@@ -19,8 +19,9 @@ namespace Can
 		Garbage_Collection_Center,
 	};
 
-	class Object;
 	class GameScene;
+	class Car;
+	class Person;
 	class Building;
 	class Perspective_Camera;
 	struct Game_Scene_UI : public Layer::Layer
@@ -64,8 +65,8 @@ namespace Can
 			0, 		// x
 			0, 		// y
 			0, 		// z
-			200, 	// w
-			100 	// h
+			300, 	// w
+			200 	// h
 		};
 		Rect rect_selected_building_detail_panel{
 			0, 		// x
@@ -83,7 +84,8 @@ namespace Can
 		};
 
 
-		Object* focus_object{ nullptr };
+		Car* focused_car{ nullptr };
+		Person* focused_person{ nullptr };
 		Building* selected_building{ nullptr };
 		GameScene* game_scene{ nullptr };
 		Perspective_Camera* game_scene_camera{ nullptr };

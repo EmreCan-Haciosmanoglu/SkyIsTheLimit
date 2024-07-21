@@ -29,11 +29,11 @@ Passenger_Limit:4
 Type:0
 END
 START
-Name:Tesla CyberTruck
-Object:01/car.obj
-Texture:01/car.png
-Thumbnail:01/Thumbnail.png
-Speed_Range:30-50
+Name:Garbage Truck
+Object:04/car.obj
+Texture:04/car.png
+Thumbnail:04/Thumbnail.png
+Speed_Range:20-40
 Operator_Count:1
 Passenger_Limit:4
 Cargo_Limit:15.0

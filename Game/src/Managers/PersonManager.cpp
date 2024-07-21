@@ -640,6 +640,7 @@ namespace Can
 
 		Person* p = c->driver;
 		c->driver = nullptr;
+		c->cargo = 0.0f;
 
 		p->position = p->path_start_building->object->position;
 		p->object->SetTransform(p->position);

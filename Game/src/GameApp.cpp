@@ -281,7 +281,11 @@ namespace Can
 				file.close();
 			}
 		}
-		void load_vehicle_types(std::vector<Vehicle_Type>& vehicle_types)
+		void load_vehicle_types(
+			std::vector<Vehicle_Type>& vehicle_types, 
+			std::vector<u64>& garbage_trucks,
+			std::vector<u64>& personal_vehicles
+		)
 		{
 			namespace fs = std::filesystem;
 			std::string current_path = fs::current_path().string();
@@ -375,6 +379,23 @@ namespace Can
 							u8 t;
 							ss >> t;
 							vehicle_type.type = (Car_Type)(t - '0');
+
+							switch (vehicle_type.type)
+							{
+							case Car_Type::Personal:
+								personal_vehicles.push_back(vehicle_types.size() - 1);
+								break;
+							case Car_Type::Work:
+								break;
+							case Car_Type::Garbage_Truck:
+							{
+								garbage_trucks.push_back(vehicle_types.size() - 1);
+								break;
+							}
+							default:
+								assert(false, "Unimplemented Car_Type!");
+								break;
+							}
 						}
 					}
 				}
@@ -643,7 +664,11 @@ namespace Can
 		load_road_types(road_types);
 		load_building_types(building_types);
 		LoadTrees();
-		load_vehicle_types(vehicle_types);
+		load_vehicle_types(
+			vehicle_types,
+			garbage_trucks,
+			personal_vehicles
+		);
 		LoadPeople();
 
 		init_main_menu(*this, main_menu);
