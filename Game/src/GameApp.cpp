@@ -658,6 +658,7 @@ namespace Can
 		offices_texture = Texture2D::Create("assets/textures/Buttons/Offices.png");
 		hospitals_texture = Texture2D::Create("assets/textures/Buttons/Hospitals.png");
 		police_stations_texture = Texture2D::Create("assets/textures/Buttons/PoliceStations.png");
+		gcf_texture = Texture2D::Create("assets/textures/Buttons/GarbageCollectionFacilities.png");
 
 		garbage_filled_icon = Texture2D::Create("assets/textures/Icons/Garbage.png");
 

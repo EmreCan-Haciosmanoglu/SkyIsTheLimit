@@ -51,6 +51,7 @@ namespace Can
 		Ref<Texture2D> offices_texture;				// Put better name
 		Ref<Texture2D> hospitals_texture;			// Put better name
 		Ref<Texture2D> police_stations_texture;		// Put better name
+		Ref<Texture2D> gcf_texture;					// Put better name
 
 		Ref<Texture2D> garbage_filled_icon;			// Put better name
 
