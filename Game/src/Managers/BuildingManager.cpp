@@ -708,4 +708,11 @@ namespace Can
 
 		delete b;
 	}
+
+	void update_buildings(TimeStep ts)
+	{
+		auto& buildings{ GameScene::ActiveGameScene->m_BuildingManager.m_Buildings };
+		for (auto& building : buildings)
+			building->since_last_garbage_pick_up += ts;
+	}
 }

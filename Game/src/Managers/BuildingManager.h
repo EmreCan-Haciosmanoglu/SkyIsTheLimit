@@ -84,4 +84,5 @@ namespace Can
 	};
 
 	void remove_building(Building* b);
+	void update_buildings(class TimeStep ts);
 }

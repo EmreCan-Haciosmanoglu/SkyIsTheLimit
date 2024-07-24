@@ -97,6 +97,7 @@ namespace Can
 		{
 			m_PersonManager.Update(ts);
 			update_cars(ts);
+			update_buildings(ts);
 		}
 
 		Renderer3D::BeginScene(camera_controller.camera);
