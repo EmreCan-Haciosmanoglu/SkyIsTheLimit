@@ -812,12 +812,6 @@ namespace  Can::Helper
 		return file.substr(0, found);
 	}
 
-	static u64 find_special(const std::vector<std::pair<u64, std::vector<u64>>>& paths, u64 node) {
-		u64 size = paths.size();
-		for (u64 i = 0; i < size; i++)
-			if (paths[i].second[paths[i].second.size() - 1] == node) return i;
-		return (u64)(-1);
-	}
 	std::vector<Transition*> get_path(Building* start, u8 dist)
 	{
 		auto& road_segments = GameScene::ActiveGameScene->m_RoadManager.road_segments;

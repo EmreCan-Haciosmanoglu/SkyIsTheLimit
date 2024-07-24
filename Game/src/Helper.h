@@ -28,7 +28,10 @@ namespace Can::Helper
 		const v3& mins,
 		const v3& maxs
 	);
-
+	v2 check_rotated_rectangle_collision(
+		const Object* const obj1, 
+		const Object* const obj2
+	);
 	v2 check_rotated_rectangle_collision(
 		const v2& r1l, const v2& r1m, f32 rot1, const v2& pos1,
 		const v2& r2l, const v2& r2m, f32 rot2, const v2& pos2
