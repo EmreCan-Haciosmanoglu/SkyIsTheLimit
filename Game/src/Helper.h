@@ -68,6 +68,10 @@ namespace Can::Helper
 		const Building* const start,
 		const Building* const end
 	);
+	std::vector<RS_Transition_For_Vehicle*> get_path_for_gargabe_vehicle(
+		const Building* const building,
+		Building*& to
+	);
 
 	struct sort_by_angle
 	{

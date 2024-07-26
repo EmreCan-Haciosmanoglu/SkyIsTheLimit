@@ -164,7 +164,26 @@ namespace Can
 
 					if (building_to == p->work) // driving while working / driving work vehicle
 					{
-						p->car_driving->path = Helper::get_path_for_a_car(p->work, 5);
+
+						if (building_types[p->work->type].group == Building_Group::Garbage_Collection_Center)
+						{
+							// TODO v2: go some building and comeback e.g. Ambulance, Police, Fire, Delivery
+							Building* to = nullptr;
+							auto path = Helper::get_path_for_gargabe_vehicle(p->work, to);
+							if (to)
+							{
+								building_to = to;
+								p->car_driving->path = path;
+							}
+							else
+							{
+								p->car_driving->path = Helper::get_path_for_a_car(p->work, 5);
+							}
+						}
+						else
+						{
+							p->car_driving->path = Helper::get_path_for_a_car(p->work, 5);
+						}
 					}
 					else
 					{

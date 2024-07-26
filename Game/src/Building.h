@@ -30,6 +30,7 @@ namespace Can
 
 		f32 garbage_capacity{ 10.0f };
 		f32 current_garbage{ 0.0f };
+		bool is_garbage_truck_on_the_way{ false };
 		f32 since_last_garbage_pick_up{ 0.0f }; // TODO: do game time instead?
 
 		f32 water_need{ 20.0f };
