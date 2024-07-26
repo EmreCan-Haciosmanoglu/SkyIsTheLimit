@@ -39,7 +39,7 @@ Name:Garbage Collection Facility
 Capacity:20
 Group:7
 Vehicle_Parks:1
-0.5:0.0:0.0:0.0
+0.7:0.7:0.0:0.0
 Visiting_Spot:0.1:0.0:0.0
 END
 START
