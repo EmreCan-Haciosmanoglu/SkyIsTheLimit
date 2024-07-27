@@ -5,7 +5,8 @@ namespace Can
 	enum class Car_Type : u8 
 	{
 		Personal = 0,
-		Work
+		Work,
+		Garbage_Truck
 	};
 
 	struct Vehicle_Type
@@ -18,6 +19,7 @@ namespace Can
 		f32 speed_range_max{ 0.f };
 		u16 operator_count{ 0 };
 		u16 passenger_limit{ 0 };
+		f32 cargo_limit{ 0.0f };
 		Car_Type type{ Car_Type::Personal };
 
 		f32 object_width{ 0.01f };

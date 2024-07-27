@@ -97,6 +97,7 @@ namespace Can
 		{
 			m_PersonManager.Update(ts);
 			update_cars(ts);
+			update_buildings(ts);
 		}
 
 		Renderer3D::BeginScene(camera_controller.camera);
@@ -378,7 +379,7 @@ namespace Can
 					break;
 				}
 
-				road_segments[building->connected_road_segment].Buildings.push_back(building);
+				road_segments[building->connected_road_segment].buildings.push_back(building);
 			}
 		}
 		/*CarManager*/ {
@@ -942,7 +943,7 @@ namespace Can
 				person->object->prefab->boundingBoxM + person->position
 			))
 			{
-				game_scene.ui_layer.focus_object = person->object;
+				game_scene.ui_layer.focused_person = person;
 				return true;
 			}
 		}
@@ -957,7 +958,7 @@ namespace Can
 				car->object->prefab->boundingBoxM + car->object->position
 			))
 			{
-				game_scene.ui_layer.focus_object = car->object;
+				game_scene.ui_layer.focused_car = car;
 				return true;
 			}
 		}

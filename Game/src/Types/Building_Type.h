@@ -29,6 +29,7 @@ namespace Can
 		Building_Group group{ Building_Group::House };
 		u16 vehicle_capacity{ 0 }; // Work Cars; Ambulances, Police Cars, Garbage Trucks etc.
 		std::vector<Vehicle_Park> vehicle_parks{};
+		v3 visiting_spot{};
 
 		// Only for Works. aka not for Houses and Residentials
 		u16 needed_uneducated{ 0 };

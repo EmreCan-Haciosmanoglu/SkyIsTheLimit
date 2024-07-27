@@ -51,9 +51,14 @@ namespace Can
 		Ref<Texture2D> offices_texture;				// Put better name
 		Ref<Texture2D> hospitals_texture;			// Put better name
 		Ref<Texture2D> police_stations_texture;		// Put better name
+		Ref<Texture2D> gcf_texture;					// Put better name
+
+		Ref<Texture2D> garbage_filled_icon;			// Put better name
 
 		std::vector<struct Road_Type> road_types;
 		std::vector<struct Vehicle_Type> vehicle_types;
+		std::vector<u64> personal_vehicles{};
+		std::vector<u64> garbage_trucks{};
 		std::vector<struct Building_Type> building_types;
 
 		std::vector<Prefab*> trees;
@@ -61,8 +66,8 @@ namespace Can
 
 		Main_Menu main_menu{};
 
-		GameScene* gameScene = nullptr;
-		UIScene* uiScene = nullptr;
+		GameScene* gameScene{ nullptr };
+		UIScene* uiScene{ nullptr };
 		//Debug* debugScene = nullptr;
 
 		Perspective_Camera_Controller perspective_camera_controller;

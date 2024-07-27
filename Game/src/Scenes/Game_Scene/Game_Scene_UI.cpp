@@ -14,6 +14,8 @@
 #include "Helper.h"
 #include "Building.h"
 
+#include "Types/Vehicle_Type.h"
+
 namespace Can
 {
 	/*Anom*/ namespace
@@ -180,9 +182,7 @@ namespace Can
 					ui.draw_building_panel_inside_type = Draw_Building_Panel::Police_Station;
 
 				menu_item_rect.x += menu_item_rect.w + button_margin;
-				flags = immediate_image_button(menu_item_rect, ui.button_theme_sub_menus, nullptr, __LINE__);
-				menu_item_rect.z++;
-				immediate_text("G", menu_item_rect, ui.label_theme_large_text);
+				flags = immediate_image_button(menu_item_rect, ui.button_theme_sub_menus, app->gcf_texture, __LINE__);
 				if (flags & BUTTON_STATE_FLAGS_RELEASED)
 					ui.draw_building_panel_inside_type = Draw_Building_Panel::Garbage_Collection_Center;
 			}
@@ -301,9 +301,42 @@ namespace Can
 				immediate_text("B", menu_item_rect, ui.label_theme_large_text);
 				if (flags & BUTTON_STATE_FLAGS_RELEASED)
 					ui.draw_building_panel_inside_type = Draw_Building_Panel::Special;
+
+				for (u64 i{ 0 }; i < building_types.size(); ++i)
+				{
+					auto& building_type{ building_types[i] };
+					if (building_type.group != Building_Group::Garbage_Collection_Center) continue;
+
+					menu_item_rect.x += menu_item_rect.w + button_margin;
+					flags = immediate_image_button(menu_item_rect, ui.button_theme_buildings, building_type.thumbnail, __LINE__ * 10000 + i, false);
+					if (flags & BUTTON_STATE_FLAGS_RELEASED)
+					{
+						ui.game_scene->SetConstructionMode(ConstructionMode::Building);
+						auto mode = ui.game_scene->m_BuildingManager.GetConstructionMode();
+						if (mode == BuildingConstructionMode::None || mode == BuildingConstructionMode::Destruct)
+							ui.game_scene->m_BuildingManager.SetConstructionMode(BuildingConstructionMode::Construct);
+						ui.game_scene->m_BuildingManager.SetType(i);
+					}
+				}
 			}
 
 			//immediate_end_sub_region(track_width);
+		}
+		void draw_icon_above_target_object(Game_Scene_UI& ui, Object* obj, const Ref<Texture2D>& icon)
+		{
+			auto& window = main_application->GetWindow();
+			u32 width_in_pixels = window.GetWidth();
+			u32 height_in_pixels = window.GetHeight();
+
+			Rect icon_rect;
+			icon_rect.w = 50;
+			icon_rect.h = 50;
+
+			v4 position_on_screen{ ui.game_scene_camera->view_projection * obj->transform * v4(0.0f, 0.0f, obj->prefab->boundingBoxM.z, 1.0f) };
+			icon_rect.x = u32((position_on_screen.x / position_on_screen.w + 1.0f) * width_in_pixels * 0.5f);
+			icon_rect.y = u32((position_on_screen.y / position_on_screen.w + 1.0f) * height_in_pixels * 0.5f) - icon_rect.h;
+
+			immediate_image(icon_rect, icon);
 		}
 	}
 
@@ -456,9 +489,14 @@ namespace Can
 		KeyCode key_code = event.GetKeyCode();
 		if (key_code == KeyCode::Escape)
 		{
-			if (ui.focus_object != nullptr)
+			if (ui.focused_car)
 			{
-				ui.focus_object = nullptr;
+				ui.focused_car = nullptr;
+				return true;
+			}
+			if (ui.focused_person)
+			{
+				ui.focused_person = nullptr;
 				return true;
 			}
 			ui.selected_building = nullptr;
@@ -491,9 +529,12 @@ namespace Can
 		u32 width_in_pixels = window.GetWidth();
 		u32 height_in_pixels = window.GetHeight();
 
-		if (ui.focus_object)
+		Object* focus_object{ nullptr };
+		if (ui.focused_car) focus_object = ui.focused_car->object;
+		if (ui.focused_person) focus_object = ui.focused_person->object;
+		if (focus_object)
 		{
-			v4 position_on_screen{ ui.game_scene_camera->view_projection * ui.focus_object->transform * v4(0.0f, 0.0f, ui.focus_object->prefab->boundingBoxM.z, 1.0f) };
+			v4 position_on_screen{ ui.game_scene_camera->view_projection * focus_object->transform * v4(0.0f, 0.0f, focus_object->prefab->boundingBoxM.z, 1.0f) };
 			ui.rect_sub_region.x = glm::clamp(
 				u32(glm::clamp(position_on_screen.x / position_on_screen.w + 1.0f, 0.0f, 2.0f) * width_in_pixels * 0.5f),
 				0U,
@@ -528,9 +569,27 @@ namespace Can
 	void draw_screen(Game_Scene_UI& ui)
 	{
 		auto app{ GameApp::instance };
+		auto& bm{ ui.game_scene->m_BuildingManager };
 		auto& building_types{ app->building_types };
+		auto& vehicle_types{ app->vehicle_types };
 		const std::string text_x{ "X" };
-		if (ui.focus_object != nullptr)
+
+		const std::string cargo_key{ "Cargo" };
+		const std::string garbage_key{ "Garbage" };
+		const std::string garbage_truck_key{ "Garbage Truck" };
+
+		constexpr s32 title_left_margin{ 10 };
+
+		constexpr v4 color_white{ 0.9f, 0.9f, 0.9f, 1.0f };
+		constexpr v4 color_black{ 0.1f, 0.1f, 0.1f, 1.0f };
+		constexpr v4 color_red{ 1.0f, 0.1f, 0.2f, 1.0f };
+		constexpr v4 color_green{ 0.1f, 1.0f, 0.2f, 1.0f };
+
+		Object* focus_object{ nullptr };
+		if (ui.focused_car) focus_object = ui.focused_car->object;
+		if (ui.focused_person) focus_object = ui.focused_person->object;
+
+		if (focus_object != nullptr)
 		{
 			Rect rect_button_cross;
 			rect_button_cross.w = 40;
@@ -553,6 +612,34 @@ namespace Can
 			rect_button_tpc.y = rect_button_fpc.y;
 			rect_button_tpc.z = rect_button_fpc.z;
 
+			Rect rect_needs_key;
+			rect_needs_key.w = 100;
+			rect_needs_key.h = 20;
+			rect_needs_key.x = ui.rect_sub_region.x + title_left_margin;
+			rect_needs_key.y = rect_button_fpc.y - (rect_button_fpc.h + 10);
+			rect_needs_key.z = rect_button_fpc.z;
+
+			Rect rect_needs_value;
+			rect_needs_value.x = rect_needs_key.x + rect_needs_key.w;
+			rect_needs_value.y = rect_needs_key.y;
+			rect_needs_value.z = rect_needs_key.z;
+			rect_needs_value.w = ui.rect_sub_region.w - (rect_needs_value.x - ui.rect_sub_region.x) - 50;
+			rect_needs_value.h = rect_needs_key.h;
+
+			Rect rect_needs_value_inside;
+			rect_needs_value_inside.x = rect_needs_value.x + 1;
+			rect_needs_value_inside.y = rect_needs_value.y + 1;
+			rect_needs_value_inside.z = rect_needs_value.z + 1;
+			rect_needs_value_inside.w = rect_needs_value.w - 2;
+			rect_needs_value_inside.h = rect_needs_value.h - 2;
+
+			Rect rect_needs_value_inside_positive;
+			rect_needs_value_inside_positive.x = rect_needs_value_inside.x;
+			rect_needs_value_inside_positive.y = rect_needs_value_inside.y;
+			rect_needs_value_inside_positive.z = rect_needs_value_inside.z + 1;
+			rect_needs_value_inside_positive.w = rect_needs_value_inside.w;
+			rect_needs_value_inside_positive.h = rect_needs_value_inside.h;
+
 
 			std::string text_fpc = "FPC";
 			std::string text_tpc = "TPC";
@@ -565,7 +652,10 @@ namespace Can
 			if (flags & BUTTON_STATE_FLAGS_RELEASED)
 			{
 				std::cout << "Close is Released\n";
-				ui.focus_object = nullptr;
+
+				Object* focus_object{ nullptr };
+				ui.focused_car = nullptr;
+				ui.focused_person = nullptr;
 				return;
 			}
 
@@ -576,9 +666,15 @@ namespace Can
 			{
 				std::cout << "FPC is Released\n";
 				//set mode to FPC
-				ui.game_scene->camera_controller.follow_object = ui.focus_object;
+
+				Object* focus_object{ nullptr };
+				if (ui.focused_car) focus_object = ui.focused_car->object;
+				if (ui.focused_person) focus_object = ui.focused_person->object;
+
+				ui.game_scene->camera_controller.follow_object = focus_object;
 				ui.game_scene->camera_controller.mode = Mode::FollowFirstPerson;
-				ui.focus_object = nullptr;
+				ui.focused_car = nullptr;
+				ui.focused_person = nullptr;
 				return;
 			}
 
@@ -589,12 +685,31 @@ namespace Can
 			{
 				std::cout << "TPC is Released\n";
 				//set mode to TPC
-				ui.game_scene->camera_controller.follow_object = ui.focus_object;
+
+				Object* focus_object{ nullptr };
+				if (ui.focused_car) focus_object = ui.focused_car->object;
+				if (ui.focused_person) focus_object = ui.focused_person->object;
+
+				ui.game_scene->camera_controller.follow_object = focus_object;
 				ui.game_scene->camera_controller.mode = Mode::FollowThirdPerson;
-				ui.focus_object = nullptr;
+				ui.focused_car = nullptr;
+				ui.focused_person = nullptr;
 				return;
 			}
-
+			if (ui.focused_car)
+			{
+				auto& vehicle_type{ vehicle_types[ui.focused_car->type] };
+				if (vehicle_type.type == Car_Type::Garbage_Truck)
+				{
+					f32 ratio{ (std::min)(ui.focused_car->cargo / vehicle_type.cargo_limit, 1.0f) };
+					v4 color_garbage{ Math::lerp(color_green, color_red, ratio) };
+					rect_needs_value_inside_positive.w = (s32)((f32)(rect_needs_value.w - 2) * ratio);
+					immediate_text(cargo_key, rect_needs_key, ui.label_theme_left_alinged_small_black_text);
+					immediate_quad(rect_needs_value, color_black);
+					immediate_quad(rect_needs_value_inside, color_white);
+					immediate_quad(rect_needs_value_inside_positive, color_garbage);
+				}
+			}
 			//immediate_end_sub_region(track_width);
 		}
 
@@ -602,13 +717,6 @@ namespace Can
 		{
 			auto& building{ ui.selected_building };
 			auto& building_type{ building_types[building->type] };
-
-			constexpr s32 title_left_margin{ 10 };
-
-			constexpr v4 color_white{ 0.9f, 0.9f, 0.9f, 1.0f };
-			constexpr v4 color_black{ 0.1f, 0.1f, 0.1f, 1.0f };
-			constexpr v4 color_red{ 1.0f, 0.1f, 0.2f, 1.0f };
-			constexpr v4 color_green{ 0.1f, 1.0f, 0.2f, 1.0f };
 
 			constexpr v4 color_very_happy{ 39.0f / 255.0f, 167.0f / 255.0f, 56.0f / 255.0f, 1.0f };
 			constexpr v4 color_happy{ 188.0f / 255.0f, 235.0f / 255.0f, 0.0f / 255.0f, 1.0f };
@@ -640,7 +748,6 @@ namespace Can
 			const std::string homes_garbage_key{ "Homes Garbage" };
 			const std::string work_places_garbage_avg_key{ "Work Places Garbage" };
 			const std::string electricity_key{ "Electricity" };
-			const std::string garbage_key{ "Garbage" };
 			const std::string garbage_capacity_key{ "Garbage Capacity" };
 			const std::string water_key{ "Water" };
 			const std::string water_waste_key{ "Water Waste" };
@@ -1219,7 +1326,7 @@ namespace Can
 					rect_needs_value_inside.y = rect_needs_key.y + 1;
 					rect_needs_value_inside_positive.y = rect_needs_key.y + 1;
 
-					ratio = building->current_garbage / building->garbage_capacity;
+					ratio = (std::min)(building->current_garbage / building->garbage_capacity, 1.0f);
 					v4 color_garbage{ Math::lerp(color_green, color_red, ratio) };
 					rect_needs_value_inside_positive.w = (s32)((f32)(rect_needs_value.w - 2) * ratio);
 					immediate_text(garbage_key, rect_needs_key, ui.label_theme_left_alinged_small_black_text);
@@ -1322,6 +1429,17 @@ namespace Can
 		if (ui.draw_building_panel)
 		{
 			draw_building_panel(ui);
+		}
+
+		if (ui.show_garbage_filled_icon)
+		{
+			for (auto& house : bm.buildings_houses)
+				if (house->current_garbage >= house->garbage_capacity)
+					draw_icon_above_target_object(ui, house->object, app->garbage_filled_icon);
+			for (auto& commercial_building : bm.buildings_commercial)
+				if (commercial_building->current_garbage >= commercial_building->garbage_capacity)
+					draw_icon_above_target_object(ui, commercial_building->object, app->garbage_filled_icon);
+
 		}
 	}
 

@@ -7,6 +7,7 @@ Capacity:15
 Group:0
 Vehicle_Parks:1
 0.5:0.0:0.0:0.0
+Visiting_Spot:0.1:0.0:0.0
 END
 START
 Object:02/Building.obj
@@ -17,6 +18,7 @@ Capacity:5
 Group:0
 Vehicle_Parks:1
 0.5:0.0:0.0:0.0
+Visiting_Spot:0.1:0.0:0.0
 END
 START
 Object:03/Building.obj
@@ -27,6 +29,18 @@ Capacity:50
 Group:5
 Vehicle_Parks:1
 -0.25:1.9:0.0:90.0
+Visiting_Spot:0.1:0.0:0.0
+END
+START
+Object:04/Building.obj
+Texture:04/Building.png
+Thumbnail:04/Thumbnail.png
+Name:Garbage Collection Facility
+Capacity:20
+Group:7
+Vehicle_Parks:1
+0.7:0.7:0.0:0.0
+Visiting_Spot:0.1:0.0:0.0
 END
 START
 Object:01/Building.obj
@@ -37,4 +51,5 @@ Capacity:25
 Group:2
 Vehicle_Parks:1
 0.5:0.0:0.0:0.0
+Visiting_Spot:0.1:0.0:0.0
 END

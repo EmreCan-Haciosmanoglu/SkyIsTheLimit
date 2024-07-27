@@ -281,7 +281,11 @@ namespace Can
 				file.close();
 			}
 		}
-		void load_vehicle_types(std::vector<Vehicle_Type>& vehicle_types)
+		void load_vehicle_types(
+			std::vector<Vehicle_Type>& vehicle_types, 
+			std::vector<u64>& garbage_trucks,
+			std::vector<u64>& personal_vehicles
+		)
 		{
 			namespace fs = std::filesystem;
 			std::string current_path = fs::current_path().string();
@@ -302,6 +306,7 @@ namespace Can
 				constexpr const char* speed_range_key{ "Speed_Range" };
 				constexpr const char* operator_count_key{ "Operator_Count" };
 				constexpr const char* passenger_limit_key{ "Passenger_Limit" };
+				constexpr const char* cargo_limit_key{ "Cargo_Limit" };
 				constexpr const char* type_key{ "Type" };
 
 				std::string line;
@@ -361,13 +366,36 @@ namespace Can
 							ss << std::string(seperator + 1, line.end());
 							ss >> vehicle_type.passenger_limit;
 						}
+						else if (std::equal(line.begin(), seperator, cargo_limit_key))
+						{
+							std::stringstream ss{};
+							ss << std::string(seperator + 1, line.end());
+							ss >> vehicle_type.cargo_limit;
+						}
 						else if (std::equal(line.begin(), seperator, type_key))
 						{
 							std::stringstream ss{};
 							ss << std::string(seperator + 1, line.end());
 							u8 t;
 							ss >> t;
-							vehicle_type.type = (Car_Type)t;
+							vehicle_type.type = (Car_Type)(t - '0');
+
+							switch (vehicle_type.type)
+							{
+							case Car_Type::Personal:
+								personal_vehicles.push_back(vehicle_types.size() - 1);
+								break;
+							case Car_Type::Work:
+								break;
+							case Car_Type::Garbage_Truck:
+							{
+								garbage_trucks.push_back(vehicle_types.size() - 1);
+								break;
+							}
+							default:
+								assert(false, "Unimplemented Car_Type!");
+								break;
+							}
 						}
 					}
 				}
@@ -409,6 +437,7 @@ namespace Can
 				constexpr const char* stay_visitor_capacity_key{ "Stay_Visitor_Capacity" };
 
 				constexpr const char* vehicle_parks_key{ "Vehicle_Parks" };
+				constexpr const char* visiting_spot_key{ "Visiting_Spot" };
 
 				std::string line;
 				while (std::getline(file, line))
@@ -559,6 +588,25 @@ namespace Can
 									break;
 							}
 						}
+						else if (std::equal(line.begin(), seperator, visiting_spot_key))
+						{
+							std::stringstream ss;
+							std::string::iterator first_seperator = std::find(seperator + 1, line.end(), ':');
+							std::string::iterator second_seperator = std::find(first_seperator + 1, line.end(), ':');
+
+							ss << std::string(seperator + 1, first_seperator);
+							ss >> building_type.visiting_spot.x;
+
+							ss.clear();
+							ss.str("");
+							ss << std::string(first_seperator + 1, second_seperator);
+							ss >> building_type.visiting_spot.y;
+
+							ss.clear();
+							ss.str("");
+							ss << std::string(second_seperator + 1, line.end());
+							ss >> building_type.visiting_spot.z;
+						}
 					}
 				}
 				file.close();
@@ -610,11 +658,18 @@ namespace Can
 		offices_texture = Texture2D::Create("assets/textures/Buttons/Offices.png");
 		hospitals_texture = Texture2D::Create("assets/textures/Buttons/Hospitals.png");
 		police_stations_texture = Texture2D::Create("assets/textures/Buttons/PoliceStations.png");
+		gcf_texture = Texture2D::Create("assets/textures/Buttons/GarbageCollectionFacilities.png");
+
+		garbage_filled_icon = Texture2D::Create("assets/textures/Icons/Garbage.png");
 
 		load_road_types(road_types);
 		load_building_types(building_types);
 		LoadTrees();
-		load_vehicle_types(vehicle_types);
+		load_vehicle_types(
+			vehicle_types,
+			garbage_trucks,
+			personal_vehicles
+		);
 		LoadPeople();
 
 		init_main_menu(*this, main_menu);

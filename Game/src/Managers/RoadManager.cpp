@@ -1585,8 +1585,8 @@ namespace Can
 		if (new_type.zoneable == false)
 		{
 			//	*delete houses
-			while (rs.Buildings.size() > 0)
-				remove_building(rs.Buildings[0]);
+			while (rs.buildings.size() > 0)
+				remove_building(rs.buildings[0]);
 
 			//	*reset people walking sidewalks on this road
 			while (rs.people.size())
@@ -1654,7 +1654,7 @@ namespace Can
 			rs.EndNode = temp;
 			rs.SetCurvePoints({ cps[3], cps[2], cps[1], cps[0] });
 
-			for (Building* building : rs.Buildings)
+			for (Building* building : rs.buildings)
 			{
 				building->snapped_t = 1.0f - building->snapped_t;
 				building->snapped_t_index = (rs.curve_samples.size() - 1) - building->snapped_t_index;
@@ -2179,8 +2179,8 @@ namespace Can
 		if (road_segment.elevation_type == 0)
 			Helper::UpdateTheTerrain(&road_segment, true);
 
-		while (road_segment.Buildings.size() > 0)
-			remove_building(road_segment.Buildings[0]);
+		while (road_segment.buildings.size() > 0)
+			remove_building(road_segment.buildings[0]);
 
 
 		while (road_segment.people.size() > 0)
@@ -2595,7 +2595,7 @@ namespace Can
 		auto& road_segments = GameScene::ActiveGameScene->m_RoadManager.road_segments;
 		auto& building_types = GameScene::ActiveGameScene->MainApplication->building_types;
 		auto& road_types = GameScene::ActiveGameScene->MainApplication->road_types;
-		auto& snapped_buildings = road_segments[old_rs_index].Buildings;
+		auto& snapped_buildings = road_segments[old_rs_index].buildings;
 		for (u64 bIndex = 0; bIndex < snapped_buildings.size(); bIndex++)
 		{
 			Building* building = snapped_buildings[bIndex];
@@ -2665,7 +2665,7 @@ namespace Can
 					assert(it != snapped_buildings.end());
 					snapped_buildings.erase(it);
 					bIndex--;
-					new_snapped_road_segment.Buildings.push_back(building);
+					new_snapped_road_segment.buildings.push_back(building);
 				}
 				building->connected_road_segment = new_snapped_road_segment_index;
 				building->snapped_t = scaler;

@@ -59,6 +59,9 @@ namespace Can
 
 	}
 
+	CarManager::CarManager(GameScene* scene)
+		: m_Scene(scene) {}
+
 	void set_car_target_and_direction(Car* car, const v3& target)
 	{
 		car->target = target;
@@ -66,10 +69,6 @@ namespace Can
 		f32 yaw{ glm::acos(direction.x) * ((float)(direction.y > 0.0f) * 2.0f - 1.0f) };
 		car->object->SetTransform(car->object->position, v3{ 0.0f, 0.0f, yaw + glm::radians(180.0f) });
 	}
-
-	CarManager::CarManager(GameScene* scene)
-		: m_Scene(scene) {}
-
 	std::vector<Car*> CarManager::get_cars_on_the_road()
 	{
 		std::vector<Car*> result{};
@@ -80,7 +79,6 @@ namespace Can
 
 		return result;
 	}
-
 	void remove_car(Car* car)
 	{
 		auto& cars = GameScene::ActiveGameScene->m_CarManager.m_Cars;
@@ -99,6 +97,7 @@ namespace Can
 
 		delete car;
 	}
+
 	void update_cars(TimeStep ts)
 	{
 		GameApp* app{ GameScene::ActiveGameScene->MainApplication };
@@ -231,14 +230,43 @@ namespace Can
 									// TODO: cache target car park position in car
 									auto building{ car->driver->path_end_building };
 									auto& building_type{ building_types[building->type] };
-									assert(building_type.vehicle_parks.size());
-									v3 car_park_pos{ building->object->position +
-										(v3)(glm::rotate(m4(1.0f), building->object->rotation.z, v3{ 0.0f, 0.0f, 1.0f }) *
-											glm::rotate(m4(1.0f), building->object->rotation.y, v3{ 0.0f, 1.0f, 0.0f }) *
-											glm::rotate(m4(1.0f), building->object->rotation.x, v3{ 1.0f, 0.0f, 0.0f }) *
-											v4(building_type.vehicle_parks[0].offset, 1.0f))};
-									set_car_target_and_direction(car, car_park_pos);
-									car->heading_to_a_parking_spot = true;
+									if (type.type == Car_Type::Garbage_Truck)
+									{
+										if (car->driver->path_end_building != car->driver->path_start_building)
+										{
+											//Collecting garbage
+											v3 car_park_pos{ building->object->position +
+												(v3)(glm::rotate(m4(1.0f), building->object->rotation.z, v3{ 0.0f, 0.0f, 1.0f }) *
+													glm::rotate(m4(1.0f), building->object->rotation.y, v3{ 0.0f, 1.0f, 0.0f }) *
+													glm::rotate(m4(1.0f), building->object->rotation.x, v3{ 1.0f, 0.0f, 0.0f }) *
+													v4(building_type.visiting_spot, 1.0f)) };
+											set_car_target_and_direction(car, car_park_pos);
+											car->heading_to_a_visiting_spot = true;
+										}
+										else
+										{
+											// Returning to building
+											assert(building_type.vehicle_parks.size());
+											v3 car_park_pos{ building->object->position +
+												(v3)(glm::rotate(m4(1.0f), building->object->rotation.z, v3{ 0.0f, 0.0f, 1.0f }) *
+													glm::rotate(m4(1.0f), building->object->rotation.y, v3{ 0.0f, 1.0f, 0.0f }) *
+													glm::rotate(m4(1.0f), building->object->rotation.x, v3{ 1.0f, 0.0f, 0.0f }) *
+													v4(building_type.vehicle_parks[0].offset, 1.0f)) };
+											set_car_target_and_direction(car, car_park_pos);
+											car->heading_to_a_parking_spot = true;
+										}
+									}
+									else
+									{
+										assert(building_type.vehicle_parks.size());
+										v3 car_park_pos{ building->object->position +
+											(v3)(glm::rotate(m4(1.0f), building->object->rotation.z, v3{ 0.0f, 0.0f, 1.0f }) *
+												glm::rotate(m4(1.0f), building->object->rotation.y, v3{ 0.0f, 1.0f, 0.0f }) *
+												glm::rotate(m4(1.0f), building->object->rotation.x, v3{ 1.0f, 0.0f, 0.0f }) *
+												v4(building_type.vehicle_parks[0].offset, 1.0f)) };
+										set_car_target_and_direction(car, car_park_pos);
+										car->heading_to_a_parking_spot = true;
+									}
 
 									delete car->path[0];
 									car->path.pop_back();
@@ -283,6 +311,7 @@ namespace Can
 		auto driven_cars_with_no_path{ get_driven_cars_with_no_path() };
 		for (auto car : driven_cars_with_no_path)
 		{
+			const Vehicle_Type& type{ vehicle_types[car->type] };
 			v3 journey_left_vector{ car->target - car->object->position };
 			f32 journey_left{ glm::length(journey_left_vector) };
 			v3 journey_direction{ journey_left_vector / journey_left };
@@ -295,30 +324,70 @@ namespace Can
 			}
 			else
 			{
-				auto driver = car->driver;
-				car->driver = nullptr;
-				driver->car_driving = nullptr;
-
-				auto building = driver->path_end_building;
-				auto& building_type{ building_types[building->type] };
-				assert(building_type.vehicle_parks.size());
-				car->heading_to_a_parking_spot = false;
-				car->object->SetTransform(
-					car->target,
-					glm::rotateZ(building->object->rotation, glm::radians(building_type.vehicle_parks[0].rotation_in_degrees))
-				);
-
-				driver->heading_to_a_building = true;
-				driver->position = car->object->position;
-				driver->object->SetTransform(driver->position);
-				driver->object->enabled = true;
-				driver->status = PersonStatus::Walking;
-				if (car != driver->car) // find if car driven is work car
+				if (car->heading_to_a_visiting_spot == true)
 				{
-					building->vehicles.push_back(car);
-					driver->drove_in_work = true;
+					auto building{ car->driver->path_end_building };
+					f32 capacity_left{ type.cargo_limit - car->cargo };
+					if (building->current_garbage < capacity_left)
+					{
+						car->cargo += building->current_garbage;
+						building->current_garbage = 0.0f;
+						car->path = Helper::get_path_for_gargabe_vehicle(building, car->driver->path_end_building);
+						if (car->path.size() == 0) // No Building to take garbage from
+						{
+							car->driver->path_end_building = car->driver->work;
+							car->path = Helper::get_path_for_a_car(building, car->driver->work);
+						}
+					}
+					else
+					{
+						car->cargo = type.cargo_limit;
+						building->current_garbage -= capacity_left;
+						car->driver->path_end_building = car->driver->work;
+						car->path = Helper::get_path_for_a_car(building, car->driver->work);
+					}
+					building->is_garbage_truck_on_the_way = false;
+					building->since_last_garbage_pick_up = 0.0f;
+
+					car->heading_to_a_visiting_spot = false;
+					if (car->path.size())
+					{
+						car->road_segment = building->connected_road_segment;
+						road_segments[building->connected_road_segment].vehicles.push_back(car);
+					}
+					else
+					{
+						reset_car_back_to_building_from(car);
+					}
 				}
-				set_person_target(driver, building->object->position);
+				else
+				{
+					auto driver = car->driver;
+					car->driver = nullptr;
+					driver->car_driving = nullptr;
+
+					auto building = driver->path_end_building;
+					auto& building_type{ building_types[building->type] };
+					assert(building_type.vehicle_parks.size());
+					car->heading_to_a_parking_spot = false;
+					car->object->SetTransform(
+						car->target,
+						glm::rotateZ(building->object->rotation, glm::radians(building_type.vehicle_parks[0].rotation_in_degrees))
+					);
+
+					driver->heading_to_a_building = true;
+					driver->position = car->object->position;
+					driver->object->SetTransform(driver->position);
+					driver->object->enabled = true;
+					driver->status = PersonStatus::Walking;
+					if (car != driver->car) // find if car driven is work car
+					{
+						building->vehicles.push_back(car);
+						driver->drove_in_work = true;
+						car->cargo = 0.0f;
+					}
+					set_person_target(driver, building->object->position);
+				}
 			}
 		}
 	}
