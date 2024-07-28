@@ -36,10 +36,21 @@ Object:04/Building.obj
 Texture:04/Building.png
 Thumbnail:04/Thumbnail.png
 Name:Garbage Collection Facility
-Capacity:20
+Capacity:10
 Group:7
 Vehicle_Parks:1
 0.7:0.7:0.0:0.0
+Visiting_Spot:0.1:0.0:0.0
+END
+START
+Object:05/Building.obj
+Texture:05/Building.png
+Thumbnail:05/Thumbnail.png
+Name:Police Station
+Capacity:10
+Group:6
+Vehicle_Parks:1
+0.25:-1.05:0.0:90.0
 Visiting_Spot:0.1:0.0:0.0
 END
 START
