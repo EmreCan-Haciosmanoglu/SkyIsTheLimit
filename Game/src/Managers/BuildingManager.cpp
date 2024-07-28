@@ -372,6 +372,7 @@ namespace Can
 	{
 		auto& building_types = m_Scene->MainApplication->building_types;
 		auto& vehicle_types = m_Scene->MainApplication->vehicle_types;
+		auto& police_cars = m_Scene->MainApplication->police_cars;
 		auto& garbage_trucks = m_Scene->MainApplication->garbage_trucks;
 		auto& personal_vehicles = m_Scene->MainApplication->personal_vehicles;
 		auto& person_prefabs = m_Scene->MainApplication->people;

@@ -283,6 +283,7 @@ namespace Can
 		}
 		void load_vehicle_types(
 			std::vector<Vehicle_Type>& vehicle_types, 
+			std::vector<u64>& police_cars,
 			std::vector<u64>& garbage_trucks,
 			std::vector<u64>& personal_vehicles
 		)
@@ -387,6 +388,11 @@ namespace Can
 								break;
 							case Car_Type::Work:
 								break;
+							case Car_Type::Police_Car:
+							{
+								police_cars.push_back(vehicle_types.size() - 1);
+								break;
+							}
 							case Car_Type::Garbage_Truck:
 							{
 								garbage_trucks.push_back(vehicle_types.size() - 1);
@@ -667,6 +673,7 @@ namespace Can
 		LoadTrees();
 		load_vehicle_types(
 			vehicle_types,
+			police_cars,
 			garbage_trucks,
 			personal_vehicles
 		);
