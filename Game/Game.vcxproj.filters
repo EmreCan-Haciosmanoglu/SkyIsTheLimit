@@ -75,6 +75,8 @@
     </ClInclude>
     <ClInclude Include="src\UIScene.h" />
     <ClInclude Include="src\Types\Building_Type.h" />
+    <ClInclude Include="src\Types\Profession.h" />
+    <ClInclude Include="src\Types\EducationLevel.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Building.cpp" />

@@ -1122,43 +1122,43 @@ namespace Can
 					{
 						switch (worker->education)
 						{
-						case PersonEducationLevel::Uneducated:
+						case EducationLevel::Uneducated:
 						{
 							++working_uneducated;
 							break;
 						}
-						case PersonEducationLevel::Elementary_School:
+						case EducationLevel::Elementary_School:
 						{
 							++working_elementary_school;
 							break;
 						}
-						case PersonEducationLevel::High_School:
+						case EducationLevel::High_School:
 						{
 							++working_high_school;
 							break;
 						}
-						case PersonEducationLevel::Associate_s:
+						case EducationLevel::Associate_s:
 						{
 							++working_associate_s;
 							break;
 						}
-						case PersonEducationLevel::Bachelor_s:
+						case EducationLevel::Bachelor_s:
 						{
 							++working_bachelor_s;
 							break;
 						}
-						case PersonEducationLevel::Master:
+						case EducationLevel::Master:
 						{
 							++working_master;
 							break;
 						}
-						case PersonEducationLevel::Doctorate:
+						case EducationLevel::Doctorate:
 						{
 							++working_doctorate;
 							break;
 						}
 						default:
-							assert(false, "Unimplemented PersonEducationLevel");
+							assert(false, "Unimplemented EducationLevel");
 							break;
 						}
 					}

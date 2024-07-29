@@ -562,8 +562,8 @@ namespace Can
 					person->car_driving = cars[car_index];
 					cars[car_index]->driver = person;
 				}
-				u8 education_level = Utility::Random::unsigned_8((u8)PersonEducationLevel::Doctorate + 1);
-				person->education = (PersonEducationLevel)education_level;
+				u8 education_level = Utility::Random::unsigned_8((u8)EducationLevel::Doctorate + 1);
+				person->education = (EducationLevel)education_level;
 				people.push_back(person);
 			}
 		}
