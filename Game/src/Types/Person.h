@@ -1,6 +1,7 @@
 #pragma once
 #include "Can.h"
 #include "EducationLevel.h"
+#include "Profession.h"
 
 namespace Can
 {
@@ -33,6 +34,7 @@ namespace Can
 		v3 target{};
 		PersonStatus status{ PersonStatus::AtHome };
 		EducationLevel education{ EducationLevel::Uneducated };
+		Profession profession{ Profession::Unemployed };
 		std::vector<Transition*> path{};
 
 		Building* path_end_building{ nullptr };

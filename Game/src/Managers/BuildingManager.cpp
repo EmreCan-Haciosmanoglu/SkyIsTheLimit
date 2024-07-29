@@ -451,6 +451,35 @@ namespace Can
 					{
 						work->people.push_back(new_person);
 						new_person->work = work;
+						auto& work_building_type{ building_types[work->type] };
+						switch (work_building_type.group)
+						{
+						case Building_Group::House:
+						case Building_Group::Residential:
+							assert(false, "Wrong Building_Group for work");
+							break;
+						case Building_Group::Commercial:
+							new_person->profession = Profession::General_Commercial_Worker;
+							break;
+						case Building_Group::Industrial:
+							new_person->profession = Profession::General_Industrial_Worker;
+							break;
+						case Building_Group::Office:
+							new_person->profession = Profession::General_Office_Worker;
+							break;
+						case Building_Group::Hospital:
+							new_person->profession = Profession::Doctor;
+							break;
+						case Building_Group::Police_Station:
+							new_person->profession = Profession::Policeman;
+							break;
+						case Building_Group::Garbage_Collection_Center:
+							new_person->profession = Profession::Waste_Management_Worker;
+							break;
+						default:
+							assert(false, "Unimplemented Building_Group!");
+							break;
+						}
 					}
 				}
 				break;
@@ -465,10 +494,11 @@ namespace Can
 				u16 worker{ Utility::Random::unsigned_16(0, building_type.capacity) };
 				for (u64 i{ 0 }; i < worker; ++i)
 				{
-					Person* p{ person_manager.get_worklessPerson() };
+					Person* p{ person_manager.get_unemployed_person() };
 					if (p)
 					{
 						p->work = new_building;
+						p->profession = Profession::General_Commercial_Worker;
 						new_building->people.push_back(p);
 					}
 					else
@@ -509,10 +539,11 @@ namespace Can
 				u16 worker{ Utility::Random::unsigned_16(0, building_type.capacity) };
 				for (u64 i{ 0 }; i < worker; ++i)
 				{
-					Person* p{ person_manager.get_worklessPerson() };
+					Person* p{ person_manager.get_unemployed_person() };
 					if (p)
 					{
 						p->work = new_building;
+						p->profession = Profession::Policeman;
 						new_building->people.push_back(p);
 					}
 					else
@@ -553,10 +584,11 @@ namespace Can
 				u16 worker{ Utility::Random::unsigned_16(0, building_type.capacity) };
 				for (u64 i{ 0 }; i < worker; ++i)
 				{
-					Person* p{ person_manager.get_worklessPerson() };
+					Person* p{ person_manager.get_unemployed_person() };
 					if (p)
 					{
 						p->work = new_building;
+						p->profession = Profession::Waste_Management_Worker;
 						new_building->people.push_back(p);
 					}
 					else

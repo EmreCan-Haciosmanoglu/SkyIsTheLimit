@@ -511,10 +511,10 @@ namespace Can
 		}
 	}
 
-	Person* PersonManager::get_worklessPerson()
+	Person* PersonManager::get_unemployed_person()
 	{
 		for (Person* p : m_People)
-			if (!p->work)
+			if (p->profession == Profession::Unemployed)
 				return p;
 
 		return nullptr;

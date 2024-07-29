@@ -12,7 +12,7 @@ namespace Can
 
 		void Update(TimeStep ts);
 
-		Person* get_worklessPerson();
+		Person* get_unemployed_person();
 
 		class GameScene* m_Scene = nullptr;
 		std::vector<Person*> m_People = {};
