@@ -31,7 +31,7 @@ namespace Can
 		f32 garbage_capacity{ 10.0f };
 		f32 current_garbage{ 0.0f };
 		bool is_garbage_truck_on_the_way{ false };
-		f32 since_last_garbage_pick_up{ 0.0f }; // TODO: do game time instead?
+		f32 since_last_garbage_pick_up{ 0.0f };		// TODO: do game time instead?
 
 		f32 water_need{ 20.0f };
 		f32 water_provided{ 10.0f };
@@ -40,6 +40,7 @@ namespace Can
 		f32 water_waste_provided{ 10.0f };
 
 		u16 crime_reported{ 5 };
+		f32 since_last_theft{ -1.0f };				// TODO: do game time instead?
 
 		// prisonars for police station
 		// patients for hospitals

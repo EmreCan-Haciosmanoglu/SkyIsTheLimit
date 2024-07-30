@@ -21,11 +21,12 @@ namespace Can
 
 	void PersonManager::Update(TimeStep ts)
 	{
-		GameApp* app = m_Scene->MainApplication;
-		auto& road_segments = m_Scene->m_RoadManager.road_segments;
-		auto& road_nodes = m_Scene->m_RoadManager.road_nodes;
-		auto& road_types = m_Scene->MainApplication->road_types;
-		auto& building_types = m_Scene->MainApplication->building_types;
+		GameApp* app{ m_Scene->MainApplication };
+		auto& bm{ m_Scene->m_BuildingManager };
+		auto& road_segments{ m_Scene->m_RoadManager.road_segments };
+		auto& road_nodes{ m_Scene->m_RoadManager.road_nodes };
+		auto& road_types{ m_Scene->MainApplication->road_types };
+		auto& building_types{ m_Scene->MainApplication->building_types };
 
 		for (size_t person_index = 0; person_index < m_People.size(); person_index++)
 		{
@@ -41,12 +42,71 @@ namespace Can
 				// more educated less garbage
 				// different amount according to age
 				p->home->current_garbage += 0.1f * ts;
+
 				if (p->time_left <= 0.0f)
 				{
-					if (p->work)
+					p->path_start_building = p->home;
+
+					switch (p->profession)
 					{
+					case Profession::Unemployed:
+					{
+						// just walk around then come back to home
+						p->path = Helper::get_path(p->home, 5);
+						p->path_end_building = p->home;
+						break;
+					}
+					case Profession::Thief:
+					{
+						std::vector<Building*> ignored_buildings{ p->home };
+						if (p->car)
+						{
+							p->car_driving = p->car;
+							p->car_driving->driver = p;
+							while (true)
+							{
+								p->path_end_building = bm.get_building_to_steal_from(ignored_buildings);
+								if (p->path_end_building == nullptr)
+									break;
+								p->car_driving->path = Helper::get_path_for_a_car(p->home, p->path_end_building);
+								if (p->car_driving->path.size()) break;
+								ignored_buildings.push_back(p->path_end_building);
+							}
+						}
+						else
+						{
+							while (true)
+							{
+								p->path_end_building = bm.get_building_to_steal_from(ignored_buildings);
+								if (p->path_end_building == nullptr)
+									break;
+								p->path = Helper::get_path(p->home, p->path_end_building);
+								if (p->path.size()) break;
+								ignored_buildings.push_back(p->path_end_building);
+							}
+						}
+						if (p->path_end_building == nullptr)// if no home to steal from
+						{
+							// just walk around then come back to home
+							p->path = Helper::get_path(p->home, 5);
+							p->path_end_building = p->home;
+							if (p->car_driving)
+							{
+								p->car_driving->driver = nullptr;
+								p->car_driving = nullptr;
+							}
+						}
+						break;
+					}
+					case Profession::General_Commercial_Worker:
+					case Profession::General_Industrial_Worker:
+					case Profession::General_Office_Worker:
+					case Profession::Doctor:
+					case Profession::Policeman:
+					case Profession::Waste_Management_Worker:
+					{
+						assert(p->work);
 						p->path_end_building = p->work;
-						p->path_start_building = p->home;
 
 						if (p->car)
 						{
@@ -64,14 +124,17 @@ namespace Can
 							// just walk around then come back to home
 							p->path = Helper::get_path(p->home, 5);
 							p->path_end_building = p->home;
-							p->car_driving = nullptr;
+							if (p->car_driving)
+							{
+								p->car_driving->driver = nullptr;
+								p->car_driving = nullptr;
+							}
 						}
+						break;
 					}
-					else // just walk around then come back to home
-					{
-						p->path = Helper::get_path(p->home, 5);
-						p->path_end_building = p->home;
-						p->path_start_building = p->home;
+					default:
+						assert(false, "Unimplemented Profession");
+						break;
 					}
 
 					// TODO: Combine these two line into a function
@@ -82,7 +145,7 @@ namespace Can
 					p->heading_to_a_building = false;
 					p->heading_to_a_car = false;
 					p->status = PersonStatus::Walking;
-					
+
 					if (p->car_driving)
 					{
 						p->heading_to_a_car = true;

@@ -407,7 +407,7 @@ namespace Can
 			case Building_Group::House:
 			{
 				buildings_houses.push_back(new_building);
-				u16 domicilled{ Utility::Random::unsigned_16(0, building_type.capacity) };
+				u16 domicilled{ random_u16(0, building_type.capacity) };
 				for (u64 i{ 0 }; i < domicilled; i++)
 				{
 					u64 type{ 0 };
@@ -446,39 +446,47 @@ namespace Can
 					}
 
 					person_manager.m_People.push_back(new_person);
-					Building* work{ getAvailableWorkBuilding() };
-					if (work)
+					bool will_steal = random_f32(1.0f) < 0.05f;
+					if (will_steal)
 					{
-						work->people.push_back(new_person);
-						new_person->work = work;
-						auto& work_building_type{ building_types[work->type] };
-						switch (work_building_type.group)
+						new_person->profession = Profession::Thief;
+					}
+					else
+					{
+						Building* work{ getAvailableWorkBuilding() };
+						if (work)
 						{
-						case Building_Group::House:
-						case Building_Group::Residential:
-							assert(false, "Wrong Building_Group for work");
-							break;
-						case Building_Group::Commercial:
-							new_person->profession = Profession::General_Commercial_Worker;
-							break;
-						case Building_Group::Industrial:
-							new_person->profession = Profession::General_Industrial_Worker;
-							break;
-						case Building_Group::Office:
-							new_person->profession = Profession::General_Office_Worker;
-							break;
-						case Building_Group::Hospital:
-							new_person->profession = Profession::Doctor;
-							break;
-						case Building_Group::Police_Station:
-							new_person->profession = Profession::Policeman;
-							break;
-						case Building_Group::Garbage_Collection_Center:
-							new_person->profession = Profession::Waste_Management_Worker;
-							break;
-						default:
-							assert(false, "Unimplemented Building_Group!");
-							break;
+							work->people.push_back(new_person);
+							new_person->work = work;
+							auto& work_building_type{ building_types[work->type] };
+							switch (work_building_type.group)
+							{
+							case Building_Group::House:
+							case Building_Group::Residential:
+								assert(false, "Wrong Building_Group for work");
+								break;
+							case Building_Group::Commercial:
+								new_person->profession = Profession::General_Commercial_Worker;
+								break;
+							case Building_Group::Industrial:
+								new_person->profession = Profession::General_Industrial_Worker;
+								break;
+							case Building_Group::Office:
+								new_person->profession = Profession::General_Office_Worker;
+								break;
+							case Building_Group::Hospital:
+								new_person->profession = Profession::Doctor;
+								break;
+							case Building_Group::Police_Station:
+								new_person->profession = Profession::Policeman;
+								break;
+							case Building_Group::Garbage_Collection_Center:
+								new_person->profession = Profession::Waste_Management_Worker;
+								break;
+							default:
+								assert(false, "Unimplemented Building_Group!");
+								break;
+							}
 						}
 					}
 				}
@@ -728,6 +736,32 @@ namespace Can
 			auto& building_type{ building_types[b->type] };
 			if (building_type.capacity > b->people.size())
 				return b;
+		}
+		return nullptr;
+	}
+
+	Building* BuildingManager::get_building_to_steal_from(const std::vector<Building*>& ignored_buildings)
+	{
+		auto& building_types{ m_Scene->MainApplication->building_types };
+		for (Building*& building : m_Buildings)
+		{
+			auto& building_type{ building_types[building->type] };
+			if (building_type.group == Building_Group::Police_Station) continue;
+
+			if (building->people.size()) continue;
+			if (building->since_last_theft > 0.0f && building->since_last_theft < 60.0f) continue;
+
+			bool ignore = false;
+			for (const Building* ignored_building : ignored_buildings)
+			{
+				if (ignored_building == building)
+				{
+					ignore = true;
+					break;
+				}
+			}
+			if (ignore) continue;
+			return building;
 		}
 		return nullptr;
 	}
