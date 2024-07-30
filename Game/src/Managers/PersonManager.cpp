@@ -382,7 +382,7 @@ namespace Can
 							p->status = PersonStatus::AtHome;
 						else
 							p->status = PersonStatus::AtWork;
-						p->time_left = Utility::Random::Float(1.0f, 5.0f);
+						p->time_left = random_f32(1.0f, 5.0f);
 						p->object->enabled = false;
 						p->heading_to_a_building = false;
 						p->road_segment = -1;
@@ -577,12 +577,12 @@ namespace Can
 		if (p->path_start_building == p->home)
 		{
 			p->status = PersonStatus::AtHome;
-			p->time_left = Utility::Random::Float(1.0f, 2.0f);	// home values
+			p->time_left = random_f32(1.0f, 2.0f);	// home values
 		}
 		else if (p->path_start_building == p->work)
 		{
 			p->status = PersonStatus::AtWork;
-			p->time_left = Utility::Random::Float(1.0f, 2.0f);	// work values
+			p->time_left = random_f32(1.0f, 2.0f);	// work values
 		}
 		else
 		{
@@ -667,12 +667,12 @@ namespace Can
 		if (p->path_start_building == p->home)
 		{
 			p->status = PersonStatus::AtHome;
-			p->time_left = Utility::Random::Float(1.0f, 2.0f);	// home values
+			p->time_left = random_f32(1.0f, 2.0f);	// home values
 		}
 		else if (p->path_start_building == p->work)
 		{
 			p->status = PersonStatus::AtWork;
-			p->time_left = Utility::Random::Float(1.0f, 2.0f);	// work values
+			p->time_left = random_f32(1.0f, 2.0f);	// work values
 		}
 		else
 		{
@@ -715,7 +715,7 @@ namespace Can
 		p->object->SetTransform(p->position);
 		p->object->enabled = false;
 		p->status = PersonStatus::AtHome;
-		p->time_left = Utility::Random::Float(1.0f, 2.0f);	// home values
+		p->time_left = random_f32(1.0f, 2.0f);	// home values
 
 		while (p->path.size() > 0)
 		{

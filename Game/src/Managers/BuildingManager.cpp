@@ -413,23 +413,23 @@ namespace Can
 					u64 type{ 0 };
 					Person* new_person{ new Person(
 						person_prefabs[type],
-						Utility::Random::Float(4.0f, 6.0f)
+						random_f32(4.0f, 6.0f)
 					) };
 					new_person->type = type;
 					new_person->home = new_building;
 					new_person->status = PersonStatus::AtHome;
-					new_person->time_left = Utility::Random::Float(1.0f, 5.0f);
+					new_person->time_left = random_f32(1.0f, 5.0f);
 					new_building->people.push_back(new_person);
-					bool have_enough_money_to_own_car{ Utility::Random::Float(1.0f) > 0.4f };
+					bool have_enough_money_to_own_car{ random_f32(1.0f) > 0.4f };
 					if (have_enough_money_to_own_car)
 					{
-						u64 personal_vehicle_index{ Utility::Random::unsigned_64(personal_vehicles.size()) };
+						u64 personal_vehicle_index{ random_u64(personal_vehicles.size()) };
 						u64 new_vehicle_type_index{ personal_vehicles[personal_vehicle_index] };
 						const Vehicle_Type& new_vehicle_type{ vehicle_types[new_vehicle_type_index] };
 						Car* new_car{ new Car() };
 						new_car->object = new Object(new_vehicle_type.prefab);
 						new_car->type = new_vehicle_type_index;
-						new_car->speed_in_kmh = Utility::Random::Float(new_vehicle_type.speed_range_min, new_vehicle_type.speed_range_max);
+						new_car->speed_in_kmh = random_f32(new_vehicle_type.speed_range_min, new_vehicle_type.speed_range_max);
 						assert(building_type.vehicle_parks.size());
 						v3 car_pos{ new_building->object->position +
 							(v3)(glm::rotate(m4(1.0f), new_building->object->rotation.z, v3{ 0.0f, 0.0f, 1.0f }) *
@@ -491,7 +491,7 @@ namespace Can
 			case Building_Group::Hospital:
 			{
 				buildings_commercial.push_back(new_building);
-				u16 worker{ Utility::Random::unsigned_16(0, building_type.capacity) };
+				u16 worker{ random_u16(0, building_type.capacity) };
 				for (u64 i{ 0 }; i < worker; ++i)
 				{
 					Person* p{ person_manager.get_unemployed_person() };
@@ -507,15 +507,15 @@ namespace Can
 					}
 				}
 
-				u8 work_vehicle_count{ Utility::Random::unsigned_8(4, 6) };
+				u8 work_vehicle_count{ random_u8(4, 6) };
 				for (u64 i{ 0 }; i < work_vehicle_count; ++i)
 				{
-					u64 new_vehicle_type_index{ Utility::Random::unsigned_64(vehicle_types.size()) };
+					u64 new_vehicle_type_index{ random_u64(vehicle_types.size()) };
 					const Vehicle_Type& new_vehicle_type{ vehicle_types[new_vehicle_type_index] };
 					Car* new_car{ new Car() };
 					new_car->object = new Object(new_vehicle_type.prefab);
 					new_car->type = new_vehicle_type_index;
-					new_car->speed_in_kmh = Utility::Random::Float(new_vehicle_type.speed_range_min, new_vehicle_type.speed_range_max);
+					new_car->speed_in_kmh = random_f32(new_vehicle_type.speed_range_min, new_vehicle_type.speed_range_max);
 					new_car->object->tintColor = v4{ 1.0f, 0.0f, 0.0f, 1.0f };
 					assert(building_type.vehicle_parks.size());
 					v3 car_pos{ new_building->object->position +
@@ -536,7 +536,7 @@ namespace Can
 			case Building_Group::Police_Station:
 			{
 				buildings_specials.push_back(new_building);
-				u16 worker{ Utility::Random::unsigned_16(0, building_type.capacity) };
+				u16 worker{ random_u16(0, building_type.capacity) };
 				for (u64 i{ 0 }; i < worker; ++i)
 				{
 					Person* p{ person_manager.get_unemployed_person() };
@@ -552,16 +552,16 @@ namespace Can
 					}
 				}
 
-				u8 work_vehicle_count{ Utility::Random::unsigned_8(4, 6) };
+				u8 work_vehicle_count{ random_u8(4, 6) };
 				for (u64 i{ 0 }; i < work_vehicle_count; ++i)
 				{
-					u64 police_car_index{ Utility::Random::unsigned_64(police_cars.size()) };
+					u64 police_car_index{ random_u64(police_cars.size()) };
 					u64 new_vehicle_type_index{ police_cars[police_car_index] };
 					const Vehicle_Type& new_vehicle_type{ vehicle_types[new_vehicle_type_index] };
 					Car* new_car{ new Car() };
 					new_car->object = new Object(new_vehicle_type.prefab);
 					new_car->type = new_vehicle_type_index;
-					new_car->speed_in_kmh = Utility::Random::Float(new_vehicle_type.speed_range_min, new_vehicle_type.speed_range_max);
+					new_car->speed_in_kmh = random_f32(new_vehicle_type.speed_range_min, new_vehicle_type.speed_range_max);
 					assert(building_type.vehicle_parks.size());
 					v3 car_pos{ new_building->object->position +
 						(v3)(glm::rotate(m4(1.0f), new_building->object->rotation.z, v3{ 0.0f, 0.0f, 1.0f }) *
@@ -581,7 +581,7 @@ namespace Can
 			case Building_Group::Garbage_Collection_Center:
 			{
 				buildings_specials.push_back(new_building);
-				u16 worker{ Utility::Random::unsigned_16(0, building_type.capacity) };
+				u16 worker{ random_u16(0, building_type.capacity) };
 				for (u64 i{ 0 }; i < worker; ++i)
 				{
 					Person* p{ person_manager.get_unemployed_person() };
@@ -597,16 +597,16 @@ namespace Can
 					}
 				}
 
-				u8 work_vehicle_count{ Utility::Random::unsigned_8(4, 6) };
+				u8 work_vehicle_count{ random_u8(4, 6) };
 				for (u64 i{ 0 }; i < work_vehicle_count; ++i)
 				{
-					u64 garbage_truck_index{ Utility::Random::unsigned_64(garbage_trucks.size()) };
+					u64 garbage_truck_index{ random_u64(garbage_trucks.size()) };
 					u64 new_vehicle_type_index{ garbage_trucks[garbage_truck_index] };
 					const Vehicle_Type& new_vehicle_type{ vehicle_types[new_vehicle_type_index] };
 					Car* new_car{ new Car() };
 					new_car->object = new Object(new_vehicle_type.prefab);
 					new_car->type = new_vehicle_type_index;
-					new_car->speed_in_kmh = Utility::Random::Float(new_vehicle_type.speed_range_min, new_vehicle_type.speed_range_max);
+					new_car->speed_in_kmh = random_f32(new_vehicle_type.speed_range_min, new_vehicle_type.speed_range_max);
 					assert(building_type.vehicle_parks.size());
 					v3 car_pos{ new_building->object->position +
 						(v3)(glm::rotate(m4(1.0f), new_building->object->rotation.z, v3{ 0.0f, 0.0f, 1.0f }) *

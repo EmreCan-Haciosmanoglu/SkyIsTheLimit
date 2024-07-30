@@ -826,7 +826,7 @@ namespace  Can::Helper
 		RS_Transition_For_Walking* rs_transition = new RS_Transition_For_Walking();
 		path.push_back(rs_transition);
 		rs_transition->road_segment_index = current_road_segment_index;
-		bool go_right_from_house = Utility::Random::signed_32(2) == 1;
+		bool go_right_from_house = random_s32(2) == 1;
 		u64 next_node = 0;
 		rs_transition->from_right = go_right_from_house;
 		if (go_right_from_house == start->snapped_to_right)
@@ -872,7 +872,7 @@ namespace  Can::Helper
 					available_road_segment_indexes.push_back(road_segment_index);
 
 			int size = (int)available_road_segment_indexes.size();
-			u64 road_segment_i = (size == 0) ? current_road_segment_index : available_road_segment_indexes[Utility::Random::signed_32(size)];
+			u64 road_segment_i = (size == 0) ? current_road_segment_index : available_road_segment_indexes[random_s32(size)];
 			it = std::find(road_node.roadSegments.begin(), road_node.roadSegments.end(), road_segment_i);
 			assert(it != road_node.roadSegments.end());
 			int new_road_index = std::distance(road_node.roadSegments.begin(), it);
