@@ -6,7 +6,7 @@ Thumbnail:01/Thumbnail.png
 Speed_Range:30-50
 Operator_Count:1
 Passenger_Limit:4
-Type:0
+Type:1
 END
 START
 Name:Tesla Model X

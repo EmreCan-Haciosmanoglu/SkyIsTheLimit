@@ -371,10 +371,13 @@ namespace Can
 	bool BuildingManager::OnMousePressed_Construction()
 	{
 		auto& building_types = m_Scene->MainApplication->building_types;
+
 		auto& vehicle_types = m_Scene->MainApplication->vehicle_types;
+		auto& personal_vehicles = m_Scene->MainApplication->personal_vehicles;
+		auto& commercial_vehicles = m_Scene->MainApplication->personal_vehicles;
 		auto& police_cars = m_Scene->MainApplication->police_cars;
 		auto& garbage_trucks = m_Scene->MainApplication->garbage_trucks;
-		auto& personal_vehicles = m_Scene->MainApplication->personal_vehicles;
+
 		auto& person_prefabs = m_Scene->MainApplication->people;
 
 		auto& person_manager = m_Scene->m_PersonManager;
@@ -518,7 +521,8 @@ namespace Can
 				u8 work_vehicle_count{ random_u8(4, 6) };
 				for (u64 i{ 0 }; i < work_vehicle_count; ++i)
 				{
-					u64 new_vehicle_type_index{ random_u64(vehicle_types.size()) };
+					u64 commercial_vehicle_index{ random_u64(commercial_vehicles.size()) };
+					u64 new_vehicle_type_index{ commercial_vehicles[commercial_vehicle_index] };
 					const Vehicle_Type& new_vehicle_type{ vehicle_types[new_vehicle_type_index] };
 					Car* new_car{ new Car() };
 					new_car->object = new Object(new_vehicle_type.prefab);

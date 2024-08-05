@@ -65,27 +65,28 @@ namespace Can
 							p->car_driving->driver = p;
 							while (true)
 							{
-								p->path_end_building = bm.get_building_to_steal_from(ignored_buildings);
-								if (p->path_end_building == nullptr)
+								p->work = bm.get_building_to_steal_from(ignored_buildings);
+								if (p->work == nullptr)
 									break;
-								p->car_driving->path = Helper::get_path_for_a_car(p->home, p->path_end_building);
+								p->car_driving->path = Helper::get_path_for_a_car(p->home, p->work);
 								if (p->car_driving->path.size()) break;
-								ignored_buildings.push_back(p->path_end_building);
+								ignored_buildings.push_back(p->work);
 							}
 						}
 						else
 						{
 							while (true)
 							{
-								p->path_end_building = bm.get_building_to_steal_from(ignored_buildings);
-								if (p->path_end_building == nullptr)
+								p->work = bm.get_building_to_steal_from(ignored_buildings);
+								if (p->work == nullptr)
 									break;
-								p->path = Helper::get_path(p->home, p->path_end_building);
+								p->path = Helper::get_path(p->home, p->work);
 								if (p->path.size()) break;
-								ignored_buildings.push_back(p->path_end_building);
+								ignored_buildings.push_back(p->work);
 							}
 						}
-						if (p->path_end_building == nullptr)// if no home to steal from
+						p->path_end_building = p->work;
+						if (p->work == nullptr)// if no building to steal from
 						{
 							// just walk around then come back to home
 							p->path = Helper::get_path(p->home, 5);
@@ -194,66 +195,105 @@ namespace Can
 
 				if (p->time_left <= 0.0f)
 				{
-					Building* building_to = p->work;
-
-					if (p->drove_in_work)
+					switch (p->profession)
 					{
-						building_to = p->home;
-						p->drove_in_work = false;
-						if (p->car)
-						{
-							p->car_driving = p->car;
-							p->car_driving->driver = p;
-						}
+					case Profession::Unemployed:
+					{
+						assert(false, "Impossible Profession");
+						break;
 					}
-					else
+					case Profession::General_Commercial_Worker:
+					case Profession::General_Industrial_Worker:
+					case Profession::General_Office_Worker:
+					case Profession::Doctor:
+					case Profession::Policeman:
+					case Profession::Waste_Management_Worker:
 					{
-						Car* work_car = retrive_work_vehicle(p->work);
-						if (work_car)
+						if (p->drove_in_work)
 						{
-							p->car_driving = work_car;
-							p->car_driving->driver = p;
-						}
-						else
-						{
-							building_to = p->home;
+							p->drove_in_work = false;
 							if (p->car)
 							{
 								p->car_driving = p->car;
 								p->car_driving->driver = p;
-							}
-						}
-					}
-
-					if (building_to == p->work) // driving while working / driving work vehicle
-					{
-
-						if (building_types[p->work->type].group == Building_Group::Garbage_Collection_Center)
-						{
-							// TODO v2: go some building and comeback e.g. Ambulance, Police, Fire, Delivery
-							Building* to = nullptr;
-							auto path = Helper::get_path_for_gargabe_vehicle(p->work, to);
-							if (to)
-							{
-								building_to = to;
-								p->car_driving->path = path;
+								p->car_driving->path = Helper::get_path_for_a_car(p->work, p->home);
 							}
 							else
 							{
-								p->car_driving->path = Helper::get_path_for_a_car(p->work, 5);
+								p->path = Helper::get_path(p->work, p->home);
 							}
+							p->path_end_building = p->home;
 						}
 						else
 						{
-							p->car_driving->path = Helper::get_path_for_a_car(p->work, 5);
+							Car* work_car = retrive_work_vehicle(p->work);
+							if (work_car)
+							{
+								p->car_driving = work_car;
+								p->car_driving->driver = p;
+								p->path_end_building = p->work;
+
+								if (p->profession == Profession::Waste_Management_Worker)
+								{
+									// TODO v2: go some buildings and comeback e.g. Ambulance, Police, Fire, Delivery
+									Building* to = nullptr;
+									auto path = Helper::get_path_for_gargabe_vehicle(p->work, to);
+									if (to)
+									{
+										p->car_driving->path = path;
+										p->path_end_building = to;
+									}
+									else
+									{
+										p->car_driving->path = Helper::get_path_for_a_car(p->work, 5);
+									}
+								}
+								else if (p->profession == Profession::Policeman)
+								{
+									// TODO v2: go some buildings and comeback e.g. Ambulance, Police, Fire, Delivery
+									// TODO v2: Patrol intelligently not randomly
+									p->car_driving->path = Helper::get_path_for_a_car(p->work, 5);
+								}
+								else
+								{
+									p->car_driving->path = Helper::get_path_for_a_car(p->work, 5);
+								}
+							}
+							else
+							{
+								if (p->car)
+								{
+									p->car_driving = p->car;
+									p->car_driving->driver = p;
+									p->car_driving->path = Helper::get_path_for_a_car(p->work, p->home);
+								}
+								else
+								{
+									p->path = Helper::get_path(p->work, p->home);
+								}
+								p->path_end_building = p->home;
+							}
 						}
+						break;
 					}
-					else
+					case Profession::Thief:
 					{
-						if (p->car_driving)
-							p->car_driving->path = Helper::get_path_for_a_car(p->work, building_to);
+						if (p->car)
+						{
+							p->car_driving = p->car;
+							p->car_driving->driver = p;
+							p->car_driving->path = Helper::get_path_for_a_car(p->work, p->home);
+						}
 						else
-							p->path = Helper::get_path(p->work, building_to);
+						{
+							p->path = Helper::get_path(p->work, p->home);
+						}
+						p->path_end_building = p->home;
+						break;
+					}
+					default:
+						assert(false, "Unimplemented Profession");
+						break;
 					}
 
 					if (p->path.size() == 0 && p->car_driving && p->car_driving->path.size() == 0) // if no path available
@@ -267,7 +307,6 @@ namespace Can
 					p->position = p->work->object->position;
 					p->object->SetTransform(p->position);
 
-					p->path_end_building = building_to;
 					p->path_start_building = p->work;
 
 					p->object->enabled = true;
@@ -490,6 +529,7 @@ namespace Can
 						{
 							if (p->path.size() == 1)
 							{
+								// We are at the building
 								p->target = p->path_end_building->object->position;
 								p->heading_to_a_building = true;
 
@@ -502,6 +542,8 @@ namespace Can
 							}
 							else
 							{
+								// We are at the end of the road
+								// So move to RoadNode
 								p->road_node = rs_transition->from_start ? road_segment.EndNode : road_segment.StartNode;
 
 								RoadNode& road_node{ road_nodes[p->road_node] };
