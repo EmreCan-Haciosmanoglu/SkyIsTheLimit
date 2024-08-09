@@ -554,7 +554,6 @@ namespace Can
 				if (car_index != -1)
 				{
 					person->car = cars[car_index];
-					person->car->owner = person;
 				}
 				fread(&car_driving_index, sizeof(s64), 1, read_file);
 				if (car_driving_index != -1)

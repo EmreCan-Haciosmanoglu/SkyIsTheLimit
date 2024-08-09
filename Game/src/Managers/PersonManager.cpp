@@ -170,15 +170,15 @@ namespace Can
 						v3 dir = target_position_plus_one - target_position;
 						v3 offsetted = target_position + dir * p->home->snapped_t;
 
-						v3 sidewalf_position_offset = glm::normalize(v3{ dir.y, -dir.x, 0.0f });
+						v3 sidewalk_position_offset = glm::normalize(v3{ dir.y, -dir.x, 0.0f });
 						if (p->home->snapped_to_right)
-							sidewalf_position_offset *= road_segment_type.lanes_forward[road_segment_type.lanes_forward.size() - 1].distance_from_center;
+							sidewalk_position_offset *= road_segment_type.lanes_forward[road_segment_type.lanes_forward.size() - 1].distance_from_center;
 						else
-							sidewalf_position_offset *= road_segment_type.lanes_backward[0].distance_from_center;
+							sidewalk_position_offset *= road_segment_type.lanes_backward[0].distance_from_center;
 
 						((RS_Transition_For_Walking*)p->path[0])->at_path_array_index = p->home->snapped_t_index;
 
-						set_person_target(p, offsetted + sidewalf_position_offset);
+						set_person_target(p, offsetted + sidewalk_position_offset);
 					}
 				}
 				break;
@@ -337,15 +337,15 @@ namespace Can
 						v3 dir = target_position_plus_one - target_position;
 						v3 offsetted = target_position + dir * p->work->snapped_t;
 
-						v3 sidewalf_position_offset = glm::normalize(v3{ dir.y, -dir.x, 0.0f });
+						v3 sidewalk_position_offset = glm::normalize(v3{ dir.y, -dir.x, 0.0f });
 						if (p->work->snapped_to_right)
-							sidewalf_position_offset *= road_segment_type.lanes_forward[road_segment_type.lanes_forward.size() - 1].distance_from_center;
+							sidewalk_position_offset *= road_segment_type.lanes_forward[road_segment_type.lanes_forward.size() - 1].distance_from_center;
 						else
-							sidewalf_position_offset *= road_segment_type.lanes_backward[0].distance_from_center;
+							sidewalk_position_offset *= road_segment_type.lanes_backward[0].distance_from_center;
 
 						((RS_Transition_For_Walking*)p->path[0])->at_path_array_index = p->work->snapped_t_index;
 
-						set_person_target(p, offsetted + sidewalf_position_offset);
+						set_person_target(p, offsetted + sidewalk_position_offset);
 					}
 				}
 				break;

@@ -108,7 +108,7 @@ namespace Can
 		const auto& road_types{ app->road_types };
 
 		auto ordered_driven_cars{ get_ordered_driven_cars() };
-		for (auto& cars : ordered_driven_cars)
+		for (auto& cars : ordered_driven_cars) // Cars in same lane
 		{
 			std::sort(cars.begin(), cars.end(), Helper::sort_by_left_journey());
 			for (u64 car_index = 0; car_index < cars.size(); ++car_index)

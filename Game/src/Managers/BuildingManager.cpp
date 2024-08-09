@@ -443,13 +443,12 @@ namespace Can
 						car_rotation.z += glm::radians(building_type.vehicle_parks[0].rotation_in_degrees);
 						new_car->object->SetTransform(car_pos, car_rotation);
 						new_car->object->enabled = true;
-						new_car->owner = new_person;
 						new_person->car = new_car;
 						car_manager.m_Cars.push_back(new_car);
 					}
 
 					person_manager.m_People.push_back(new_person);
-					bool will_steal = random_f32(1.0f) < 0.05f;
+					bool will_steal{ random_f32(1.0f) < 0.05f };
 					if (will_steal)
 					{
 						new_person->profession = Profession::Thief;
