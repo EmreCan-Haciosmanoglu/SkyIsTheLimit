@@ -72,6 +72,7 @@ namespace Can::Helper
 		const Building* const building,
 		Building*& to
 	);
+	bool find_and_assign_a_policeman(Building* const& b);
 
 	struct sort_by_angle
 	{

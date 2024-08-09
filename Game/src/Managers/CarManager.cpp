@@ -191,8 +191,8 @@ namespace Can
 
 				if (!path_is_blocked)
 				{
-					const Vehicle_Type& type{ vehicle_types[car->type] };
-					f32 lenght{ type.object_length };
+					const Vehicle_Type& vehicle_type{ vehicle_types[car->type] };
+					f32 lenght{ vehicle_type.object_length };
 
 					RoadSegment& current_road_segment{ road_segments[transition->road_segment_index] };
 					const Road_Type& current_road_type{ road_types[current_road_segment.type] };
@@ -207,6 +207,57 @@ namespace Can
 					}
 					else
 					{
+						switch (vehicle_type.type)
+						{
+						case Car_Type::Personal:
+						case Car_Type::Work:
+						case Car_Type::Garbage_Truck:
+						{
+							// Garbage_Truck -> collect trash while moving
+							break;
+						}
+						case Car_Type::Police_Car:
+						{
+							const Person* const& driver{ car->driver };
+							if (driver->status == PersonStatus::Patrolling)
+							{
+								for (const Building* const& building : current_road_segment.buildings)
+								{
+									v3 dist_vector = building->object->position - car->object->position;
+									f32 dist2 = glm::length2(dist_vector);
+
+									constexpr f32 MAGICAL_DISTANCE = 5.0f;
+									if (dist2 > MAGICAL_DISTANCE) continue;
+
+									for (Person* person : building->people)
+									{
+										if (person->profession != Profession::Thief) continue;
+										if (person->status != PersonStatus::AtWork) continue;
+
+										// TODO: go to house instead then catch???
+
+
+										// TODO: And make some other person Thief???
+										reset_person(person);
+										person->profession = Profession::Unemployed;
+										person->status = PersonStatus::Arrested;
+										car->passengers.push_back(person);
+										if (car->passengers.size() >= vehicle_type.passenger_limit)
+										{
+											driver->status == PersonStatus::Driving;
+											// car->path = find path to police station
+											break;
+										}
+									}
+								}
+							}
+							break;
+						}
+						default:
+							assert(false, "Unimplemented Car_Type");
+							break;
+						}
+
 						if (movement_length_in_next_frame < journey_left)
 						{
 							car->object->SetTransform(car->object->position + journey_direction * movement_length_in_next_frame);
@@ -230,7 +281,7 @@ namespace Can
 									// TODO: cache target car park position in car
 									auto building{ car->driver->path_end_building };
 									auto& building_type{ building_types[building->type] };
-									if (type.type == Car_Type::Garbage_Truck)
+									if (vehicle_type.type == Car_Type::Garbage_Truck)
 									{
 										if (car->driver->path_end_building != car->driver->path_start_building)
 										{
@@ -311,7 +362,7 @@ namespace Can
 		auto driven_cars_with_no_path{ get_driven_cars_with_no_path() };
 		for (auto car : driven_cars_with_no_path)
 		{
-			const Vehicle_Type& type{ vehicle_types[car->type] };
+			const Vehicle_Type& vehicle_type{ vehicle_types[car->type] };
 			v3 journey_left_vector{ car->target - car->object->position };
 			f32 journey_left{ glm::length(journey_left_vector) };
 			v3 journey_direction{ journey_left_vector / journey_left };
@@ -327,37 +378,56 @@ namespace Can
 				if (car->heading_to_a_visiting_spot == true)
 				{
 					auto building{ car->driver->path_end_building };
-					f32 capacity_left{ type.cargo_limit - car->cargo };
-					if (building->current_garbage < capacity_left)
+					switch (vehicle_type.type)
 					{
-						car->cargo += building->current_garbage;
-						building->current_garbage = 0.0f;
-						car->path = Helper::get_path_for_gargabe_vehicle(building, car->driver->path_end_building);
-						if (car->path.size() == 0) // No Building to take garbage from
+					case Car_Type::Personal:
+					case Car_Type::Work:
+					case Car_Type::Police_Car:
+					{
+						// Catch the thief if still at the house
+						// Else return to police station
+						// Or continue to patrolling somehow???
+						break;
+					}
+					case Car_Type::Garbage_Truck:
+					{
+						f32 capacity_left{ vehicle_type.cargo_limit - car->cargo };
+						if (building->current_garbage < capacity_left)
 						{
+							car->cargo += building->current_garbage;
+							building->current_garbage = 0.0f;
+							car->path = Helper::get_path_for_gargabe_vehicle(building, car->driver->path_end_building);
+							if (car->path.size() == 0) // No Building to take garbage from
+							{
+								car->driver->path_end_building = car->driver->work;
+								car->path = Helper::get_path_for_a_car(building, car->driver->work);
+							}
+						}
+						else
+						{
+							car->cargo = vehicle_type.cargo_limit;
+							building->current_garbage -= capacity_left;
 							car->driver->path_end_building = car->driver->work;
 							car->path = Helper::get_path_for_a_car(building, car->driver->work);
 						}
-					}
-					else
-					{
-						car->cargo = type.cargo_limit;
-						building->current_garbage -= capacity_left;
-						car->driver->path_end_building = car->driver->work;
-						car->path = Helper::get_path_for_a_car(building, car->driver->work);
-					}
-					building->is_garbage_truck_on_the_way = false;
-					building->since_last_garbage_pick_up = 0.0f;
+						building->is_garbage_truck_on_the_way = false;
+						building->since_last_garbage_pick_up = 0.0f;
 
-					car->heading_to_a_visiting_spot = false;
-					if (car->path.size())
-					{
-						car->road_segment = building->connected_road_segment;
-						road_segments[building->connected_road_segment].vehicles.push_back(car);
+						car->heading_to_a_visiting_spot = false;
+						if (car->path.size())
+						{
+							car->road_segment = building->connected_road_segment;
+							road_segments[building->connected_road_segment].vehicles.push_back(car);
+						}
+						else
+						{
+							reset_car_back_to_building_from(car);
+						}
+						break;
 					}
-					else
-					{
-						reset_car_back_to_building_from(car);
+					default:
+						assert(false, "Unimplemented Car_Type");
+						break;
 					}
 				}
 				else
@@ -384,9 +454,45 @@ namespace Can
 					{
 						building->vehicles.push_back(car);
 						driver->drove_in_work = true;
-						car->cargo = 0.0f;
 					}
 					set_person_target(driver, building->object->position);
+
+					switch (vehicle_type.type)
+					{
+					case Car_Type::Personal:
+					case Car_Type::Work:
+					{
+						break;
+					}
+					case Car_Type::Garbage_Truck:
+					{
+						// TODO: do something more then just this
+						car->cargo = 0.0f;
+						break;
+					}
+					case Car_Type::Police_Car:
+					{
+						// TODO: move arrested people inside
+						// What if Police Station is full???
+						while (car->passengers.size())
+						{
+							Person* thief{ car->passengers.back() };
+							building->visitors.push_back(thief);
+							car->passengers.pop_back();
+
+							thief->status = PersonStatus::InJail;
+							thief->time_left = random_f32(1.0f, 2.0f);
+							thief->position = building->object->position;
+							thief->object->SetTransform(thief->position);
+							thief->work = building; // TODO: building_in
+						}
+						break;
+					}
+					default:
+						assert(false, "Unimplemented Car_Type");
+						break;
+					}
+
 				}
 			}
 		}

@@ -12,7 +12,11 @@ namespace Can
 		WalkingDead,
 		Walking,
 		Driving,
-		DrivingForWork
+		DrivingForWork,
+		Arrested,
+		InJail,
+		Patrolling,
+		Responding
 	};
 
 	struct Transition;
