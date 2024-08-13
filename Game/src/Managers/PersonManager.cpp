@@ -56,6 +56,40 @@ namespace Can
 						p->path_end_building = p->home;
 						break;
 					}
+					case Profession::General_Commercial_Worker:
+					case Profession::General_Industrial_Worker:
+					case Profession::General_Office_Worker:
+					case Profession::Doctor:
+					case Profession::Policeman:
+					case Profession::Waste_Management_Worker:
+					{
+						assert(p->work);
+						p->path_end_building = p->work;
+
+						if (p->car)
+						{
+							p->car_driving = p->car;
+							p->car_driving->driver = p;
+							p->car_driving->path = Helper::get_path_for_a_car(p->home, p->work);
+						}
+						else
+						{
+							p->path = Helper::get_path(p->home, p->work);
+						}
+
+						if (p->path.size() == 0 && p->car_driving && p->car_driving->path.size() == 0) // if no path available
+						{
+							// just walk around then come back to home
+							p->path = Helper::get_path(p->home, 5);
+							p->path_end_building = p->home;
+							if (p->car_driving)
+							{
+								p->car_driving->driver = nullptr;
+								p->car_driving = nullptr;
+							}
+						}
+						break;
+					}
 					case Profession::Thief:
 					{
 						std::vector<Building*> ignored_buildings{ p->home };
@@ -87,40 +121,6 @@ namespace Can
 						}
 						p->path_end_building = p->work;
 						if (p->work == nullptr)// if no building to steal from
-						{
-							// just walk around then come back to home
-							p->path = Helper::get_path(p->home, 5);
-							p->path_end_building = p->home;
-							if (p->car_driving)
-							{
-								p->car_driving->driver = nullptr;
-								p->car_driving = nullptr;
-							}
-						}
-						break;
-					}
-					case Profession::General_Commercial_Worker:
-					case Profession::General_Industrial_Worker:
-					case Profession::General_Office_Worker:
-					case Profession::Doctor:
-					case Profession::Policeman:
-					case Profession::Waste_Management_Worker:
-					{
-						assert(p->work);
-						p->path_end_building = p->work;
-
-						if (p->car)
-						{
-							p->car_driving = p->car;
-							p->car_driving->driver = p;
-							p->car_driving->path = Helper::get_path_for_a_car(p->home, p->work);
-						}
-						else
-						{
-							p->path = Helper::get_path(p->home, p->work);
-						}
-
-						if (p->path.size() == 0 && p->car_driving && p->car_driving->path.size() == 0) // if no path available
 						{
 							// just walk around then come back to home
 							p->path = Helper::get_path(p->home, 5);
@@ -245,12 +245,12 @@ namespace Can
 									}
 									else
 									{
+										// TODO: Instead, just go home, no reason to roam around with garbage truck
 										p->car_driving->path = Helper::get_path_for_a_car(p->work, 5);
 									}
 								}
 								else if (p->profession == Profession::Policeman)
 								{
-									// TODO v2: go some buildings and comeback e.g. Ambulance, Police, Fire, Delivery
 									// TODO v2: Patrol intelligently not randomly
 									p->car_driving->path = Helper::get_path_for_a_car(p->work, 5);
 								}
@@ -278,6 +278,8 @@ namespace Can
 					}
 					case Profession::Thief:
 					{
+						p->work->crime_reported++;
+
 						if (p->car)
 						{
 							p->car_driving = p->car;
@@ -519,7 +521,7 @@ namespace Can
 								if (p->path_end_building == p->path_start_building)
 									p->status = PersonStatus::Patrolling;
 								else
-									p->status = PersonStatus::DrivingForWork;
+									p->status = PersonStatus::Responding;
 							}
 							else
 							{
@@ -639,6 +641,7 @@ namespace Can
 			case PersonStatus::Driving:
 			case PersonStatus::DrivingForWork:
 			case PersonStatus::Patrolling:
+			case PersonStatus::Responding:
 				// Handled in CarManager
 				break;
 			case PersonStatus::Arrested:
@@ -1052,7 +1055,7 @@ namespace Can
 		if (work_building->vehicles.empty())
 			return nullptr;
 
-		Car* car = work_building->vehicles.back();
+		Car* car{ work_building->vehicles.back() };
 		work_building->vehicles.pop_back();
 
 		return car;

@@ -1429,6 +1429,7 @@ namespace  Can::Helper
 		auto& road_nodes{ GameScene::ActiveGameScene->m_RoadManager.road_nodes };
 		auto& road_types{ GameScene::ActiveGameScene->MainApplication->road_types };
 		auto& vehicle_types{ GameScene::ActiveGameScene->MainApplication->vehicle_types };
+		auto& building_types{ GameScene::ActiveGameScene->MainApplication->building_types };
 		std::vector<Dijkstra_Node> linqs{};
 		std::vector<Dijkstra_Node> fastest_road_to_these_nodes{};
 		std::vector<Visited_Dijkstra_Node> visited_road_segments{};
@@ -1486,8 +1487,8 @@ namespace  Can::Helper
 				u64 road_segment_index{ connected_road_segments[i] };
 				RoadSegment& road_segment{ road_segments[road_segment_index] };
 				bool to_end{ road_node_index == road_segment.EndNode };
-				Road_Type& type{ road_types[road_segment.type] };
-				if (!type.two_way && !to_end) continue;
+				Road_Type& road_type{ road_types[road_segment.type] };
+				if (!road_type.two_way && !to_end) continue;
 
 				for (u64 j{ 0 }; j < road_segment.vehicles.size(); ++j)
 				{
@@ -1533,6 +1534,69 @@ namespace  Can::Helper
 
 					fill_points_stack(vehicle->path, nullptr, b);
 					return true;
+				}
+
+				for (u64 j{ 0 }; j < road_segment.buildings.size(); ++j)
+				{
+					Person* officer{ nullptr };
+					Building* building{ road_segment.buildings[j] };
+					const Building_Type& building_type{ building_types[building->type] };
+					if (building_type.group != Building_Group::Police_Station) continue;
+					if (to_end != building->snapped_to_right && !road_type.two_way) continue;
+					if (building->vehicles.size() == 0) continue;
+					for (Person* const& person : building->people)
+					{
+						if (person->drove_in_work) continue;
+						officer = person;
+						break;
+					}
+					if (officer)
+					{
+						b->is_police_on_the_way = true;
+						officer->path_end_building = b;
+						officer->status = PersonStatus::Walking;
+
+						Car* police_car{ building->vehicles.back() };
+						building->vehicles.pop_back();
+						police_car->driver = officer;
+						officer->car_driving = police_car;
+						
+						officer->position = building->object->position;
+						officer->object->SetTransform(officer->position);
+						officer->path_start_building = building;
+						officer->object->enabled = true;
+						officer->heading_to_a_building = false;
+						officer->heading_to_a_car = true;
+
+
+						u64 rs_index{ road_segment_index };
+
+						RS_Transition_For_Vehicle* temp_rs_transition{ new RS_Transition_For_Vehicle() };
+						police_car->path.push_back(temp_rs_transition);
+						temp_rs_transition->road_segment_index = rs_index;
+
+						while (road_node_index != -1)
+						{
+							auto linq_it{ std::find_if(
+								fastest_road_to_these_nodes.begin(),
+								fastest_road_to_these_nodes.end(),
+								[road_node_index](const Dijkstra_Node& el) {
+									return el.prev_road_node_index == road_node_index;
+								}) };
+							assert(linq_it != fastest_road_to_these_nodes.end());
+							rs_index = linq_it->road_segment_index;
+
+							temp_rs_transition->next_road_node_index = road_node_index;
+							temp_rs_transition = new RS_Transition_For_Vehicle();
+							police_car->path.push_back(temp_rs_transition);
+							temp_rs_transition->road_segment_index = rs_index;
+
+							road_node_index = linq_it->next_road_node_index;
+						}
+
+						fill_points_stack(police_car->path, building, b);
+						return true;
+					}
 				}
 
 				u64 curve_samples_count{ road_segment.curve_samples.size() };

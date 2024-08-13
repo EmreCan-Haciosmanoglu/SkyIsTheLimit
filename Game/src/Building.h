@@ -39,7 +39,7 @@ namespace Can
 		f32 water_waste_need{ 8.0f };
 		f32 water_waste_provided{ 10.0f };
 
-		u16 crime_reported{ 5 };
+		u16 crime_reported{ 0 };
 		bool is_police_on_the_way{ false };
 		f32 since_last_theft{ -1.0f };				// TODO: do game time instead?
 

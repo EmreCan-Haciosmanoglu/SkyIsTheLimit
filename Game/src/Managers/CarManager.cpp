@@ -218,8 +218,8 @@ namespace Can
 						}
 						case Car_Type::Police_Car:
 						{
-							const Person* const& driver{ car->driver };
-							if (driver->status == PersonStatus::Patrolling)
+							Person* const& officer{ car->driver };
+							if (officer->status == PersonStatus::Patrolling)
 							{
 								for (const Building* const& building : current_road_segment.buildings)
 								{
@@ -244,11 +244,23 @@ namespace Can
 										car->passengers.push_back(person);
 										if (car->passengers.size() >= vehicle_type.passenger_limit)
 										{
-											driver->status == PersonStatus::Driving;
-											// car->path = find path to police station
+											officer->status = PersonStatus::DrivingForWork;
+
+											assert(officer->work);
+											officer->path_end_building = officer->work;
+
+											car->path = Helper::get_path_for_a_car(building, officer->work);
+
+											if (car->path.size() == 0) // if no path available
+											{
+												// reset to police station
+												assert(false, "TODO");
+											}
 											break;
 										}
 									}
+									if (car->passengers.size() >= vehicle_type.passenger_limit)
+										break;
 								}
 							}
 							break;
@@ -297,6 +309,32 @@ namespace Can
 										else
 										{
 											// Returning to building
+											assert(building_type.vehicle_parks.size());
+											v3 car_park_pos{ building->object->position +
+												(v3)(glm::rotate(m4(1.0f), building->object->rotation.z, v3{ 0.0f, 0.0f, 1.0f }) *
+													glm::rotate(m4(1.0f), building->object->rotation.y, v3{ 0.0f, 1.0f, 0.0f }) *
+													glm::rotate(m4(1.0f), building->object->rotation.x, v3{ 1.0f, 0.0f, 0.0f }) *
+													v4(building_type.vehicle_parks[0].offset, 1.0f)) };
+											set_car_target_and_direction(car, car_park_pos);
+											car->heading_to_a_parking_spot = true;
+										}
+									}
+									else if (vehicle_type.type == Car_Type::Police_Car)
+									{
+										if (car->driver->path_end_building != car->driver->path_start_building)
+										{
+											//Catch thieves
+											v3 car_park_pos{ building->object->position +
+												(v3)(glm::rotate(m4(1.0f), building->object->rotation.z, v3{ 0.0f, 0.0f, 1.0f }) *
+													glm::rotate(m4(1.0f), building->object->rotation.y, v3{ 0.0f, 1.0f, 0.0f }) *
+													glm::rotate(m4(1.0f), building->object->rotation.x, v3{ 1.0f, 0.0f, 0.0f }) *
+													v4(building_type.visiting_spot, 1.0f)) };
+											set_car_target_and_direction(car, car_park_pos);
+											car->heading_to_a_visiting_spot = true;
+										}
+										else
+										{
+											// Returning to police station
 											assert(building_type.vehicle_parks.size());
 											v3 car_park_pos{ building->object->position +
 												(v3)(glm::rotate(m4(1.0f), building->object->rotation.z, v3{ 0.0f, 0.0f, 1.0f }) *
@@ -387,6 +425,35 @@ namespace Can
 						// Catch the thief if still at the house
 						// Else return to police station
 						// Or continue to patrolling somehow???
+						Person* const& officer{ car->driver };
+
+						for (Person* person : building->people)
+						{
+							if (person->profession != Profession::Thief) continue;
+							if (person->status != PersonStatus::AtWork) continue;
+
+							// TODO: And make some other person Thief???
+							reset_person(person);
+							person->profession = Profession::Unemployed;
+							person->status = PersonStatus::Arrested;
+							car->passengers.push_back(person);
+							if (car->passengers.size() >= vehicle_type.passenger_limit)
+							{
+								officer->status = PersonStatus::DrivingForWork;
+
+								assert(officer->work);
+								officer->path_end_building = officer->work;
+
+								car->path = Helper::get_path_for_a_car(building, officer->work);
+
+								if (car->path.size() == 0) // if no path available
+								{
+									// reset to police station
+									assert(false, "TODO");
+								}
+								break;
+							}
+						}
 						break;
 					}
 					case Car_Type::Garbage_Truck:
