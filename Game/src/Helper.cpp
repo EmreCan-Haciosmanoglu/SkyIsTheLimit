@@ -26,14 +26,17 @@ namespace  Can::Helper
 		void fill_points_stack(
 			std::vector<RS_Transition_For_Vehicle*>& path,
 			const Building* const start,
-			const Building* const end
+			const Building* const end,
+			const Car* const vehicle = nullptr
 		)
 		{
-			assert(false, "case for start is being nullptr");
 			auto& road_segments{ GameScene::ActiveGameScene->m_RoadManager.road_segments };
 			auto& road_nodes{ GameScene::ActiveGameScene->m_RoadManager.road_nodes };
 			auto& road_types{ GameScene::ActiveGameScene->MainApplication->road_types };
+			s64 start_index{ start ? start->snapped_t_index : 0 };
+
 			u64 transition_count{ path.size() };
+			assert(transition_count);
 
 			RS_Transition_For_Vehicle* current_transition{ path[0] };
 			if (transition_count == 1)
@@ -47,9 +50,8 @@ namespace  Can::Helper
 					dist_from_center = current_road_type.lanes_backward[current_transition->lane_index].distance_from_center;
 				else
 					dist_from_center = current_road_type.lanes_forward[current_transition->lane_index - current_road_type.lanes_backward.size()].distance_from_center;
-
-				u64 curve_sample_index_start{ (u64)std::min(start->snapped_t_index, end->snapped_t_index) };
-				u64 curve_sample_index_end{ (u64)std::max(start->snapped_t_index, end->snapped_t_index) };
+				u64 curve_sample_index_start{ (u64)std::min(start_index,end->snapped_t_index) };
+				u64 curve_sample_index_end{ (u64)std::max(start_index, end->snapped_t_index) };
 
 				v3 p0{ current_road_segment_curve_samples[curve_sample_index_start] };
 				// points on the roads to travel
@@ -66,7 +68,7 @@ namespace  Can::Helper
 				v3 cw_rotated_dir{ glm::normalize(v3{ dir_to_p1.y, -dir_to_p1.x, 0.0f }) };
 				v3 path_point{ p0 + cw_rotated_dir * dist_from_center };
 				current_transition->points_stack.push_back(path_point);
-				if (start->snapped_t_index < end->snapped_t_index)
+				if (start_index < end->snapped_t_index)
 					std::reverse(current_transition->points_stack.begin(), current_transition->points_stack.end());
 				return;
 			}
@@ -275,12 +277,12 @@ namespace  Can::Helper
 			RoadSegment& first_road_segment{ road_segments[first_path->road_segment_index] };
 			if (first_path->next_road_node_index == first_road_segment.EndNode)
 			{
-				for (u64 k{ 0 }; k < (u64)start->snapped_t_index; k++)
+				for (u64 k{ 0 }; k < (u64)start_index; k++)
 					first_path->points_stack.pop_back();
 			}
 			else
 			{
-				for (u64 k{ 0 }; k < first_road_segment.curve_samples.size() - start->snapped_t_index - 1; k++)
+				for (u64 k{ 0 }; k < first_road_segment.curve_samples.size() - start_index - 1; k++)
 					first_path->points_stack.pop_back();
 			}
 		}
@@ -1532,7 +1534,7 @@ namespace  Can::Helper
 						road_node_index = linq_it->next_road_node_index;
 					}
 
-					fill_points_stack(vehicle->path, nullptr, b);
+					fill_points_stack(vehicle->path, nullptr, b, vehicle);
 					return true;
 				}
 
@@ -1560,7 +1562,7 @@ namespace  Can::Helper
 						building->vehicles.pop_back();
 						police_car->driver = officer;
 						officer->car_driving = police_car;
-						
+
 						officer->position = building->object->position;
 						officer->object->SetTransform(officer->position);
 						officer->path_start_building = building;
