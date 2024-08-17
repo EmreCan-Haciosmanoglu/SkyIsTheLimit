@@ -371,9 +371,13 @@ namespace Can
 	bool BuildingManager::OnMousePressed_Construction()
 	{
 		auto& building_types = m_Scene->MainApplication->building_types;
+
 		auto& vehicle_types = m_Scene->MainApplication->vehicle_types;
-		auto& garbage_trucks = m_Scene->MainApplication->garbage_trucks;
 		auto& personal_vehicles = m_Scene->MainApplication->personal_vehicles;
+		auto& commercial_vehicles = m_Scene->MainApplication->personal_vehicles;
+		auto& police_cars = m_Scene->MainApplication->police_cars;
+		auto& garbage_trucks = m_Scene->MainApplication->garbage_trucks;
+
 		auto& person_prefabs = m_Scene->MainApplication->people;
 
 		auto& person_manager = m_Scene->m_PersonManager;
@@ -406,29 +410,29 @@ namespace Can
 			case Building_Group::House:
 			{
 				buildings_houses.push_back(new_building);
-				u16 domicilled{ Utility::Random::unsigned_16(0, building_type.capacity) };
+				u16 domicilled{ random_u16(0, building_type.capacity) };
 				for (u64 i{ 0 }; i < domicilled; i++)
 				{
 					u64 type{ 0 };
 					Person* new_person{ new Person(
 						person_prefabs[type],
-						Utility::Random::Float(4.0f, 6.0f)
+						random_f32(4.0f, 6.0f)
 					) };
 					new_person->type = type;
 					new_person->home = new_building;
 					new_person->status = PersonStatus::AtHome;
-					new_person->time_left = Utility::Random::Float(1.0f, 5.0f);
+					new_person->time_left = random_f32(1.0f, 5.0f);
 					new_building->people.push_back(new_person);
-					bool have_enough_money_to_own_car{ Utility::Random::Float(1.0f) > 0.4f };
+					bool have_enough_money_to_own_car{ random_f32(1.0f) > 0.4f };
 					if (have_enough_money_to_own_car)
 					{
-						u64 personal_vehicle_index{ Utility::Random::unsigned_64(personal_vehicles.size()) };
+						u64 personal_vehicle_index{ random_u64(personal_vehicles.size()) };
 						u64 new_vehicle_type_index{ personal_vehicles[personal_vehicle_index] };
 						const Vehicle_Type& new_vehicle_type{ vehicle_types[new_vehicle_type_index] };
 						Car* new_car{ new Car() };
 						new_car->object = new Object(new_vehicle_type.prefab);
 						new_car->type = new_vehicle_type_index;
-						new_car->speed_in_kmh = Utility::Random::Float(new_vehicle_type.speed_range_min, new_vehicle_type.speed_range_max);
+						new_car->speed_in_kmh = random_f32(new_vehicle_type.speed_range_min, new_vehicle_type.speed_range_max);
 						assert(building_type.vehicle_parks.size());
 						v3 car_pos{ new_building->object->position +
 							(v3)(glm::rotate(m4(1.0f), new_building->object->rotation.z, v3{ 0.0f, 0.0f, 1.0f }) *
@@ -439,17 +443,53 @@ namespace Can
 						car_rotation.z += glm::radians(building_type.vehicle_parks[0].rotation_in_degrees);
 						new_car->object->SetTransform(car_pos, car_rotation);
 						new_car->object->enabled = true;
-						new_car->owner = new_person;
 						new_person->car = new_car;
 						car_manager.m_Cars.push_back(new_car);
 					}
 
 					person_manager.m_People.push_back(new_person);
-					Building* work{ getAvailableWorkBuilding() };
-					if (work)
+					bool will_steal{ random_f32(1.0f) < 0.05f };
+					if (will_steal)
 					{
-						work->people.push_back(new_person);
-						new_person->work = work;
+						new_person->profession = Profession::Thief;
+					}
+					else
+					{
+						Building* work{ getAvailableWorkBuilding() };
+						if (work)
+						{
+							work->people.push_back(new_person);
+							new_person->work = work;
+							auto& work_building_type{ building_types[work->type] };
+							switch (work_building_type.group)
+							{
+							case Building_Group::House:
+							case Building_Group::Residential:
+								assert(false, "Wrong Building_Group for work");
+								break;
+							case Building_Group::Commercial:
+								new_person->profession = Profession::General_Commercial_Worker;
+								break;
+							case Building_Group::Industrial:
+								new_person->profession = Profession::General_Industrial_Worker;
+								break;
+							case Building_Group::Office:
+								new_person->profession = Profession::General_Office_Worker;
+								break;
+							case Building_Group::Hospital:
+								new_person->profession = Profession::Doctor;
+								break;
+							case Building_Group::Police_Station:
+								new_person->profession = Profession::Policeman;
+								break;
+							case Building_Group::Garbage_Collection_Center:
+								new_person->profession = Profession::Waste_Management_Worker;
+								break;
+							default:
+								assert(false, "Unimplemented Building_Group!");
+								break;
+							}
+						}
 					}
 				}
 				break;
@@ -459,16 +499,16 @@ namespace Can
 			case Building_Group::Industrial:
 			case Building_Group::Office:
 			case Building_Group::Hospital:
-			case Building_Group::Police_Station:
 			{
 				buildings_commercial.push_back(new_building);
-				u16 worker{ Utility::Random::unsigned_16(0, building_type.capacity) };
+				u16 worker{ random_u16(0, building_type.capacity) };
 				for (u64 i{ 0 }; i < worker; ++i)
 				{
-					Person* p{ person_manager.get_worklessPerson() };
+					Person* p{ person_manager.get_unemployed_person() };
 					if (p)
 					{
 						p->work = new_building;
+						p->profession = Profession::General_Commercial_Worker;
 						new_building->people.push_back(p);
 					}
 					else
@@ -477,16 +517,62 @@ namespace Can
 					}
 				}
 
-				u8 work_vehicle_count{ Utility::Random::unsigned_8(4, 6) };
+				u8 work_vehicle_count{ random_u8(4, 6) };
 				for (u64 i{ 0 }; i < work_vehicle_count; ++i)
 				{
-					u64 new_vehicle_type_index{ Utility::Random::unsigned_64(vehicle_types.size()) };
+					u64 commercial_vehicle_index{ random_u64(commercial_vehicles.size()) };
+					u64 new_vehicle_type_index{ commercial_vehicles[commercial_vehicle_index] };
 					const Vehicle_Type& new_vehicle_type{ vehicle_types[new_vehicle_type_index] };
 					Car* new_car{ new Car() };
 					new_car->object = new Object(new_vehicle_type.prefab);
 					new_car->type = new_vehicle_type_index;
-					new_car->speed_in_kmh = Utility::Random::Float(new_vehicle_type.speed_range_min, new_vehicle_type.speed_range_max);
+					new_car->speed_in_kmh = random_f32(new_vehicle_type.speed_range_min, new_vehicle_type.speed_range_max);
 					new_car->object->tintColor = v4{ 1.0f, 0.0f, 0.0f, 1.0f };
+					assert(building_type.vehicle_parks.size());
+					v3 car_pos{ new_building->object->position +
+						(v3)(glm::rotate(m4(1.0f), new_building->object->rotation.z, v3{ 0.0f, 0.0f, 1.0f }) *
+							glm::rotate(m4(1.0f), new_building->object->rotation.y, v3{ 0.0f, 1.0f, 0.0f }) *
+							glm::rotate(m4(1.0f), new_building->object->rotation.x, v3{ 1.0f, 0.0f, 0.0f }) *
+							v4(building_type.vehicle_parks[0].offset, 1.0f)) };
+					v3 car_rotation{ new_building->object->rotation };
+					car_rotation.z += glm::radians(building_type.vehicle_parks[0].rotation_in_degrees);
+					new_car->object->SetTransform(car_pos, car_rotation);
+					new_car->object->enabled = true;
+					new_car->building = new_building;
+					new_building->vehicles.push_back(new_car);
+					car_manager.m_Cars.push_back(new_car);
+				}
+				break;
+			}
+			case Building_Group::Police_Station:
+			{
+				buildings_specials.push_back(new_building);
+				u16 worker{ random_u16(0, building_type.capacity) };
+				for (u64 i{ 0 }; i < worker; ++i)
+				{
+					Person* p{ person_manager.get_unemployed_person() };
+					if (p)
+					{
+						p->work = new_building;
+						p->profession = Profession::Policeman;
+						new_building->people.push_back(p);
+					}
+					else
+					{
+						break;
+					}
+				}
+
+				u8 work_vehicle_count{ random_u8(4, 6) };
+				for (u64 i{ 0 }; i < work_vehicle_count; ++i)
+				{
+					u64 police_car_index{ random_u64(police_cars.size()) };
+					u64 new_vehicle_type_index{ police_cars[police_car_index] };
+					const Vehicle_Type& new_vehicle_type{ vehicle_types[new_vehicle_type_index] };
+					Car* new_car{ new Car() };
+					new_car->object = new Object(new_vehicle_type.prefab);
+					new_car->type = new_vehicle_type_index;
+					new_car->speed_in_kmh = random_f32(new_vehicle_type.speed_range_min, new_vehicle_type.speed_range_max);
 					assert(building_type.vehicle_parks.size());
 					v3 car_pos{ new_building->object->position +
 						(v3)(glm::rotate(m4(1.0f), new_building->object->rotation.z, v3{ 0.0f, 0.0f, 1.0f }) *
@@ -506,13 +592,14 @@ namespace Can
 			case Building_Group::Garbage_Collection_Center:
 			{
 				buildings_specials.push_back(new_building);
-				u16 worker{ Utility::Random::unsigned_16(0, building_type.capacity) };
+				u16 worker{ random_u16(0, building_type.capacity) };
 				for (u64 i{ 0 }; i < worker; ++i)
 				{
-					Person* p{ person_manager.get_worklessPerson() };
+					Person* p{ person_manager.get_unemployed_person() };
 					if (p)
 					{
 						p->work = new_building;
+						p->profession = Profession::Waste_Management_Worker;
 						new_building->people.push_back(p);
 					}
 					else
@@ -521,16 +608,16 @@ namespace Can
 					}
 				}
 
-				u8 work_vehicle_count{ Utility::Random::unsigned_8(4, 6) };
+				u8 work_vehicle_count{ random_u8(4, 6) };
 				for (u64 i{ 0 }; i < work_vehicle_count; ++i)
 				{
-					u64 garbage_truck_index{ Utility::Random::unsigned_64(garbage_trucks.size()) };
+					u64 garbage_truck_index{ random_u64(garbage_trucks.size()) };
 					u64 new_vehicle_type_index{ garbage_trucks[garbage_truck_index] };
 					const Vehicle_Type& new_vehicle_type{ vehicle_types[new_vehicle_type_index] };
 					Car* new_car{ new Car() };
 					new_car->object = new Object(new_vehicle_type.prefab);
 					new_car->type = new_vehicle_type_index;
-					new_car->speed_in_kmh = Utility::Random::Float(new_vehicle_type.speed_range_min, new_vehicle_type.speed_range_max);
+					new_car->speed_in_kmh = random_f32(new_vehicle_type.speed_range_min, new_vehicle_type.speed_range_max);
 					assert(building_type.vehicle_parks.size());
 					v3 car_pos{ new_building->object->position +
 						(v3)(glm::rotate(m4(1.0f), new_building->object->rotation.z, v3{ 0.0f, 0.0f, 1.0f }) *
@@ -652,6 +739,32 @@ namespace Can
 			auto& building_type{ building_types[b->type] };
 			if (building_type.capacity > b->people.size())
 				return b;
+		}
+		return nullptr;
+	}
+
+	Building* BuildingManager::get_building_to_steal_from(const std::vector<Building*>& ignored_buildings)
+	{
+		auto& building_types{ m_Scene->MainApplication->building_types };
+		for (Building*& building : m_Buildings)
+		{
+			auto& building_type{ building_types[building->type] };
+			if (building_type.group == Building_Group::Police_Station) continue;
+
+			if (building->people.size()) continue;
+			if (building->since_last_theft > 0.0f && building->since_last_theft < 60.0f) continue;
+
+			bool ignore = false;
+			for (const Building* ignored_building : ignored_buildings)
+			{
+				if (ignored_building == building)
+				{
+					ignore = true;
+					break;
+				}
+			}
+			if (ignore) continue;
+			return building;
 		}
 		return nullptr;
 	}

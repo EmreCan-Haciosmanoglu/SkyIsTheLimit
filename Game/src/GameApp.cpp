@@ -282,9 +282,11 @@ namespace Can
 			}
 		}
 		void load_vehicle_types(
-			std::vector<Vehicle_Type>& vehicle_types, 
-			std::vector<u64>& garbage_trucks,
-			std::vector<u64>& personal_vehicles
+			std::vector<Vehicle_Type>& vehicle_types,
+			std::vector<u64>& personal_vehicles,
+			std::vector<u64>& commercial_vehicles,
+			std::vector<u64>& police_cars,
+			std::vector<u64>& garbage_trucks
 		)
 		{
 			namespace fs = std::filesystem;
@@ -383,10 +385,20 @@ namespace Can
 							switch (vehicle_type.type)
 							{
 							case Car_Type::Personal:
+							{
 								personal_vehicles.push_back(vehicle_types.size() - 1);
 								break;
+							}
 							case Car_Type::Work:
+							{
+								commercial_vehicles.push_back(vehicle_types.size() - 1);
 								break;
+							}
+							case Car_Type::Police_Car:
+							{
+								police_cars.push_back(vehicle_types.size() - 1);
+								break;
+							}
 							case Car_Type::Garbage_Truck:
 							{
 								garbage_trucks.push_back(vehicle_types.size() - 1);
@@ -667,8 +679,10 @@ namespace Can
 		LoadTrees();
 		load_vehicle_types(
 			vehicle_types,
-			garbage_trucks,
-			personal_vehicles
+			personal_vehicles,
+			commercial_vehicles,
+			police_cars,
+			garbage_trucks
 		);
 		LoadPeople();
 

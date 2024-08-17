@@ -293,6 +293,23 @@ namespace Can
 				immediate_text("B", menu_item_rect, ui.label_theme_large_text);
 				if (flags & BUTTON_STATE_FLAGS_RELEASED)
 					ui.draw_building_panel_inside_type = Draw_Building_Panel::Special;
+
+				for (u64 i{ 0 }; i < building_types.size(); ++i)
+				{
+					auto& building_type{ building_types[i] };
+					if (building_type.group != Building_Group::Police_Station) continue;
+
+					menu_item_rect.x += menu_item_rect.w + button_margin;
+					flags = immediate_image_button(menu_item_rect, ui.button_theme_buildings, building_type.thumbnail, __LINE__ * 10000 + i, false);
+					if (flags & BUTTON_STATE_FLAGS_RELEASED)
+					{
+						ui.game_scene->SetConstructionMode(ConstructionMode::Building);
+						auto mode = ui.game_scene->m_BuildingManager.GetConstructionMode();
+						if (mode == BuildingConstructionMode::None || mode == BuildingConstructionMode::Destruct)
+							ui.game_scene->m_BuildingManager.SetConstructionMode(BuildingConstructionMode::Construct);
+						ui.game_scene->m_BuildingManager.SetType(i);
+					}
+				}
 			}
 			else if (ui.draw_building_panel_inside_type == Draw_Building_Panel::Garbage_Collection_Center)
 			{
@@ -1105,43 +1122,43 @@ namespace Can
 					{
 						switch (worker->education)
 						{
-						case PersonEducationLevel::Uneducated:
+						case EducationLevel::Uneducated:
 						{
 							++working_uneducated;
 							break;
 						}
-						case PersonEducationLevel::Elementary_School:
+						case EducationLevel::Elementary_School:
 						{
 							++working_elementary_school;
 							break;
 						}
-						case PersonEducationLevel::High_School:
+						case EducationLevel::High_School:
 						{
 							++working_high_school;
 							break;
 						}
-						case PersonEducationLevel::Associate_s:
+						case EducationLevel::Associate_s:
 						{
 							++working_associate_s;
 							break;
 						}
-						case PersonEducationLevel::Bachelor_s:
+						case EducationLevel::Bachelor_s:
 						{
 							++working_bachelor_s;
 							break;
 						}
-						case PersonEducationLevel::Master:
+						case EducationLevel::Master:
 						{
 							++working_master;
 							break;
 						}
-						case PersonEducationLevel::Doctorate:
+						case EducationLevel::Doctorate:
 						{
 							++working_doctorate;
 							break;
 						}
 						default:
-							assert(false, "Unimplemented PersonEducationLevel");
+							assert(false, "Unimplemented EducationLevel");
 							break;
 						}
 					}

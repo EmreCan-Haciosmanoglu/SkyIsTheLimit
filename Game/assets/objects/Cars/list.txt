@@ -6,7 +6,7 @@ Thumbnail:01/Thumbnail.png
 Speed_Range:30-50
 Operator_Count:1
 Passenger_Limit:4
-Type:0
+Type:1
 END
 START
 Name:Tesla Model X
@@ -34,6 +34,17 @@ Object:04/car.obj
 Texture:04/car.png
 Thumbnail:04/Thumbnail.png
 Speed_Range:20-40
+Operator_Count:1
+Passenger_Limit:4
+Cargo_Limit:25.0
+Type:3
+END
+START
+Name:Police Car
+Object:05/car.obj
+Texture:05/car.png
+Thumbnail:05/Thumbnail.png
+Speed_Range:40-50
 Operator_Count:1
 Passenger_Limit:4
 Cargo_Limit:15.0

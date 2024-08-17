@@ -253,9 +253,8 @@ namespace Can
 	{
 		if (!b_AddingRestricted)
 		{
-			using namespace Utility;
-			v3 randomRot{ 0.0f, 0.0f, Random::Float(-glm::radians(90.0f),glm::radians(90.0f)) };
-			v3 randomScale{ Random::Float(-0.2f, 0.2f),  Random::Float(-0.2f, 0.2f),  Random::Float(-0.2f, 0.2f) };
+			v3 randomRot{ 0.0f, 0.0f, random_f32(-glm::radians(90.0f),glm::radians(90.0f)) };
+			v3 randomScale{ random_f32(-0.2f, 0.2f), random_f32(-0.2f, 0.2f), random_f32(-0.2f, 0.2f) };
 			Object* tree = new Object(
 				m_Scene->MainApplication->trees[m_Type],
 				m_GuidelinePosition,

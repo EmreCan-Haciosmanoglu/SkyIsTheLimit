@@ -23,8 +23,8 @@ namespace Can
 
 		std::vector<struct RS_Transition_For_Vehicle*> path{};
 
-		class Person* owner{ nullptr };
 		class Person* driver{ nullptr };
+		std::vector<class Person*> passengers{};
 		class Building* building{ nullptr };
 	};
 }

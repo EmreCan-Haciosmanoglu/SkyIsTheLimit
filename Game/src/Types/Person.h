@@ -1,6 +1,7 @@
 #pragma once
 #include "Can.h"
-
+#include "EducationLevel.h"
+#include "Profession.h"
 
 namespace Can
 {
@@ -11,17 +12,11 @@ namespace Can
 		WalkingDead,
 		Walking,
 		Driving,
-		DrivingForWork
-	};
-	enum class PersonEducationLevel : u8
-	{
-		Uneducated,
-		Elementary_School,
-		High_School,
-		Associate_s,
-		Bachelor_s,
-		Master,
-		Doctorate = 6
+		DrivingForWork,
+		Arrested,
+		InJail,
+		Patrolling,
+		Responding
 	};
 
 	struct Transition;
@@ -42,7 +37,8 @@ namespace Can
 		v3 position{};
 		v3 target{};
 		PersonStatus status{ PersonStatus::AtHome };
-		PersonEducationLevel education{ PersonEducationLevel::Uneducated };
+		EducationLevel education{ EducationLevel::Uneducated };
+		Profession profession{ Profession::Unemployed };
 		std::vector<Transition*> path{};
 
 		Building* path_end_building{ nullptr };

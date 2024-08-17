@@ -44,6 +44,7 @@ namespace Can
 
 		void ResetStates();
 		Building* getAvailableWorkBuilding();
+		Building* get_building_to_steal_from(const std::vector<Building*>& ignored_buildings);
 	public:
 
 		std::array<bool, 2> snapOptions{ true, true };

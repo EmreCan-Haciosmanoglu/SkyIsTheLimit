@@ -58,6 +58,8 @@ namespace Can
 		std::vector<struct Road_Type> road_types;
 		std::vector<struct Vehicle_Type> vehicle_types;
 		std::vector<u64> personal_vehicles{};
+		std::vector<u64> commercial_vehicles{};
+		std::vector<u64> police_cars{};
 		std::vector<u64> garbage_trucks{};
 		std::vector<struct Building_Type> building_types;
 

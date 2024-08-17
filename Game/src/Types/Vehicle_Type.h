@@ -6,6 +6,7 @@ namespace Can
 	{
 		Personal = 0,
 		Work,
+		Police_Car,
 		Garbage_Truck
 	};
 

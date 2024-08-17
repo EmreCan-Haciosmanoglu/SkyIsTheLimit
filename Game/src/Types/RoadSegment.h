@@ -81,10 +81,7 @@ namespace Can
 
 
 		std::array<v3, 2> Directions{};
-		std::array<v2, 2> Rotations{
-			v2(0.0f),
-			v2(0.0f)
-		};
+		std::array<v2, 2> Rotations{ v2{}, v2{} };
 	};
 
 	bool remove_person_from(RoadSegment& segment, Person* person);
