@@ -225,6 +225,7 @@ namespace Can
 		auto& buildings{ m_BuildingManager.m_Buildings };
 		auto& cars{ m_CarManager.m_Cars };
 		auto& building_types{ MainApplication->building_types };
+		auto& vehicle_types{ MainApplication->vehicle_types };
 
 		/*RoadManager*/ {
 			fread(&m_RoadManager.snapFlags, sizeof(u8), 1, read_file);
@@ -439,7 +440,30 @@ namespace Can
 					car->building = buildings[building_index];
 					buildings[building_index]->vehicles.push_back(car);
 					// this is a work car
-					car->object->tintColor = v4{ 1.0f, 0.0f, 0.0f, 1.0f };
+					const Vehicle_Type& vehicle_type{ vehicle_types[car->type] };
+					switch (vehicle_type.type)
+					{
+					case Car_Type::Personal:
+					{
+						assert(false, "Imposible Branch");
+						break;
+					}
+					case Car_Type::Work:
+					{
+						car->object->tintColor = v4{ 1.0f, 0.0f, 0.0f, 1.0f };
+						break;
+					}
+					case Car_Type::Police_Car:
+					case Car_Type::Garbage_Truck:
+					{
+						// This is unnecessary but anyways
+						car->object->tintColor = v4{ 1.0f, 1.0f, 1.0f, 1.0f };
+						break;
+					}
+					default:
+						assert(false, "Unimplemented Car_Type");
+						break;
+					}
 				}
 				cars.push_back(car);
 			}
