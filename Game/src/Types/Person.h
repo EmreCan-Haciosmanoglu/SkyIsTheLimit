@@ -58,5 +58,6 @@ namespace Can
 		Car* car_driving{ nullptr }; // currently driven vehicle
 
 		f32 happiness{ 0.7f };
+		f32 health{ 1.0f };
 	};
 }

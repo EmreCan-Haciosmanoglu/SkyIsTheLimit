@@ -27,6 +27,7 @@ namespace Can
 		auto& road_nodes{ m_Scene->m_RoadManager.road_nodes };
 		auto& road_types{ m_Scene->MainApplication->road_types };
 		auto& building_types{ m_Scene->MainApplication->building_types };
+		constexpr f32 MAGIC_HEALTH_NUMBER = 0.25f;
 
 		for (size_t person_index = 0; person_index < m_People.size(); person_index++)
 		{
@@ -35,13 +36,43 @@ namespace Can
 			switch (p->status)
 			{
 			case PersonStatus::AtHome:
+			case PersonStatus::AtWork:
+			case PersonStatus::InJail:
 			{
-				p->time_left -= ts;
-
+				Building* const building{ (p->status == PersonStatus::AtHome) ? p->home : p->work };
+				assert(building);
 				// building currently in
 				// more educated less garbage
 				// different amount according to age
-				p->home->current_garbage += 0.1f * ts;
+				// if (building_types[p->work->type].group != Building_Group::Garbage_Collection_Center) we don't care tbh.
+				building->current_garbage += 0.1f * ts;
+				const f32 health_ratio{ building->current_health / building->max_health };
+				const f32 ratio_diff{ p->health - health_ratio };
+				p->health -= ts * ratio_diff * MAGIC_HEALTH_NUMBER;
+				p->health = std::clamp(p->health, 0.0f, 1.0f);
+				break;
+			}
+			case PersonStatus::WalkingDead:
+			case PersonStatus::Walking:
+			case PersonStatus::Driving:
+			case PersonStatus::DrivingForWork:
+			case PersonStatus::Arrested:
+			case PersonStatus::Patrolling:
+			case PersonStatus::Responding:
+			{
+				// Don't do anything
+				break;
+			}
+			default:
+				assert(false, "Unimplemented PersonStatus");
+				break;
+			}
+
+			switch (p->status)
+			{
+			case PersonStatus::AtHome:
+			{
+				p->time_left -= ts;
 
 				if (p->time_left <= 0.0f)
 				{
@@ -186,12 +217,6 @@ namespace Can
 			case PersonStatus::AtWork:
 			{
 				p->time_left -= ts;
-
-				// building currently in
-				// more educated less garbage
-				// different amount according to age
-				// if (building_types[p->work->type].group != Building_Group::Garbage_Collection_Center) we don't care tbh.
-				p->work->current_garbage += 0.1f * ts;
 
 				if (p->time_left <= 0.0f)
 				{
@@ -492,7 +517,7 @@ namespace Can
 								{
 									if (person_in_the_building->home == p->home) continue;
 									//Call the cops
-									bool assigned{ Helper::find_and_assign_a_policeman(p->home)};
+									bool assigned{ Helper::find_and_assign_a_policeman(p->home) };
 									if (assigned)
 									{
 										p->home->is_police_on_the_way = true;
@@ -653,12 +678,6 @@ namespace Can
 			case PersonStatus::InJail:
 			{
 				p->time_left -= ts;
-
-				// building currently in
-				// more educated less garbage
-				// different amount according to age
-				// if (building_types[p->work->type].group != Building_Group::Garbage_Collection_Center) we don't care tbh.
-				p->work->current_garbage += 0.1f * ts;
 
 				if (p->time_left <= 0.0f)
 				{
