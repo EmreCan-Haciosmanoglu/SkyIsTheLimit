@@ -29,15 +29,15 @@ Passenger_Limit:4
 Type:0
 END
 START
-Name:Garbage Truck
-Object:04/car.obj
-Texture:04/car.png
-Thumbnail:04/Thumbnail.png
-Speed_Range:20-40
+Name:Ambulance
+Object:06/car.obj
+Texture:06/car.png
+Thumbnail:06/Thumbnail.png
+Speed_Range:30-50
 Operator_Count:1
 Passenger_Limit:4
-Cargo_Limit:25.0
-Type:3
+Cargo_Limit:15.0
+Type:2
 END
 START
 Name:Police Car
@@ -48,5 +48,16 @@ Speed_Range:40-50
 Operator_Count:1
 Passenger_Limit:4
 Cargo_Limit:15.0
-Type:2
+Type:3
+END
+START
+Name:Garbage Truck
+Object:04/car.obj
+Texture:04/car.png
+Thumbnail:04/Thumbnail.png
+Speed_Range:20-40
+Operator_Count:1
+Passenger_Limit:4
+Cargo_Limit:25.0
+Type:4
 END
