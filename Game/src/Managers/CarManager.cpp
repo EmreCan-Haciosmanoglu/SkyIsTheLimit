@@ -211,6 +211,7 @@ namespace Can
 						{
 						case Car_Type::Personal:
 						case Car_Type::Work:
+						case Car_Type::Ambulance:
 						case Car_Type::Garbage_Truck:
 						{
 							// Garbage_Truck -> collect trash while moving
@@ -240,7 +241,7 @@ namespace Can
 										// TODO: And make some other person Thief???
 										reset_person(person);
 										person->profession = Profession::Unemployed;
-										person->status = PersonStatus::Arrested;
+										person->status = PersonStatus::IsPassenger;
 										car->passengers.push_back(person);
 										if (car->passengers.size() >= vehicle_type.passenger_limit)
 										{
@@ -293,11 +294,30 @@ namespace Can
 									// TODO: cache target car park position in car
 									auto building{ car->driver->path_end_building };
 									auto& building_type{ building_types[building->type] };
-									if (vehicle_type.type == Car_Type::Garbage_Truck)
+									switch (vehicle_type.type)
+									{
+									case Car_Type::Personal:
+									case Car_Type::Work:
+									{
+										assert(building_type.vehicle_parks.size());
+										v3 car_park_pos{ building->object->position +
+											(v3)(glm::rotate(m4(1.0f), building->object->rotation.z, v3{ 0.0f, 0.0f, 1.0f }) *
+												glm::rotate(m4(1.0f), building->object->rotation.y, v3{ 0.0f, 1.0f, 0.0f }) *
+												glm::rotate(m4(1.0f), building->object->rotation.x, v3{ 1.0f, 0.0f, 0.0f }) *
+												v4(building_type.vehicle_parks[0].offset, 1.0f)) };
+										set_car_target_and_direction(car, car_park_pos);
+										car->heading_to_a_parking_spot = true;
+										break;
+									}
+									case Car_Type::Ambulance:
+									case Car_Type::Police_Car:
+									case Car_Type::Garbage_Truck:
 									{
 										if (car->driver->path_end_building != car->driver->path_start_building)
 										{
-											//Collecting garbage
+											// Ambulance     : Heal patients
+											// Police_Car    : Catch thieves
+											// Garbage_Truck : Collecting garbage
 											v3 car_park_pos{ building->object->position +
 												(v3)(glm::rotate(m4(1.0f), building->object->rotation.z, v3{ 0.0f, 0.0f, 1.0f }) *
 													glm::rotate(m4(1.0f), building->object->rotation.y, v3{ 0.0f, 1.0f, 0.0f }) *
@@ -318,43 +338,11 @@ namespace Can
 											set_car_target_and_direction(car, car_park_pos);
 											car->heading_to_a_parking_spot = true;
 										}
+										break;
 									}
-									else if (vehicle_type.type == Car_Type::Police_Car)
-									{
-										if (car->driver->path_end_building != car->driver->path_start_building)
-										{
-											//Catch thieves
-											v3 car_park_pos{ building->object->position +
-												(v3)(glm::rotate(m4(1.0f), building->object->rotation.z, v3{ 0.0f, 0.0f, 1.0f }) *
-													glm::rotate(m4(1.0f), building->object->rotation.y, v3{ 0.0f, 1.0f, 0.0f }) *
-													glm::rotate(m4(1.0f), building->object->rotation.x, v3{ 1.0f, 0.0f, 0.0f }) *
-													v4(building_type.visiting_spot, 1.0f)) };
-											set_car_target_and_direction(car, car_park_pos);
-											car->heading_to_a_visiting_spot = true;
-										}
-										else
-										{
-											// Returning to police station
-											assert(building_type.vehicle_parks.size());
-											v3 car_park_pos{ building->object->position +
-												(v3)(glm::rotate(m4(1.0f), building->object->rotation.z, v3{ 0.0f, 0.0f, 1.0f }) *
-													glm::rotate(m4(1.0f), building->object->rotation.y, v3{ 0.0f, 1.0f, 0.0f }) *
-													glm::rotate(m4(1.0f), building->object->rotation.x, v3{ 1.0f, 0.0f, 0.0f }) *
-													v4(building_type.vehicle_parks[0].offset, 1.0f)) };
-											set_car_target_and_direction(car, car_park_pos);
-											car->heading_to_a_parking_spot = true;
-										}
-									}
-									else
-									{
-										assert(building_type.vehicle_parks.size());
-										v3 car_park_pos{ building->object->position +
-											(v3)(glm::rotate(m4(1.0f), building->object->rotation.z, v3{ 0.0f, 0.0f, 1.0f }) *
-												glm::rotate(m4(1.0f), building->object->rotation.y, v3{ 0.0f, 1.0f, 0.0f }) *
-												glm::rotate(m4(1.0f), building->object->rotation.x, v3{ 1.0f, 0.0f, 0.0f }) *
-												v4(building_type.vehicle_parks[0].offset, 1.0f)) };
-										set_car_target_and_direction(car, car_park_pos);
-										car->heading_to_a_parking_spot = true;
+									default:
+										assert(false, "Unimplemented Car_Type!");
+										break;
 									}
 
 									delete car->path[0];
@@ -420,6 +408,56 @@ namespace Can
 					{
 					case Car_Type::Personal:
 					case Car_Type::Work:
+					{
+						//Do Nothing
+						break;
+					}
+					case Car_Type::Ambulance:
+					{
+						// Heal less sick people
+						// Bring worse ones to hospital
+						Person* doctor{ car->driver };
+
+						for (Person* person : building->people)
+						{
+							f32 person_health_gone{ 1.0f - person->health };
+							if (person_health_gone > 0.75f)
+							{
+								if (car->passengers.size() < vehicle_type.passenger_limit)
+								{
+									reset_person(person);
+									person->status = PersonStatus::IsPassenger;
+									car->passengers.push_back(person);
+								}
+							}
+							else
+							{
+								if (person_health_gone < car->cargo)
+								{
+									person->health = 1.0f;
+									car->cargo -= person_health_gone;
+								}
+								else
+								{
+									person->health += car->cargo;
+									car->cargo = 0.0f;
+									break;
+								}
+							}
+						}
+
+						doctor->status = PersonStatus::DrivingForWork;
+						assert(doctor->work);
+						doctor->path_end_building = doctor->work;
+
+						car->path = Helper::get_path_for_a_car(building, doctor->work);
+						if (car->path.size() == 0) // if no path available
+						{
+							// reset to hospital
+							assert(false, "TODO");
+						}
+						break;
+					}
 					case Car_Type::Police_Car:
 					{
 						// Catch the thief if still at the house
@@ -435,7 +473,7 @@ namespace Can
 							// TODO: And make some other person Thief???
 							reset_person(person);
 							person->profession = Profession::Unemployed;
-							person->status = PersonStatus::Arrested;
+							person->status = PersonStatus::IsPassenger;
 							car->passengers.push_back(person);
 							if (car->passengers.size() >= vehicle_type.passenger_limit)
 							{
@@ -497,7 +535,7 @@ namespace Can
 						break;
 					}
 				}
-				else
+				else if(car->heading_to_a_parking_spot)
 				{
 					auto driver = car->driver;
 					car->driver = nullptr;
@@ -531,10 +569,22 @@ namespace Can
 					{
 						break;
 					}
-					case Car_Type::Garbage_Truck:
+					case Car_Type::Ambulance:
 					{
-						// TODO: do something more then just this
-						car->cargo = 0.0f;
+						// TODO: move sick people inside
+						// What if Hospital is full???
+						// Extra people will just wait to open space
+						while (car->passengers.size())
+						{
+							Person* patient{ car->passengers.back() };
+							building->visitors.push_back(patient);
+							car->passengers.pop_back();
+
+							patient->status = PersonStatus::InHospital;
+							patient->position = building->object->position;
+							patient->object->SetTransform(patient->position);
+							patient->hospital = building; // TODO: building_in
+						}
 						break;
 					}
 					case Car_Type::Police_Car:
@@ -555,11 +605,21 @@ namespace Can
 						}
 						break;
 					}
+					case Car_Type::Garbage_Truck:
+					{
+						// TODO: do something more then just this
+						car->cargo = 0.0f;
+						break;
+					}
 					default:
 						assert(false, "Unimplemented Car_Type");
 						break;
 					}
 
+				}
+				else
+				{
+					assert(false, "Imposible branch");
 				}
 			}
 		}

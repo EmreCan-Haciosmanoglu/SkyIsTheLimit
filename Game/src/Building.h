@@ -24,6 +24,7 @@ namespace Can
 
 		f32 max_health{ 50.0f };
 		f32 current_health{ 50.0f };
+		bool is_ambulance_on_the_way{ false };
 
 		f32 electricity_need{ 50.0f };
 		f32 electricity_provided{ 80.0f };

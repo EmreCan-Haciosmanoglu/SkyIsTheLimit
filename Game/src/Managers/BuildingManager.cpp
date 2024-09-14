@@ -825,19 +825,19 @@ namespace Can
 	void update_buildings(TimeStep ts)
 	{
 		auto& buildings{ GameScene::ActiveGameScene->m_BuildingManager.m_Buildings };
-		auto& building_types{ GameScene::ActiveGameScene->MainApplication->building_types};
-		constexpr f32 MAGIC_HEALTH_NUMBER = 0.2f;
+		auto& building_types{ GameScene::ActiveGameScene->MainApplication->building_types };
+		constexpr f32 MAGIC_HEALTH_NUMBER{ 0.2f };
 		for (auto& building : buildings)
 		{
 			const Building_Type& building_type{ building_types[building->type] };
 			building->since_last_garbage_pick_up += ts;
-			if(building_type.group != Building_Group::Hospital)
+			if (building_type.group != Building_Group::Hospital)
 			{
+				const f32 health_ratio{ building->current_health / building->max_health };
 				const f32 garbage_ratio{ building->current_garbage / building->garbage_capacity };
 				const f32 garbage_space_left{ std::max(0.0f, 1.0f - garbage_ratio) };
-				building->current_health -= ts * garbage_ratio * MAGIC_HEALTH_NUMBER;
-				const f32 min_health_possible{ building->max_health * garbage_space_left };
-				building->current_health = std::max(building->current_health, min_health_possible);
+				const f32 ratio_diff{ health_ratio - garbage_ratio };
+				building->current_health -= ts * ratio_diff * MAGIC_HEALTH_NUMBER;
 			}
 		}
 	}
