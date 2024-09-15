@@ -375,6 +375,7 @@ namespace Can
 		auto& vehicle_types = m_Scene->MainApplication->vehicle_types;
 		auto& personal_vehicles = m_Scene->MainApplication->personal_vehicles;
 		auto& commercial_vehicles = m_Scene->MainApplication->personal_vehicles;
+		auto& ambulances = m_Scene->MainApplication->ambulances;
 		auto& police_cars = m_Scene->MainApplication->police_cars;
 		auto& garbage_trucks = m_Scene->MainApplication->garbage_trucks;
 
@@ -500,7 +501,7 @@ namespace Can
 			case Building_Group::Office:
 			case Building_Group::Hospital:
 			{
-				buildings_commercial.push_back(new_building);
+				buildings_specials.push_back(new_building);
 				u16 worker{ random_u16(0, building_type.capacity) };
 				for (u64 i{ 0 }; i < worker; ++i)
 				{
@@ -508,7 +509,7 @@ namespace Can
 					if (p)
 					{
 						p->work = new_building;
-						p->profession = Profession::General_Commercial_Worker;
+						p->profession = Profession::Doctor;
 						new_building->people.push_back(p);
 					}
 					else
@@ -520,14 +521,13 @@ namespace Can
 				u8 work_vehicle_count{ random_u8(4, 6) };
 				for (u64 i{ 0 }; i < work_vehicle_count; ++i)
 				{
-					u64 commercial_vehicle_index{ random_u64(commercial_vehicles.size()) };
-					u64 new_vehicle_type_index{ commercial_vehicles[commercial_vehicle_index] };
+					u64 ambulance_index{ random_u64(ambulances.size()) };
+					u64 new_vehicle_type_index{ ambulances[ambulance_index] };
 					const Vehicle_Type& new_vehicle_type{ vehicle_types[new_vehicle_type_index] };
 					Car* new_car{ new Car() };
 					new_car->object = new Object(new_vehicle_type.prefab);
 					new_car->type = new_vehicle_type_index;
 					new_car->speed_in_kmh = random_f32(new_vehicle_type.speed_range_min, new_vehicle_type.speed_range_max);
-					new_car->object->tintColor = v4{ 1.0f, 0.0f, 0.0f, 1.0f };
 					assert(building_type.vehicle_parks.size());
 					v3 car_pos{ new_building->object->position +
 						(v3)(glm::rotate(m4(1.0f), new_building->object->rotation.z, v3{ 0.0f, 0.0f, 1.0f }) *
@@ -825,7 +825,20 @@ namespace Can
 	void update_buildings(TimeStep ts)
 	{
 		auto& buildings{ GameScene::ActiveGameScene->m_BuildingManager.m_Buildings };
+		auto& building_types{ GameScene::ActiveGameScene->MainApplication->building_types };
+		constexpr f32 MAGIC_HEALTH_NUMBER{ 0.2f };
 		for (auto& building : buildings)
+		{
+			const Building_Type& building_type{ building_types[building->type] };
 			building->since_last_garbage_pick_up += ts;
+			if (building_type.group != Building_Group::Hospital)
+			{
+				const f32 health_ratio{ building->current_health / building->max_health };
+				const f32 garbage_ratio{ building->current_garbage / building->garbage_capacity };
+				const f32 garbage_space_left{ std::max(0.0f, 1.0f - garbage_ratio) };
+				const f32 ratio_diff{ health_ratio - garbage_ratio };
+				building->current_health -= ts * ratio_diff * MAGIC_HEALTH_NUMBER;
+			}
+		}
 	}
 }

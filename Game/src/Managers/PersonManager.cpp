@@ -27,6 +27,8 @@ namespace Can
 		auto& road_nodes{ m_Scene->m_RoadManager.road_nodes };
 		auto& road_types{ m_Scene->MainApplication->road_types };
 		auto& building_types{ m_Scene->MainApplication->building_types };
+		constexpr f32 MAGIC_HEALTH_NUMBER{ 0.05f };
+		constexpr f32 MAGIC_HEALING_NUMBER{ 0.5f };
 
 		for (size_t person_index = 0; person_index < m_People.size(); person_index++)
 		{
@@ -35,13 +37,58 @@ namespace Can
 			switch (p->status)
 			{
 			case PersonStatus::AtHome:
+			case PersonStatus::AtWork:
+			case PersonStatus::InJail:
 			{
-				p->time_left -= ts;
-
+				Building* const building{ (p->status == PersonStatus::AtHome) ? p->home : p->work };
+				assert(building);
 				// building currently in
 				// more educated less garbage
 				// different amount according to age
-				p->home->current_garbage += 0.1f * ts;
+				// if (building_types[p->work->type].group != Building_Group::Garbage_Collection_Center) we don't care tbh.
+				building->current_garbage += 0.1f * ts;
+				const f32 health_ratio{ building->current_health / building->max_health };
+				const f32 health_missing{ 1.0f - health_ratio };
+				p->health -= ts * health_missing * MAGIC_HEALTH_NUMBER;
+
+				p->health = std::max(p->health, 0.2f); // TODO: Become sick
+				break;
+			}
+			case PersonStatus::WalkingDead:
+			case PersonStatus::Walking:
+			case PersonStatus::Driving:
+			case PersonStatus::DrivingForWork:
+			case PersonStatus::IsPassenger:
+			case PersonStatus::Patrolling:
+			case PersonStatus::Responding:
+			case PersonStatus::InHospital:
+			{
+				// Don't do anything
+				break;
+			}
+			default:
+				assert(false, "Unimplemented PersonStatus");
+				break;
+			}
+
+			//	if (p->health < 0.0f)
+			//	{
+			//		// TODO: Die
+			//		assert(false, "DIE");
+			//	}
+
+			switch (p->status)
+			{
+			case PersonStatus::AtHome:
+			{
+				if (p->health < 0.25f) // You are almost sick 
+				{
+					if (p->home->is_ambulance_on_the_way) break;
+					// Call an ambulance
+					Helper::find_and_assign_an_ambulance(p->home);
+					break;
+				}
+				p->time_left -= ts;
 
 				if (p->time_left <= 0.0f)
 				{
@@ -187,12 +234,6 @@ namespace Can
 			{
 				p->time_left -= ts;
 
-				// building currently in
-				// more educated less garbage
-				// different amount according to age
-				// if (building_types[p->work->type].group != Building_Group::Garbage_Collection_Center) we don't care tbh.
-				p->work->current_garbage += 0.1f * ts;
-
 				if (p->time_left <= 0.0f)
 				{
 					switch (p->profession)
@@ -209,7 +250,10 @@ namespace Can
 					case Profession::Policeman:
 					case Profession::Waste_Management_Worker:
 					{
-						if (p->drove_in_work)
+						if (
+							p->drove_in_work ||
+							(p->profession == Profession::Doctor) // Doctors just go home after times up
+							)
 						{
 							p->drove_in_work = false;
 							if (p->car)
@@ -492,11 +536,7 @@ namespace Can
 								{
 									if (person_in_the_building->home == p->home) continue;
 									//Call the cops
-									bool assigned{ Helper::find_and_assign_a_policeman(p->home)};
-									if (assigned)
-									{
-										p->home->is_police_on_the_way = true;
-									}
+									Helper::find_and_assign_a_policeman(p->home);
 								}
 							}
 						}
@@ -522,6 +562,10 @@ namespace Can
 									p->status = PersonStatus::Patrolling;
 								else
 									p->status = PersonStatus::Responding;
+							}
+							else if (p->profession == Profession::Doctor)
+							{
+								p->status = PersonStatus::Responding;
 							}
 							else
 							{
@@ -644,7 +688,7 @@ namespace Can
 			case PersonStatus::Responding:
 				// Handled in CarManager
 				break;
-			case PersonStatus::Arrested:
+			case PersonStatus::IsPassenger:
 				// Don't do anything for now
 				break;
 			case PersonStatus::WalkingDead:
@@ -653,12 +697,6 @@ namespace Can
 			case PersonStatus::InJail:
 			{
 				p->time_left -= ts;
-
-				// building currently in
-				// more educated less garbage
-				// different amount according to age
-				// if (building_types[p->work->type].group != Building_Group::Garbage_Collection_Center) we don't care tbh.
-				p->work->current_garbage += 0.1f * ts;
 
 				if (p->time_left <= 0.0f)
 				{
@@ -708,6 +746,65 @@ namespace Can
 						sidewalk_position_offset *= road_segment_type.lanes_backward[0].distance_from_center;
 
 					((RS_Transition_For_Walking*)p->path[0])->at_path_array_index = police_station->snapped_t_index;
+
+					set_person_target(p, offsetted + sidewalk_position_offset);
+				}
+				break;
+			}
+			case PersonStatus::InHospital:
+			{
+				p->health += 0.1f * ts * MAGIC_HEALING_NUMBER;
+
+				if (p->health > 1.0f)
+				{
+					p->health = 1.0f;
+
+					Building* hospital = p->hospital;
+					p->hospital = nullptr;
+					p->path = Helper::get_path(hospital, p->home);
+
+					p->path_start_building = hospital;
+					p->path_end_building = p->home;
+
+					if (p->path.size() == 0) // if no path available
+					{
+						// path to home is cut out / destroyed
+						reset_person_back_to_home(p);
+						continue;
+					}
+
+					// TODO: Combine these two line into a function
+					p->position = hospital->object->position;
+					p->object->SetTransform(p->position);
+					p->object->enabled = true;
+
+					p->heading_to_a_building = false;
+					p->heading_to_a_car = false;
+					p->status = PersonStatus::Walking;
+
+					p->road_segment = hospital->connected_road_segment;
+					RoadSegment& road_segment = road_segments[p->road_segment];
+					road_segment.people.push_back(p);
+
+					// TODO: Refactor this scope into a function
+					RS_Transition_For_Walking* rs_transition = (RS_Transition_For_Walking*)p->path[0];
+					Road_Type& road_segment_type = road_types[road_segment.type];
+
+					assert(hospital->snapped_t_index < (s64)road_segment.curve_samples.size() - 1);
+					v3 target_position = road_segment.curve_samples[hospital->snapped_t_index];
+					assert(road_segment.curve_samples.size() - 1 >= hospital->snapped_t_index + 1);
+					v3 target_position_plus_one = road_segment.curve_samples[hospital->snapped_t_index + 1];
+
+					v3 dir = target_position_plus_one - target_position;
+					v3 offsetted = target_position + dir * hospital->snapped_t;
+
+					v3 sidewalk_position_offset = glm::normalize(v3{ dir.y, -dir.x, 0.0f });
+					if (hospital->snapped_to_right)
+						sidewalk_position_offset *= road_segment_type.lanes_forward[road_segment_type.lanes_forward.size() - 1].distance_from_center;
+					else
+						sidewalk_position_offset *= road_segment_type.lanes_backward[0].distance_from_center;
+
+					((RS_Transition_For_Walking*)p->path[0])->at_path_array_index = hospital->snapped_t_index;
 
 					set_person_target(p, offsetted + sidewalk_position_offset);
 				}
@@ -824,7 +921,7 @@ namespace Can
 					glm::rotate(m4(1.0f), home->object->rotation.y, v3{ 0.0f, 1.0f, 0.0f }) *
 					glm::rotate(m4(1.0f), home->object->rotation.x, v3{ 1.0f, 0.0f, 0.0f }) *
 					v4(building_type.vehicle_parks[0].offset, 1.0f)) };
-			p->car_driving->object->SetTransform(
+			p->car->object->SetTransform(
 				car_driving_pos,
 				glm::rotateZ(
 					home->object->rotation,

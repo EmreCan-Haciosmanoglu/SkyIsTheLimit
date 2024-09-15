@@ -13,8 +13,9 @@ namespace Can
 		Walking,
 		Driving,
 		DrivingForWork,
-		Arrested,
+		IsPassenger,
 		InJail,
+		InHospital,
 		Patrolling,
 		Responding
 	};
@@ -54,9 +55,11 @@ namespace Can
 		std::string surName{ "Tadaam" };
 		Building* home{ nullptr };
 		Building* work{ nullptr };
+		Building* hospital{ nullptr }; // TODO: Find better way
 		Car* car{ nullptr };
 		Car* car_driving{ nullptr }; // currently driven vehicle
 
 		f32 happiness{ 0.7f };
+		f32 health{ 1.0f };
 	};
 }
