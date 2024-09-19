@@ -21,6 +21,17 @@ Vehicle_Parks:1
 Visiting_Spot:0.1:0.0:0.0
 END
 START
+Object:06/Building.obj
+Texture:06/Building.png
+Thumbnail:06/Thumbnail.png
+Name:Gas Station
+Capacity:10
+Group:2
+Vehicle_Parks:1
+0.5:0.0:0.0:0.0
+Visiting_Spot:0.1:0.0:0.0
+END
+START
 Object:03/Building.obj
 Texture:03/Building.png
 Thumbnail:03/Thumbnail.png
@@ -29,6 +40,16 @@ Capacity:50
 Group:5
 Vehicle_Parks:1
 -0.25:1.85:0.0:90.0
+Visiting_Spot:0.1:0.0:0.0
+END
+Object:05/Building.obj
+Texture:05/Building.png
+Thumbnail:05/Thumbnail.png
+Name:Police Station
+Capacity:10
+Group:6
+Vehicle_Parks:1
+0.25:-1.05:0.0:90.0
 Visiting_Spot:0.1:0.0:0.0
 END
 START
@@ -43,24 +64,3 @@ Vehicle_Parks:1
 Visiting_Spot:0.1:0.0:0.0
 END
 START
-Object:05/Building.obj
-Texture:05/Building.png
-Thumbnail:05/Thumbnail.png
-Name:Police Station
-Capacity:10
-Group:6
-Vehicle_Parks:1
-0.25:-1.05:0.0:90.0
-Visiting_Spot:0.1:0.0:0.0
-END
-START
-Object:01/Building.obj
-Texture:01/Building.png
-Thumbnail:01/Thumbnail.png
-Name:3+1 Work Place
-Capacity:25
-Group:2
-Vehicle_Parks:1
-0.5:0.0:0.0:0.0
-Visiting_Spot:0.1:0.0:0.0
-END
