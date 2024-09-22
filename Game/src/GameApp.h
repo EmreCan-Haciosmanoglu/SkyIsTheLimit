@@ -59,6 +59,7 @@ namespace Can
 		std::vector<struct Vehicle_Type> vehicle_types;
 		std::vector<u64> personal_vehicles{};
 		std::vector<u64> commercial_vehicles{};
+		std::vector<u64> industrial_vehicles{};
 		std::vector<u64> ambulances{};
 		std::vector<u64> police_cars{};
 		std::vector<u64> garbage_trucks{};

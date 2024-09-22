@@ -5,7 +5,8 @@ namespace Can
 	enum class Car_Type : u8 
 	{
 		Personal = 0,
-		Work,
+		Commercial,
+		Industrial,
 		Ambulance,
 		Police_Car,
 		Garbage_Truck

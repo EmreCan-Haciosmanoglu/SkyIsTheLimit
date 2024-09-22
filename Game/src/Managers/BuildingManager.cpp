@@ -374,7 +374,8 @@ namespace Can
 
 		auto& vehicle_types = m_Scene->MainApplication->vehicle_types;
 		auto& personal_vehicles = m_Scene->MainApplication->personal_vehicles;
-		auto& commercial_vehicles = m_Scene->MainApplication->personal_vehicles;
+		auto& commercial_vehicles = m_Scene->MainApplication->commercial_vehicles;
+		auto& industrial_vehicles = m_Scene->MainApplication->industrial_vehicles;
 		auto& ambulances = m_Scene->MainApplication->ambulances;
 		auto& police_cars = m_Scene->MainApplication->police_cars;
 		auto& garbage_trucks = m_Scene->MainApplication->garbage_trucks;
@@ -409,6 +410,7 @@ namespace Can
 			switch (building_type.group)
 			{
 			case Building_Group::House:
+			case Building_Group::Residential:
 			{
 				buildings_houses.push_back(new_building);
 				u16 domicilled{ random_u16(0, building_type.capacity) };
@@ -495,9 +497,96 @@ namespace Can
 				}
 				break;
 			}
-			case Building_Group::Residential:
 			case Building_Group::Commercial:
+			{
+				buildings_commercial.push_back(new_building);
+				u16 worker{ random_u16(0, building_type.capacity) };
+				for (u64 i{ 0 }; i < worker; ++i)
+				{
+					Person* p{ person_manager.get_unemployed_person() };
+					if (p)
+					{
+						p->work = new_building;
+						p->profession = Profession::General_Commercial_Worker;
+						new_building->people.push_back(p);
+					}
+					else
+					{
+						break;
+					}
+				}
+
+				u8 work_vehicle_count{ random_u8(4, 6) };
+				for (u64 i{ 0 }; i < work_vehicle_count; ++i)
+				{
+					u64 commercial_vehicle_index{ random_u64(commercial_vehicles.size()) };
+					u64 new_vehicle_type_index{ commercial_vehicles[commercial_vehicle_index] };
+					const Vehicle_Type& new_vehicle_type{ vehicle_types[new_vehicle_type_index] };
+					Car* new_car{ new Car() };
+					new_car->object = new Object(new_vehicle_type.prefab);
+					new_car->type = new_vehicle_type_index;
+					new_car->speed_in_kmh = random_f32(new_vehicle_type.speed_range_min, new_vehicle_type.speed_range_max);
+					assert(building_type.vehicle_parks.size());
+					v3 car_pos{ new_building->object->position +
+						(v3)(glm::rotate(m4(1.0f), new_building->object->rotation.z, v3{ 0.0f, 0.0f, 1.0f }) *
+							glm::rotate(m4(1.0f), new_building->object->rotation.y, v3{ 0.0f, 1.0f, 0.0f }) *
+							glm::rotate(m4(1.0f), new_building->object->rotation.x, v3{ 1.0f, 0.0f, 0.0f }) *
+							v4(building_type.vehicle_parks[0].offset, 1.0f)) };
+					v3 car_rotation{ new_building->object->rotation };
+					car_rotation.z += glm::radians(building_type.vehicle_parks[0].rotation_in_degrees);
+					new_car->object->SetTransform(car_pos, car_rotation);
+					new_car->object->enabled = true;
+					new_car->building = new_building;
+					new_building->vehicles.push_back(new_car);
+					car_manager.m_Cars.push_back(new_car);
+				}
+				break;
+			}
 			case Building_Group::Industrial:
+			{
+				buildings_industrial.push_back(new_building);
+				u16 worker{ random_u16(0, building_type.capacity) };
+				for (u64 i{ 0 }; i < worker; ++i)
+				{
+					Person* p{ person_manager.get_unemployed_person() };
+					if (p)
+					{
+						p->work = new_building;
+						p->profession = Profession::General_Industrial_Worker;
+						new_building->people.push_back(p);
+					}
+					else
+					{
+						break;
+					}
+				}
+
+				u8 work_vehicle_count{ random_u8(4, 6) };
+				for (u64 i{ 0 }; i < work_vehicle_count; ++i)
+				{
+					u64 industrial_vehicle_index{ random_u64(industrial_vehicles.size()) };
+					u64 new_vehicle_type_index{ industrial_vehicles[industrial_vehicle_index] };
+					const Vehicle_Type& new_vehicle_type{ vehicle_types[new_vehicle_type_index] };
+					Car* new_car{ new Car() };
+					new_car->object = new Object(new_vehicle_type.prefab);
+					new_car->type = new_vehicle_type_index;
+					new_car->speed_in_kmh = random_f32(new_vehicle_type.speed_range_min, new_vehicle_type.speed_range_max);
+					assert(building_type.vehicle_parks.size());
+					v3 car_pos{ new_building->object->position +
+						(v3)(glm::rotate(m4(1.0f), new_building->object->rotation.z, v3{ 0.0f, 0.0f, 1.0f }) *
+							glm::rotate(m4(1.0f), new_building->object->rotation.y, v3{ 0.0f, 1.0f, 0.0f }) *
+							glm::rotate(m4(1.0f), new_building->object->rotation.x, v3{ 1.0f, 0.0f, 0.0f }) *
+							v4(building_type.vehicle_parks[0].offset, 1.0f)) };
+					v3 car_rotation{ new_building->object->rotation };
+					car_rotation.z += glm::radians(building_type.vehicle_parks[0].rotation_in_degrees);
+					new_car->object->SetTransform(car_pos, car_rotation);
+					new_car->object->enabled = true;
+					new_car->building = new_building;
+					new_building->vehicles.push_back(new_car);
+					car_manager.m_Cars.push_back(new_car);
+				}
+				break;
+			}
 			case Building_Group::Office:
 			case Building_Group::Hospital:
 			{
@@ -771,12 +860,13 @@ namespace Can
 
 	void remove_building(Building* b)
 	{
-		GameScene* game = GameScene::ActiveGameScene;
-		auto& buildings = game->m_BuildingManager.m_Buildings;
-		auto& home_buildings = game->m_BuildingManager.buildings_houses;
-		auto& work_buildings = game->m_BuildingManager.buildings_commercial;
-		auto& segments = game->m_RoadManager.road_segments;
-		const auto& people_on_the_road = game->m_PersonManager.get_people_on_the_road();
+		GameScene* game{ GameScene::ActiveGameScene };
+		auto& ui{ game->ui_layer };
+		auto& buildings {game->m_BuildingManager.m_Buildings};
+		auto& home_buildings {game->m_BuildingManager.buildings_houses};
+		auto& work_buildings {game->m_BuildingManager.buildings_commercial};
+		auto& segments {game->m_RoadManager.road_segments};
+		const auto& people_on_the_road {game->m_PersonManager.get_people_on_the_road()};
 
 		while (b->people.size() > 0)
 			remove_person(b->people[0]);
@@ -798,26 +888,29 @@ namespace Can
 
 		if (b->connected_road_segment != -1)
 		{
-			auto& connected_buildings = segments[b->connected_road_segment].buildings;
-			auto it = std::find(connected_buildings.begin(), connected_buildings.end(), b);
+			auto& connected_buildings{ segments[b->connected_road_segment].buildings };
+			auto it {std::find(connected_buildings.begin(), connected_buildings.end(), b)};
 			assert(it != connected_buildings.end());
 			connected_buildings.erase(it);
 		}
 
-		auto it = std::find(buildings.begin(), buildings.end(), b);
+		auto it{ std::find(buildings.begin(), buildings.end(), b) };
 		assert(it != buildings.end());
 		buildings.erase(it);
 
-		auto home_it = std::find(home_buildings.begin(), home_buildings.end(), b);
+		auto home_it {std::find(home_buildings.begin(), home_buildings.end(), b)};
 		if (home_it != home_buildings.end())
 			home_buildings.erase(home_it);
 
-		auto work_it = std::find(work_buildings.begin(), work_buildings.end(), b);
+		auto work_it {std::find(work_buildings.begin(), work_buildings.end(), b)};
 		if (work_it != work_buildings.end())
 			work_buildings.erase(work_it);
 
 		while (b->vehicles.size() > 0)
 			remove_car(b->vehicles[0]);
+
+		if (ui.selected_building == b)
+			ui.selected_building = nullptr;
 
 		delete b;
 	}

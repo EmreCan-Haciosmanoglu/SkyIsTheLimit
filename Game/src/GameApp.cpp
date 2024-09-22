@@ -285,6 +285,7 @@ namespace Can
 			std::vector<Vehicle_Type>& vehicle_types,
 			std::vector<u64>& personal_vehicles,
 			std::vector<u64>& commercial_vehicles,
+			std::vector<u64>& industrial_vehicles,
 			std::vector<u64>& ambulances,
 			std::vector<u64>& police_cars,
 			std::vector<u64>& garbage_trucks
@@ -390,9 +391,14 @@ namespace Can
 								personal_vehicles.push_back(vehicle_types.size() - 1);
 								break;
 							}
-							case Car_Type::Work:
+							case Car_Type::Commercial:
 							{
 								commercial_vehicles.push_back(vehicle_types.size() - 1);
+								break;
+							}
+							case Car_Type::Industrial:
+							{
+								industrial_vehicles.push_back(vehicle_types.size() - 1);
 								break;
 							}
 							case Car_Type::Ambulance:
@@ -687,6 +693,7 @@ namespace Can
 			vehicle_types,
 			personal_vehicles,
 			commercial_vehicles,
+			industrial_vehicles,
 			ambulances,
 			police_cars,
 			garbage_trucks

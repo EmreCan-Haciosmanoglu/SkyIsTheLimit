@@ -210,7 +210,8 @@ namespace Can
 						switch (vehicle_type.type)
 						{
 						case Car_Type::Personal:
-						case Car_Type::Work:
+						case Car_Type::Commercial:
+						case Car_Type::Industrial:
 						case Car_Type::Ambulance:
 						case Car_Type::Garbage_Truck:
 						{
@@ -297,7 +298,8 @@ namespace Can
 									switch (vehicle_type.type)
 									{
 									case Car_Type::Personal:
-									case Car_Type::Work:
+									case Car_Type::Commercial:
+									case Car_Type::Industrial:
 									{
 										assert(building_type.vehicle_parks.size());
 										v3 car_park_pos{ building->object->position +
@@ -407,7 +409,8 @@ namespace Can
 					switch (vehicle_type.type)
 					{
 					case Car_Type::Personal:
-					case Car_Type::Work:
+					case Car_Type::Commercial:
+					case Car_Type::Industrial:
 					{
 						//Do Nothing
 						break;
@@ -565,7 +568,8 @@ namespace Can
 					switch (vehicle_type.type)
 					{
 					case Car_Type::Personal:
-					case Car_Type::Work:
+					case Car_Type::Commercial:
+					case Car_Type::Industrial:
 					{
 						break;
 					}

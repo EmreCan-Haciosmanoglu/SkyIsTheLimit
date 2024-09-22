@@ -439,31 +439,6 @@ namespace Can
 				{
 					car->building = buildings[building_index];
 					buildings[building_index]->vehicles.push_back(car);
-					// this is a work car
-					const Vehicle_Type& vehicle_type{ vehicle_types[car->type] };
-					switch (vehicle_type.type)
-					{
-					case Car_Type::Personal:
-					{
-						assert(false, "Imposible Branch");
-						break;
-					}
-					case Car_Type::Work:
-					{
-						car->object->tintColor = v4{ 1.0f, 0.0f, 0.0f, 1.0f };
-						break;
-					}
-					case Car_Type::Police_Car:
-					case Car_Type::Garbage_Truck:
-					{
-						// This is unnecessary but anyways
-						car->object->tintColor = v4{ 1.0f, 1.0f, 1.0f, 1.0f };
-						break;
-					}
-					default:
-						assert(false, "Unimplemented Car_Type");
-						break;
-					}
 				}
 				cars.push_back(car);
 			}

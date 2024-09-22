@@ -42,7 +42,7 @@ Vehicle_Parks:1
 -0.25:1.85:0.0:90.0
 Visiting_Spot:0.1:0.0:0.0
 END
-START	
+START
 Object:05/Building.obj
 Texture:05/Building.png
 Thumbnail:05/Thumbnail.png

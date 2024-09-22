@@ -1,12 +1,12 @@
 START
-Name:Tesla CyberTruck
-Object:01/car.obj
-Texture:01/car.png
-Thumbnail:01/Thumbnail.png
-Speed_Range:30-50
+Name:Generic Passenger Vehicle
+Object:03/car.obj
+Texture:03/car.png
+Thumbnail:03/Thumbnail.png
+Speed_Range:30-40
 Operator_Count:1
 Passenger_Limit:4
-Type:1
+Type:0
 END
 START
 Name:Tesla Model X
@@ -19,14 +19,24 @@ Passenger_Limit:4
 Type:0
 END
 START
-Name:Generic Passenger Vehicle
-Object:03/car.obj
-Texture:03/car.png
-Thumbnail:03/Thumbnail.png
-Speed_Range:30-40
+Name:Tesla CyberTruck
+Object:01/car.obj
+Texture:01/car.png
+Thumbnail:01/Thumbnail.png
+Speed_Range:30-50
 Operator_Count:1
 Passenger_Limit:4
-Type:0
+Type:1
+END
+START
+Name:Package Truck
+Object:07/car.obj
+Texture:07/car.png
+Thumbnail:07/Thumbnail.png
+Speed_Range:25-40
+Operator_Count:1
+Passenger_Limit:2
+Type:2
 END
 START
 Name:Ambulance
@@ -37,7 +47,7 @@ Speed_Range:30-50
 Operator_Count:1
 Passenger_Limit:4
 Cargo_Limit:15.0
-Type:2
+Type:3
 END
 START
 Name:Police Car
@@ -48,7 +58,7 @@ Speed_Range:40-50
 Operator_Count:1
 Passenger_Limit:4
 Cargo_Limit:15.0
-Type:3
+Type:4
 END
 START
 Name:Garbage Truck
@@ -59,5 +69,5 @@ Speed_Range:20-40
 Operator_Count:1
 Passenger_Limit:4
 Cargo_Limit:25.0
-Type:4
+Type:5
 END
