@@ -219,6 +219,23 @@ namespace Can
 				if (flags & BUTTON_STATE_FLAGS_RELEASED)
 					ui.draw_building_panel_inside_type = Draw_Building_Panel::General;
 
+				for (u64 i{ 0 }; i < building_types.size(); ++i)
+				{
+					auto& building_type{ building_types[i] };
+					if (building_type.group != Building_Group::Residential) continue;
+
+					menu_item_rect.x += menu_item_rect.w + button_margin;
+					flags = immediate_image_button(menu_item_rect, ui.button_theme_buildings, building_type.thumbnail, __LINE__ * 10000 + i, false);
+					if (flags & BUTTON_STATE_FLAGS_RELEASED)
+					{
+						ui.game_scene->SetConstructionMode(ConstructionMode::Building);
+						auto mode = ui.game_scene->m_BuildingManager.GetConstructionMode();
+						if (mode == BuildingConstructionMode::None || mode == BuildingConstructionMode::Destruct)
+							ui.game_scene->m_BuildingManager.SetConstructionMode(BuildingConstructionMode::Construct);
+						ui.game_scene->m_BuildingManager.SetType(i);
+					}
+				}
+
 			}
 			else if (ui.draw_building_panel_inside_type == Draw_Building_Panel::Commercial)
 			{
