@@ -252,7 +252,10 @@ namespace Can
 					{
 						if (
 							p->drove_in_work ||
-							(p->profession == Profession::Doctor) // Doctors just go home after times up
+
+							/* just go home after times up */
+							(p->profession == Profession::Doctor) ||
+							(p->profession == Profession::General_Office_Worker)
 							)
 						{
 							p->drove_in_work = false;

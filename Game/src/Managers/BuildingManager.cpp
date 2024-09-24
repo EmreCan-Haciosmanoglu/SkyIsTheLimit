@@ -588,6 +588,25 @@ namespace Can
 				break;
 			}
 			case Building_Group::Office:
+			{
+				buildings_office.push_back(new_building);
+				u16 worker{ random_u16(0, building_type.capacity) };
+				for (u64 i{ 0 }; i < worker; ++i)
+				{
+					Person* p{ person_manager.get_unemployed_person() };
+					if (p)
+					{
+						p->work = new_building;
+						p->profession = Profession::General_Office_Worker;
+						new_building->people.push_back(p);
+					}
+					else
+					{
+						break;
+					}
+				}
+				break;
+			}
 			case Building_Group::Hospital:
 			{
 				buildings_specials.push_back(new_building);
