@@ -412,7 +412,11 @@ namespace Can
 			case Building_Group::House:
 			case Building_Group::Residential:
 			{
-				buildings_houses.push_back(new_building);
+				if (building_type.group == Building_Group::House)
+					buildings_houses.push_back(new_building);
+				else
+					buildings_residential.push_back(new_building);
+
 				u16 domicilled{ random_u16(0, building_type.capacity) };
 				for (u64 i{ 0 }; i < domicilled; i++)
 				{
@@ -881,11 +885,19 @@ namespace Can
 	{
 		GameScene* game{ GameScene::ActiveGameScene };
 		auto& ui{ game->ui_layer };
-		auto& buildings {game->m_BuildingManager.m_Buildings};
-		auto& home_buildings {game->m_BuildingManager.buildings_houses};
-		auto& work_buildings {game->m_BuildingManager.buildings_commercial};
-		auto& segments {game->m_RoadManager.road_segments};
-		const auto& people_on_the_road {game->m_PersonManager.get_people_on_the_road()};
+		auto& road_segments{ game->m_RoadManager.road_segments };
+		auto& building_types{ game->MainApplication->building_types };
+
+		auto& buildings{ game->m_BuildingManager.m_Buildings };
+		auto& buildings_houses{ game->m_BuildingManager.buildings_houses };
+		auto& buildings_residential{ game->m_BuildingManager.buildings_residential };
+		auto& buildings_commercial{ game->m_BuildingManager.buildings_commercial };
+		auto& buildings_industrial{ game->m_BuildingManager.buildings_industrial };
+		auto& buildings_office{ game->m_BuildingManager.buildings_office };
+		auto& buildings_specials{ game->m_BuildingManager.buildings_specials };
+
+		const auto& people_on_the_road{ game->m_PersonManager.get_people_on_the_road() };
+		const auto& building_type{ building_types[b->type] };
 
 		while (b->people.size() > 0)
 			remove_person(b->people[0]);
@@ -907,8 +919,8 @@ namespace Can
 
 		if (b->connected_road_segment != -1)
 		{
-			auto& connected_buildings{ segments[b->connected_road_segment].buildings };
-			auto it {std::find(connected_buildings.begin(), connected_buildings.end(), b)};
+			auto& connected_buildings{ road_segments[b->connected_road_segment].buildings };
+			auto it{ std::find(connected_buildings.begin(), connected_buildings.end(), b) };
 			assert(it != connected_buildings.end());
 			connected_buildings.erase(it);
 		}
@@ -917,13 +929,56 @@ namespace Can
 		assert(it != buildings.end());
 		buildings.erase(it);
 
-		auto home_it {std::find(home_buildings.begin(), home_buildings.end(), b)};
-		if (home_it != home_buildings.end())
-			home_buildings.erase(home_it);
-
-		auto work_it {std::find(work_buildings.begin(), work_buildings.end(), b)};
-		if (work_it != work_buildings.end())
-			work_buildings.erase(work_it);
+		switch (building_type.group)
+		{
+		case Building_Group::House:
+		{
+			auto home_it{ std::find(buildings_houses.begin(), buildings_houses.end(), b) };
+			assert(it != buildings_houses.end());
+			buildings_houses.erase(home_it);
+			break;
+		}
+		case Building_Group::Residential:
+		{
+			auto home_it{ std::find(buildings_residential.begin(), buildings_residential.end(), b) };
+			assert(it != buildings_residential.end());
+			buildings_residential.erase(home_it);
+			break;
+		}
+		case Building_Group::Commercial:
+		{
+			auto home_it{ std::find(buildings_commercial.begin(), buildings_commercial.end(), b) };
+			assert(it != buildings_commercial.end());
+			buildings_commercial.erase(home_it);
+			break;
+		}
+		case Building_Group::Industrial:
+		{
+			auto home_it{ std::find(buildings_industrial.begin(), buildings_industrial.end(), b) };
+			assert(it != buildings_industrial.end());
+			buildings_industrial.erase(home_it);
+			break;
+		}
+		case Building_Group::Office:
+		{
+			auto home_it{ std::find(buildings_office.begin(), buildings_office.end(), b) };
+			assert(it != buildings_office.end());
+			buildings_office.erase(home_it);
+			break;
+		}
+		case Building_Group::Hospital:
+		case Building_Group::Police_Station:
+		case Building_Group::Garbage_Collection_Center:
+		{
+			auto home_it{ std::find(buildings_specials.begin(), buildings_specials.end(), b) };
+			assert(it != buildings_specials.end());
+			buildings_specials.erase(home_it);
+			break;
+		}
+		default:
+			assert(false, "Unimplemented Building_Group");
+			break;
+		}
 
 		while (b->vehicles.size() > 0)
 			remove_car(b->vehicles[0]);

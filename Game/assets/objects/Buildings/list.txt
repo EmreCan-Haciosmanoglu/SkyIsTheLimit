@@ -43,6 +43,17 @@ Vehicle_Parks:1
 Visiting_Spot:0.1:0.0:0.0
 END
 START
+Object:09/Building.obj
+Texture:09/Building.png
+Thumbnail:09/Thumbnail.png
+Name:Storage Unit
+Capacity:10
+Group:3
+Vehicle_Parks:1
+0.9:0.6:0.0:-60.0
+Visiting_Spot:0.1:0.0:0.0
+END
+START
 Object:08/Building.obj
 Texture:08/Building.png
 Thumbnail:08/Thumbnail.png
@@ -50,7 +61,7 @@ Name:Modern Office
 Capacity:10
 Group:4
 Vehicle_Parks:1
-0.7:0.7:0.0:0.0
+0.7:0.2:0.0:0.0
 Visiting_Spot:0.1:0.0:0.0
 END
 START
