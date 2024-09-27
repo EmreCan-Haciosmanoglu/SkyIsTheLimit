@@ -96,6 +96,7 @@ namespace Can
 		void SnapToGrid(v3& prevLocation);
 		void SnapToRoad(v3& prevLocation, bool isStart);
 		void SnapToHeight(const std::vector<u8>& indices, u8 index, v3& AB);
+		void SnapToHeight(const std::vector<u8>& indices, u8 index, const v3& AB);
 		void SnapToAngle(v3& AB, s64 snappedNode, s64 snappedRoadSegment, u64 snapped_index);
 		bool RestrictSmallAngles(v2 direction, s64 snappedNode, s64 snappedRoadSegment, u64 snapped_index);
 		void ResetGuideLines();

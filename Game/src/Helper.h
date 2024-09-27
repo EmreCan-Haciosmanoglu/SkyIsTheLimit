@@ -17,8 +17,21 @@ namespace Can::Helper
 		s64 next_road_node_index;
 	};
 
-	bool CheckBoundingBoxHit(const v3& rayStartPoint, const v3& ray, const v3& least, const v3& most);
+	struct Visited_Dijkstra_Node {
+		s64 road_segment_index;
+		bool to_end;
+	};
 
+	bool check_if_ray_intersects_with_bounding_box(
+		const v3& ray_start_point,
+		const v3& ray,
+		const v3& mins,
+		const v3& maxs
+	);
+	v2 check_rotated_rectangle_collision(
+		const Object* const obj1, 
+		const Object* const obj2
+	);
 	v2 check_rotated_rectangle_collision(
 		const v2& r1l, const v2& r1m, f32 rot1, const v2& pos1,
 		const v2& r2l, const v2& r2m, f32 rot2, const v2& pos2
@@ -47,8 +60,20 @@ namespace Can::Helper
 	std::vector<Transition*> get_path(Building* start, u8 dist);
 	std::vector<RS_Transition_For_Vehicle*> get_path_for_a_car(Building* start, u8 dist);
 
-	std::vector<Transition*> get_path(Building* start, Building* end);
-	std::vector<RS_Transition_For_Vehicle*> get_path_for_a_car(Building* start, Building* end);
+	std::vector<Transition*> get_path(
+		const Building* const start,
+		const Building* const end
+	);
+	std::vector<RS_Transition_For_Vehicle*> get_path_for_a_car(
+		const Building* const start,
+		const Building* const end
+	);
+	std::vector<RS_Transition_For_Vehicle*> get_path_for_gargabe_vehicle(
+		const Building* const building,
+		Building*& to
+	);
+	void find_and_assign_a_policeman(Building* const& b);
+	void find_and_assign_an_ambulance(Building* const& b);
 
 	struct sort_by_angle
 	{

@@ -15,9 +15,8 @@ namespace Can
 		//    or road, railway, route for ship|plane|helicopter|*, *
 		//    or car lane, bike lane, side walk, median, trees, parking, *
 	};
-	struct RoadType
+	struct Road_Type
 	{
-	public:
 		std::string name = "Unnamed Road";
 
 		Prefab* road = nullptr;

@@ -57,7 +57,7 @@ namespace Can
 
 	public:
 		u64 type = 0;
-		std::vector<class Building*> Buildings{};
+		std::vector<class Building*> buildings{}; // TODO: sort from one end to other
 		std::vector<class Person*> people{};
 		std::vector<class Car*> vehicles{};
 
@@ -81,10 +81,7 @@ namespace Can
 
 
 		std::array<v3, 2> Directions{};
-		std::array<v2, 2> Rotations{
-			v2(0.0f),
-			v2(0.0f)
-		};
+		std::array<v2, 2> Rotations{ v2{}, v2{} };
 	};
 
 	bool remove_person_from(RoadSegment& segment, Person* person);

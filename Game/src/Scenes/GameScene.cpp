@@ -4,12 +4,15 @@
 #include "GameApp.h"
 #include "Helper.h"
 #include "Can/Math.h"
+#include "Building.h"
 
 #include "Types/RoadNode.h"
 #include "Types/Car.h"
 #include "Types/Tree.h"
 #include "Types/Person.h"
-#include "Building.h"
+#include "Types/Building_Type.h"
+#include "Types/Vehicle_Type.h"
+#include "Types/Road_Type.h"
 #include "Types/Transition.h"
 
 namespace Can
@@ -94,6 +97,7 @@ namespace Can
 		{
 			m_PersonManager.Update(ts);
 			update_cars(ts);
+			update_buildings(ts);
 		}
 
 		Renderer3D::BeginScene(camera_controller.camera);
@@ -135,11 +139,11 @@ namespace Can
 			v3{ 0.0f, 0.0f, 1.0f * COLOR_COUNT },
 			v3{ 0.0f, 0.0f, 1.0f }
 		);
-		bool inside_game_zone = Helper::CheckBoundingBoxHit(
+		bool inside_game_zone = Helper::check_if_ray_intersects_with_bounding_box(
 			camPos,
 			forward,
-			m_Terrain->prefab->boundingBoxL,
-			m_Terrain->prefab->boundingBoxM
+			m_Terrain->prefab->boundingBoxL + m_Terrain->position,
+			m_Terrain->prefab->boundingBoxM + m_Terrain->position
 		);
 		if (!inside_game_zone)
 			return false;
@@ -215,10 +219,13 @@ namespace Can
 		FILE* read_file = fopen(path.c_str(), "rb");
 		if (read_file == NULL) return;
 
-		auto& road_nodes = m_RoadManager.road_nodes;
-		auto& road_segments = m_RoadManager.road_segments;
-		auto& buildings = m_BuildingManager.m_Buildings;
-		auto& cars = m_CarManager.m_Cars;
+		auto& road_nodes{ m_RoadManager.road_nodes };
+		auto& road_segments{ m_RoadManager.road_segments };
+		auto& trees{ m_TreeManager.m_Trees };
+		auto& buildings{ m_BuildingManager.m_Buildings };
+		auto& cars{ m_CarManager.m_Cars };
+		auto& building_types{ MainApplication->building_types };
+		auto& vehicle_types{ MainApplication->vehicle_types };
 
 		/*RoadManager*/ {
 			fread(&m_RoadManager.snapFlags, sizeof(u8), 1, read_file);
@@ -284,48 +291,96 @@ namespace Can
 		/*BuildingManager*/ {
 			fread(m_BuildingManager.snapOptions.data(), sizeof(bool), 2, read_file);
 			fread(m_BuildingManager.restrictions.data(), sizeof(bool), 2, read_file);
-			auto& home_buildings = m_BuildingManager.m_HomeBuildings;
-			auto& work_buildings = m_BuildingManager.m_WorkBuildings;
+
+			auto& buildings_houses = m_BuildingManager.buildings_houses;
+			auto& buildings_residential = m_BuildingManager.buildings_residential;
+			auto& buildings_commercial = m_BuildingManager.buildings_commercial;
+			auto& buildings_industrial = m_BuildingManager.buildings_industrial;
+			auto& buildings_office = m_BuildingManager.buildings_office;
+			auto& buildings_specials = m_BuildingManager.buildings_specials;
+
 			u64 building_count;
 			fread(&building_count, sizeof(u64), 1, read_file);
 			buildings.reserve(building_count);
 			for (u64 i = 0; i < building_count; i++)
 			{
-				u64 type;
-				s64 connected_road_segment;
-				u64 snapped_t_index;
-				f32 snapped_t;
-				u16 capacity;
-				bool is_home = false;
-				bool snapped_to_right;
+				Building* building = new Building();
+
 				v3 position, rotation;// calculate it from snapped_t?
-				fread(&type, sizeof(u64), 1, read_file);
-				fread(&connected_road_segment, sizeof(s64), 1, read_file);
-				fread(&snapped_t_index, sizeof(u64), 1, read_file);
-				fread(&snapped_t, sizeof(f32), 1, read_file);
-				fread(&capacity, sizeof(u16), 1, read_file);
-				fread(&is_home, sizeof(bool), 1, read_file);
-				fread(&snapped_to_right, sizeof(bool), 1, read_file);
+				fread(&building->type, sizeof(u64), 1, read_file);
+				auto& building_type{ building_types[building->type] };
+
 				fread(&position, sizeof(f32), 3, read_file);
 				fread(&rotation, sizeof(f32), 3, read_file);
-				Building* building = new Building(
-					MainApplication->buildings[type],
-					connected_road_segment,
-					snapped_t_index,
-					snapped_t,
-					position,
-					rotation
-				);
-				building->type = type;
-				building->capacity = capacity;
-				building->is_home = is_home;
-				building->snapped_to_right = snapped_to_right;
+				building->object = new Object(building_type.prefab, position, rotation);
+
+				fread(&building->connected_road_segment, sizeof(s64), 1, read_file);
+				fread(&building->snapped_t_index, sizeof(u64), 1, read_file);
+				fread(&building->snapped_t, sizeof(f32), 1, read_file);
+				fread(&building->snapped_to_right, sizeof(bool), 1, read_file);
+
+				fread(&building->max_health, sizeof(f32), 1, read_file);
+				fread(&building->current_health, sizeof(f32), 1, read_file);
+				fread(&building->electricity_need, sizeof(f32), 1, read_file);
+				fread(&building->electricity_provided, sizeof(f32), 1, read_file);
+				fread(&building->garbage_capacity, sizeof(f32), 1, read_file);
+				fread(&building->current_garbage, sizeof(f32), 1, read_file);
+				fread(&building->water_need, sizeof(f32), 1, read_file);
+				fread(&building->water_provided, sizeof(f32), 1, read_file);
+				fread(&building->water_waste_need, sizeof(f32), 1, read_file);
+				fread(&building->water_waste_provided, sizeof(f32), 1, read_file);
+
+				fread(&building->crime_reported, sizeof(u16), 1, read_file);
+
+				u64 name_char_count{};
+				fread(&name_char_count, sizeof(u64), 1, read_file);
+				auto name{ (char*)malloc(name_char_count + 1) };
+				fread(name, sizeof(char), name_char_count, read_file);
+				name[name_char_count] = '\0';
+				building->name = std::string(name);
+
 				buildings.push_back(building);
-				if (is_home)
-					home_buildings.push_back(building);
-				else
-					work_buildings.push_back(building);
-				road_segments[connected_road_segment].Buildings.push_back(building);
+
+				switch (building_type.group)
+				{
+				case Building_Group::House:
+				{
+					buildings_houses.push_back(building);
+					break;
+				}
+				case Building_Group::Residential:
+				{
+					buildings_residential.push_back(building);
+					break;
+				}
+				case Building_Group::Commercial:
+				{
+					buildings_commercial.push_back(building);
+					break;
+				}
+				case Building_Group::Industrial:
+				{
+					buildings_industrial.push_back(building);
+					break;
+				}
+				case Building_Group::Office:
+				{
+					buildings_office.push_back(building);
+					break;
+				}
+				case Building_Group::Hospital:
+				case Building_Group::Police_Station:
+				case Building_Group::Garbage_Collection_Center:
+				{
+					buildings_specials.push_back(building);
+					break;
+				}
+				default:
+					assert(false, "Unimplemented Building_Group");
+					break;
+				}
+
+				road_segments[building->connected_road_segment].buildings.push_back(building);
 			}
 		}
 		/*CarManager*/ {
@@ -384,8 +439,6 @@ namespace Can
 				{
 					car->building = buildings[building_index];
 					buildings[building_index]->vehicles.push_back(car);
-					// this is a work car
-					car->object->tintColor = v4{ 1.0f, 0.0f, 0.0f, 1.0f };
 				}
 				cars.push_back(car);
 			}
@@ -500,7 +553,6 @@ namespace Can
 				if (car_index != -1)
 				{
 					person->car = cars[car_index];
-					person->car->owner = person;
 				}
 				fread(&car_driving_index, sizeof(s64), 1, read_file);
 				if (car_driving_index != -1)
@@ -508,6 +560,8 @@ namespace Can
 					person->car_driving = cars[car_index];
 					cars[car_index]->driver = person;
 				}
+				u8 education_level = random_u8((u8)EducationLevel::Doctorate + 1);
+				person->education = (EducationLevel)education_level;
 				people.push_back(person);
 			}
 		}
@@ -554,12 +608,13 @@ namespace Can
 	}
 	void GameScene::save_the_game()
 	{
-		FILE* save_file = fopen(std::string(save_name).append(".csf").c_str(), "wb");
-		auto& road_nodes = m_RoadManager.road_nodes;
-		auto& road_segments = m_RoadManager.road_segments;
-		auto& trees = m_TreeManager.m_Trees;
-		auto& buildings = m_BuildingManager.m_Buildings;
-		auto& cars = m_CarManager.m_Cars;
+		FILE* save_file{ fopen(std::format("{}.csf",save_name).c_str(), "wb") };
+		auto& road_nodes{ m_RoadManager.road_nodes };
+		auto& road_segments{ m_RoadManager.road_segments };
+		auto& trees{ m_TreeManager.m_Trees };
+		auto& buildings{ m_BuildingManager.m_Buildings };
+		auto& cars{ m_CarManager.m_Cars };
+		auto& building_types{ MainApplication->building_types };
 
 		/*Road Manager*/ {
 			fwrite(&m_RoadManager.snapFlags, sizeof(u8), 1, save_file);
@@ -607,15 +662,32 @@ namespace Can
 			fwrite(&building_count, sizeof(u64), 1, save_file);
 			for (u64 i = 0; i < building_count; i++)
 			{
-				fwrite(&buildings[i]->type, sizeof(u64), 1, save_file);
-				fwrite(&buildings[i]->connectedRoadSegment, sizeof(s64), 1, save_file);
-				fwrite(&buildings[i]->snapped_t_index, sizeof(u64), 1, save_file);
-				fwrite(&buildings[i]->snapped_t, sizeof(f32), 1, save_file);
-				fwrite(&buildings[i]->capacity, sizeof(u16), 1, save_file);
-				fwrite(&buildings[i]->is_home, sizeof(bool), 1, save_file);
-				fwrite(&buildings[i]->snapped_to_right, sizeof(bool), 1, save_file);
-				fwrite(&buildings[i]->object->position, sizeof(f32), 3, save_file);
-				fwrite(&buildings[i]->object->rotation, sizeof(f32), 3, save_file);
+				auto& building{ buildings[i] };
+				fwrite(&building->type, sizeof(u64), 1, save_file);
+				fwrite(&building->object->position, sizeof(f32), 3, save_file);
+				fwrite(&building->object->rotation, sizeof(f32), 3, save_file);
+
+				fwrite(&building->connected_road_segment, sizeof(s64), 1, save_file);
+				fwrite(&building->snapped_t_index, sizeof(u64), 1, save_file);
+				fwrite(&building->snapped_t, sizeof(f32), 1, save_file);
+				fwrite(&building->snapped_to_right, sizeof(bool), 1, save_file);
+
+				fwrite(&building->max_health, sizeof(f32), 1, save_file);
+				fwrite(&building->current_health, sizeof(f32), 1, save_file);
+				fwrite(&building->electricity_need, sizeof(f32), 1, save_file);
+				fwrite(&building->electricity_provided, sizeof(f32), 1, save_file);
+				fwrite(&building->garbage_capacity, sizeof(f32), 1, save_file);
+				fwrite(&building->current_garbage, sizeof(f32), 1, save_file);
+				fwrite(&building->water_need, sizeof(f32), 1, save_file);
+				fwrite(&building->water_provided, sizeof(f32), 1, save_file);
+				fwrite(&building->water_waste_need, sizeof(f32), 1, save_file);
+				fwrite(&building->water_waste_provided, sizeof(f32), 1, save_file);
+
+				fwrite(&building->crime_reported, sizeof(u16), 1, save_file);
+
+				u64 name_char_count{ building->name.size() };
+				fwrite(&name_char_count, sizeof(u64), 1, save_file);
+				fwrite(building->name.data(), sizeof(char), name_char_count, save_file);
 			}
 		}
 		/*Car Manager*/ {
@@ -793,7 +865,7 @@ namespace Can
 			fwrite(&camera_controller.zoom_speed, sizeof(f32), 1, save_file);
 		}
 
-		//Camera
+		/*Camera*/
 		auto& camera = camera_controller.camera;
 		fwrite(&camera.position, sizeof(f32), 3, save_file);
 		fwrite(&camera.rotation, sizeof(f32), 3, save_file);
@@ -852,39 +924,59 @@ namespace Can
 
 	bool does_select_object(GameScene& game_scene)
 	{
-		auto& people = game_scene.m_PersonManager.m_People;
-		auto& cars = game_scene.m_CarManager.m_Cars;
+		auto& people{ game_scene.m_PersonManager.m_People };
+		auto& cars{ game_scene.m_CarManager.m_Cars };
+		auto& buildings{ game_scene.m_BuildingManager.m_Buildings };
 
-		v3 cameraPosition = game_scene.camera_controller.camera.position;
-		v3 forward = game_scene.GetRayCastedFromScreen();
+		v3 cameraPosition{ game_scene.camera_controller.camera.position };
+		v3 forward{ game_scene.GetRayCastedFromScreen() };
 
 		for (auto person : people)
 		{
-			if (Helper::CheckBoundingBoxHit(
+			//TODO: Change to rotated bounding box collision
+			if (Helper::check_if_ray_intersects_with_bounding_box(
 				cameraPosition,
 				forward,
 				person->object->prefab->boundingBoxL + person->position,
 				person->object->prefab->boundingBoxM + person->position
 			))
 			{
-				game_scene.ui_layer.focus_object = person->object;
+				game_scene.ui_layer.focused_person = person;
 				return true;
 			}
 		}
 
 		for (auto car : cars)
 		{
-			if (Helper::CheckBoundingBoxHit(
+			//TODO: Change to rotated bounding box collision
+			if (Helper::check_if_ray_intersects_with_bounding_box(
 				cameraPosition,
 				forward,
 				car->object->prefab->boundingBoxL + car->object->position,
 				car->object->prefab->boundingBoxM + car->object->position
 			))
 			{
-				game_scene.ui_layer.focus_object = car->object;
+				game_scene.ui_layer.focused_car = car;
 				return true;
 			}
 		}
+
+		for (auto building : buildings)
+		{
+			//TODO: Change to rotated bounding box collision
+			if (Helper::check_if_ray_intersects_with_bounding_box(
+				cameraPosition,
+				forward,
+				building->object->prefab->boundingBoxL + building->object->position,
+				building->object->prefab->boundingBoxM + building->object->position
+			))
+			{
+				game_scene.ui_layer.selected_building = building;
+				return true;
+			}
+		}
+
+
 		return false;
 	}
 }

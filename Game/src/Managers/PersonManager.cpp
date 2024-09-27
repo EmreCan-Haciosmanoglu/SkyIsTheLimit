@@ -2,6 +2,7 @@
 #include "PersonManager.h"
 #include "Scenes/GameScene.h"
 #include "Types/RoadSegment.h"
+#include "Types/Road_Type.h"
 #include "Types/RoadNode.h"
 #include "Types/Transition.h"
 #include "Types/Person.h"
@@ -20,99 +21,172 @@ namespace Can
 
 	void PersonManager::Update(TimeStep ts)
 	{
-		GameApp* app = m_Scene->MainApplication;
-		auto& road_segments = m_Scene->m_RoadManager.road_segments;
-		auto& road_nodes = m_Scene->m_RoadManager.road_nodes;
-		auto& road_types = m_Scene->MainApplication->road_types;
+		GameApp* app{ m_Scene->MainApplication };
+		auto& bm{ m_Scene->m_BuildingManager };
+		auto& road_segments{ m_Scene->m_RoadManager.road_segments };
+		auto& road_nodes{ m_Scene->m_RoadManager.road_nodes };
+		auto& road_types{ m_Scene->MainApplication->road_types };
+		auto& building_types{ m_Scene->MainApplication->building_types };
+		constexpr f32 MAGIC_HEALTH_NUMBER{ 0.05f };
+		constexpr f32 MAGIC_HEALING_NUMBER{ 0.5f };
 
 		for (size_t person_index = 0; person_index < m_People.size(); person_index++)
 		{
-			Person* p = m_People[person_index];
+			Person* p{ m_People[person_index] };
 
 			switch (p->status)
 			{
 			case PersonStatus::AtHome:
 			case PersonStatus::AtWork:
+			case PersonStatus::InJail:
 			{
+				Building* const building{ (p->status == PersonStatus::AtHome) ? p->home : p->work };
+				assert(building);
+				// building currently in
+				// more educated less garbage
+				// different amount according to age
+				// if (building_types[p->work->type].group != Building_Group::Garbage_Collection_Center) we don't care tbh.
+				building->current_garbage += 0.1f * ts;
+				const f32 health_ratio{ building->current_health / building->max_health };
+				const f32 health_missing{ 1.0f - health_ratio };
+				p->health -= ts * health_missing * MAGIC_HEALTH_NUMBER;
+
+				p->health = std::max(p->health, 0.2f); // TODO: Become sick
+				break;
+			}
+			case PersonStatus::WalkingDead:
+			case PersonStatus::Walking:
+			case PersonStatus::Driving:
+			case PersonStatus::DrivingForWork:
+			case PersonStatus::IsPassenger:
+			case PersonStatus::Patrolling:
+			case PersonStatus::Responding:
+			case PersonStatus::InHospital:
+			{
+				// Don't do anything
+				break;
+			}
+			default:
+				assert(false, "Unimplemented PersonStatus");
+				break;
+			}
+
+			//	if (p->health < 0.0f)
+			//	{
+			//		// TODO: Die
+			//		assert(false, "DIE");
+			//	}
+
+			switch (p->status)
+			{
+			case PersonStatus::AtHome:
+			{
+				if (p->health < 0.25f) // You are almost sick 
+				{
+					if (p->home->is_ambulance_on_the_way) break;
+					// Call an ambulance
+					Helper::find_and_assign_an_ambulance(p->home);
+					break;
+				}
 				p->time_left -= ts;
+
 				if (p->time_left <= 0.0f)
 				{
-					Building* building_from = p->home;
-					Building* building_to = p->work;
-					if (p->car)
-					{
-						p->car_driving = p->car;
-						p->car_driving->driver = p;
-					}
+					p->path_start_building = p->home;
 
-					bool is_buildings_connected = true;
-					if (p->status == PersonStatus::AtWork)
+					switch (p->profession)
 					{
-						building_from = p->work;
-						if (p->drove_in_work)
+					case Profession::Unemployed:
+					{
+						// just walk around then come back to home
+						p->path = Helper::get_path(p->home, 5);
+						p->path_end_building = p->home;
+						break;
+					}
+					case Profession::General_Commercial_Worker:
+					case Profession::General_Industrial_Worker:
+					case Profession::General_Office_Worker:
+					case Profession::Doctor:
+					case Profession::Policeman:
+					case Profession::Waste_Management_Worker:
+					{
+						assert(p->work);
+						p->path_end_building = p->work;
+
+						if (p->car)
 						{
-							building_to = p->home;
-							p->drove_in_work = false;
+							p->car_driving = p->car;
+							p->car_driving->driver = p;
+							p->car_driving->path = Helper::get_path_for_a_car(p->home, p->work);
 						}
 						else
 						{
-							Car* work_car = retrive_work_vehicle(p->work);
-							if (work_car)
-							{
-								building_to = p->work;
-								if (p->car_driving)
-									p->car_driving->driver = nullptr;
-								p->car_driving = work_car;
-								p->car_driving->driver = p;
-							}
-							else
-							{
-								building_to = p->home;
-							}
-						}
-					}
-
-					if (building_to)
-					{
-						p->path_end_building = building_to;
-						p->path_start_building = building_from;
-						if (building_from == building_to) // driving while working / driving work vehicle
-						{
-							p->car_driving->path = Helper::get_path_for_a_car(building_from, 5);
-							// TODO v2: go some building and comeback e.g. Ambulance, Police, Fire, Delivery
-						}
-						else
-						{
-							if (p->car_driving)
-								p->car_driving->path = Helper::get_path_for_a_car(building_from, building_to);
-							else
-								p->path = Helper::get_path(building_from, building_to);
+							p->path = Helper::get_path(p->home, p->work);
 						}
 
 						if (p->path.size() == 0 && p->car_driving && p->car_driving->path.size() == 0) // if no path available
 						{
-							if (building_from == p->work) // if path to home is cut out / destroyed
-							{
-								reset_person_back_to_home(p);
-								continue;
-							}
-
 							// just walk around then come back to home
-							is_buildings_connected = false;
-							p->path = Helper::get_path(building_from, 5);
-							p->path_end_building = building_from;
-							p->car_driving = nullptr;
+							p->path = Helper::get_path(p->home, 5);
+							p->path_end_building = p->home;
+							if (p->car_driving)
+							{
+								p->car_driving->driver = nullptr;
+								p->car_driving = nullptr;
+							}
 						}
+						break;
 					}
-					else // just walk around then come back to home
+					case Profession::Thief:
 					{
-						p->path = Helper::get_path(building_from, 5);
-						p->path_end_building = building_from;
-						p->path_start_building = building_from;
+						std::vector<Building*> ignored_buildings{ p->home };
+						if (p->car)
+						{
+							p->car_driving = p->car;
+							p->car_driving->driver = p;
+							while (true)
+							{
+								p->work = bm.get_building_to_steal_from(ignored_buildings);
+								if (p->work == nullptr)
+									break;
+								p->car_driving->path = Helper::get_path_for_a_car(p->home, p->work);
+								if (p->car_driving->path.size()) break;
+								ignored_buildings.push_back(p->work);
+							}
+						}
+						else
+						{
+							while (true)
+							{
+								p->work = bm.get_building_to_steal_from(ignored_buildings);
+								if (p->work == nullptr)
+									break;
+								p->path = Helper::get_path(p->home, p->work);
+								if (p->path.size()) break;
+								ignored_buildings.push_back(p->work);
+							}
+						}
+						p->path_end_building = p->work;
+						if (p->work == nullptr)// if no building to steal from
+						{
+							// just walk around then come back to home
+							p->path = Helper::get_path(p->home, 5);
+							p->path_end_building = p->home;
+							if (p->car_driving)
+							{
+								p->car_driving->driver = nullptr;
+								p->car_driving = nullptr;
+							}
+						}
+						break;
+					}
+					default:
+						assert(false, "Unimplemented Profession");
+						break;
 					}
 
 					// TODO: Combine these two line into a function
-					p->position = building_from->position;
+					p->position = p->home->object->position;
 					p->object->SetTransform(p->position);
 
 					p->object->enabled = true;
@@ -127,31 +201,200 @@ namespace Can
 					}
 					else
 					{
-						p->road_segment = building_from->connectedRoadSegment;
+						p->road_segment = p->home->connected_road_segment;
 						RoadSegment& road_segment = road_segments[p->road_segment];
 						road_segment.people.push_back(p);
 
 						// TODO: Refactor this scope into a function
 						RS_Transition_For_Walking* rs_transition = (RS_Transition_For_Walking*)p->path[0];
-						RoadType& road_segment_type = road_types[road_segment.type];
+						Road_Type& road_segment_type = road_types[road_segment.type];
 
-						assert(building_from->snapped_t_index < (s64)road_segment.curve_samples.size() - 1);
-						v3 target_position = road_segment.curve_samples[building_from->snapped_t_index];
-						assert(road_segment.curve_samples.size() - 1 >= building_from->snapped_t_index + 1);
-						v3 target_position_plus_one = road_segment.curve_samples[building_from->snapped_t_index + 1];
+						assert(p->home->snapped_t_index < (s64)road_segment.curve_samples.size() - 1);
+						v3 target_position = road_segment.curve_samples[p->home->snapped_t_index];
+						assert(road_segment.curve_samples.size() - 1 >= p->home->snapped_t_index + 1);
+						v3 target_position_plus_one = road_segment.curve_samples[p->home->snapped_t_index + 1];
 
 						v3 dir = target_position_plus_one - target_position;
-						v3 offsetted = target_position + dir * building_from->snapped_t;
+						v3 offsetted = target_position + dir * p->home->snapped_t;
 
-						v3 sidewalf_position_offset = glm::normalize(v3{ dir.y, -dir.x, 0.0f });
-						if (building_from->snapped_to_right)
-							sidewalf_position_offset *= road_segment_type.lanes_forward[road_segment_type.lanes_forward.size() - 1].distance_from_center;
+						v3 sidewalk_position_offset = glm::normalize(v3{ dir.y, -dir.x, 0.0f });
+						if (p->home->snapped_to_right)
+							sidewalk_position_offset *= road_segment_type.lanes_forward[road_segment_type.lanes_forward.size() - 1].distance_from_center;
 						else
-							sidewalf_position_offset *= road_segment_type.lanes_backward[0].distance_from_center;
+							sidewalk_position_offset *= road_segment_type.lanes_backward[0].distance_from_center;
 
-						((RS_Transition_For_Walking*)p->path[0])->at_path_array_index = building_from->snapped_t_index;
+						((RS_Transition_For_Walking*)p->path[0])->at_path_array_index = p->home->snapped_t_index;
 
-						set_person_target(p, offsetted + sidewalf_position_offset);
+						set_person_target(p, offsetted + sidewalk_position_offset);
+					}
+				}
+				break;
+			}
+			case PersonStatus::AtWork:
+			{
+				p->time_left -= ts;
+
+				if (p->time_left <= 0.0f)
+				{
+					switch (p->profession)
+					{
+					case Profession::Unemployed:
+					{
+						assert(false, "Impossible Profession");
+						break;
+					}
+					case Profession::General_Commercial_Worker:
+					case Profession::General_Industrial_Worker:
+					case Profession::General_Office_Worker:
+					case Profession::Doctor:
+					case Profession::Policeman:
+					case Profession::Waste_Management_Worker:
+					{
+						if (
+							p->drove_in_work ||
+
+							/* just go home after times up */
+							(p->profession == Profession::Doctor) ||
+							(p->profession == Profession::General_Office_Worker)
+							)
+						{
+							p->drove_in_work = false;
+							if (p->car)
+							{
+								p->car_driving = p->car;
+								p->car_driving->driver = p;
+								p->car_driving->path = Helper::get_path_for_a_car(p->work, p->home);
+							}
+							else
+							{
+								p->path = Helper::get_path(p->work, p->home);
+							}
+							p->path_end_building = p->home;
+						}
+						else
+						{
+							Car* work_car = retrive_work_vehicle(p->work);
+							if (work_car)
+							{
+								p->car_driving = work_car;
+								p->car_driving->driver = p;
+								p->path_end_building = p->work;
+
+								if (p->profession == Profession::Waste_Management_Worker)
+								{
+									// TODO v2: go some buildings and comeback e.g. Ambulance, Police, Fire, Delivery
+									Building* to = nullptr;
+									auto path = Helper::get_path_for_gargabe_vehicle(p->work, to);
+									if (to)
+									{
+										p->car_driving->path = path;
+										p->path_end_building = to;
+									}
+									else
+									{
+										// TODO: Instead, just go home, no reason to roam around with garbage truck
+										p->car_driving->path = Helper::get_path_for_a_car(p->work, 5);
+									}
+								}
+								else if (p->profession == Profession::Policeman)
+								{
+									// TODO v2: Patrol intelligently not randomly
+									p->car_driving->path = Helper::get_path_for_a_car(p->work, 5);
+								}
+								else
+								{
+									p->car_driving->path = Helper::get_path_for_a_car(p->work, 5);
+								}
+							}
+							else
+							{
+								if (p->car)
+								{
+									p->car_driving = p->car;
+									p->car_driving->driver = p;
+									p->car_driving->path = Helper::get_path_for_a_car(p->work, p->home);
+								}
+								else
+								{
+									p->path = Helper::get_path(p->work, p->home);
+								}
+								p->path_end_building = p->home;
+							}
+						}
+						break;
+					}
+					case Profession::Thief:
+					{
+						p->work->crime_reported++;
+
+						if (p->car)
+						{
+							p->car_driving = p->car;
+							p->car_driving->driver = p;
+							p->car_driving->path = Helper::get_path_for_a_car(p->work, p->home);
+						}
+						else
+						{
+							p->path = Helper::get_path(p->work, p->home);
+						}
+						p->path_end_building = p->home;
+						break;
+					}
+					default:
+						assert(false, "Unimplemented Profession");
+						break;
+					}
+
+					if (p->path.size() == 0 && p->car_driving && p->car_driving->path.size() == 0) // if no path available
+					{
+						// path to home is cut out / destroyed
+						reset_person_back_to_home(p);
+						continue;
+					}
+
+					// TODO: Combine these two line into a function
+					p->position = p->work->object->position;
+					p->object->SetTransform(p->position);
+
+					p->path_start_building = p->work;
+
+					p->object->enabled = true;
+					p->heading_to_a_building = false;
+					p->heading_to_a_car = false;
+					p->status = PersonStatus::Walking;
+
+					if (p->car_driving)
+					{
+						p->heading_to_a_car = true;
+						set_person_target(p, p->car_driving->object->position);
+					}
+					else
+					{
+						p->road_segment = p->work->connected_road_segment;
+						RoadSegment& road_segment = road_segments[p->road_segment];
+						road_segment.people.push_back(p);
+
+						// TODO: Refactor this scope into a function
+						RS_Transition_For_Walking* rs_transition = (RS_Transition_For_Walking*)p->path[0];
+						Road_Type& road_segment_type = road_types[road_segment.type];
+
+						assert(p->work->snapped_t_index < (s64)road_segment.curve_samples.size() - 1);
+						v3 target_position = road_segment.curve_samples[p->work->snapped_t_index];
+						assert(road_segment.curve_samples.size() - 1 >= p->work->snapped_t_index + 1);
+						v3 target_position_plus_one = road_segment.curve_samples[p->work->snapped_t_index + 1];
+
+						v3 dir = target_position_plus_one - target_position;
+						v3 offsetted = target_position + dir * p->work->snapped_t;
+
+						v3 sidewalk_position_offset = glm::normalize(v3{ dir.y, -dir.x, 0.0f });
+						if (p->work->snapped_to_right)
+							sidewalk_position_offset *= road_segment_type.lanes_forward[road_segment_type.lanes_forward.size() - 1].distance_from_center;
+						else
+							sidewalk_position_offset *= road_segment_type.lanes_backward[0].distance_from_center;
+
+						((RS_Transition_For_Walking*)p->path[0])->at_path_array_index = p->work->snapped_t_index;
+
+						set_person_target(p, offsetted + sidewalk_position_offset);
 					}
 				}
 				break;
@@ -184,7 +427,7 @@ namespace Can
 						f32 half_crosswalk_width = 0.05f;
 
 						RoadSegment& current_road_segment = road_segments[connected_road_segments[rn_transition->from_road_segments_array_index]];
-						RoadType& current_road_segment_type = road_types[current_road_segment.type];
+						Road_Type& current_road_segment_type = road_types[current_road_segment.type];
 						f32 current_road_segment_width = current_road_segment_type.road_width * 0.5f;
 						f32 offset_from_current_road_segment_center = current_road_segment_width - half_crosswalk_width;
 
@@ -236,8 +479,8 @@ namespace Can
 							RoadSegment& prev_road_segment = road_segments[connected_road_segments[(rn_transition->from_road_segments_array_index - 1 + connected_road_segments.size()) % connected_road_segments.size()]];
 							RoadSegment& next_road_segment = road_segments[connected_road_segments[(rn_transition->from_road_segments_array_index + 1) % connected_road_segments.size()]];
 
-							RoadType& prev_road_segment_type = road_types[prev_road_segment.type];
-							RoadType& next_road_segment_type = road_types[next_road_segment.type];
+							Road_Type& prev_road_segment_type = road_types[prev_road_segment.type];
+							Road_Type& next_road_segment_type = road_types[next_road_segment.type];
 
 							f32 prev_road_segment_width = prev_road_segment_type.road_width * 0.5f;
 							f32 next_road_segment_width = next_road_segment_type.road_width * 0.5f;
@@ -287,10 +530,22 @@ namespace Can
 					else if (p->heading_to_a_building)
 					{
 						if (p->path_end_building == p->home)
+						{
 							p->status = PersonStatus::AtHome;
+							// Check for thiefs
+							if (p->home->is_police_on_the_way == false)
+							{
+								for (const Person* const& person_in_the_building : p->home->people)
+								{
+									if (person_in_the_building->home == p->home) continue;
+									//Call the cops
+									Helper::find_and_assign_a_policeman(p->home);
+								}
+							}
+						}
 						else
 							p->status = PersonStatus::AtWork;
-						p->time_left = Utility::Random::Float(1.0f, 5.0f);
+						p->time_left = random_f32(1.0f, 5.0f);
 						p->object->enabled = false;
 						p->heading_to_a_building = false;
 						p->road_segment = -1;
@@ -299,13 +554,31 @@ namespace Can
 					{
 						RS_Transition_For_Vehicle* rs_transition{ p->car_driving->path[0] };
 						RoadSegment& road_segment{ road_segments[rs_transition->road_segment_index] };
-						RoadType& road_segment_type{ road_types[road_segment.type] };
+						Road_Type& road_segment_type{ road_types[road_segment.type] };
 						v3 target_position{ rs_transition->points_stack[rs_transition->points_stack.size() - 1] };
 
 						if (p->car != p->car_driving) // car_driven is work car
-							p->status = PersonStatus::DrivingForWork;
+						{
+							if (p->profession == Profession::Policeman)
+							{
+								if (p->path_end_building == p->path_start_building)
+									p->status = PersonStatus::Patrolling;
+								else
+									p->status = PersonStatus::Responding;
+							}
+							else if (p->profession == Profession::Doctor)
+							{
+								p->status = PersonStatus::Responding;
+							}
+							else
+							{
+								p->status = PersonStatus::DrivingForWork;
+							}
+						}
 						else
+						{
 							p->status = PersonStatus::Driving;
+						}
 						p->position = p->car_driving->object->position;
 
 						set_car_target_and_direction(p->car_driving, target_position);
@@ -316,11 +589,11 @@ namespace Can
 						p->car_driving->road_segment = rs_transition->road_segment_index;
 						road_segment.vehicles.push_back(p->car_driving);
 					}
-					else
+					else if (p->road_segment != -1)
 					{
 						RS_Transition_For_Walking* rs_transition{ (RS_Transition_For_Walking*)p->path[0] };
 						RoadSegment& road_segment{ road_segments[p->road_segment] };
-						RoadType& road_segment_type{ road_types[road_segment.type] };
+						Road_Type& road_segment_type{ road_types[road_segment.type] };
 
 						u64 target_path_array_index;
 						if (p->path.size() == 1)
@@ -335,7 +608,8 @@ namespace Can
 						{
 							if (p->path.size() == 1)
 							{
-								p->target = p->path_end_building->position;
+								// We are at the building
+								p->target = p->path_end_building->object->position;
 								p->heading_to_a_building = true;
 
 								RoadSegment& segment{ road_segments[p->road_segment] };
@@ -347,6 +621,8 @@ namespace Can
 							}
 							else
 							{
+								// We are at the end of the road
+								// So move to RoadNode
 								p->road_node = rs_transition->from_start ? road_segment.EndNode : road_segment.StartNode;
 
 								RoadNode& road_node{ road_nodes[p->road_node] };
@@ -402,16 +678,141 @@ namespace Can
 
 						set_person_target(p, p2 + offset);
 					}
+					else
+					{
+						assert(false, "This should be impossible!!!");
+					}
 				}
 				break;
 			}
 			case PersonStatus::Driving:
 			case PersonStatus::DrivingForWork:
+			case PersonStatus::Patrolling:
+			case PersonStatus::Responding:
 				// Handled in CarManager
+				break;
+			case PersonStatus::IsPassenger:
+				// Don't do anything for now
 				break;
 			case PersonStatus::WalkingDead:
 				//  slumpy A*
 				break;
+			case PersonStatus::InJail:
+			{
+				p->time_left -= ts;
+
+				if (p->time_left <= 0.0f)
+				{
+					Building* police_station = p->work;
+					p->work = nullptr;
+					p->path = Helper::get_path(police_station, p->home);
+
+					p->path_start_building = police_station;
+					p->path_end_building = p->home;
+
+					if (p->path.size() == 0) // if no path available
+					{
+						// path to home is cut out / destroyed
+						reset_person_back_to_home(p);
+						continue;
+					}
+
+					// TODO: Combine these two line into a function
+					p->position = police_station->object->position;
+					p->object->SetTransform(p->position);
+					p->object->enabled = true;
+
+					p->heading_to_a_building = false;
+					p->heading_to_a_car = false;
+					p->status = PersonStatus::Walking;
+
+					p->road_segment = police_station->connected_road_segment;
+					RoadSegment& road_segment = road_segments[p->road_segment];
+					road_segment.people.push_back(p);
+
+					// TODO: Refactor this scope into a function
+					RS_Transition_For_Walking* rs_transition = (RS_Transition_For_Walking*)p->path[0];
+					Road_Type& road_segment_type = road_types[road_segment.type];
+
+					assert(police_station->snapped_t_index < (s64)road_segment.curve_samples.size() - 1);
+					v3 target_position = road_segment.curve_samples[police_station->snapped_t_index];
+					assert(road_segment.curve_samples.size() - 1 >= police_station->snapped_t_index + 1);
+					v3 target_position_plus_one = road_segment.curve_samples[police_station->snapped_t_index + 1];
+
+					v3 dir = target_position_plus_one - target_position;
+					v3 offsetted = target_position + dir * police_station->snapped_t;
+
+					v3 sidewalk_position_offset = glm::normalize(v3{ dir.y, -dir.x, 0.0f });
+					if (police_station->snapped_to_right)
+						sidewalk_position_offset *= road_segment_type.lanes_forward[road_segment_type.lanes_forward.size() - 1].distance_from_center;
+					else
+						sidewalk_position_offset *= road_segment_type.lanes_backward[0].distance_from_center;
+
+					((RS_Transition_For_Walking*)p->path[0])->at_path_array_index = police_station->snapped_t_index;
+
+					set_person_target(p, offsetted + sidewalk_position_offset);
+				}
+				break;
+			}
+			case PersonStatus::InHospital:
+			{
+				p->health += 0.1f * ts * MAGIC_HEALING_NUMBER;
+
+				if (p->health > 1.0f)
+				{
+					p->health = 1.0f;
+
+					Building* hospital = p->hospital;
+					p->hospital = nullptr;
+					p->path = Helper::get_path(hospital, p->home);
+
+					p->path_start_building = hospital;
+					p->path_end_building = p->home;
+
+					if (p->path.size() == 0) // if no path available
+					{
+						// path to home is cut out / destroyed
+						reset_person_back_to_home(p);
+						continue;
+					}
+
+					// TODO: Combine these two line into a function
+					p->position = hospital->object->position;
+					p->object->SetTransform(p->position);
+					p->object->enabled = true;
+
+					p->heading_to_a_building = false;
+					p->heading_to_a_car = false;
+					p->status = PersonStatus::Walking;
+
+					p->road_segment = hospital->connected_road_segment;
+					RoadSegment& road_segment = road_segments[p->road_segment];
+					road_segment.people.push_back(p);
+
+					// TODO: Refactor this scope into a function
+					RS_Transition_For_Walking* rs_transition = (RS_Transition_For_Walking*)p->path[0];
+					Road_Type& road_segment_type = road_types[road_segment.type];
+
+					assert(hospital->snapped_t_index < (s64)road_segment.curve_samples.size() - 1);
+					v3 target_position = road_segment.curve_samples[hospital->snapped_t_index];
+					assert(road_segment.curve_samples.size() - 1 >= hospital->snapped_t_index + 1);
+					v3 target_position_plus_one = road_segment.curve_samples[hospital->snapped_t_index + 1];
+
+					v3 dir = target_position_plus_one - target_position;
+					v3 offsetted = target_position + dir * hospital->snapped_t;
+
+					v3 sidewalk_position_offset = glm::normalize(v3{ dir.y, -dir.x, 0.0f });
+					if (hospital->snapped_to_right)
+						sidewalk_position_offset *= road_segment_type.lanes_forward[road_segment_type.lanes_forward.size() - 1].distance_from_center;
+					else
+						sidewalk_position_offset *= road_segment_type.lanes_backward[0].distance_from_center;
+
+					((RS_Transition_For_Walking*)p->path[0])->at_path_array_index = hospital->snapped_t_index;
+
+					set_person_target(p, offsetted + sidewalk_position_offset);
+				}
+				break;
+			}
 			default:
 				assert(false);
 				break;
@@ -419,10 +820,10 @@ namespace Can
 		}
 	}
 
-	Person* PersonManager::get_worklessPerson()
+	Person* PersonManager::get_unemployed_person()
 	{
 		for (Person* p : m_People)
-			if (!p->work)
+			if (p->profession == Profession::Unemployed)
 				return p;
 
 		return nullptr;
@@ -456,14 +857,38 @@ namespace Can
 
 	void reset_person_back_to_building_from(Person* p)
 	{
-		GameScene* game = GameScene::ActiveGameScene;
-		auto& road_segments = game->m_RoadManager.road_segments;
-		auto& road_nodes = game->m_RoadManager.road_nodes;
+		p->position = p->path_start_building->object->position;
+		p->object->SetTransform(p->position);
+		if (p->path_start_building == p->home)
+		{
+			p->status = PersonStatus::AtHome;
+			p->time_left = random_f32(1.0f, 2.0f);	// home values
+		}
+		else if (p->path_start_building == p->work)
+		{
+			p->status = PersonStatus::AtWork;
+			p->time_left = random_f32(1.0f, 2.0f);	// work values
+		}
+		else
+		{
+			assert(false, "TODO"); // at some other building (for the future)
+		}
+		reset_person(p);
+	}
+	void reset_person(Person* p)
+	{
+		GameScene* game{ GameScene::ActiveGameScene };
+		auto& road_segments{ game->m_RoadManager.road_segments };
+		auto& road_nodes{ game->m_RoadManager.road_nodes };
+		auto& building_types{ game->MainApplication->building_types };
+		Building* start_building{ p->path_start_building };
+		auto& building_type{ building_types[start_building->type] };
 
+		p->object->enabled = false;
 		if (p->road_segment != -1)
 		{
-			auto& people_on_the_road_segment = road_segments[p->road_segment].people;
-			auto it = std::find(people_on_the_road_segment.begin(), people_on_the_road_segment.end(), p);
+			auto& people_on_the_road_segment{ road_segments[p->road_segment].people };
+			auto it{ std::find(people_on_the_road_segment.begin(), people_on_the_road_segment.end(), p) };
 			if (it == people_on_the_road_segment.end()) assert(false);
 
 			people_on_the_road_segment.erase(it);
@@ -471,66 +896,70 @@ namespace Can
 		}
 		else if (p->road_node != -1)
 		{
-			auto& people_on_the_road_node = road_nodes[p->road_node].people;
-			auto it = std::find(people_on_the_road_node.begin(), people_on_the_road_node.end(), p);
+			auto& people_on_the_road_node{ road_nodes[p->road_node].people };
+			auto it{ std::find(people_on_the_road_node.begin(), people_on_the_road_node.end(), p) };
 			if (it == people_on_the_road_node.end()) assert(false);
 
 			people_on_the_road_node.erase(it);
 			p->road_node = -1;
 		}
-		p->position = p->path_start_building->position;
-		p->object->SetTransform(p->position);
-		p->object->enabled = false;
-		if (p->path_start_building == p->home)
-		{
-			p->status = PersonStatus::AtHome;
-			p->time_left = Utility::Random::Float(1.0f, 2.0f);	// home values
-		}
-		else if (p->path_start_building == p->work)
-		{
-			p->status = PersonStatus::AtWork;
-			p->time_left = Utility::Random::Float(1.0f, 2.0f);	// work values
-		}
-		else
-		{
-			assert(false); // at some other building (for the future)
-		}
-
 		while (p->path.size() > 0)
 		{
 			delete p->path[p->path.size() - 1];
 			p->path.pop_back();
 		}
+		p->path_end_building = nullptr;
+		p->path_start_building = nullptr;
+		p->drove_in_work = false;
+		p->heading_to_a_building = false;
+		p->heading_to_a_car = false;
+		p->time_left = 10.0f; // TODO: set according to "something" ???
 
 		if (p->car)
 		{
-			Building* b = p->path_start_building;
-			v3 car_pos = b->position +
-				(v3)(glm::rotate(m4(1.0f), b->object->rotation.z, v3{ 0.0f, 0.0f, 1.0f }) *
-					glm::rotate(m4(1.0f), b->object->rotation.y, v3{ 0.0f, 1.0f, 0.0f }) *
-					glm::rotate(m4(1.0f), b->object->rotation.x, v3{ 1.0f, 0.0f, 0.0f }) *
-					v4(b->car_park.offset, 1.0f));
+			Building* home{ p->home };
+			auto& building_type{ building_types[home->type] };
+			v3 car_driving_pos{ home->object->position +
+				(v3)(glm::rotate(m4(1.0f), home->object->rotation.z, v3{ 0.0f, 0.0f, 1.0f }) *
+					glm::rotate(m4(1.0f), home->object->rotation.y, v3{ 0.0f, 1.0f, 0.0f }) *
+					glm::rotate(m4(1.0f), home->object->rotation.x, v3{ 1.0f, 0.0f, 0.0f }) *
+					v4(building_type.vehicle_parks[0].offset, 1.0f)) };
 			p->car->object->SetTransform(
-				car_pos,
+				car_driving_pos,
 				glm::rotateZ(
-					b->object->rotation,
-					glm::radians(b->car_park.rotation_in_degrees)
+					home->object->rotation,
+					glm::radians(building_type.vehicle_parks[0].rotation_in_degrees)
 				)
 			);
 		}
 
-		p->path_end_building = nullptr;
-		p->path_start_building = nullptr;
+		if (p->car_driving)
+		{
+			if (p->car_driving != p->car)
+			{
+				v3 car_driving_pos{ start_building->object->position +
+					(v3)(glm::rotate(m4(1.0f), start_building->object->rotation.z, v3{ 0.0f, 0.0f, 1.0f }) *
+						glm::rotate(m4(1.0f), start_building->object->rotation.y, v3{ 0.0f, 1.0f, 0.0f }) *
+						glm::rotate(m4(1.0f), start_building->object->rotation.x, v3{ 1.0f, 0.0f, 0.0f }) *
+						v4(building_type.vehicle_parks[0].offset, 1.0f)) };
+				p->car_driving->object->SetTransform(
+					car_driving_pos,
+					glm::rotateZ(
+						start_building->object->rotation,
+						glm::radians(building_type.vehicle_parks[0].rotation_in_degrees)
+					)
+				);
+			}
+			p->car_driving->driver = nullptr;
+			p->car_driving = nullptr;
+		}
 
-		p->from_right = false;
-		p->heading_to_a_building = false;
-		p->heading_to_a_car = false;
-		p->car_driving = nullptr;
 	}
 	void reset_car_back_to_building_from(Car* c)
 	{
 		GameScene* game{ GameScene::ActiveGameScene };
 		auto& road_segments{ game->m_RoadManager.road_segments };
+		auto& building_types{ game->MainApplication->building_types };
 
 		if (c->road_segment != -1)
 		{
@@ -541,16 +970,17 @@ namespace Can
 			c->road_segment = -1;
 		}
 		Building* building_from{ c->driver->path_start_building };
-		v3 car_park_pos{ building_from->position +
+		auto& building_type{ building_types[building_from->type] };
+		v3 car_park_pos{ building_from->object->position +
 			(v3)(glm::rotate(m4(1.0f), building_from->object->rotation.z, v3{ 0.0f, 0.0f, 1.0f }) *
 				glm::rotate(m4(1.0f), building_from->object->rotation.y, v3{ 0.0f, 1.0f, 0.0f }) *
 				glm::rotate(m4(1.0f), building_from->object->rotation.x, v3{ 1.0f, 0.0f, 0.0f }) *
-				v4(building_from->car_park.offset, 1.0f)) };
+				v4(building_type.vehicle_parks[0].offset, 1.0f)) };
 		c->object->SetTransform(
 			car_park_pos,
 			glm::rotateZ(
 				building_from->object->rotation,
-				glm::radians(building_from->car_park.rotation_in_degrees)
+				glm::radians(building_type.vehicle_parks[0].rotation_in_degrees)
 			)
 		);
 		while (c->path.size())
@@ -563,19 +993,20 @@ namespace Can
 
 		Person* p = c->driver;
 		c->driver = nullptr;
+		c->cargo = 0.0f;
 
-		p->position = p->path_start_building->position;
+		p->position = p->path_start_building->object->position;
 		p->object->SetTransform(p->position);
 		p->object->enabled = false;
 		if (p->path_start_building == p->home)
 		{
 			p->status = PersonStatus::AtHome;
-			p->time_left = Utility::Random::Float(1.0f, 2.0f);	// home values
+			p->time_left = random_f32(1.0f, 2.0f);	// home values
 		}
 		else if (p->path_start_building == p->work)
 		{
 			p->status = PersonStatus::AtWork;
-			p->time_left = Utility::Random::Float(1.0f, 2.0f);	// work values
+			p->time_left = random_f32(1.0f, 2.0f);	// work values
 		}
 		else
 		{
@@ -594,6 +1025,7 @@ namespace Can
 		GameScene* game = GameScene::ActiveGameScene;
 		auto& road_segments = game->m_RoadManager.road_segments;
 		auto& road_nodes = game->m_RoadManager.road_nodes;
+		auto& building_types{ game->MainApplication->building_types };
 
 		if (p->road_segment != -1)
 		{
@@ -613,11 +1045,11 @@ namespace Can
 			people_on_the_road_node.erase(it);
 			p->road_node = -1;
 		}
-		p->position = p->path_start_building->position;
+		p->position = p->path_start_building->object->position;
 		p->object->SetTransform(p->position);
 		p->object->enabled = false;
 		p->status = PersonStatus::AtHome;
-		p->time_left = Utility::Random::Float(1.0f, 2.0f);	// home values
+		p->time_left = random_f32(1.0f, 2.0f);	// home values
 
 		while (p->path.size() > 0)
 		{
@@ -628,16 +1060,17 @@ namespace Can
 		if (p->car)
 		{
 			Building* b = p->path_start_building;
-			v3 car_pos = b->position +
+			auto& building_type{ building_types[b->type] };
+			v3 car_pos = b->object->position +
 				(v3)(glm::rotate(m4(1.0f), b->object->rotation.z, v3{ 0.0f, 0.0f, 1.0f }) *
 					glm::rotate(m4(1.0f), b->object->rotation.y, v3{ 0.0f, 1.0f, 0.0f }) *
 					glm::rotate(m4(1.0f), b->object->rotation.x, v3{ 1.0f, 0.0f, 0.0f }) *
-					v4(b->car_park.offset, 1.0f));
+					v4(building_type.vehicle_parks[0].offset, 1.0f));
 			p->car->object->SetTransform(
 				car_pos,
 				glm::rotateZ(
 					b->object->rotation,
-					glm::radians(b->car_park.rotation_in_degrees)
+					glm::radians(building_type.vehicle_parks[0].rotation_in_degrees)
 				)
 			);
 		}
@@ -722,7 +1155,7 @@ namespace Can
 		if (work_building->vehicles.empty())
 			return nullptr;
 
-		Car* car = work_building->vehicles.back();
+		Car* car{ work_building->vehicles.back() };
 		work_building->vehicles.pop_back();
 
 		return car;

@@ -1,12 +1,13 @@
 #include "canpch.h"
 #include "RoadNode.h"
 
-#include "Types/RoadSegment.h"
-
 #include "Helper.h"
 #include "Can/Math.h"
 
 #include "GameApp.h"
+
+#include "Types/RoadSegment.h"
+#include "Types/Road_Type.h"
 
 namespace Can
 {
@@ -138,7 +139,7 @@ namespace Can
 					road_segment.GetEndRotation().y + glm::radians(180.0f)
 				};
 			}
-			RoadType& type = app->road_types[road_segment.type];
+			Road_Type& type = app->road_types[road_segment.type];
 			Prefab* prefab =
 				road_segment.elevation_type == -1 ? (type.asymmetric && isStartNode ? type.tunnel_end_mirror : type.tunnel_end) :
 				road_segment.elevation_type == 0 ? (type.asymmetric && isStartNode ? type.road_end_mirror : type.road_end) : nullptr;
@@ -187,8 +188,8 @@ namespace Can
 			v3 shiftR1Dir = glm::normalize(v3{ -r1Dir.y, +r1Dir.x, 0.0f });
 			v3 shiftR2Dir = glm::normalize(v3{ +r2Dir.y, -r2Dir.x, 0.0f });
 
-			RoadType& type1 = app->road_types[road_segment_1.type];
-			RoadType& type2 = app->road_types[road_segment_2.type];
+			Road_Type& type1 = app->road_types[road_segment_1.type];
+			Road_Type& type2 = app->road_types[road_segment_2.type];
 			v3 shiftR1Amount = shiftR1Dir * (type1.road_width * 0.5f);
 			v3 shiftR2Amount = shiftR2Dir * (type2.road_width * 0.5f);
 
@@ -218,7 +219,7 @@ namespace Can
 		for (u64 i = 0; i < count; i++)
 		{
 			const RoadSegment& rs = road_segments[roadSegments[i]];
-			RoadType& type = app->road_types[rs.type];
+			Road_Type& type = app->road_types[rs.type];
 			bool asym = type.asymmetric;
 			bool isStartNode = index == rs.StartNode;
 			bool isFromGround = rs.elevation_type == 0;
@@ -237,7 +238,7 @@ namespace Can
 		for (u64 i = 0; i < count; i++)
 		{
 			RoadSegment& rs = road_segments[roadSegments[i]];
-			RoadType& type = app->road_types[rs.type];
+			Road_Type& type = app->road_types[rs.type];
 			bool asym = type.asymmetric;
 			bool isStartNode = index == rs.StartNode;
 			bool isFromGround = rs.elevation_type == 0;
@@ -351,7 +352,7 @@ namespace Can
 			offset += prefabIndexCount;
 			if (isTunnel && isFromGround)
 			{
-				RoadType& type = app->road_types[rs.type];
+				Road_Type& type = app->road_types[rs.type];
 				Prefab* tunnel_entrance = asym && !isStartNode ? type.tunnel_entrance_mirror : type.tunnel_entrance;
 				TexturedObjectVertex* verts = (TexturedObjectVertex*)(tunnel_entrance->vertices);
 				textureIndex = -1.0f;
