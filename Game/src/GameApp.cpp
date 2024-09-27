@@ -678,6 +678,7 @@ namespace Can
 
 		houses_texture = Texture2D::Create("assets/textures/Buttons/Houses.png");
 		residentials_texture = Texture2D::Create("assets/textures/Buttons/Residentials.png");
+		commercials_texture = Texture2D::Create("assets/textures/Buttons/Commercials.png");
 		industrials_texture = Texture2D::Create("assets/textures/Buttons/Industrials.png");
 		offices_texture = Texture2D::Create("assets/textures/Buttons/Offices.png");
 		hospitals_texture = Texture2D::Create("assets/textures/Buttons/Hospitals.png");

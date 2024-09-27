@@ -47,6 +47,7 @@ namespace Can
 
 		Ref<Texture2D> houses_texture;				// Put better name
 		Ref<Texture2D> residentials_texture;		// Put better name
+		Ref<Texture2D> commercials_texture;			// Put better name
 		Ref<Texture2D> industrials_texture;			// Put better name
 		Ref<Texture2D> offices_texture;				// Put better name
 		Ref<Texture2D> hospitals_texture;			// Put better name
