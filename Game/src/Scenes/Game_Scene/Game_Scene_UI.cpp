@@ -110,7 +110,7 @@ namespace Can
 
 			if (ui.draw_building_panel_inside_type == Draw_Building_Panel::Home)
 			{
-				flags = immediate_image_button(menu_item_rect, ui.button_theme_back, nullptr, __LINE__);
+				flags = immediate_image_button(menu_item_rect, ui.button_theme_sub_menus, nullptr, __LINE__);
 				menu_item_rect.z++;
 				immediate_text("-", menu_item_rect, ui.label_theme_large_text);
 
@@ -130,9 +130,7 @@ namespace Can
 			}
 			else if (ui.draw_building_panel_inside_type == Draw_Building_Panel::General)
 			{
-				flags = immediate_image_button(menu_item_rect, ui.button_theme_back, nullptr, __LINE__);
-				menu_item_rect.z++;
-				immediate_text("B", menu_item_rect, ui.label_theme_large_text);
+				flags = immediate_image_button(menu_item_rect, ui.button_theme_sub_menus, app->back_texture, __LINE__);
 				if (flags & BUTTON_STATE_FLAGS_RELEASED)
 					ui.draw_building_panel_inside_type = Draw_Building_Panel::Home;
 
@@ -163,9 +161,7 @@ namespace Can
 			}
 			else if (ui.draw_building_panel_inside_type == Draw_Building_Panel::Special)
 			{
-				flags = immediate_image_button(menu_item_rect, ui.button_theme_back, nullptr, __LINE__);
-				menu_item_rect.z++;
-				immediate_text("B", menu_item_rect, ui.label_theme_large_text);
+				flags = immediate_image_button(menu_item_rect, ui.button_theme_sub_menus, app->back_texture, __LINE__);
 				if (flags & BUTTON_STATE_FLAGS_RELEASED)
 					ui.draw_building_panel_inside_type = Draw_Building_Panel::Home;
 
@@ -186,9 +182,7 @@ namespace Can
 			}
 			else if (ui.draw_building_panel_inside_type == Draw_Building_Panel::House)
 			{
-				flags = immediate_image_button(menu_item_rect, ui.button_theme_back, nullptr, __LINE__);
-				menu_item_rect.z++;
-				immediate_text("B", menu_item_rect, ui.label_theme_large_text);
+				flags = immediate_image_button(menu_item_rect, ui.button_theme_sub_menus, app->back_texture, __LINE__);
 				if (flags & BUTTON_STATE_FLAGS_RELEASED)
 					ui.draw_building_panel_inside_type = Draw_Building_Panel::General;
 
@@ -211,9 +205,7 @@ namespace Can
 			}
 			else if (ui.draw_building_panel_inside_type == Draw_Building_Panel::Residential)
 			{
-				flags = immediate_image_button(menu_item_rect, ui.button_theme_back, nullptr, __LINE__);
-				menu_item_rect.z++;
-				immediate_text("B", menu_item_rect, ui.label_theme_large_text);
+				flags = immediate_image_button(menu_item_rect, ui.button_theme_sub_menus, app->back_texture, __LINE__);
 				if (flags & BUTTON_STATE_FLAGS_RELEASED)
 					ui.draw_building_panel_inside_type = Draw_Building_Panel::General;
 
@@ -237,9 +229,7 @@ namespace Can
 			}
 			else if (ui.draw_building_panel_inside_type == Draw_Building_Panel::Commercial)
 			{
-				flags = immediate_image_button(menu_item_rect, ui.button_theme_back, nullptr, __LINE__);
-				menu_item_rect.z++;
-				immediate_text("B", menu_item_rect, ui.label_theme_large_text);
+				flags = immediate_image_button(menu_item_rect, ui.button_theme_sub_menus, app->back_texture, __LINE__);
 				if (flags & BUTTON_STATE_FLAGS_RELEASED)
 					ui.draw_building_panel_inside_type = Draw_Building_Panel::General;
 
@@ -262,9 +252,7 @@ namespace Can
 			}
 			else if (ui.draw_building_panel_inside_type == Draw_Building_Panel::Industrial)
 			{
-				flags = immediate_image_button(menu_item_rect, ui.button_theme_back, nullptr, __LINE__);
-				menu_item_rect.z++;
-				immediate_text("B", menu_item_rect, ui.label_theme_large_text);
+				flags = immediate_image_button(menu_item_rect, ui.button_theme_sub_menus, app->back_texture, __LINE__);
 				if (flags & BUTTON_STATE_FLAGS_RELEASED)
 					ui.draw_building_panel_inside_type = Draw_Building_Panel::General;
 
@@ -287,9 +275,7 @@ namespace Can
 			}
 			else if (ui.draw_building_panel_inside_type == Draw_Building_Panel::Office)
 			{
-				flags = immediate_image_button(menu_item_rect, ui.button_theme_back, nullptr, __LINE__);
-				menu_item_rect.z++;
-				immediate_text("B", menu_item_rect, ui.label_theme_large_text);
+				flags = immediate_image_button(menu_item_rect, ui.button_theme_sub_menus, app->back_texture, __LINE__);
 				if (flags & BUTTON_STATE_FLAGS_RELEASED)
 					ui.draw_building_panel_inside_type = Draw_Building_Panel::General;
 
@@ -312,9 +298,7 @@ namespace Can
 			}
 			else if (ui.draw_building_panel_inside_type == Draw_Building_Panel::Hospital)
 			{
-				flags = immediate_image_button(menu_item_rect, ui.button_theme_back, nullptr, __LINE__);
-				menu_item_rect.z++;
-				immediate_text("B", menu_item_rect, ui.label_theme_large_text);
+				flags = immediate_image_button(menu_item_rect, ui.button_theme_sub_menus, app->back_texture, __LINE__);
 				if (flags & BUTTON_STATE_FLAGS_RELEASED)
 					ui.draw_building_panel_inside_type = Draw_Building_Panel::Special;
 
@@ -337,9 +321,7 @@ namespace Can
 			}
 			else if (ui.draw_building_panel_inside_type == Draw_Building_Panel::Police_Station)
 			{
-				flags = immediate_image_button(menu_item_rect, ui.button_theme_back, nullptr, __LINE__);
-				menu_item_rect.z++;
-				immediate_text("B", menu_item_rect, ui.label_theme_large_text);
+				flags = immediate_image_button(menu_item_rect, ui.button_theme_sub_menus, app->back_texture, __LINE__);
 				if (flags & BUTTON_STATE_FLAGS_RELEASED)
 					ui.draw_building_panel_inside_type = Draw_Building_Panel::Special;
 
@@ -362,9 +344,7 @@ namespace Can
 			}
 			else if (ui.draw_building_panel_inside_type == Draw_Building_Panel::Garbage_Collection_Center)
 			{
-				flags = immediate_image_button(menu_item_rect, ui.button_theme_back, nullptr, __LINE__);
-				menu_item_rect.z++;
-				immediate_text("B", menu_item_rect, ui.label_theme_large_text);
+				flags = immediate_image_button(menu_item_rect, ui.button_theme_sub_menus, app->back_texture, __LINE__);
 				if (flags & BUTTON_STATE_FLAGS_RELEASED)
 					ui.draw_building_panel_inside_type = Draw_Building_Panel::Special;
 
@@ -498,15 +478,10 @@ namespace Can
 			ui.button_theme_track.background_color_over = { 0.80f, 0.70f, 0.60f, 1.0f };
 			ui.button_theme_track.background_color_pressed = { 0.90f, 0.85f, 0.80f, 1.0f };
 
-			ui.button_theme_back.label_theme = &ui.label_theme_button;
-			ui.button_theme_back.background_color = { 0.60f, 0.20f, 0.30f, 1.0f };
-			ui.button_theme_back.background_color_over = { 0.75f, 0.30f, 0.40f, 1.0f };
-			ui.button_theme_back.background_color_pressed = { 0.90f, 0.40f, 0.50f, 1.0f };
-
 			ui.button_theme_sub_menus.label_theme = &ui.label_theme_button;
-			ui.button_theme_sub_menus.background_color = v4{ 0.90f, 0.90f, 0.90f, 1.0f };
-			ui.button_theme_sub_menus.background_color_over = v4{ 0.95f, 0.95f, 0.95f, 1.0f };
-			ui.button_theme_sub_menus.background_color_pressed = v4{ 1.00f, 1.00f, 1.00f, 1.0f };
+			ui.button_theme_sub_menus.background_color = v4{ 1.0f, 1.0f, 1.0f, 1.0f };
+			ui.button_theme_sub_menus.background_color_over = v4{ 0.9f, 0.9f, 0.95f, 1.0f };
+			ui.button_theme_sub_menus.background_color_pressed = v4{ 0.8f, 0.8f, 0.90f, 1.0f };
 		}
 		/*Slider_Themes*/ {
 			ui.slider_theme_horizontal.track_theme = &ui.button_theme_track;

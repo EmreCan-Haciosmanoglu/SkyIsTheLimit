@@ -676,6 +676,7 @@ namespace Can
 		two_times_speed_texture = Texture2D::Create("assets/textures/Buttons/TwoTimesSpeed.png");
 		four_times_speed_texture = Texture2D::Create("assets/textures/Buttons/FourTimesSpeed.png");
 
+		back_texture = Texture2D::Create("assets/textures/Buttons/Back.png");
 		houses_texture = Texture2D::Create("assets/textures/Buttons/Houses.png");
 		residentials_texture = Texture2D::Create("assets/textures/Buttons/Residentials.png");
 		commercials_texture = Texture2D::Create("assets/textures/Buttons/Commercials.png");

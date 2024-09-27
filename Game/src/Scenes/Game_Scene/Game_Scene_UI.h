@@ -52,7 +52,6 @@ namespace Can
 		Button_Theme button_theme_track;
 
 
-		Button_Theme button_theme_back;
 		Button_Theme button_theme_construction_modes;
 		Button_Theme button_theme_sub_menus;
 		Button_Theme button_theme_buildings;
