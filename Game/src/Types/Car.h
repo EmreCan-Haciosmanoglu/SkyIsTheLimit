@@ -3,29 +3,28 @@
 
 namespace Can
 {
-	class RoadSegment;
 	class Car
 	{
 	public:
-		Car(
-			Prefab* type,
-			RoadSegment* roadSegment,
-			size_t t_index,
-			float speed,
-			const glm::vec3& position,
-			const glm::vec3& target,
-			const glm::vec3& rotation
-		);
-		~Car();
-		RoadSegment* roadSegment;
-		size_t t_index = 0;
-		float speed = 100.0f;
-		float t = 0;
-		std::array<glm::vec3, 3> driftpoints;
-		Object* object;
-		glm::vec3 position;
-		glm::vec3 target;
-		bool fromStart = false;
-		bool inJunction = false;
+		~Car() { assert(object != nullptr); delete object; }
+
+		Object* object{ nullptr };
+		u64 type{ 0 };
+		f32 speed_in_kmh{ 0.0f };
+		f32 cargo{ 0.0f };
+		v3 target{};
+		v3 target_park_pos{};
+		bool heading_to_a_parking_spot{ false };
+		bool heading_to_a_visiting_spot{ false };
+		s64 road_segment{ -1 };
+
+		float t = 1.0f;
+		std::array<glm::vec3, 3> driftpoints{};
+
+		std::vector<struct RS_Transition_For_Vehicle*> path{};
+
+		class Person* driver{ nullptr };
+		std::vector<class Person*> passengers{};
+		class Building* building{ nullptr };
 	};
 }

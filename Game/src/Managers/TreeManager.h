@@ -5,6 +5,7 @@
 namespace Can
 {
 	class GameScene;
+	class Tree;
 
 	enum class TreeConstructionMode
 	{
@@ -19,24 +20,24 @@ namespace Can
 		TreeManager(GameScene* scene);
 		~TreeManager();
 
-		void OnUpdate(glm::vec3& prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection);
-		void OnUpdate_Adding(glm::vec3& prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection);
-		void OnUpdate_Removing(glm::vec3& prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection);
+		void OnUpdate(v3& prevLocation, const v3& cameraPosition, const v3& cameraDirection);
+		void OnUpdate_Adding(v3& prevLocation, const v3& cameraPosition, const v3& cameraDirection);
+		void OnUpdate_Removing(v3& prevLocation, const v3& cameraPosition, const v3& cameraDirection);
 
 		bool OnMousePressed(MouseCode button);
 		bool OnMousePressed_Adding();
 		bool OnMousePressed_Removing();
 
-		void SetType(size_t type);
-		inline size_t GetType() { return m_Type; }
+		void SetType(u64 type);
+		inline u64 GetType() { return m_Type; }
 
 		void SetConstructionMode(TreeConstructionMode mode);
 
 		inline const TreeConstructionMode GetConstructionMode() const { return m_ConstructionMode; }
 		inline TreeConstructionMode GetConstructionMode() { return m_ConstructionMode; }
 
-		inline const std::vector<Object*>& GetTrees() const { return m_Trees; }
-		inline std::vector<Object*>& GetTrees() { return m_Trees; }
+		inline const std::vector<Tree*>& GetTrees() const { return m_Trees; }
+		inline std::vector<Tree*>& GetTrees() { return m_Trees; }
 
 		void ResetStates();
 
@@ -45,18 +46,17 @@ namespace Can
 		std::array<bool, 1> restrictions = { true };
 		// 0 : Collision
 
-	private:
 		GameScene* m_Scene = nullptr;
 
 		TreeConstructionMode m_ConstructionMode = TreeConstructionMode::None;
 
-		size_t m_Type = 0;
+		u64 m_Type = 0;
 
-		std::vector<Object*> m_Trees = {};
+		std::vector<Tree*> m_Trees = {};
 
-		glm::vec3 m_GuidelinePosition = glm::vec3(0.0f);
+		v3 m_GuidelinePosition = v3(0.0f);
 
-		std::vector<Object*>::iterator& m_SelectedTreeToRemove = m_Trees.end();
+		std::vector<Tree*>::const_iterator m_SelectedTreeToRemove = m_Trees.cend();
 
 		Object* m_Guideline = nullptr;
 

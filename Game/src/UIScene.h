@@ -17,7 +17,7 @@ namespace Can
 		virtual void OnAttach() override;
 		virtual void OnDetach() override {}
 
-		virtual void OnUpdate(TimeStep ts) override;
+		virtual bool OnUpdate(TimeStep ts) override;
 		virtual void OnEvent(Event::Event& event) override;
 
 		bool OnMousePressed(Event::MouseButtonPressedEvent& event);
@@ -25,43 +25,39 @@ namespace Can
 	public:
 		Scene* m_Scene;
 
-		Button* m_ButtonRoads = nullptr;
+		Button* m_ButtonPause  = nullptr;
+		Button* m_ButtonNormal = nullptr;
+		Button* m_Button2Times = nullptr;
+		Button* m_Button4Times = nullptr;
+		Button* m_ButtonSave = nullptr;
+
+		Button* m_ButtonRoads     = nullptr;
 		Button* m_ButtonBuildings = nullptr;
-		Button* m_ButtonTrees = nullptr;
-		Button* m_ButtonCars = nullptr;
-		Button* m_ButtonNeeds = nullptr;
-		Button* m_ButtonTools = nullptr;
+		Button* m_ButtonTrees     = nullptr;
+		Button* m_ButtonNeeds     = nullptr;
+		Button* m_ButtonTools     = nullptr;
 
-		Panel* m_PanelRoads = nullptr;
-		Panel* m_PanelBuildings = nullptr;
-		Panel* m_PanelTrees = nullptr;
-		Panel* m_PanelCars = nullptr;
-		Panel* m_PanelNeeds = nullptr;
-		Panel* m_PanelTools = nullptr;
+		Panel* m_PanelRoads     = nullptr;
+		Panel* m_PanelTrees     = nullptr;
+		Panel* m_PanelNeeds     = nullptr;
+		Panel* m_PanelTools     = nullptr;
 
-		Button* m_StraightRoadButton = nullptr;
+		Button* m_StraightRoadButton  = nullptr;
 		Button* m_QuadraticRoadButton = nullptr;
 		Button* m_Cubic1234RoadButton = nullptr;
 		Button* m_Cubic1243RoadButton = nullptr;
 		Button* m_Cubic1342RoadButton = nullptr;
 		Button* m_Cubic1432RoadButton = nullptr;
-		Button* m_DestructRoadButton = nullptr;
-		Button* m_UpgradeRoadButton = nullptr;
-		Button* m_CancelRoadButton = nullptr;
+		Button* m_DestructRoadButton  = nullptr;
+		Button* m_ChangeRoadButton   = nullptr;
+		Button* m_CancelRoadButton    = nullptr;
 
-		Button* m_ConstructBuildingButton = nullptr;
-		Button* m_DestructBuildingButton = nullptr;
-		Button* m_UpgradeBuildingButton = nullptr;
-		Button* m_CancelBuildingButton = nullptr;
-
-		Button* m_AddTreePanelButton = nullptr;
-		Button* m_RemoveTreePanelButton = nullptr;
-		Button* m_CancelTreePanelButton = nullptr;
+		Button* m_AddTreeButton = nullptr;
+		Button* m_RemoveTreeButton = nullptr;
+		Button* m_CancelTreeButton = nullptr;
 
 		ScrollView* m_ScrollViewRoads = nullptr;
-		ScrollView* m_ScrollViewBuildings = nullptr;
 		ScrollView* m_ScrollViewTrees = nullptr;
-		ScrollView* m_ScrollViewCars = nullptr;
 
 		Button* m_ButtonTools_01 = nullptr;
 		Button* m_ButtonTools_02 = nullptr;
@@ -94,15 +90,13 @@ namespace Can
 		Button* m_ButtonNeeds_14 = nullptr;
 
 		std::vector<Button*> m_RoadPanelButtonList;
-		std::vector<Button*> m_BuildingPanelButtonList;
 		std::vector<Button*> m_TreePanelButtonList;
-		std::vector<Button*> m_CarPanelButtonList;
 
 		GameApp* m_Parent;
 	private:
 		float m_ZoomLevel;
 		float m_AspectRatio;
 
-		Camera::OrthographicCameraController m_CameraController;
+		Orthographic_Camera_Controller m_CameraController;
 	};
 }

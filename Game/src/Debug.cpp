@@ -9,8 +9,9 @@ namespace Can
 	{
 	}
 
-	void Debug::OnUpdate(Can::TimeStep ts)
+	bool Debug::OnUpdate(Can::TimeStep ts)
 	{
+		return false;
 	}
 
 	void Debug::OnEvent(Can::Event::Event& event)
@@ -26,9 +27,13 @@ namespace Can
 		RoadManager* roadManager = &(gameScene->m_RoadManager);
 		TreeManager* treeManager = &(gameScene->m_TreeManager);
 		CarManager* carManager = &(gameScene->m_CarManager);
-		BuildingManager* buildingManager= &(gameScene->m_BuildingManager);
+		BuildingManager* buildingManager = &(gameScene->m_BuildingManager);
 		if (!is_open)
 			return;
+
+		ImGui::Begin("DeleteMe");
+		ImGui::Text("Elevation: %f", roadManager->m_CurrentElevation);
+		ImGui::End();
 
 		ImGui::Begin("Debug");
 
@@ -40,8 +45,6 @@ namespace Can
 			gameScene->SetConstructionMode(ConstructionMode::Building);
 		if (ImGui::RadioButton("Tree", gameScene->e_ConstructionMode == ConstructionMode::Tree))
 			gameScene->SetConstructionMode(ConstructionMode::Tree);
-		if (ImGui::RadioButton("Car", gameScene->e_ConstructionMode == ConstructionMode::Car))
-			gameScene->SetConstructionMode(ConstructionMode::Car);
 		if (ImGui::RadioButton("None", gameScene->e_ConstructionMode == ConstructionMode::None))
 			gameScene->SetConstructionMode(ConstructionMode::None);
 		ImGui::EndChild();
@@ -56,8 +59,8 @@ namespace Can
 				roadManager->SetConstructionMode(RoadConstructionMode::QuadraticCurve);
 			if (ImGui::RadioButton("CubicCurve", roadManager->GetConstructionMode() == RoadConstructionMode::CubicCurve))
 				roadManager->SetConstructionMode(RoadConstructionMode::CubicCurve);
-			if (ImGui::RadioButton("Upgrade", roadManager->GetConstructionMode() == RoadConstructionMode::Upgrade))
-				roadManager->SetConstructionMode(RoadConstructionMode::Upgrade);
+			if (ImGui::RadioButton("Change", roadManager->GetConstructionMode() == RoadConstructionMode::Change))
+				roadManager->SetConstructionMode(RoadConstructionMode::Change);
 			if (ImGui::RadioButton("Destruction", roadManager->GetConstructionMode() == RoadConstructionMode::Destruct))
 				roadManager->SetConstructionMode(RoadConstructionMode::Destruct);
 			if (ImGui::RadioButton("None", roadManager->GetConstructionMode() == RoadConstructionMode::None))
@@ -90,28 +93,21 @@ namespace Can
 				treeManager->SetConstructionMode(TreeConstructionMode::None);
 			ImGui::EndChild();
 		}
-		else if (gameScene->e_ConstructionMode == ConstructionMode::Car)
-		{
-			ImGui::Text("Car Construction Mode");
-			ImGui::BeginChild("Car Construction Mode", ImVec2(0, 85), true);
-			if (ImGui::RadioButton("Add", carManager->GetConstructionMode() == CarConstructionMode::Adding))
-				carManager->SetConstructionMode(CarConstructionMode::Adding);
-			if (ImGui::RadioButton("Remove", carManager->GetConstructionMode() == CarConstructionMode::Removing))
-				carManager->SetConstructionMode(CarConstructionMode::Removing);
-			if (ImGui::RadioButton("None", carManager->GetConstructionMode() == CarConstructionMode::None))
-				carManager->SetConstructionMode(CarConstructionMode::None);
-			ImGui::EndChild();
-		}
 
 		if (gameScene->e_ConstructionMode == ConstructionMode::Road)
 		{
+			bool r = roadManager->snapFlags & (u8)RoadSnapOptions::SNAP_TO_ROAD;
+			bool l = roadManager->snapFlags & (u8)RoadSnapOptions::SNAP_TO_LENGTH;
+			bool h = roadManager->snapFlags & (u8)RoadSnapOptions::SNAP_TO_HEIGHT;
+			bool a = roadManager->snapFlags & (u8)RoadSnapOptions::SNAP_TO_ANGLE;
+			bool g = roadManager->snapFlags & (u8)RoadSnapOptions::SNAP_TO_GRID;
 			ImGui::Text("Road Construction Snap Options");
 			ImGui::BeginChild("Road Construction Snap Options", ImVec2(0, 135), true);
-			ImGui::Checkbox("Road", &roadManager->snapOptions[0]);
-			ImGui::Checkbox("Length", &roadManager->snapOptions[1]);
-			ImGui::Checkbox("Height", &roadManager->snapOptions[2]);
-			ImGui::Checkbox("Angle", &roadManager->snapOptions[3]);
-			ImGui::Checkbox("Grid", &roadManager->snapOptions[4]);
+			if (ImGui::Checkbox("Road", &r))   roadManager->snapFlags ^= (u8)RoadSnapOptions::SNAP_TO_ROAD;
+			if (ImGui::Checkbox("Length", &l)) roadManager->snapFlags ^= (u8)RoadSnapOptions::SNAP_TO_LENGTH;
+			if (ImGui::Checkbox("Height", &h)) roadManager->snapFlags ^= (u8)RoadSnapOptions::SNAP_TO_HEIGHT;
+			if (ImGui::Checkbox("Angle", &a))  roadManager->snapFlags ^= (u8)RoadSnapOptions::SNAP_TO_ANGLE;
+			if (ImGui::Checkbox("Grid", &g))   roadManager->snapFlags ^= (u8)RoadSnapOptions::SNAP_TO_GRID;
 			ImGui::EndChild();
 		}
 		else if (gameScene->e_ConstructionMode == ConstructionMode::Building)
@@ -125,11 +121,14 @@ namespace Can
 
 		if (gameScene->e_ConstructionMode == ConstructionMode::Road)
 		{
+			bool sm = roadManager->restrictionFlags & (u8)RoadRestrictions::RESTRICT_SMALL_ANGLES;
+			bool sh = roadManager->restrictionFlags & (u8)RoadRestrictions::RESTRICT_SHORT_LENGTH;
+			bool co = roadManager->restrictionFlags & (u8)RoadRestrictions::RESTRICT_COLLISIONS;
 			ImGui::Text("Road Construction Restriction Options");
 			ImGui::BeginChild("Road Construction Restriction Options", ImVec2(0, 85), true);
-			ImGui::Checkbox("Small angles", &roadManager->restrictions[0]);
-			ImGui::Checkbox("Short lengths", &roadManager->restrictions[1]);
-			ImGui::Checkbox("Collisions", &roadManager->restrictions[2]);
+			if (ImGui::Checkbox("Small angles", &sm))  roadManager->restrictionFlags ^= (u8)RoadRestrictions::RESTRICT_SMALL_ANGLES;
+			if (ImGui::Checkbox("Short lengths", &sh)) roadManager->restrictionFlags ^= (u8)RoadRestrictions::RESTRICT_SHORT_LENGTH;
+			if (ImGui::Checkbox("Collisions", &co))    roadManager->restrictionFlags ^= (u8)RoadRestrictions::RESTRICT_COLLISIONS;
 			ImGui::EndChild();
 		}
 		else if (gameScene->e_ConstructionMode == ConstructionMode::Building)
@@ -155,7 +154,7 @@ namespace Can
 	}
 	bool Debug::OnKeyPressed(Event::KeyPressedEvent& event)
 	{
-		if (event.GetKeyCode() == CAN_KEY_GRAVE_ACCENT)
+		if (event.GetKeyCode() == KeyCode::GraveAccent)
 			is_open = !is_open;
 		return ImGui::GetIO().WantCaptureKeyboard;
 	}

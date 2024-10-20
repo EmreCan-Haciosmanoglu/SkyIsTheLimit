@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Can/Renderer/Object.h"
+#include "Types/Building_Type.h"
 
 namespace Can
 {
@@ -20,21 +21,21 @@ namespace Can
 	{
 	public:
 		BuildingManager(GameScene* scene);
-		~BuildingManager();
+		~BuildingManager() {}
 
-		void OnUpdate(glm::vec3& prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection);
-		void OnUpdate_Construction(glm::vec3& prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection);
-		void OnUpdate_Destruction(glm::vec3& prevLocation, const glm::vec3& cameraPosition, const glm::vec3& cameraDirection);
+		void OnUpdate(v3& prevLocation, const v3& cameraPosition, const v3& cameraDirection);
+		void OnUpdate_Construction(v3& prevLocation, const v3& cameraPosition, const v3& cameraDirection);
+		void OnUpdate_Destruction(v3& prevLocation, const v3& cameraPosition, const v3& cameraDirection);
 
 		bool OnMousePressed(MouseCode button);
 		bool OnMousePressed_Construction();
 		bool OnMousePressed_Destruction();
 
-		void SetType(size_t type);
-		inline size_t GetType() { return m_Type; }
+		void SetType(size_t type_index);
+		inline size_t GetType() const { return building_type_index; }
 
 		void SetConstructionMode(BuildingConstructionMode mode);
-		
+
 		inline const BuildingConstructionMode GetConstructionMode() const { return m_ConstructionMode; }
 		inline BuildingConstructionMode GetConstructionMode() { return m_ConstructionMode; }
 
@@ -42,35 +43,47 @@ namespace Can
 		inline std::vector<Building*>& GetBuildings() { return m_Buildings; }
 
 		void ResetStates();
+		Building* getAvailableWorkBuilding();
+		Building* get_building_to_steal_from(const std::vector<Building*>& ignored_buildings);
 	public:
 
-		std::array<bool, 2> snapOptions { false, false };
+		std::array<bool, 2> snapOptions{ true, true };
 		// 0 : Roads
 		// 1 : Buildings
 
-		std::array<bool, 2> restrictions { false, false };
+		std::array<bool, 2> restrictions{ true, true };
 		// 0 : Collision
 		// 1 : Snapping to a road
 
-	private:
-		GameScene* m_Scene = nullptr;
+		GameScene* m_Scene{ nullptr };
 
-		BuildingConstructionMode m_ConstructionMode = BuildingConstructionMode::None;
+		BuildingConstructionMode m_ConstructionMode{ BuildingConstructionMode::None };
 
-		size_t m_Type = 0;
+		size_t building_type_index{ 0 };
 
-		std::vector<Building*> m_Buildings;
+		std::vector<Building*> m_Buildings{};
+		std::vector<Building*> buildings_houses;
+		std::vector<Building*> buildings_residential;
+		std::vector<Building*> buildings_commercial;
+		std::vector<Building*> buildings_industrial;
+		std::vector<Building*> buildings_office;
+		std::vector<Building*> buildings_specials; // hospitals, police stations, gcfs etc.
 
-		glm::vec3 m_GuidelinePosition = glm::vec3(0.0f);
-		glm::vec3 m_GuidelineRotation = glm::vec3(0.0f);
+		v3 m_GuidelinePosition{ 0.0f, 0.0f, 0.0f };
+		v3 m_GuidelineRotation{ 0.0f, 0.0f, 0.0f };
 
-		RoadSegment* m_SnappedRoadSegment = nullptr;
-		float m_SnappedT = -1.0f;
+		u64 m_SnappedRoadSegment{ (u64)-1 };
+		u64 snapped_t_index{ 0 };
+		f32 snapped_t{ -1.0f };
+		bool snapped_from_right{ false };
 
-		std::vector<Building*>::iterator& m_SelectedBuildingToDestruct = m_Buildings.end();
+		std::vector<Building*>::const_iterator m_SelectedBuildingToDestruct{ m_Buildings.cend() };
 
-		Object* m_Guideline = nullptr;
+		Object* m_Guideline{ nullptr };
 
-		bool b_ConstructionRestricted = false;
+		bool b_ConstructionRestricted{ false };
 	};
+
+	void remove_building(Building* b);
+	void update_buildings(class TimeStep ts);
 }

@@ -2,7 +2,7 @@ project "Game"
     location "Game"
     kind "ConsoleApp"
     language "C++"
-    cppdialect "C++17"
+    cppdialect "C++20"
     staticruntime "On"
         
     targetdir ("bin/" .. outputdir .. "/%{prj.name}")
@@ -21,13 +21,15 @@ project "Game"
         "$(SolutionDir)Can/src",
         "$(SolutionDir)%{IncludeDir.imgui}",
         "$(SolutionDir)%{IncludeDir.glm}",
-        "$(SolutionDir)%{IncludeDir.EnTT}"
+        "$(SolutionDir)%{IncludeDir.EnTT}",
+        "$(SolutionDir)%{IncludeDir.FreeType}"
     }
     
     links
     {
         "imgui",
-        "Can"
+        "Can",
+        "FreeType"
     }
         
     filter "system:windows"
