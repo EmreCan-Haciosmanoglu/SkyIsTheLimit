@@ -821,7 +821,7 @@ namespace Can
 				std::vector<f32> ts{ 0.0f };
 				const std::vector<v3>& curve_samples = rs.curve_samples;
 				u64 curve_samples_size = curve_samples.size();
-				CAN_ASSERT(curve_samples_size > 1, "Samples size can't be smaller than 2");
+				assert(curve_samples_size > 1 && "Samples size can't be smaller than 2");
 				v3 point0 = curve_samples[0];
 				for (u64 i = 1; i < curve_samples_size; i++)
 				{
@@ -1643,7 +1643,7 @@ namespace Can
 				case PersonStatus::AtWork:
 					break;
 				default:
-					assert(false, "UnImplemented PersonStatus case!!!");
+					assert(false && "UnImplemented PersonStatus case!!!");
 					break;
 				}
 			}

@@ -1182,7 +1182,7 @@ namespace Can
 							break;
 						}
 						default:
-							assert(false, "Unimplemented EducationLevel");
+							assert(false && "Unimplemented EducationLevel");
 							break;
 						}
 					}
@@ -1316,7 +1316,7 @@ namespace Can
 							break;
 						}
 						default:
-							assert(false, "Unimplemented PlayerStatus");
+							assert(false && "Unimplemented PlayerStatus");
 							break;
 						}
 						immediate_text(worker->firstName, rect_name, ui.label_theme_left_alinged_xsmall_black_text);

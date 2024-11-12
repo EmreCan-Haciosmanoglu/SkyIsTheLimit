@@ -256,7 +256,7 @@ namespace Can
 											if (car->path.size() == 0) // if no path available
 											{
 												// reset to police station
-												assert(false, "TODO");
+												assert(false && "TODO");
 											}
 											break;
 										}
@@ -268,7 +268,7 @@ namespace Can
 							break;
 						}
 						default:
-							assert(false, "Unimplemented Car_Type");
+							assert(false && "Unimplemented Car_Type");
 							break;
 						}
 
@@ -343,7 +343,7 @@ namespace Can
 										break;
 									}
 									default:
-										assert(false, "Unimplemented Car_Type!");
+										assert(false && "Unimplemented Car_Type!");
 										break;
 									}
 
@@ -457,7 +457,7 @@ namespace Can
 						if (car->path.size() == 0) // if no path available
 						{
 							// reset to hospital
-							assert(false, "TODO");
+							assert(false && "TODO");
 						}
 						break;
 					}
@@ -490,7 +490,7 @@ namespace Can
 								if (car->path.size() == 0) // if no path available
 								{
 									// reset to police station
-									assert(false, "TODO");
+									assert(false && "TODO");
 								}
 								break;
 							}
@@ -534,7 +534,7 @@ namespace Can
 						break;
 					}
 					default:
-						assert(false, "Unimplemented Car_Type");
+						assert(false && "Unimplemented Car_Type");
 						break;
 					}
 				}
@@ -616,14 +616,14 @@ namespace Can
 						break;
 					}
 					default:
-						assert(false, "Unimplemented Car_Type");
+						assert(false && "Unimplemented Car_Type");
 						break;
 					}
 
 				}
 				else
 				{
-					assert(false, "Imposible branch");
+					assert(false && "Imposible branch");
 				}
 			}
 		}

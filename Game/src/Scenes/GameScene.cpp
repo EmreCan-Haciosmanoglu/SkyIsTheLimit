@@ -376,7 +376,7 @@ namespace Can
 					break;
 				}
 				default:
-					assert(false, "Unimplemented Building_Group");
+					assert(false && "Unimplemented Building_Group");
 					break;
 				}
 

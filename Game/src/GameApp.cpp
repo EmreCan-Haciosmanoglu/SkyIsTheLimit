@@ -417,7 +417,7 @@ namespace Can
 								break;
 							}
 							default:
-								assert(false, "Unimplemented Car_Type!");
+								assert(false && "Unimplemented Car_Type!");
 								break;
 							}
 						}

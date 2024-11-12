@@ -67,14 +67,14 @@ namespace Can
 				break;
 			}
 			default:
-				assert(false, "Unimplemented PersonStatus");
+				assert(false && "Unimplemented PersonStatus");
 				break;
 			}
 
 			//	if (p->health < 0.0f)
 			//	{
 			//		// TODO: Die
-			//		assert(false, "DIE");
+			//		assert(false && "DIE");
 			//	}
 
 			switch (p->status)
@@ -181,7 +181,7 @@ namespace Can
 						break;
 					}
 					default:
-						assert(false, "Unimplemented Profession");
+						assert(false && "Unimplemented Profession");
 						break;
 					}
 
@@ -240,7 +240,7 @@ namespace Can
 					{
 					case Profession::Unemployed:
 					{
-						assert(false, "Impossible Profession");
+						assert(false && "Impossible Profession");
 						break;
 					}
 					case Profession::General_Commercial_Worker:
@@ -341,7 +341,7 @@ namespace Can
 						break;
 					}
 					default:
-						assert(false, "Unimplemented Profession");
+						assert(false && "Unimplemented Profession");
 						break;
 					}
 
@@ -680,7 +680,7 @@ namespace Can
 					}
 					else
 					{
-						assert(false, "This should be impossible!!!");
+						assert(false && "This should be impossible!!!");
 					}
 				}
 				break;
@@ -871,7 +871,7 @@ namespace Can
 		}
 		else
 		{
-			assert(false, "TODO"); // at some other building (for the future)
+			assert(false && "TODO"); // at some other building (for the future)
 		}
 		reset_person(p);
 	}

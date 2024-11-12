@@ -472,7 +472,7 @@ namespace Can
 							{
 							case Building_Group::House:
 							case Building_Group::Residential:
-								assert(false, "Wrong Building_Group for work");
+								assert(false && "Wrong Building_Group for work");
 								break;
 							case Building_Group::Commercial:
 								new_person->profession = Profession::General_Commercial_Worker;
@@ -493,7 +493,7 @@ namespace Can
 								new_person->profession = Profession::Waste_Management_Worker;
 								break;
 							default:
-								assert(false, "Unimplemented Building_Group!");
+								assert(false && "Unimplemented Building_Group!");
 								break;
 							}
 						}
@@ -747,7 +747,7 @@ namespace Can
 				break;
 			}
 			default:
-				assert(false, "Unimplemented Building_Group!");
+				assert(false && "Unimplemented Building_Group!");
 				break;
 			}
 			ResetStates();
@@ -976,7 +976,7 @@ namespace Can
 			break;
 		}
 		default:
-			assert(false, "Unimplemented Building_Group");
+			assert(false && "Unimplemented Building_Group");
 			break;
 		}
 
