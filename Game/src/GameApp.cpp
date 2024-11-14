@@ -8,7 +8,7 @@
 #include "Types/Road_Type.h"
 #include "Types/Building_Type.h"
 
-Can::Application* Can::CreateApplication(const Can::WindowProps& props)
+Can::Application* Can::application_create(const Can::WindowProps& props)
 {
 	return new GameApp(props);
 }
