@@ -943,54 +943,54 @@ namespace Can
 			connected_buildings.erase(it);
 		}
 
-		auto it{ std::find(buildings.begin(), buildings.end(), b) };
-		assert(it != buildings.end());
-		buildings.erase(it);
+		auto buildings_it{ std::find(buildings.begin(), buildings.end(), b) };
+		assert(buildings_it != buildings.end());
+		buildings.erase(buildings_it);
 
 		switch (building_type.group)
 		{
 		case Building_Group::House:
 		{
-			auto home_it{ std::find(buildings_houses.begin(), buildings_houses.end(), b) };
-			assert(it != buildings_houses.end());
-			buildings_houses.erase(home_it);
+			auto houses_it{ std::find(buildings_houses.begin(), buildings_houses.end(), b) };
+			assert(houses_it != buildings_houses.end());
+			buildings_houses.erase(houses_it);
 			break;
 		}
 		case Building_Group::Residential:
 		{
-			auto home_it{ std::find(buildings_residential.begin(), buildings_residential.end(), b) };
-			assert(it != buildings_residential.end());
-			buildings_residential.erase(home_it);
+			auto residential_it{ std::find(buildings_residential.begin(), buildings_residential.end(), b) };
+			assert(residential_it != buildings_residential.end());
+			buildings_residential.erase(residential_it);
 			break;
 		}
 		case Building_Group::Commercial:
 		{
-			auto home_it{ std::find(buildings_commercial.begin(), buildings_commercial.end(), b) };
-			assert(it != buildings_commercial.end());
-			buildings_commercial.erase(home_it);
+			auto commercial_it{ std::find(buildings_commercial.begin(), buildings_commercial.end(), b) };
+			assert(commercial_it != buildings_commercial.end());
+			buildings_commercial.erase(commercial_it);
 			break;
 		}
 		case Building_Group::Industrial:
 		{
-			auto home_it{ std::find(buildings_industrial.begin(), buildings_industrial.end(), b) };
-			assert(it != buildings_industrial.end());
-			buildings_industrial.erase(home_it);
+			auto industrial_it{ std::find(buildings_industrial.begin(), buildings_industrial.end(), b) };
+			assert(industrial_it != buildings_industrial.end());
+			buildings_industrial.erase(industrial_it);
 			break;
 		}
 		case Building_Group::Office:
 		{
-			auto home_it{ std::find(buildings_office.begin(), buildings_office.end(), b) };
-			assert(it != buildings_office.end());
-			buildings_office.erase(home_it);
+			auto office_it{ std::find(buildings_office.begin(), buildings_office.end(), b) };
+			assert(office_it != buildings_office.end());
+			buildings_office.erase(office_it);
 			break;
 		}
 		case Building_Group::Hospital:
 		case Building_Group::Police_Station:
 		case Building_Group::Garbage_Collection_Center:
 		{
-			auto home_it{ std::find(buildings_specials.begin(), buildings_specials.end(), b) };
-			assert(it != buildings_specials.end());
-			buildings_specials.erase(home_it);
+			auto specials_it{ std::find(buildings_specials.begin(), buildings_specials.end(), b) };
+			assert(specials_it != buildings_specials.end());
+			buildings_specials.erase(specials_it);
 			break;
 		}
 		default:
