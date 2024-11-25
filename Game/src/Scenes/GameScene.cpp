@@ -61,9 +61,6 @@ namespace Can
 	{
 		camera_controller.on_update(ts);
 
-		RenderCommand::SetClearColor({ 0.9f, 0.9f, 0.9f, 1.0f });
-		RenderCommand::Clear();
-
 		v3 camPos = camera_controller.camera.position;
 		v3 forward = GetRayCastedFromScreen();
 
@@ -114,15 +111,16 @@ namespace Can
 
 		return false;
 	}
-	void GameScene::OnEvent(Event::Event& event)
+	void GameScene::OnEvent(Event* event)
 	{
 		camera_controller.on_event(event);
-		Event::EventDispatcher dispatcher(event);
-		dispatcher.Dispatch<Event::MouseButtonPressedEvent>(CAN_BIND_EVENT_FN(GameScene::OnMousePressed));
+		EventDispatcher dispatcher(event);
+		dispatcher.Dispatch<MouseButtonPressedEvent>(CAN_BIND_EVENT_FN(GameScene::OnMousePressed));
+		dispatcher.Dispatch<MouseButtonReleasedEvent>(CAN_BIND_EVENT_FN(GameScene::OnMouseReleased));
 	}
-	bool GameScene::OnMousePressed(Event::MouseButtonPressedEvent& event)
+	bool GameScene::OnMousePressed(MouseButtonPressedEvent* event)
 	{
-		MouseCode button = event.GetMouseButton();
+		MouseCode button = event->GetMouseButton();
 		v3 camPos = camera_controller.camera.position;
 		v3 forward = GetRayCastedFromScreen();
 
@@ -171,6 +169,50 @@ namespace Can
 		case ConstructionMode::None:
 			if (button == MouseCode::Button0)
 				does_select_object(*this);
+			break;
+		}
+		return false;
+	}
+	bool GameScene::OnMouseReleased(MouseButtonReleasedEvent* event)
+	{
+		MouseCode button = event->GetMouseButton();
+		v3 camPos = camera_controller.camera.position;
+		v3 forward = GetRayCastedFromScreen();
+
+
+		v3 bottomPlaneCollisionPoint = Math::ray_plane_intersection(
+			camPos,
+			forward,
+			v3{ 0.0f, 0.0f, 0.0f },
+			v3{ 0.0f, 0.0f, 1.0f }
+		);
+		v3 topPlaneCollisionPoint = Math::ray_plane_intersection(
+			camPos,
+			forward,
+			v3{ 0.0f, 0.0f, 1.0f * COLOR_COUNT },
+			v3{ 0.0f, 0.0f, 1.0f }
+		);
+		bool inside_game_zone = Helper::check_if_ray_intersects_with_bounding_box(
+			camPos,
+			forward,
+			m_Terrain->prefab->boundingBoxL + m_Terrain->position,
+			m_Terrain->prefab->boundingBoxM + m_Terrain->position
+		);
+		if (!inside_game_zone)
+			return false;
+
+		switch (e_ConstructionMode)
+		{
+		case ConstructionMode::Road:
+			//m_RoadManager.OnMousePressed(button);
+			break;
+		case ConstructionMode::Building:
+			m_BuildingManager.OnMouseReleased(button);
+			break;
+		case ConstructionMode::Tree:
+			//m_TreeManager.OnMouseReleased(button);
+			break;
+		case ConstructionMode::None:
 			break;
 		}
 		return false;

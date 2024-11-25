@@ -15,11 +15,11 @@ namespace Can
 		virtual void OnDetach() override {};
 
 		virtual bool OnUpdate(TimeStep ts) override;
-		virtual void OnEvent(Event::Event& event) override;
+		virtual void OnEvent(Event* event) override;
 		virtual void OnImGuiRender() override;
 
-		bool OnMousePressed(Event::MouseButtonPressedEvent& event);
-		bool OnKeyPressed(Event::KeyPressedEvent& event);
+		bool OnMousePressed(MouseButtonPressedEvent* event);
+		bool OnKeyPressed(KeyPressedEvent* event);
 		
 	private:
 		GameApp* m_Parent;

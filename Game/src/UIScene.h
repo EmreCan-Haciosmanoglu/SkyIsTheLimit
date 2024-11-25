@@ -18,9 +18,9 @@ namespace Can
 		virtual void OnDetach() override {}
 
 		virtual bool OnUpdate(TimeStep ts) override;
-		virtual void OnEvent(Event::Event& event) override;
+		virtual void OnEvent(Event* event) override;
 
-		bool OnMousePressed(Event::MouseButtonPressedEvent& event);
+		bool OnMousePressed(MouseButtonPressedEvent* event);
 
 	public:
 		Scene* m_Scene;

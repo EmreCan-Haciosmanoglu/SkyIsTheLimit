@@ -25,11 +25,11 @@ namespace Can
 	{
 		return on_main_menu_ui_layer_update(*this, ts);
 	}
-	void Main_Menu_UI::OnEvent(Event::Event& event)
+	void Main_Menu_UI::OnEvent(Event* event)
 	{
-		Event::EventDispatcher dispatcher(event);
-		dispatcher.dispatch<Event::KeyReleasedEvent>(this,CAN_BIND_EVENT_FN(on_main_menu_ui_layer_key_released));
-		dispatcher.dispatch<Event::KeyTypedEvent>(this, CAN_BIND_EVENT_FN(on_main_menu_ui_layer_key_typed));
+		EventDispatcher dispatcher(event);
+		dispatcher.dispatch<KeyReleasedEvent>(this, CAN_BIND_EVENT_FN(on_main_menu_ui_layer_key_released));
+		dispatcher.dispatch<KeyTypedEvent>(this, CAN_BIND_EVENT_FN(on_main_menu_ui_layer_key_typed));
 	}
 
 	extern Buffer_Data buffer_data;
@@ -93,11 +93,11 @@ namespace Can
 	}
 
 
-	bool on_main_menu_ui_layer_key_released(void* p, Event::KeyReleasedEvent& event)
+	bool on_main_menu_ui_layer_key_released(void* p, KeyReleasedEvent* event)
 	{
 		Main_Menu_UI& ui = *((Main_Menu_UI*)p);
 		Perspective_Camera_Controller& controller = GameApp::instance->perspective_camera_controller;
-		KeyCode keycode = event.GetKeyCode();
+		KeyCode keycode = event->GetKeyCode();
 		if (ui.key_bind_selection_is_openned)
 		{
 			ui.key_is_pressed = true;
@@ -161,11 +161,11 @@ namespace Can
 		return false;
 	}
 
-	bool on_main_menu_ui_layer_key_typed(void* p, Event::KeyTypedEvent& event)
+	bool on_main_menu_ui_layer_key_typed(void* p, KeyTypedEvent* event)
 	{
 		Main_Menu_UI& ui = *((Main_Menu_UI*)p);
 		if (!ui.global_focus) return false;
-		KeyCode keycode = event.GetKeyCode();
+		KeyCode keycode = event->GetKeyCode();
 
 		if (ui.char_count >= ui.max_char)
 			return false;

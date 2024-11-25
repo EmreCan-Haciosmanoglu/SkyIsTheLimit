@@ -6,6 +6,9 @@
 #include "Can/Renderer/RenderCommand.h"
 #include "Can/Renderer/Renderer2D.h"
 
+#include "Can/Events/MouseEvent.h"
+#include "Can/Events/KeyEvent.h"
+
 #include "Can/Camera/Perspective_Camera_Controller.h"
 #include "Can/Renderer/Object.h"
 
@@ -399,14 +402,15 @@ namespace Can
 	{
 		return on_game_scene_ui_layer_update(*this, ts);
 	}
-	void Game_Scene_UI::OnEvent(Event::Event& event)
+	void Game_Scene_UI::OnEvent(Event* event)
 	{
-		Event::EventDispatcher dispatcher(event);
-		dispatcher.dispatch<Event::KeyReleasedEvent>(this, CAN_BIND_EVENT_FN(on_game_scene_ui_layer_key_released));
-		dispatcher.dispatch<Event::KeyTypedEvent>(this, CAN_BIND_EVENT_FN(on_game_scene_ui_layer_key_typed));
+		EventDispatcher dispatcher(event);
+		dispatcher.dispatch<KeyReleasedEvent>(this, CAN_BIND_EVENT_FN(on_game_scene_ui_layer_key_released));
+		dispatcher.dispatch<KeyTypedEvent>(this, CAN_BIND_EVENT_FN(on_game_scene_ui_layer_key_typed));
 
-		dispatcher.dispatch<Event::MouseButtonPressedEvent>(this, CAN_BIND_EVENT_FN(on_game_scene_ui_layer_mouse_pressed));
-		dispatcher.dispatch<Event::MouseMovedEvent>(this, CAN_BIND_EVENT_FN(on_game_scene_ui_layer_mouse_moved));
+		dispatcher.dispatch<MouseButtonPressedEvent>(this, CAN_BIND_EVENT_FN(on_game_scene_ui_layer_mouse_pressed));
+		dispatcher.dispatch<MouseButtonReleasedEvent>(this, CAN_BIND_EVENT_FN(on_game_scene_ui_layer_mouse_released));
+		dispatcher.dispatch<MouseMovedEvent>(this, CAN_BIND_EVENT_FN(on_game_scene_ui_layer_mouse_moved));
 	}
 
 	extern Buffer_Data buffer_data;
@@ -418,7 +422,6 @@ namespace Can
 		ui.font = load_font("assets/fonts/DancingScript/DancingScript-Regular.ttf");
 		ui.game_scene = &game_scene;
 		ui.game_scene_camera = &game_scene.camera_controller.camera;
-
 
 		/*Label_Themes*/ {
 			ui.label_theme_title.color = { 0.05f, 0.05f, 0.05f, 1.0f };
@@ -523,11 +526,11 @@ namespace Can
 		return false;
 	}
 
-	bool on_game_scene_ui_layer_key_released(void* p, Event::KeyReleasedEvent& event)
+	bool on_game_scene_ui_layer_key_released(void* p, KeyReleasedEvent* event)
 	{
 		Game_Scene_UI& ui = *((Game_Scene_UI*)p);
 
-		KeyCode key_code = event.GetKeyCode();
+		KeyCode key_code = event->GetKeyCode();
 		if (key_code == KeyCode::Escape)
 		{
 			if (ui.focused_car)
@@ -544,22 +547,34 @@ namespace Can
 		}
 		return false;
 	}
-	bool on_game_scene_ui_layer_mouse_pressed(void* p, Event::MouseButtonPressedEvent& event)
+	bool on_game_scene_ui_layer_mouse_pressed(void* p, MouseButtonPressedEvent* event)
 	{
-		Game_Scene_UI& ui = *((Game_Scene_UI*)p);
+		Game_Scene_UI ui{ *((Game_Scene_UI*)p) };
 
-		MouseCode key_code = event.GetMouseButton();
-		if (key_code == MouseCode::Button0)
+		MouseCode mouse_code{ event->GetMouseButton() };
+		if (mouse_code == MouseCode::Button0)
 		{
+
 		}
 		return false;
 	}
-	bool on_game_scene_ui_layer_mouse_moved(void* p, Event::MouseMovedEvent& event)
+	bool on_game_scene_ui_layer_mouse_released(void* p, MouseButtonReleasedEvent* event)
+	{
+		Game_Scene_UI ui{ *((Game_Scene_UI*)p) };
+
+		MouseCode mouse_code{ event->GetMouseButton() };
+		if (mouse_code == MouseCode::Button0)
+		{
+			return buffer_data.left_mouse_button_released_event_handled;
+		}
+		return false;
+	}
+	bool on_game_scene_ui_layer_mouse_moved(void* p, MouseMovedEvent* event)
 	{
 		Game_Scene_UI& ui = *((Game_Scene_UI*)p);
 		return false;
 	}
-	bool on_game_scene_ui_layer_key_typed(void* p, Event::KeyTypedEvent& event)
+	bool on_game_scene_ui_layer_key_typed(void* p, KeyTypedEvent* event)
 	{
 		return false;
 	}
@@ -1482,10 +1497,5 @@ namespace Can
 					draw_icon_above_target_object(ui, commercial_building->object, app->garbage_filled_icon);
 
 		}
-	}
-
-	bool on_game_scene_ui_layer_mouse_released(void* p, Event::MouseButtonReleasedEvent& event)
-	{
-		return false;
 	}
 }

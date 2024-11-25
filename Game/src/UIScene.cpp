@@ -1420,13 +1420,13 @@ namespace Can
 		Renderer2D::EndScene();
 		return false;
 	}
-	void UIScene::OnEvent(Can::Event::Event& event)
+	void UIScene::OnEvent(Can::Event* event)
 	{
-		Can::Event::EventDispatcher dispatcher(event);
-		dispatcher.Dispatch<Event::MouseButtonPressedEvent>(CAN_BIND_EVENT_FN(UIScene::OnMousePressed));
+		Can::EventDispatcher dispatcher(event);
+		dispatcher.Dispatch<MouseButtonPressedEvent>(CAN_BIND_EVENT_FN(UIScene::OnMousePressed));
 
 	}
-	bool UIScene::OnMousePressed(Can::Event::MouseButtonPressedEvent& event)
+	bool UIScene::OnMousePressed(MouseButtonPressedEvent* event)
 	{
 		float cameraWidth = m_AspectRatio * m_ZoomLevel * 2.0f;
 		float cameraHeight = m_ZoomLevel * 2.0f;
@@ -1443,8 +1443,8 @@ namespace Can
 
 		for (auto it = children.end(); it != children.begin();)
 		{
-			event.m_Handled = CheckCollision((*--it), &(m_Scene->m_Registry), clickPos);
-			if (event.m_Handled)
+			event->m_Handled = CheckCollision((*--it), &(m_Scene->m_Registry), clickPos);
+			if (event->m_Handled)
 				return true;
 		}
 		return false;

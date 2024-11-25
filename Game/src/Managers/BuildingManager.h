@@ -28,8 +28,10 @@ namespace Can
 		void OnUpdate_Destruction(v3& prevLocation, const v3& cameraPosition, const v3& cameraDirection);
 
 		bool OnMousePressed(MouseCode button);
-		bool OnMousePressed_Construction();
 		bool OnMousePressed_Destruction();
+
+		bool OnMouseReleased(MouseCode button);
+		bool OnMouseReleased_Construction();
 
 		void SetType(size_t type_index);
 		inline size_t GetType() const { return building_type_index; }

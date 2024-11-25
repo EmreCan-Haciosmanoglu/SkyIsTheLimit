@@ -14,11 +14,11 @@ namespace Can
 		return false;
 	}
 
-	void Debug::OnEvent(Can::Event::Event& event)
+	void Debug::OnEvent(Can::Event* event)
 	{
-		Can::Event::EventDispatcher dispatcher(event);
-		dispatcher.Dispatch<Event::MouseButtonPressedEvent>(CAN_BIND_EVENT_FN(Debug::OnMousePressed));
-		dispatcher.Dispatch<Event::KeyPressedEvent>(CAN_BIND_EVENT_FN(Debug::OnKeyPressed));
+		Can::EventDispatcher dispatcher(event);
+		dispatcher.Dispatch<MouseButtonPressedEvent>(CAN_BIND_EVENT_FN(Debug::OnMousePressed));
+		dispatcher.Dispatch<KeyPressedEvent>(CAN_BIND_EVENT_FN(Debug::OnKeyPressed));
 	}
 
 	void Debug::OnImGuiRender()
@@ -148,13 +148,13 @@ namespace Can
 		}
 		ImGui::End();
 	}
-	bool Debug::OnMousePressed(Event::MouseButtonPressedEvent& event)
+	bool Debug::OnMousePressed(MouseButtonPressedEvent* event)
 	{
 		return ImGui::GetIO().WantCaptureMouse;
 	}
-	bool Debug::OnKeyPressed(Event::KeyPressedEvent& event)
+	bool Debug::OnKeyPressed(KeyPressedEvent* event)
 	{
-		if (event.GetKeyCode() == KeyCode::GraveAccent)
+		if (event->GetKeyCode() == KeyCode::GraveAccent)
 			is_open = !is_open;
 		return ImGui::GetIO().WantCaptureKeyboard;
 	}

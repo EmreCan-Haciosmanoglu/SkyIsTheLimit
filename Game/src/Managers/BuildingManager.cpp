@@ -352,9 +352,6 @@ namespace Can
 		case BuildingConstructionMode::None:
 			break;
 		case BuildingConstructionMode::Construct:
-			if (button != MouseCode::Button0)
-				return false;
-			OnMousePressed_Construction();
 			break;
 		case BuildingConstructionMode::Upgrade:
 			break;
@@ -368,7 +365,28 @@ namespace Can
 		}
 		return false;
 	}
-	bool BuildingManager::OnMousePressed_Construction()
+	bool BuildingManager::OnMouseReleased(MouseCode button)
+	{
+		switch (m_ConstructionMode)
+		{
+		case BuildingConstructionMode::None:
+			break;
+		case BuildingConstructionMode::Construct:
+			if (button != MouseCode::Button0)
+				return false;
+			OnMouseReleased_Construction();
+			break;
+		case BuildingConstructionMode::Upgrade:
+			break;
+		case BuildingConstructionMode::Destruct:
+			break;
+		default:
+			break;
+		}
+		return false;
+	}
+
+	bool BuildingManager::OnMouseReleased_Construction()
 	{
 		auto& building_types = m_Scene->MainApplication->building_types;
 

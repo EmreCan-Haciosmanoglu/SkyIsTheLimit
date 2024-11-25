@@ -41,9 +41,10 @@ namespace Can
 		virtual void OnDetach() override;
 
 		virtual bool OnUpdate(TimeStep ts) override;
-		virtual void OnEvent(Event::Event& event) override;
+		virtual void OnEvent(Event* event) override;
 
-		bool OnMousePressed(Event::MouseButtonPressedEvent& event);
+		bool OnMousePressed(MouseButtonPressedEvent* event);
+		bool OnMouseReleased(MouseButtonReleasedEvent* event);
 
 		void SetConstructionMode(ConstructionMode mode);
 		const ConstructionMode& GetConstructionMode() const { return e_ConstructionMode; }

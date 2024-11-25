@@ -32,7 +32,7 @@ namespace Can
 		void OnDetach() override;
 
 		bool OnUpdate(TimeStep ts) override;
-		void OnEvent(Event::Event& event) override;
+		void OnEvent(class Event* event) override;
 
 		void* font{ nullptr };
 		Orthographic_Camera_Controller camera_controller;
@@ -103,15 +103,13 @@ namespace Can
 	void on_game_scene_ui_layer_detach(Game_Scene_UI& ui);
 
 	bool on_game_scene_ui_layer_update(Game_Scene_UI& ui, TimeStep ts);
-	bool on_game_scene_ui_layer_key_released(void* p, Event::KeyReleasedEvent& event);
-	bool on_game_scene_ui_layer_key_typed(void* p, Event::KeyTypedEvent& event);
+	bool on_game_scene_ui_layer_key_released(void* p, class KeyReleasedEvent* event);
+	bool on_game_scene_ui_layer_key_typed(void* p, class KeyTypedEvent* event);
 
-	bool on_game_scene_ui_layer_mouse_pressed(void* p, Event::MouseButtonPressedEvent& event);
-	bool on_game_scene_ui_layer_mouse_moved(void* p, Event::MouseMovedEvent& event);
+	bool on_game_scene_ui_layer_mouse_pressed(void* p, class  MouseButtonPressedEvent* event);
+	bool on_game_scene_ui_layer_mouse_released(void* p, class  MouseButtonReleasedEvent* event);
+	bool on_game_scene_ui_layer_mouse_moved(void* p, class  MouseMovedEvent* event);
 
 	void update_screen(Game_Scene_UI& ui);
 	void draw_screen(Game_Scene_UI& ui);
-
-
-	bool on_game_scene_ui_layer_mouse_released(void* p, Event::MouseButtonReleasedEvent& event);
 }
