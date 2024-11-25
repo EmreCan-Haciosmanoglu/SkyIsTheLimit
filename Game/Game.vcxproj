@@ -139,7 +139,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="src\Building.h" />
-    <ClInclude Include="src\Debug.h" />
     <ClInclude Include="src\GameApp.h" />
     <ClInclude Include="src\Helper.h" />
     <ClInclude Include="src\Managers\BuildingManager.h" />
@@ -166,7 +165,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Building.cpp" />
-    <ClCompile Include="src\Debug.cpp" />
     <ClCompile Include="src\GameApp.cpp" />
     <ClCompile Include="src\Helper.cpp" />
     <ClCompile Include="src\Managers\BuildingManager.cpp" />

@@ -3,7 +3,6 @@
 
 #include "Scenes/GameScene.h"
 #include "UIScene.h"
-//#include "Debug.h"
 
 #include "Scenes/Main_Menu/Main_Menu.h"
 
@@ -74,7 +73,6 @@ namespace Can
 
 		GameScene* gameScene{ nullptr };
 		UIScene* uiScene{ nullptr };
-		//Debug* debugScene = nullptr;
 
 		Perspective_Camera_Controller perspective_camera_controller;
 
