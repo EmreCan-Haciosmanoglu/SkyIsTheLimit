@@ -228,6 +228,13 @@ namespace Can
 		button_theme.background_color_over = { 0.90f, 0.70f, 0.55f, 1.0f };
 		button_theme.background_color_pressed = { 0.95f, 0.85f, 0.70f, 1.0f };
 		button_theme.label_theme = &label_theme;
+
+		Button_Theme button_theme_disabled;
+		button_theme_disabled.background_color = { 0.50f, 0.35f, 0.25f, 1.0f };
+		button_theme_disabled.background_color_over = { 0.55f, 0.45f, 0.35f, 1.0f };
+		button_theme_disabled.background_color_pressed = { 0.55f, 0.45f, 0.35f, 1.0f };
+		button_theme_disabled.label_theme = &label_theme;
+
 		Button_Theme button_theme_selected;
 		Button_Theme button_theme_centered;
 		/*Button_Themes*/ {
@@ -293,6 +300,8 @@ namespace Can
 		std::string text_5 = "Credits";
 		std::string text_6 = "Exit";
 
+		const bool has_any_game_saved{ ui.game_instances.size() > 0 };
+
 		Rect title_rect;
 		title_rect.x = 0;
 		title_rect.y = height_in_pixels - 200;
@@ -303,15 +312,18 @@ namespace Can
 
 		label_theme.font_size_in_pixel = 24;
 		label_theme.font = nullptr;
-		u16 flags = immediate_button(button_rect, text_1, button_theme, __LINE__);
+		u16 flags = immediate_button(button_rect, text_1, has_any_game_saved ? button_theme : button_theme_disabled, __LINE__);
 		if (flags & BUTTON_STATE_FLAGS_PRESSED)
 			std::cout << "Continue The Game is Pressed\n";
 		if (flags & BUTTON_STATE_FLAGS_RELEASED && ui.game_instances.size() > 0)
 		{
 			std::cout << "Continue The Game is Released\n";
-			GameApp::instance->start_the_game(ui.game_instances[0], true);
-			ui.force_update = true;
-			return;
+			if(has_any_game_saved)
+			{
+				GameApp::instance->start_the_game(ui.game_instances[0], true);
+				ui.force_update = true;
+				return;
+			}
 		}
 
 		button_rect.y -= button_rect.h + margin;
@@ -326,14 +338,17 @@ namespace Can
 		}
 
 		button_rect.y -= button_rect.h + margin;
-		flags = immediate_button(button_rect, text_3, button_theme, __LINE__);
+		flags = immediate_button(button_rect, text_3, has_any_game_saved ? button_theme : button_theme_disabled, __LINE__);
 		if (flags & BUTTON_STATE_FLAGS_PRESSED)
 			std::cout << "Load A Game is Pressed\n";
 		if (flags & BUTTON_STATE_FLAGS_RELEASED)
 		{
 			std::cout << "Load A Game is Released\n";
-			ui.load_game_menu_is_openned ^= true;
-			ui.new_game_menu_is_openned = false;
+			if(has_any_game_saved)
+			{
+				ui.load_game_menu_is_openned ^= true;
+				ui.new_game_menu_is_openned = false;
+			}
 		}
 
 		button_rect.y -= button_rect.h + margin;
@@ -469,6 +484,7 @@ namespace Can
 			if (flags & BUTTON_STATE_FLAGS_RELEASED)
 			{
 				std::cout << "Start The Selected Game is Released\n";
+				if (ui.game_instances.size() <= ui.selected_game_instance) return;
 				GameApp::instance->start_the_game(ui.game_instances[ui.selected_game_instance], true);
 				ui.force_update = true;
 				return;
