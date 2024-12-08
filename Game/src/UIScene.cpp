@@ -250,7 +250,7 @@ namespace Can
 				entt::entity panelRoadsID = this->m_PanelRoads->entityID;
 				entt::entity panelTreesID = this->m_PanelTrees->entityID;
 
-				if (mainRegistry.has<HiddenComponent>(panelRoadsID) && !ui.draw_building_panel )
+				if (mainRegistry.has<HiddenComponent>(panelRoadsID) && !ui.draw_building_panel)
 				{
 					entt::entity buttonRoadsID = this->m_ButtonRoads->entityID;
 					entt::entity buttonBuildingsID = this->m_ButtonBuildings->entityID;
@@ -1393,8 +1393,8 @@ namespace Can
 
 	bool UIScene::OnUpdate(Can::TimeStep ts)
 	{
-		float widthHalf = m_AspectRatio * m_ZoomLevel;
-		float heightHalf = m_ZoomLevel;
+		const f32 widthHalf{ m_AspectRatio * m_ZoomLevel };
+		const f32 heightHalf{ m_ZoomLevel };
 
 		//RenderCommand::SetClearColor({ 0.9f, 0.9f, 0.9f, 1.0f });
 		//RenderCommand::Clear();

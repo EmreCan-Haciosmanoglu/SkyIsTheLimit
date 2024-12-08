@@ -28,8 +28,8 @@ namespace Can
 			auto app{ GameApp::instance };
 			auto& window{ main_application->GetWindow() };
 			auto& building_types{ app->building_types };
-			u64 width_in_pixels{ window.GetWidth() };
-			u64 height_in_pixels{ window.GetHeight() };
+			const s32 width_in_pixels{ (s32)window.GetWidth() };
+			const s32 height_in_pixels{ (s32)window.GetHeight() };
 
 			constexpr s32 building_panel_margins{ 10 };
 			constexpr s32 button_margin{ 10 };
@@ -545,6 +545,7 @@ namespace Can
 			}
 			ui.selected_building = nullptr;
 		}
+
 		return false;
 	}
 	bool on_game_scene_ui_layer_mouse_pressed(void* p, MouseButtonPressedEvent* event)
@@ -757,7 +758,7 @@ namespace Can
 				auto& vehicle_type{ vehicle_types[ui.focused_car->type] };
 				if (vehicle_type.type == Car_Type::Garbage_Truck)
 				{
-					f32 ratio{ (std::min)(ui.focused_car->cargo / vehicle_type.cargo_limit, 1.0f) };
+					f32 ratio{ std::min(ui.focused_car->cargo / vehicle_type.cargo_limit, 1.0f) };
 					v4 color_garbage{ Math::lerp(color_green, color_red, ratio) };
 					rect_needs_value_inside_positive.w = (s32)((f32)(rect_needs_value.w - 2) * ratio);
 					immediate_text(cargo_key, rect_needs_key, ui.label_theme_left_alinged_small_black_text);
@@ -1382,7 +1383,7 @@ namespace Can
 					rect_needs_value_inside.y = rect_needs_key.y + 1;
 					rect_needs_value_inside_positive.y = rect_needs_key.y + 1;
 
-					ratio = (std::min)(building->current_garbage / building->garbage_capacity, 1.0f);
+					ratio = std::min(building->current_garbage / building->garbage_capacity, 1.0f);
 					v4 color_garbage{ Math::lerp(color_green, color_red, ratio) };
 					rect_needs_value_inside_positive.w = (s32)((f32)(rect_needs_value.w - 2) * ratio);
 					immediate_text(garbage_key, rect_needs_key, ui.label_theme_left_alinged_small_black_text);

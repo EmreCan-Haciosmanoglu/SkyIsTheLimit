@@ -211,7 +211,7 @@ namespace Can
 
 						assert(p->home->snapped_t_index < (s64)road_segment.curve_samples.size() - 1);
 						v3 target_position = road_segment.curve_samples[p->home->snapped_t_index];
-						assert(road_segment.curve_samples.size() - 1 >= p->home->snapped_t_index + 1);
+						assert((s64)road_segment.curve_samples.size() - 1 >= p->home->snapped_t_index + 1);
 						v3 target_position_plus_one = road_segment.curve_samples[p->home->snapped_t_index + 1];
 
 						v3 dir = target_position_plus_one - target_position;
@@ -380,7 +380,7 @@ namespace Can
 
 						assert(p->work->snapped_t_index < (s64)road_segment.curve_samples.size() - 1);
 						v3 target_position = road_segment.curve_samples[p->work->snapped_t_index];
-						assert(road_segment.curve_samples.size() - 1 >= p->work->snapped_t_index + 1);
+						assert((s64)road_segment.curve_samples.size() - 1 >= p->work->snapped_t_index + 1);
 						v3 target_position_plus_one = road_segment.curve_samples[p->work->snapped_t_index + 1];
 
 						v3 dir = target_position_plus_one - target_position;
@@ -736,7 +736,7 @@ namespace Can
 
 					assert(police_station->snapped_t_index < (s64)road_segment.curve_samples.size() - 1);
 					v3 target_position = road_segment.curve_samples[police_station->snapped_t_index];
-					assert(road_segment.curve_samples.size() - 1 >= police_station->snapped_t_index + 1);
+					assert((s64)road_segment.curve_samples.size() - 1 >= police_station->snapped_t_index + 1);
 					v3 target_position_plus_one = road_segment.curve_samples[police_station->snapped_t_index + 1];
 
 					v3 dir = target_position_plus_one - target_position;
@@ -795,7 +795,7 @@ namespace Can
 
 					assert(hospital->snapped_t_index < (s64)road_segment.curve_samples.size() - 1);
 					v3 target_position = road_segment.curve_samples[hospital->snapped_t_index];
-					assert(road_segment.curve_samples.size() - 1 >= hospital->snapped_t_index + 1);
+					assert((s64)road_segment.curve_samples.size() - 1 >= hospital->snapped_t_index + 1);
 					v3 target_position_plus_one = road_segment.curve_samples[hospital->snapped_t_index + 1];
 
 					v3 dir = target_position_plus_one - target_position;

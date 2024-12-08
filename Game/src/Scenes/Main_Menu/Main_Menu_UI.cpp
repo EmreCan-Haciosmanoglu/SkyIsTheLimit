@@ -195,12 +195,12 @@ namespace Can
 
 	void main_menu_screen(Main_Menu_UI& ui)
 	{
-		const s32 margin = 10;
-		const s32 button_rect_y_up_limit = 500;
+		const s32 margin{ 10 };
+		const s32 button_rect_y_up_limit{ 500 };
 
-		auto& window = main_application->GetWindow();
-		u64 width_in_pixels = window.GetWidth();
-		u64 height_in_pixels = window.GetHeight();
+		auto& window{ main_application->GetWindow() };
+		const s32 width_in_pixels{ (s32)window.GetWidth() };
+		const s32 height_in_pixels{ (s32)window.GetHeight() };
 
 		Rect button_rect;
 		button_rect.w = 250;
@@ -290,15 +290,15 @@ namespace Can
 			text_box_theme.label_theme = &label_theme;
 		}
 
-		std::string title = "Sky Is The Limit Demo";
+		std::string title{ "Sky Is The Limit Demo" };
 		if ((GetKeyState(VK_CAPITAL) & 0x0001) != 0)
 			title = "SKY IS THE LIMIT";
-		std::string text_1 = "Continue The Game";
-		std::string text_2 = "Start New Game";
-		std::string text_3 = "Load A Game";
-		std::string text_4 = "Options";
-		std::string text_5 = "Credits";
-		std::string text_6 = "Exit";
+		const std::string text_1{ "Continue The Game" };
+		const std::string text_2{ "Start New Game" };
+		const std::string text_3{ "Load A Game" };
+		const std::string text_4{ "Options" };
+		const std::string text_5{ "Credits" };
+		const std::string text_6{ "Exit" };
 
 		const bool has_any_game_saved{ ui.game_instances.size() > 0 };
 
@@ -318,7 +318,7 @@ namespace Can
 		if (flags & BUTTON_STATE_FLAGS_RELEASED && ui.game_instances.size() > 0)
 		{
 			std::cout << "Continue The Game is Released\n";
-			if(has_any_game_saved)
+			if (has_any_game_saved)
 			{
 				GameApp::instance->start_the_game(ui.game_instances[0], true);
 				ui.force_update = true;
@@ -344,7 +344,7 @@ namespace Can
 		if (flags & BUTTON_STATE_FLAGS_RELEASED)
 		{
 			std::cout << "Load A Game is Released\n";
-			if(has_any_game_saved)
+			if (has_any_game_saved)
 			{
 				ui.load_game_menu_is_openned ^= true;
 				ui.new_game_menu_is_openned = false;
@@ -455,7 +455,7 @@ namespace Can
 			r.y += r.h + sub_region_button_margin;
 
 			immediate_begin_sub_region(sub_region_rect, sub_region_theme, __LINE__);
-			for (u64 i = 0; i < ui.game_instances.size(); i++)
+			for (u16 i = 0; i < (u16)ui.game_instances.size(); i++)
 			{
 				r.y -= r.h + sub_region_button_margin;
 				check_box_rect.y = r.y + r.h / 2 - check_box_rect.h / 2;
@@ -493,16 +493,16 @@ namespace Can
 	}
 	void options_screen(Main_Menu_UI& ui)
 	{
-		const s32 margin = 10;
-		const s32 button_rect_y_up_limit = 500;
-		s32 left_screen_margin = 50;
-		s32 options_y_margin = 5;
-		auto& camera_controller = GameApp::instance->perspective_camera_controller;
+		const s32 margin{ 10 };
+		const s32 button_rect_y_up_limit{ 500 };
+		const s32 left_screen_margin{ 50 };
+		const s32 options_y_margin{ 5 };
+		auto& camera_controller{ GameApp::instance->perspective_camera_controller };
 
 
-		auto& window = main_application->GetWindow();
-		u64 width_in_pixels = window.GetWidth();
-		u64 height_in_pixels = window.GetHeight();
+		auto& window{ main_application->GetWindow() };
+		const s32 width_in_pixels{ (s32)window.GetWidth() };
+		const s32 height_in_pixels{ (s32)window.GetHeight() };
 
 		if (Input::IsKeyPressed(KeyCode::Escape))
 			ui.current_menu = Menus::MainMenu;
@@ -1247,9 +1247,9 @@ namespace Can
 	}
 	void credits_screen(Main_Menu_UI& ui)
 	{
-		auto& window = main_application->GetWindow();
-		u64 width_in_pixels = window.GetWidth();
-		u64 height_in_pixels = window.GetHeight();
+		auto& window{ main_application->GetWindow() };
+		const s32 width_in_pixels{ (s32)window.GetWidth() };
+		const s32 height_in_pixels{ (s32)window.GetHeight() };
 
 		if (Input::IsKeyPressed(KeyCode::Escape))
 			ui.current_menu = Menus::MainMenu;
@@ -1265,10 +1265,10 @@ namespace Can
 		title_rect.w = width_in_pixels;
 		title_rect.h = 200;
 
-		std::string title = "Credits";
-		std::string name_1 = "Emre Can Haciosmanoglu";
-		std::string name_2 = "Vice President: Muhammed Talha Demir";
-		std::string back = "Back";
+		const std::string title{ "Credits" };
+		const std::string name_1{ "Emre Can Haciosmanoglu" };
+		const std::string name_2{ "Vice President: Muhammed Talha Demir" };
+		const std::string back{ "Back" };
 
 		immediate_text(title, title_rect, label_theme);
 

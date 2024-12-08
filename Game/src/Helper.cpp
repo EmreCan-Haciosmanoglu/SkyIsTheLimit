@@ -1097,10 +1097,10 @@ namespace  Can::Helper
 			}
 			else
 			{
-				RoadSegment& road_segment = road_segments[start->connected_road_segment];
-				bool from_start = road_segment.curve_samples.size() > start->snapped_t_index + end->snapped_t_index;
+				RoadSegment& road_segment{ road_segments[start->connected_road_segment] };
+				bool from_start{ (s64)road_segment.curve_samples.size() > start->snapped_t_index + end->snapped_t_index };
 
-				RS_Transition_For_Walking* rs_transition_s = new RS_Transition_For_Walking();
+				RS_Transition_For_Walking* rs_transition_s{ new RS_Transition_For_Walking() };
 				rs_transition_s->from_start = !from_start;
 				rs_transition_s->from_right = !start->snapped_to_right == from_start;
 				rs_transition_s->road_segment_index = start->connected_road_segment;
