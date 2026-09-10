@@ -523,7 +523,6 @@ namespace Can
 
 		immediate_flush();
 		return ui.force_update;
-		return false;
 	}
 
 	bool on_game_scene_ui_layer_key_released(void* p, KeyReleasedEvent* event)
